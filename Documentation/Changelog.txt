@@ -1,0 +1,15 @@
+First Public Git Commit :)
+--------------------------
+
+HeartBeat_Checker version 015
+-------------------------------
+- HeartBeat_Checker now reads LoudnessCorrection IP-Addresses from the heartbeat.pickle instead of getting the addresses from the os. If HeartBeat_Checker and LoudnessCorrection are running on separate machines then emailed error messages nwo correctly tell IP-Addresses of the LoudnessCorrection - machine.
+
+LoudnessCorrection Version 151
+-------------------------------
+- The script now writes the machines IP-Addresses to the pickle HeartBeat_Checker monitors.
+- Made some small modifications to error email formatting.
+
+installer 034
+--------------
+- Bugfix: Samba mount path was always 'LoudnessCorrection', changed this to follow the selected language. The mount path when finnish is selected is now 'AanekkyysKorjaus'.
