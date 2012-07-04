@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '034'
+version = '035'
 
 ###################################
 # Function definitions start here #
@@ -892,15 +892,16 @@ def install_init_scripts_and_config_files(*args):
 	'		mke2fs -q -m 0 $RAM_DEVICE_NAME 1024', \
 	'		mount $RAM_DEVICE_NAME "$TARGET_PATH/$HOTFOLDER_NAME/$WEB_PAGE_PATH"', \
 	'		mkdir -p "$TARGET_PATH/$HOTFOLDER_NAME/$WEB_PAGE_PATH/.temporary_files"', \
-	'', \
-	'		chown -R $USERNAME:$USERNAME "$TARGET_PATH/$HOTFOLDER_NAME/$WEB_PAGE_PATH"', \
-	'		chmod -R 1755 "$TARGET_PATH/$HOTFOLDER_NAME/$WEB_PAGE_PATH"', \
 	'']
 	
-	loudness_correction_init_script_content_part_2_with_heartbeat = ['		#############################################################################################', \
+	loudness_correction_init_script_content_part_2_with_heartbeat = [
+	'		#############################################################################################', \
 	'		# Change directory ownerships and permissions so that network users can not delete important', \
 	'		# files and directories.', \
 	'		#############################################################################################', \
+	'', \
+	'		chown -R $USERNAME:$USERNAME "$TARGET_PATH/$HOTFOLDER_NAME/$WEB_PAGE_PATH"', \
+	'		chmod -R 1755 "$TARGET_PATH/$HOTFOLDER_NAME/$WEB_PAGE_PATH"', \
 	'', \
 	'		chown $USERNAME:$USERNAME "$TARGET_PATH"', \
 	'		chmod 1777 "$TARGET_PATH"', \
@@ -1810,6 +1811,7 @@ def set_button_and_label_states_on_window_seven():
 	if loudnesscorrection_scripts_are_installed.get() == 'Not Installed':
 		seventh_window_label_14['foreground'] = 'black'
 		seventh_window_install_button['state'] = 'normal'
+		seventh_window_next_button['state'] = 'disabled'
 
 	if external_program_installation_has_been_already_run == False:
 		# Our program installation rutine has not been run yet.

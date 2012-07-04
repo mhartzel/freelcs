@@ -1,3 +1,8 @@
+installer 035
+--------------
+Bugfix: Installer let the user go to the next window even though loudnesscorrection_init_script was not installed yet.
+Bigfix: Some directory ownership and permissions were not set correctly if the user selected not to create a ram disk.
+
 First Public Git Commit :)
 --------------------------
 
