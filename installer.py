@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '035'
+version = '037'
 
 ###################################
 # Function definitions start here #
@@ -891,7 +891,6 @@ def install_init_scripts_and_config_files(*args):
 	'', \
 	'		mke2fs -q -m 0 $RAM_DEVICE_NAME 1024', \
 	'		mount $RAM_DEVICE_NAME "$TARGET_PATH/$HOTFOLDER_NAME/$WEB_PAGE_PATH"', \
-	'		mkdir -p "$TARGET_PATH/$HOTFOLDER_NAME/$WEB_PAGE_PATH/.temporary_files"', \
 	'']
 	
 	loudness_correction_init_script_content_part_2_with_heartbeat = [
@@ -900,6 +899,7 @@ def install_init_scripts_and_config_files(*args):
 	'		# files and directories.', \
 	'		#############################################################################################', \
 	'', \
+	'		mkdir -p "$TARGET_PATH/$HOTFOLDER_NAME/$WEB_PAGE_PATH/.temporary_files"', \
 	'		chown -R $USERNAME:$USERNAME "$TARGET_PATH/$HOTFOLDER_NAME/$WEB_PAGE_PATH"', \
 	'		chmod -R 1755 "$TARGET_PATH/$HOTFOLDER_NAME/$WEB_PAGE_PATH"', \
 	'', \
@@ -953,6 +953,10 @@ def install_init_scripts_and_config_files(*args):
 	'		# Change directory ownerships and permissions so that network users can not delete important', \
 	'		# files and directories.', \
 	'		#############################################################################################', \
+	'', \
+	'		mkdir -p "$TARGET_PATH/$HOTFOLDER_NAME/$WEB_PAGE_PATH/.temporary_files"', \
+	'		chown -R $USERNAME:$USERNAME "$TARGET_PATH/$HOTFOLDER_NAME/$WEB_PAGE_PATH"', \
+	'		chmod -R 1755 "$TARGET_PATH/$HOTFOLDER_NAME/$WEB_PAGE_PATH"', \
 	'', \
 	'		chown $USERNAME:$USERNAME "$TARGET_PATH"', \
 	'		chmod 1777 "$TARGET_PATH"', \

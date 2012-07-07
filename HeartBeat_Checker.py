@@ -14,7 +14,7 @@ import email.mime.multipart
 import pickle
 import subprocess
 
-version = '015'
+version = '017'
 
 # User can set some defaults here that are used if the program is started without giving it the path to a configfile.
 silent = False # Use True if you don't want this program to output anything to screen.
@@ -145,6 +145,7 @@ heartbeat_has_stopped = False
 alert_email_has_been_sent = False
 heartbeat_file_read_error_message_has_been_sent = False
 configfile_path = ''
+startup_message_has_been_sent = False
 
 loudness_correction_commandline = ['Not known yet']
 loudness_correction_pid = 'Not known yet'
@@ -258,11 +259,6 @@ if configfile_path != '':
 	message_recipients = email_sending_details['message_recipients']
 	message_title = email_sending_details['message_title']
 
-# Send an email telling HeartBeat_Checker has started.
-time_string = parse_time(time.time()) # Parse current time to a nicely formatted string.
-message_text_list = ['HeartBeat_Checker started at: ' + time_string]
-message_text_string = '\n'.join(message_text_list)
-send_email(message_recipients, 'HeartBeat_Checker has started.', message_text_string, message_attachment_path)
 
 ##############################
 # The main loop starts here. #
@@ -318,6 +314,12 @@ while True:
 		if (heartbeat_file_read_error == False) and (heartbeat_file_read_error_message_has_been_sent == True):
 			heartbeat_file_read_error_message_has_been_sent = False
 			time_string = parse_time(time.time()) # Parse current time to a nicely formatted string.
+			
+			# Read LoudnessCorrection pid and commandline from the heartBeat pickle.
+			loudness_correction_commandline = loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'][0]
+			loudness_correction_pid = loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'][1]
+			all_ip_addresses_of_the_machine = loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'][2]
+	
 			message_text_string = 'Heartbeat - file became readable again at: ' + time_string + '\n'
 			send_email(message_recipients, message_title, message_text_string, message_attachment_path)
 			if silent == False:
@@ -335,6 +337,14 @@ while True:
 	loudness_correction_commandline = loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'][0]
 	loudness_correction_pid = loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'][1]
 	all_ip_addresses_of_the_machine = loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'][2]
+	
+	# Send an email telling HeartBeat_Checker has started.
+	if startup_message_has_been_sent == False:
+		startup_message_has_been_sent = True
+		time_string = parse_time(time.time()) # Parse current time to a nicely formatted string.
+		message_text_list = ['HeartBeat_Checker started at: ' + time_string]
+		message_text_string = '\n'.join(message_text_list)
+		send_email(message_recipients, 'HeartBeat_Checker has started.', message_text_string, message_attachment_path)
 	
 	# If a timestamp stops updating, we wan't the first line of the emailed error message always to contain the commandline and PID of the LoudnessCorrection script.
 	# If you have several versions of the script running on the same computer, the commandline tells which one encountered the error.

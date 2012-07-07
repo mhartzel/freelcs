@@ -1,7 +1,19 @@
+Documentation
+--------------
+- Added documentation for FreeLCS 1.0 :)
+
+HeartBeat_Checker version 017
+-------------------------------
+The first email (HeartBeat_Checker has started) was sent too early, before the timestamps and other info of LoudnessCorrection was read.
+
+installer 037
+--------------
+- Bugfix: Some directory permissions were not set correctly if HeartBeat Checker was deselected in installer.
+
 installer 035
 --------------
-Bugfix: Installer let the user go to the next window even though loudnesscorrection_init_script was not installed yet.
-Bigfix: Some directory ownership and permissions were not set correctly if the user selected not to create a ram disk.
+- Bugfix: Installer let the user go to the next window even though loudnesscorrection_init_script was not installed yet.
+- Bigfix: Some directory ownership and permissions were not set correctly if the user selected not to create a ram disk.
 
 First Public Git Commit :)
 --------------------------
