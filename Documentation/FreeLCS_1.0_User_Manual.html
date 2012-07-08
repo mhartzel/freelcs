@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="en">
+  <head>
+    <title>FreeLCS User Manual</title>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+  </head>
+  <body>
+    <p> </p>
+    <h1>FreeLCS User Manual</h1>
+    <br>
+    <h3> <a href="#Introduction">Introduction</a></h3>
+    <h3> <a href="#Features">Features</a></h3>
+    <h3> <a href="#Requirements">Requirements</a></h3>
+    <h3> <a href="#Installation">Installation</a></h3>
+    <h3> <a href="#Files%20that%20FreeLCS%20creates%20in%20your%20system">Files
+        that FreeLCS creates in your system</a></h3>
+    <h3> <a href="#Usage">Usage</a></h3>
+    <h3> <a href="#Loudness%20History%20Graphics">Loudness History Graphics</a></h3>
+    <h3> <a href="#Mounting%20the%20server%20HotFolder%20from%20OS%20X">Mounting
+        the server HotFolder from OS X</a></h3>
+    <h3><a href="#Making%20an%20permanent%20alias%20to%20the%20HotFolder%20in%20OS%20X">
+        Making an permanent alias to the mount from OS X</a></h3>
+    <h3><a href="#Mounting%20the%20server%20HotFolder%20from%20windows%207">
+        Mounting the server HotFolder from windows 7</a></h3>
+    <h3> <a href="#Making%20the%20mount%20permanent%20in%20windows%207">Making
+        the mount permanent in windows 7</a></h3>
+    <h3> <a href="#Html%20Progress%20report">Html Progress Report</a></h3>
+    <h3><a href="#Static%20ip%20-%20address%20for%20the%20server">Static ip -
+        address for the server</a></h3>
+    <h3> <a href="#%20Optimizing%20processing%20speed">Optimizing processing
+        speed</a></h3>
+    <h3> <a href="#Configuring%20software%20Raid">Configuring software Raid</a></h3>
+    <h3> <a href="#Notes%20on%20loudness%20correction%20usage">Notes on
+        loudness correction usage</a></h3>
+    <h3><a href="#Setting%20up%20automatic%20security%20updates">Setting up
+        automatic security updates</a></h3>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <h2> <a id="Introduction">Introduction</a></h2>
+    <br>
+    FreeLCS stands for <strong>Free Loudness Correction Server</strong>. The
+    software lets you easily set up a server that shares one of it's folders to
+    the network where users can drop audio files to be loudness corrected
+    according to the EBU R128 loudness standard. The server also creates a
+    loudness history graphics file which gives visual feedback of the internal
+    loudness variations in a file.<br>
+    <br>
+    The software is very fast even on modest hardware giving 20 times faster
+    than realtime processing on a server with one Intel Core 2 Duo processor, 2
+    GB Ram, 3 internal Sata disks in software RAID 0. <br>
+    <br>
+    FreeLCS uses other open source programs to get the job done (Linux,
+    libebur128, gnuplot, FFmpeg, sox).<br>
+    <br>
+    <br>
+    <h2> <a id="Features">Features</a></h2>
+    <ul>
+      <li> Calculates loudness according to EBU R128 for files dropped into the
+        HotFolder.</li>
+      <li>For each file it creates an loudness history graphics file which gives
+        visual feedback of the loudness variations in the file.</li>
+      <li>Creates loudness corrected versions of each file dropped in the
+        servers HotFolder.</li>
+      <li>Uses FFmpeg to pre-process files and supports the huge number of file
+        formats FFmpeg supports.<br>
+      </li>
+      <li> Supports files with several audio streams. Each stream is demuxed to
+        a separate file and loudness corrected.</li>
+      <li>Even video files can dropped in for processing. Audio streams are
+        demuxed from the file and processed.<br>
+      </li>
+      <li> Supports channel counts from mono to 5.1.</li>
+      <li> Takes advantage of multiple processor cores to run calculations
+        simultaneously.</li>
+      <li>Uses a protective limiter to prevent clipping in cases where volume
+        must be increased.<br>
+      </li>
+      <li> Automatic file deletion after a set time.</li>
+      <li>Possible error messages are emailed to the admin.</li>
+      <li>All software is free and Open Source.<br>
+      </li>
+      <li>Very easy to use, just drop in your file and copy back the corrected
+        version.</li>
+      <li>Easy to integrate in many workflows.</li>
+      <li>Modest hardware requirements.</li>
+      <li>Written in Python 3.<br>
+      </li>
+    </ul>
+    <br>
+    <img title="Example: Loudness history graphics" src="file:///home/mika/FreeLCS/Documentation/Pictures/Beethoven-Coriolan_Overture_Op_62.wav-Loudness_Results_Graphics.jpg"><br>
+    <br>
+    <h2> <a id="Requirements">Requirements</a></h2>
+    <br>
+    <ul>
+      <li>You need a computer with at least 2 processor cores.</li>
+      <li>2 GB of RAM&nbsp; (there probably is not much advantage having more).</li>
+      <li> Ubuntu Linux 12.04. This version of Ubuntu will be supported by
+        Canonical until April 2017, meaning there will be security updates for 5
+        years after the release.</li>
+      <li>A person that is able to set up and update an Linux server.</li>
+      <li>1 Gbit ethernet is recommended.</li>
+    </ul>
+    <p><u><strong>Note:</strong></u><br>
+    </p>
+    Only files that have all audio channels of the mix in the same audiofile or
+    audiostream can be processed. For example you cannot process a 5.1 mix that
+    is split up to 6 separate files. Loudness calculation won't know these files
+    belong together.<br>
+    <ul>
+    </ul>
+    <br>
+    <br>
+    <h2> <a id="Installation">Installation</a></h2>
+    <ul>
+      <li>First install Ubuntu 12.04. If you don't know whether to choose the 32
+        or 64 bit version, use the 32 bit one if you have less than 4 GB of ram
+        and 64 bit if you have more.</li>
+      <li>It is recommended to use the JFS - filesystem for all disks, since the
+        default filesystem ext4 has some quite serious bugs / design flaws that
+        are probably never going to be fixed. JFS was designed by IBM to be a
+        very fault tolerant filesystem for big database servers. It is able to
+        survive power outages and has been in serious production use for years.<br>
+      </li>
+      <li>During the installation of Ubuntu, you are prompted to create the
+        first user. It is important to use a password for this account, do not
+        leave the password empty.<br>
+      </li>
+      <li>After Ubuntu is installed log in as the first user you created during
+        installation.</li>
+      <li>Next you must install python3. Give the following command in the
+        terminal window (you can copy and paste it from here):</li>
+    </ul>
+    <blockquote>
+      <blockquote>
+        <p><strong>sudo apt-get -y install python3</strong></p>
+      </blockquote>
+    </blockquote>
+    <ul>
+      <li>The command will ask for your password. Type in the password and press
+        enter and python3 installation begins.<strong><br>
+        </strong></li>
+      <li>Now that python3 is installed you can start the FreeLCS installation
+        program, it will ask you some details about how you would like the
+        loudness correction server to work and installs the rest of the programs
+        it needs.</li>
+      <li>Next unzip the FreeLCS - package by clicking it with the right mouse
+        button and selecting " <strong>Extract Here</strong>". A new directory
+        will be created and all FreeLCS files will be unzipped there.<br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Installation-00.jpg"><br>
+    </p>
+    <br>
+    <ul>
+      <li>Next we need to make the installer program executable. Navigate to the
+        directory that unzip created and right click the "<strong>installer.py</strong>"
+        program and select "<strong>Properties</strong>" from the menu.<br>
+      </li>
+    </ul>
+    <br>
+    <img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Installation-01.jpg"><br>
+    <br>
+    <br>
+    <ul>
+      <li>Click the "<strong>Permissions</strong>" tab and select "<strong>Allow
+          executing file as program</strong>" and the click "<strong>Close</strong>".
+        The installer program can now be run.<br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Installation-02.jpg"><br>
+    </p>
+    <p><br>
+    </p>
+    <ul>
+      <li>Double click the "<strong>installer.py</strong>" - file. A menu will
+        appear, click "<strong>Run</strong>".<br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Installation-02-2.jpg"><br>
+    </p>
+    <p><br>
+    </p>
+    <ul>
+      <li>The installer program starts. First you will see the welcome screen,
+        click "<strong>Next</strong>".<br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Installation-03.jpg"><br>
+    </p>
+    <p><br>
+    </p>
+    <ul>
+      <li>The next screen will ask about some details of you would like loudness
+        correction to work.</li>
+      <li>The first section will allow you to define the path to the target
+        directory. Some directories are automatically created inside this target
+        directory, the most important of these is the '<strong>HotFolder</strong>'.
+        HotFolder is the folder where users can drop in files for processing.
+        HotFolder is by default located in: '<strong>Target Directory /
+          LoudnessCorrection</strong>'.</li>
+      <li>The second section allows you to select English or Finnish as the
+        language for directories and text in loudness history graphics files.</li>
+      <li>'<strong>Number of processor cores to use</strong>' lets you define
+        how many processor cores are used in loudness calculation and file
+        processing. When a file is being processed it always ties up two
+        processor cores. The speed of processing is most often dependent of the
+        raw speed of disks. If your HotFolder is on an fast disk for example a
+        Raid device, then it often speeds up processing if you select here more
+        processor cores than you actually have. For example for our test server
+        that has one Intel Core 2 Duo (dual core) processor, 2 GB of Ram, 3 x 1
+        TB Sata - disks in Raid 0 for HotFolder, the sweet spot for speed is six
+        cores even though we only have two. See: <a href="#%20Optimizing%20processing%20speed">Optimizing
+          processing speed.</a><br>
+      </li>
+      <li>The last section of the window lets you define how long files are
+        allowed to stay on the server before they are automatically deleted. The
+        default value here is 8 hours (480 minutes).<br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Installation-04.jpg"><br>
+    </p>
+    <br>
+    <br>
+    <ul>
+      <li>The next window lets you select if you want to email possible error
+        messages to the admin.<br>
+      </li>
+      <li>Input your email details here. Smtp - server is the email server you
+        use to send email out to the world.</li>
+      <li>You can add max 5 addresses that the messages are sent to. When you
+        have filled in email details, click the "Send" - button to test that
+        email sending really works. The bottom of the window displays a message
+        if email sending is succesful.<br>
+      </li>
+      <li>HeartBeat Checker is a separate program that monitors the health of
+        the loudness correction program. If Loudness correction crashes for some
+        reason, HeartBeat Checker sends you email. If your loudness correction
+        server is mission critical then enable this option.</li>
+      <li>(Note that the password you give here is not encrypted when it is
+        stored in the file "<strong>/etc/LoudnessCorrection_Settings.pickle</strong>".
+        Scripts can not securely encrypt anything since the scripts themselves
+        can be easily read and any encryption method used can be found out by
+        examining the source code :)<br>
+      </li>
+    </ul>
+    <br>
+    <br>
+    <img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Installation-05.jpg"><br>
+    <br>
+    <br>
+    <br>
+    <ul>
+      <li>The next window lets you select if you want "<a href="#Html%20Progress%20report"><strong>Html
+            progress report</strong></a>" written to the HotFolder. It is an
+        html-page that can be viewed with a web-browser and it displays the
+        loudness calculation queue inside the server. On the page you can see
+        how many unprocessed files are waiting to be processed and names of the
+        last 100 processed files and times they were processed. The "html
+        progress report" is a tool for the admin to see what's going on inside
+        the server, this feature is not needed by normal users. Current time is
+        displayed on the page also and if it is advancing then the server is
+        alive and well :) The default path for the "Html progress report" is "<strong>Target
+          Directory / LoudnessCorrection / 00-Calculation_Queue_Information /
+          00-Calculation_Queue_Information.html</strong>".<br>
+      </li>
+      <li>The "Html progress report" is updated once in every 5 seconds. During
+        heavy file traffic the disk can become so busy that loudness correction
+        is not able to write the progress report on the disk as often as it
+        tries and if you view the page it seems to be frozen. This problem can
+        be solved by creating a ram-disk and writing the "Html progress report"
+        there instead of hard disk. Ram-disks can be written and read very
+        quickly and traffic jams on hard disks don't affect them at all.</li>
+      <li>If you wan't the progress report to be written on a ram-disk, then you
+        can select which of the operating systems ram-devices are used to create
+        the ram disk. You need to change the default setting of "/dev/ram1" here
+        only if you know you have created other ram-disks for other purposes and
+        you know that device "/dev/ram1" is already used for something else.</li>
+      <li>Lastly you can select which user account is used when loudness
+        correction and heartbeat checker programs are run. These two programs
+        are always run as an "unprivileged" user. If you only created one user,
+        then this user is used by default.<br>
+      </li>
+      <li>If you are not sure what to select on this window then just leave the
+        defaults as they are and click "Next". Defaults are ok for most users :)<br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Installation-07.jpg"><br>
+    </p>
+    <p><br>
+    </p>
+    <ul>
+      <li>The next window will let you select if you wan't the "HotFolder" to be
+        shared to the network. Select "Yes" if you wan't users to be able to
+        drop in files to the HotFolder through the network.</li>
+      <li>If you select "Yes" the the samba-server is used for creating the
+        network share and the default samba configuration is shown on the
+        window. You can edit the configuration in the window, but only change it
+        if you know your&nbsp; settings will work in your network. In all other
+        cases just leave the configuration as it is and click "Next".<br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Installation-08.jpg"><br>
+    </p>
+    <p><br>
+    </p>
+    <ul>
+      <li>The next window asks for the "root" - users password. It is the same
+        password that you set up for the first user you created during Ubuntu
+        installation. The root password is needed when loudness correction
+        settings and programs are written into Linux system directories.<br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Installation-09.jpg"><br>
+    </p>
+    <p><br>
+    </p>
+    <ul>
+      <li>The next window will list all external programs that FreeLCS needs to
+        do it's job. Just click the "<strong>Install</strong>" - button and the
+        installer will download and install all needed Ubuntu packages. It will
+        also download libebur128 source code, compile and install it.</li>
+      <li>The installation takes a couple of minutes and the window freezes
+        while the installer launches external programs to do the actual
+        installation. So don't try to click on anything on the window while the
+        installation is going on. The installer shows messages on the bottom of
+        the screen telling what it is doing at the moment.</li>
+      <li>After all required programs are installed, the installer installs
+        FreeLCS programs into Ubuntu's system folders. <br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Installation-10.jpg"><br>
+    </p>
+    <p><br>
+    </p>
+    <ul>
+      <li>When the installation is finished the window looks like the screenshot
+        below. Click the button "<strong>Next</strong>".<br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Installation-11.jpg"><br>
+    </p>
+    <p><br>
+    </p>
+    <ul>
+      <li>The last window tells you that you can start loudness correction now
+        by typing the commands displayed in the window into a terminal window.
+        The easiest way to start loudness correction however is to restart the
+        computer.</li>
+      <li>There is a deliberate delay for starting up loudness correction and
+        heartbeat checker. This makes sure all needed system services are up
+        when our scripts run at computer startup.<br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Installation-12.jpg"><br>
+    </p>
+    <br>
+    <br>
+    <br>
+    <h2><a id="Files that FreeLCS creates in your system">Files that FreeLCS
+        creates in your system</a></h2>
+    <br>
+    FreeLCS is made up of these files:<br>
+    <br>
+    <u><strong>/etc/init.d/loudness_correction_init_script</strong></u><br>
+    <br>
+    This script is started by a link in the <strong>/etc/rc2.d</strong> -
+    folder when the computer starts up (See the file below). This file creates
+    the ram disk, creates directories in the HotFolder if they do not exist and
+    sets their permissions so that network users can not delete critical files
+    and folders in the HotFolder. This script also starts up
+    LoudnessCorrection.py and HeartBeat_Checker.py - programs.<br>
+    <br>
+    <u><strong>/etc/rc2.d/S99loudness_correction_init_script</strong></u><br>
+    <br>
+    This file is a link that points to "<strong>/etc/init.d/loudness_correction_init_script</strong>"
+    &nbsp; this link is used to start up "<strong>/etc/init.d/loudness_correction_init_script</strong>"
+    when the computer starts up. Without this link the script "<strong>loudness_correction_init_script</strong>"
+    won't run.<br>
+    <br>
+    <u><strong>/usr/bin/LoudnessCorrection.py</strong></u><br>
+    <br>
+    This is the main program of FreeLCS. It is the one that processes all files
+    dropped into HotFolder.<br>
+    <strong><br>
+      <u>/usr/bin/HeartBeat_Checker.py</u></strong><u>&nbsp;</u>&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; <br>
+    &nbsp;<br>
+    This program is started only if you selected it in the installer. It
+    monitors the health of the LoudnessCorrection - program and sends email if
+    LoudnessCorrection crashes.<br>
+    <br>
+    <strong><u>/etc/LoudnessCorrection_Settings.pickle</u><br>
+      <br>
+    </strong>The settings that you defined when running the installer are stored
+    in this file. LoudnessCorrection.py and HeartBeat_Checker.py both read their
+    settings from this file when they are starting up.<br>
+    <br>
+    <u><strong>/etc/samba/smb.conf</strong></u><br>
+    <br>
+    This is the configuration file for the samba server that shares the
+    HotFolder to the network. Hotfolder is shared to the network only if you
+    selected "<strong>Share HotFolder to the network with samba</strong>"&nbsp;
+    =&nbsp; "<strong>yes</strong>" in the installer.<br>
+    <br>
+    <br>
+    <br>
+    <h2> <a id="Usage">Usage</a></h2>
+    FreeLCS usage is very simple.
+    <ol>
+      <li>First you mount FreeLCS HotFolder through the network. </li>
+      <li>Then you drag some files to the HotFolder .</li>
+      <li>A couple of minutes later you can drag loudness corrected files back
+        from "<strong>HotFolder / 00-Corrected_Files</strong>" to you computer .</li>
+    </ol>
+    <br>
+    Mounting of the HotFolder is explained in it's own chapter.<br>
+    <br>
+    <ul>
+      <li>When you mount the HotFolder your operating system automatically opens
+        a window that shows the contents of the HotFolder. The examples below
+        are from Mac OS X, but the same principles apply to all operating
+        systems.</li>
+      <li>The root of HotFolder is where you drag files you want to be loudness
+        corrected.</li>
+      <li>Inside the root - folder there are two other folders: "<strong>00-Corrected_Files</strong>"
+        is where corrected files and loudness calculation history graphics
+        appear. The folder "<strong>00-Calculation_Queue_Information</strong>"
+        is used to store two files that normally aren't of interest to normal
+        users. The first one is "<strong>00-Calculation_Queue_Information.html</strong>".
+        That is an html-file that can be opened in a web-browser. The page is
+        updated oevery 5 seconds and it shows how many files are waiting to be
+        processed, which files are currently worked upon and so on. The second
+        file that is stored in this folder is "<strong>00-HeartBeat.pickle</strong>".
+        LoudnessCorrection writes periodically timestamps and other information
+        in this file and HeartBeat_Checker.py monitors this file. If information
+        in the file stops updating then LoudnessCorrection has crashed and
+        HeartBeat_Checker sends email to the admin.<br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Usage-01.jpg"><br>
+    </p>
+    <ul>
+      <li>For normal users the only folders of interest are the root of the
+        HotFolder and the "<strong>HotFolder / 00-Corrected_Files</strong>".</li>
+      <li>To process a file drag it in the root of the HotFolder.<br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Usage-02.jpg"><br>
+    </p>
+    <br>
+    <ul>
+      <li>The file will be copied over the network to the FreeLCS - server.<br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Usage-03.jpg"><br>
+    </p>
+    <ul>
+      <li>When the file is copied over navigate to "<strong>00-Corrected_Files</strong>".<br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Usage-04.jpg"><br>
+    </p>
+    <ul>
+      <li>In a while files start to appear there. The first file will be the
+        loudness calculation history graphics file and some time after that the
+        loudness corrected sound file appears. Drag the corrected sound files
+        back to your computer. Each corrected file will have the string&nbsp;
+        "_-23_LUFS" added at the end of its name.</li>
+      <li>All files in the root of the "<strong>HotFolder</strong>" and&nbsp; "<strong>00-Corrected_Files</strong>"
+        will be automatically deleted after a time period that you defined in
+        the installer program. By default it is 8 hours.<br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
+    <p><br>
+    </p>
+    <h2><a id="Loudness History Graphics">Loudness History Graphics</a><br>
+    </h2>
+    <ul>
+      <li>A loudness history graphics file shows loudness variations and other
+        loudness calculation results for the original uncorrected file.</li>
+      <li>The brown line shows the short-term loudness, it shows how loudness
+        varies across time in the file.<br>
+      </li>
+      <li>The bright green horizontal line shows the EBU R128 target level that
+        is -23 on the LUFS scale (0 LU also means -23 LUFS).</li>
+      <li>The dark green horizontal line shows the integrated loudness of your
+        file. It averages the loudness across the length of your whole file into
+        a single number. This is the loudness of the file and for it to be at
+        the target level according to the EBU R128 standard it must be -23 LUFS.</li>
+      <li>All files will be loudness corrected to have integrated loudness of
+        -23 LUFS.<br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/01A.wav-Loudness_Results_Graphics.jpg"><br>
+    </p>
+    <br>
+    <br>
+    <h2> <a id="Mounting the server HotFolder from OS X">Mounting the server
+        HotFolder from OS X</a></h2>
+    <br>
+    <ul>
+      <li>First click an empty spot on your desktop, this activates the Finder -
+        program.</li>
+      <li>The keyboard shortcut to bring up the "Connect to Server" - window is
+        <strong>cmd + k</strong>, so keep the cmd pressed and press k.</li>
+      <li>Now you need to have your servers ip-address. Write "<strong>smb://your
+          servers ip address</strong>" in the prompt and press "Connect".<br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Mounting_From_OS_X-01.jpg"><br>
+    </p>
+    <ul>
+      <li>The next window lets you choose between logging in anonymously or as a
+        registered user. The network share on the FreeLCS - server is configured
+        to accept only anonymous logins. So don't write in any username or
+        password, just click "<strong>Guest</strong>".<br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Mounting_From_OS_X-02.jpg"><br>
+    </p>
+    <ul>
+      <li>Now the window changes and looks like the one below. Click "<strong>Connect</strong>".<br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Mounting_From_OS_X-03.jpg"><br>
+    </p>
+    <ul>
+      <li>The FreeLCS network share is mounted and Finder opens an window
+        showing the contents of the HotFolder. Now you can start using the
+        server :) </li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Mounting_From_OS_X-04.jpg"></p>
+    <p><br>
+    </p>
+    <h2><a id="Making an permanent alias to the HotFolder in OS X">Making an
+        permanent alias to the HotFolder in OS X</a></h2>
+    <p>When you have mounted the HotFolder you can make an alias that stays on
+      your desktop. You can then skip all the steps above and mount the
+      HotFolder just by double clicking on the alias.</p>
+    <ul>
+      <li>First you must have mounted the HotFolder.</li>
+      <li>Open an Finder - window and scroll to the bottom of the device list on
+        the left panel. You should see an entry there that has the name of your
+        computer, by default it is "admin's Mac". Click on it.</li>
+      <li>Now you should see all mounted devices in the Finder window and "<strong>LoudnessCorrection</strong>"
+        should be among them. Start dragging "LoudnessCorrection" out of the
+        finder window to the desktop and before you let go of the mouse button
+        press and hold <strong>cmd</strong> and <strong>alt</strong> -
+        buttons. You should see a curved arrow on top of the LoudnessCorrection
+        - icon. Keep pressing cmd and alt and let go of the mouse button.</li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Mounting_From_OS_X-05.jpg"><br>
+    </p>
+    <ul>
+      <li>Now on your desktop there should be an "LoudnessCorrection" - icon
+        with a curved arrow on top of it. An icon like this is called an alias.<br>
+      </li>
+      <li>From now on you can mount the LoudnessCorrection HotFolder just by
+        double clicking on the alias.<br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Mounting_From_OS_X-07.jpg"><br>
+    </p>
+    <p><br>
+    </p>
+    <p><br>
+    </p>
+    <h2><a id="Mounting the server HotFolder from windows 7">Mounting the server
+        HotFolder from windows 7</a><br>
+    </h2>
+    <br>
+    <ul>
+      <li>Click on the "<strong>Start</strong>" - button and click on the
+        entrybox on the bottom of the window.<br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Mounting_From_windows-01.jpg"><br>
+    </p>
+    <br>
+    <ul>
+      <li>Write the address of the server into the entrybox. The address
+        must&nbsp; have two backward slashes at the begging of it and the
+        address must end with the mount name "\LoudnessCorrection" (See picture
+        below). Press enter.<br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Mounting_From_windows-02.jpg"><br>
+    </p>
+    <br>
+    <ul>
+      <li>Windows mounts the HotFolder of the server and opens it in a file
+        explorer window. Now you can start using the server :) </li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Mounting_From_windows-03.jpg"><br>
+    </p>
+    <br>
+    <br>
+    <br>
+    <h2><a id="Making the mount permanent in windows 7">Making the mount
+        permanent in windows 7</a><br>
+    </h2>
+    You can tell windows that you want the HotFolder always to be mounted when
+    the computer starts up.<br>
+    <br>
+    <ul>
+      <li>Open windows file explorer,&nbsp; click on "Computer". Now some new
+        options appear on the upper part of the window. Click "<strong>Map
+          network drive</strong>".<br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Mounting_From_windows-05.jpg"><br>
+    </p>
+    <br>
+    <ul>
+      <li>The next window offers a free drive letter to assign permanently to
+        the drive. In our example windows offered the letter Z:</li>
+      <li>Write the address of the server in the window. The address must start
+        with two backward slashes and end with "\LoudnessCorrection". Make sure
+        that the option "<strong>Reconnect at logon</strong>" is tagged, without
+        it windows won't make the mount when windows starts up. Click "Finnish".<br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img longdesc="Pictures/Mounting_From_windows-08.jpg" alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Mounting_From_windows-07.jpg"><br>
+    </p>
+    <br>
+    <br>
+    <ul>
+      <li>Windows mounts the HotFolder of the server and opens it in a file
+        explorer window.<br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Mounting_From_windows-08.jpg"><br>
+    </p>
+    <br>
+    <br>
+    <h2> <a id="Html Progress report">Html Progress Report</a><br>
+    </h2>
+    <br>
+    If you selected "<strong>Write html progress report</strong>" = "<strong>yes</strong>"
+    in the installer then an html file will appear in "<strong>HotFolder /
+      00-Calculation_Queue_Information / 00-Calculation_Queue_Information.html</strong>".
+    This file can be opend in an web-browser and it shows an view inside the
+    loudness calculation queue. The html progress report is updated every 5
+    seconds and it shows how many files are waiting for a processing slot to
+    open, what files are currently processed and the names of 100 last files
+    that were processed and the time processing was finished.<br>
+    <br>
+    The upper part of the window shows the names of next 10 first files that are
+    coming in for processing and above that the total number of files waiting in
+    queue is shown. Date and time are also shown and updated every 5 seconds so
+    you can easily check that the server is up and running.<br>
+    <br>
+    The middle gray part shows the names of files that are currently being
+    processed. The number of files that are simultaneously processed depends on
+    what you selected as the "<strong>Number Of Processor Cores To Use</strong>"
+    in the installer. Each file is simultaneously processed by two processor
+    cores so if you selected six cores to be used, then three files can be
+    processed at the same time (as in the example picture below).<br>
+    <br>
+    The bottom of the page shows the last 100 files that were processed.<br>
+    <br>
+    <img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Html_Progress_Report.jpg"><br>
+    <br>
+    <br>
+    <br>
+    <h2> <a id="Static ip - address for the server">Static ip - address for the
+        server</a></h2>
+    <br>
+    The server needs to have an address that does not change. You network
+    administrator can give you an static ip-address to use.<br>
+    <br>
+    <ul>
+      <li>Click on the double arrow on the top right corner of Ubuntu's desktop,
+        select "<strong>Edit Connections</strong>".<br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Static_ip-01.jpg"><br>
+    </p>
+    <br>
+    <br>
+    <ul>
+      <li>Click on tab "<strong>Wired</strong>" and activate the "<strong>Wired
+          connection 1</strong>" by clicking on it and click "<strong>Edit</strong>".<br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Static_ip-02.jpg"><br>
+    </p>
+    <br>
+    <br>
+    <ul>
+      <li>Click the "<strong>IPv4 Settings</strong>" - tab and then the text "<strong>Automatic
+          (DHCP)</strong>".<br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Static_ip-03.jpg"><br>
+    </p>
+    <br>
+    <br>
+    <ul>
+      <li>Select "<strong>Manual</strong>" from the drop down list.<br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Static_ip-04.jpg"><br>
+    </p>
+    <br>
+    <br>
+    <ul>
+      <li>Click "<strong>Add</strong>" and type in the details of your network
+        connection. You need to know the following information which the network
+        admin will be able to give you.<br>
+      </li>
+      <ul>
+        <li>The static address for the server</li>
+        <li>Network mask</li>
+        <li>The ip-address of the gateway machine. All traffic from your network
+          to internet goes through this gateway machine.<br>
+        </li>
+        <li>The ip-addresses of your network name servers (DNS).</li>
+      </ul>
+    </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Static_ip-05.jpg"><br>
+    </p>
+    <br>
+    <br>
+    <h2><a id=" Optimizing processing speed"> Optimizing processing speed</a></h2>
+    <br>
+    If you have a fast enough processor, for example 1 x Intel Core 2 Duo, then
+    the processor is able to process files much quicker than a single hard disk
+    is able to serve it. When multiple files are processed at the same time,
+    there will be lots of reading and writing going on and the speed of the disk
+    becomes the bottleneck of the system. You can get more speed out of you
+    system by setting up three disks in a raid 0 array and putting the HotFolder
+    onto the raid.<br>
+    <br>
+    The other thing that affects processing speed is the setting "<strong>Number
+      Of Processor Cores To Use</strong>" in the installer. Each file that is
+    processed ties up two processor cores, but if you have a fast disk and a
+    hyper-threading capable processor, you might get more speed by setting the
+    "Number Of Processor Cores To Use" to a bigger number than you have actual
+    physical processor cores.<br>
+    <br>
+    After you have set up raid you can find the sweet spot of your system by
+    doing a simple test.<br>
+    <br>
+    First collect a bunch of typical files that the server is going to process
+    when doing real work. The total size of the files should at minimum be
+    double the size of ram you have in your server, but more is better. Save the
+    files on the server, but don't put them in the HotFolder yet.<br>
+    <br>
+    <ol>
+      <li>Delete all files from the HotFolder.<br>
+      </li>
+      <li>Run the FreeLCS installer and set the "<strong>Number Of Processor
+          Cores To Use</strong>" to the number of physical processor cores you
+        have and reboot.</li>
+      <li>Wait for two minutes after the computer has booted up so that
+        LoudnessCorrection has time to start also. (There is a deliberate 90
+        second delay before LoudnessCorrection is started up).</li>
+      <li>Open the html-progress report in your web-browser and see that the
+        time there is advancing. If not then LoudnessCorrection is not yet
+        running.<br>
+      </li>
+      <li>Make a copy of the test files to the HotFolder by creating hard links
+        for the files in the HotFolder. This makes the files appear instantly in
+        the HotFolder.<br>
+      </li>
+    </ol>
+    <blockquote>
+      <blockquote><strong>date&nbsp; ;&nbsp; ln&nbsp;&nbsp;
+          /path_to_test_files/*&nbsp;&nbsp; /path_to_hotfolder/</strong></blockquote>
+    </blockquote>
+    <ol>
+    </ol>
+    <ol>
+      <li>This command displays the current time which also is the time files
+        were linked to the HotFolder, take note of the time.</li>
+      <li>Wait for processing to finish and take a look at the html-progress
+        report and see the time the last files processing finished.</li>
+      <li>Calculate the time it took.</li>
+      <li>Repeat the process from step 1, but add two to the "<strong>Number Of
+          Processor Cores To Use</strong>" in the installer.</li>
+    </ol>
+    <p>You should find the fastest processing time in 2 - 4 rounds of the test.</p>
+    <p><br>
+      Our test server sweet spot is to use six cores even though there is only
+      two. Our test server specs are:<br>
+      <br>
+      1 x Intel Core 2 Duo Processor<br>
+      2 GB Ram<br>
+      1 TB hard disk for Ubuntu<br>
+      3 x 1 TB hard disks in a software raid 0 array for the "HotFolder".<br>
+      1 Gbit Ethernet</p>
+    <br>
+    The speed test results for our test server were:<br>
+    <br>
+    <ul>
+      <li>Use 2 Cores: 20 minutes 11 seconds</li>
+      <li>Use 4 Cores: 14 minutes 10 seconds</li>
+      <li>Use 6 Cores: 13 minutes 09 seconds</li>
+    </ul>
+    <p><br>
+    </p>
+    <p>With more than 6 cores the processing time started to increase rapidly.<br>
+    </p>
+    <br>
+    <h2> <a id="Configuring software Raid">Configuring software Raid</a></h2>
+    <br>
+    Linux software raid configuration is a bit out of the scope of this document
+    and I don't have much experience with it :) Here are the steps that were
+    required to get our server's raid set up. The steps I followed were mostly
+    from here: <a href="http://www.linuxhomenetworking.com/wiki/index.php/Quick_HOWTO_:_Ch26_:_Linux_Software_RAID">http://www.linuxhomenetworking.com/wiki/index.php/Quick_HOWTO_:_Ch26_:_Linux_Software_RAID</a><br>
+    <br>
+    <br>
+    Warning !!!!!!!&nbsp; Linux knowledge is required here. If you are not
+    careful these commands can mess up your system&nbsp; :)<br>
+    <br>
+    <ul>
+      <li>Install 3 Sata disks in the computer. Ubuntu gave our disks
+        device-names: <strong>sdb, sdc , sdd.<br>
+        </strong></li>
+      <li>Get root-permissions with the command: <strong>sudo su</strong><br>
+      </li>
+      <li>Partition each disk as type: <strong>Primary</strong>, &nbsp; <strong>fd
+          (Linux raid autodetect)</strong>.</li>
+      <li>Install Linux raid software: <strong>apt-get install mdadm</strong></li>
+      <li>Create a raid 0 device from the three disks: <strong>mdadm --verbose
+          --create /dev/md0 --level=0 --raid-devices=3 /dev/sdb1 /dev/sdc1
+          /dev/sdd1</strong></li>
+      <li>If mdadm complains that: "Device Or Resource Busy", then mdadm may
+        already be using some of the disks and you need to tell it not to. The
+        command: <strong>cat /proc/mdstat</strong>&nbsp; lists raid-devices,
+        stop them with the command (device name is md127 in the example, check
+        the real device name from the output of: cat /proc/mdstat): <strong>mdadm
+          --stop /dev/md127</strong>&nbsp;&nbsp;&nbsp; now try creating the
+        raid-device again with the command on the previous line.</li>
+      <li>When raid-device creation succeeds without error messages, format the
+        raid device with the JFS filesystem: <strong>mkfs.jfs /dev/md0</strong></li>
+      <li>Now the raid device exists, but Linux forgets about it in the next
+        boot unless we tell it to configure it again when booting up. The next
+        commands will save the configuration:</li>
+    </ul>
+    <blockquote>
+      <blockquote>
+        <p><strong>cd /etc/mdadm</strong></p>
+        <p><strong>mv mdadm.conf mdadm.conf.orig</strong></p>
+        <p><strong>echo "DEVICE partitions" &gt; /etc/mdadm/mdadm.conf</strong></p>
+        <p><strong>mdadm --detail --scan &gt;&gt; /etc/mdadm/mdadm.conf</strong></p>
+      </blockquote>
+    </blockquote>
+    <ul>
+      <li>Next make a directory for mounting the raid:<strong> mkdir&nbsp;
+          /mountpoint/raid-disk</strong>&nbsp;&nbsp;&nbsp; and make it readable
+        and writable for everyone:<strong> chmod -R 777 &nbsp;</strong><strong>
+          /mountpoint</strong></li>
+      <li>Add the device to your /etc/fstab so that it gets automatically
+        mounted next time the computer starts up. Add the following line in <strong>
+          /etc/fstab</strong>: <br>
+      </li>
+    </ul>
+    <blockquote>
+      <blockquote>
+        <p><strong>/dev/md0 &nbsp;&nbsp; /mountpoint/raid-disk &nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp; auto&nbsp;&nbsp;&nbsp; defaults&nbsp;&nbsp;&nbsp;
+            0 0</strong></p>
+      </blockquote>
+    </blockquote>
+    <ul>
+      <li>Now reboot the machine and if the raid-disk was successfully mounted
+        then make the directory structure on the raid-device readable and
+        writable for everyone: <strong>chmod -R 777 &nbsp;</strong><strong>
+          /mountpoint</strong></li>
+      <li>In case of trouble this command tells about active raid-devices and
+        disks that belong to them (check that the name of the active raid
+        matches the name used on the /etc/fstab): <strong>cat /proc/mdstat</strong></li>
+    </ul>
+    <br>
+    <h2> <a id="Notes on loudness correction usage">Notes on loudness
+        correction usage</a></h2>
+    <ul>
+      <li>Never process audio channels from the same mix separately from each
+        other. Processing left and right channels of a stereo mix separately
+        results in loudness being 3 dBs too high. All audio channels of a mix
+        must be in the same file or audiostream of a file.</li>
+      <li>Silence does not affect loudness calculation. You can cut off silence
+        after loudness correction without affecting the integrated loudness of a
+        file.<br>
+      </li>
+      <li>It might sometimes be useful to 'normalize' raw material early in the
+        video editing phase of a project. You might have a project that is made
+        up of several independent parts that need to be loudness corrected
+        separately. An example of this might be a program where a studio host
+        talks and plays cartoons for kids. The studio sections of the program
+        and each cartoon will have different loudness characteristics.&nbsp;
+        After you have loudness corrected each section separately there might
+        not be any need for audio post production anymore.<br>
+      </li>
+      <li>Loudness correction does not touch the internal dynamics of a file. If
+        you have too wide loudness variations they will be there after loudness
+        correction too. Correction only adjusts the 'main level' of a file. If
+        integrated loudness of a file is -19 LUFS, loudness correction will make
+        all parts of the file 4 dBs quieter and relative loudness variations
+        inside the file will remain the same. This is how EBU R128 standard is
+        designed to work, you can still have loud and soft parts in your mix,
+        but it is your responsibility to use them wisely :)<br>
+      </li>
+      <li>FFmpeg seems to support MXF - files also, but processing these might
+        be problematic. Inside an MXF - file audio channels of a mix might be
+        stored together in one file or separately and loudness correction has no
+        way of knowing what is the case.<br>
+      </li>
+    </ul>
+    <br>
+    <br>
+    <h2><a id="Setting up automatic security updates">Setting up automatic
+        security updates</a></h2>
+    <br>
+    The server can be made quite maintenance free by:<br>
+    <br>
+    <ul>
+      <li>Making the server boot automatically after an power outage.</li>
+      <li>Making the server install all security updates automatically.</li>
+      <li>Making the server automatically reboot weekly so that all security
+        updates are applied.<br>
+      </li>
+    </ul>
+    <br>
+    To make the server boot automatically after an power outage you need to find
+    an option in the computers <strong>bios</strong> that says something like:
+    "Restart after power failure".<br>
+    <br>
+    <ul>
+      <li>Then tell Ubuntu to install security updates without human
+        intervention.</li>
+      <li>Press the "windows" key on the keyboard to bring up Ubuntu search
+        function, write: <strong>update</strong></li>
+      <li>You should now see an icon for "Update Manager", start it up by
+        clicking on it.<br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Automatic_Updates-01.jpg"><br>
+    </p>
+    <br>
+    <br>
+    <ul>
+      <li>Click on "<strong>Settings</strong>".<br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Automatic_Updates-02.jpg"><br>
+    </p>
+    <br>
+    <br>
+    <ul>
+      <li>Click on the "<strong>Updates</strong>" - tab and then on the box "<strong>When
+          there are security updates:</strong>".<br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Automatic_Updates-03.jpg"><br>
+    </p>
+    <br>
+    <br>
+    <ul>
+      <li>Select "<strong>Download and install automatically</strong>".<br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Automatic_Updates-04.jpg"><br>
+    </p>
+    <p><br>
+    </p>
+    <ul>
+      <li>Ubuntu asks for your password.<br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Automatic_Updates-05.jpg"><br>
+    </p>
+    <p><br>
+    </p>
+    <ul>
+      <li>Click on "<strong>Close</strong>".<br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="file:///home/mika/FreeLCS/Documentation/Pictures/Automatic_Updates-07.jpg"><br>
+    </p>
+    <p><br>
+    </p>
+    <p><br>
+    </p>
+    <p>Now security updates are downloaded and installed automatically. Some of
+      them are applied immediately but some of them (new versions of the Linux
+      kernel) may come into effect only after a reboot.</p>
+    <ul>
+      <li>Next we need to make the computer restart automatically once a week. A
+        good time to reboot might be for example:<strong> every monday morning
+          at 07:00 am</strong>.</li>
+      <li>Crontab can be used to run commands at preset times.</li>
+      <li>Open a terminal an write in the commands (asks for root password):</li>
+    </ul>
+    <blockquote>
+      <blockquote>
+        <p><strong>sudo crontab -e</strong></p>
+      </blockquote>
+    </blockquote>
+    <p>Ubuntu will prompt:</p>
+    <blockquote>
+      <blockquote>
+        <p>no crontab for root - using an empty one<br>
+          <br>
+          Select an editor.&nbsp; To change later, run 'select-editor'.<br>
+          &nbsp; 1. /bin/ed<br>
+          &nbsp; 2. /bin/nano&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;----
+          easiest<br>
+          &nbsp; 3. /usr/bin/vim.basic<br>
+          &nbsp; 4. /usr/bin/vim.tiny<br>
+          <br>
+          Choose 1-4 [2]:</p>
+      </blockquote>
+    </blockquote>
+    <p>Ubuntu wants to know which text based text editor you would like to use
+      to edit the crontab, press "2". This will select the "nano" - editor.<br>
+    </p>
+    <p>Now the text editor opens up and shows some text that was automatically
+      inserted into the crontab, navigate to the bottom of it and add the
+      following line:<br>
+    </p>
+    <br>
+    <blockquote>
+      <blockquote><strong>00 07 * * 1 /sbin/reboot</strong><br>
+      </blockquote>
+    </blockquote>
+    <br>
+    This command will reboot the computer every monday at 07:00 am. Save the
+    crontab with keyboard command <strong>ctrl + o</strong>, then press enter
+    to accept the filename. Now that text is saved, exit the editor with
+    keyboard command <strong>ctrl + x</strong>. The crontab comes into effect
+    immediately.<br>
+    <br>
+    The fields in the crontab command line mean (from left to right) (text
+    copied from crontab man page):<br>
+    <br>
+    <u><strong>Field</strong></u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <u><strong>Allowed Values</strong></u><br>
+    <br>
+    Minutes&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    0-59<br>
+    Hours&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    0-23<br>
+    Day of month&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1-31<br>
+    Month&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    1-12<br>
+    Day of week&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0-7 (0 or
+    7 is Sun)<br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+  </body>
+</html>
