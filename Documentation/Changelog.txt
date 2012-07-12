@@ -1,3 +1,9 @@
+LoudnessCorrection Version 152
+-------------------------------
+- Bugfix: Introduced a bug a couple of versions ago when increased the maximum number of audiostreams that are extracted from a file from 8 to unlimited. The bug caused the program to crash when it was processing mp3 - files.
+- Bugfix: File duration was displayed incorrectly in the loudness history graphics file if duration was exactly 10 seconds.
+- Loudness history graphics display is calculated with 0.5 sec resolution if file duration is under 12 seconds (was previously for files less than 10 seconds). Resolution for longer files is 3 seconds.
+
 Documentation
 --------------
 - Added documentation for FreeLCS 1.0 :)

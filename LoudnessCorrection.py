@@ -34,12 +34,12 @@ import email.mime.multipart
 import pickle
 import math
 
-version = '151'
+version = '152'
 
-###################################################################################################################################################################################
-# All setting default values are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
-# These values are used if the script is run without giving an settings file as an argument.                                                                                      #
-###################################################################################################################################################################################
+########################################################################################################################################################################################
+# All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
+# These values are used if the script is run without giving an settings file as an argument. Values read from the settingsfile override these default settings.                        #
+########################################################################################################################################################################################
 #
 # If you change debug to 'True' the script will print out contents of all mission critical lists and dictionaries once a minute.
 # It will also print out values that are read from the configfile and transferred to local variables.
@@ -311,16 +311,17 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 		difference_from_target_loudness_string = str(difference_from_target_loudness) # The loudness difference from target loudness is negative, just create a string with the negative result number in it.
 
 	# Scale loudness graphics x-axis time information according to file duration.
-	# Loudness calculation is done in 3 second slices when audio duration is 10 seconds or longer.
-	# If duration is 9 seconds or shorter slices are 0.5 seconds each.
+	# Loudness calculation is done in 3 second slices when audio duration is 12 seconds or longer.
+	# If file duration is shorter than 12 seconds then slices are 0.5 seconds each.
 	audio_duration_rounded_to_seconds = int(number_of_timeslices * float(time_slice_duration_string))
-	# File duration is 9 seconds or shorter. Time slices are 0.5 seconds each.
-	if audio_duration_rounded_to_seconds <= 10:
+		
+	# If file duration is shorter than 12 seconds. Time slices are 0.5 seconds each.
+	if audio_duration_rounded_to_seconds < 12:
 		plotfile_x_axis_divider = 2 # Define how many time slices there are between each printed x-axis time number.
 		plotfile_x_axis_time = 1 # Define the steps of increasing x-axis time numbers.
 		plotfile_x_axis_name = 'Seconds' * english + 'Sekunnit' * finnish
 	# File duration is 10 seconds or longer. Time slices are 3 seconds each.
-	if (audio_duration_rounded_to_seconds > 10) and (audio_duration_rounded_to_seconds <= 60): # File duration is between 10 seconds and 1 minute.
+	if (audio_duration_rounded_to_seconds >= 12) and (audio_duration_rounded_to_seconds <= 60): # File duration is between 10 seconds and 1 minute.
 		plotfile_x_axis_divider = 1 # Define how many time slices there are between each printed x-axis time number.
 		plotfile_x_axis_time = 3 # Define the steps of increasing x-axis time numbers.
 		plotfile_x_axis_name = 'Seconds' * english + 'Sekunnit' * finnish # X-axis time name (seconds / minutes hours).
@@ -376,7 +377,7 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 				plotfile_x_axis_time_information.append(', ')
 		plotfile_x_axis_time_information.append(')')
 		plotfile_x_axis_time_information = ''.join(plotfile_x_axis_time_information)
-
+	
 	# Generate gnuplot commands needed for plotting the graphicsfile and store them in a list.
 	if (integrated_loudness_calculation_error == True) or (timeslice_calculation_error == True):
 		# Loudness calculation encountered an error, generate gnuplot commands for plotting default graphics with the error message.
@@ -728,13 +729,18 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 		# Create names for audio streams found in the file.
 		# First parse the number of audio channels in each stream ffmpeg reported and put it in a variable.
 		number_of_audio_channels = '0'
-		number_of_audio_channels_as_text = str(details_of_ffmpeg_supported_audiostreams).split(',')[2].strip() # FFmpeg reportsaudio channel count as a string.
+		number_of_audio_channels_as_text = str(details_of_ffmpeg_supported_audiostreams).split(',')[2].strip() # FFmpeg reports audio channel count as a string.
 		
 		# Split audio channel count to a list ('2 channels' becomes ['2', 'channels']
 		number_of_audio_channels_as_text_split_to_a_list = number_of_audio_channels_as_text.split()
+		
 		# If the first item in the list is an integer bigger that 0 use it as the channel count.
-		if int(number_of_audio_channels_as_text_split_to_a_list[0]) > 0:
-			number_of_audio_channels = number_of_audio_channels_as_text_split_to_a_list[0]
+		# If the conversion from string to int raises an error, then the item is not a number, but a string like 'stereo'.
+		try:
+			if int(number_of_audio_channels_as_text_split_to_a_list[0]) > 0:
+				number_of_audio_channels = str(number_of_audio_channels_as_text_split_to_a_list[0])
+		except ValueError:
+			pass
 	
 		# FFmpeg sometimes reports some channel counts differently. Test for these cases and convert the channel count to an simple number.
 		if number_of_audio_channels_as_text == 'mono':
@@ -743,6 +749,10 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 			number_of_audio_channels = '2'
 		if number_of_audio_channels_as_text == '5.1':
 			number_of_audio_channels = '6'
+		
+		if number_of_audio_channels == '0':
+			error_message = 'ERROR !!! I could not parse FFmpeg channel count string: ' * english + 'VIRHE !!! En osannut tulkita ffmpeg:in antamaa kanavien lukumäärää: ' * finnish + '\'' + str(number_of_audio_channels_as_text_split_to_a_list[0]) + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
+			send_error_messages_to_screen_logfile_email(error_message)
 		
 		# Compile the name of the audiostream to an list of all audio stream filenames.
 		target_filenames.append(filename_and_extension[0] + '-AudioStream-' + str(counter + 1) + '-AudioChannels-' * english + '-AaniKanavia-' * finnish  + number_of_audio_channels + '.' + ffmpeg_output_format)
@@ -1544,6 +1554,14 @@ if debug == True:
 # If degub = True the script will print out variable values read from the configfile.
 if debug == True:
 	debug_variables_read_from_configfile()
+	
+# Print version information to screen
+if silent == False:
+	print()
+	version_string_to_print = 'LoudnessCorrection version ' + version
+	print(version_string_to_print)
+	print('-' * (len(version_string_to_print) + 1))
+	print()
 
 #################
 # The main loop #
@@ -1704,7 +1722,7 @@ while True:
 			time_file_was_first_seen = old_hotfolder_filelist_dict[filename][1] # Get the time the file was first seen from the previous directory poll dictionary.				
 			file_format_support_information = old_hotfolder_filelist_dict[filename][2] # Get other file information that was gathered during the last poll.
 
-			# If filesize is zero and it has not changed in 1,5 hours (5400 seconds), stop waiting and remove filename from list_of_growing_files.
+			# If filesize is still zero and it has not changed in 1,5 hours (5400 seconds), stop waiting and remove filename from list_of_growing_files.
 			# (int(time.time()) - old_hotfolder_filelist_dict[filename][1] > file_expiry_time)
 			if (filename in list_of_growing_files) and (new_filesize == 0) and (int(time.time()) >= (time_file_was_first_seen + 5400)):
 				list_of_growing_files.remove(filename)
@@ -1800,10 +1818,10 @@ while True:
 							send_error_messages_to_screen_logfile_email(error_message)
 							create_gnuplot_commands_for_error_message(error_message, filename, directory_for_temporary_files, directory_for_results, english, finnish)
 							unsupported_ignored_files_dict[filename] = int(time.time())
-						# The time slice value used in loudness calculation is normally 3 seconds. When we calculate short files <=9 seconds, it's more convenient to use a smaller value of 0.5 seconds to get more detailed loudness graphics.
-						if  (audio_duration_rounded_to_seconds > 0) and (audio_duration_rounded_to_seconds < 10):
+						# The time slice value used in loudness calculation is normally 3 seconds. When we calculate short files <12 seconds, it's more convenient to use a smaller value of 0.5 seconds to get more detailed loudness graphics.
+						if  (audio_duration_rounded_to_seconds > 0) and (audio_duration_rounded_to_seconds < 12):
 							time_slice_duration_string = '0.5'
-						if  audio_duration_rounded_to_seconds >= 10:
+						if  audio_duration_rounded_to_seconds >= 12:
 							time_slice_duration_string = '3'
 						
 						# If ffmpeg finds audiostreams in the file, queue it for loudness calculation and print message to user.
