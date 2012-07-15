@@ -1,3 +1,7 @@
+Documentation
+--------------
+- Added some clarifications to the manual about what happens to the files when they are processed.
+
 LoudnessCorrection Version 153
 -------------------------------
 - Bugfix: If there were several audiostreams in a file, then the channel count string in the extracted files name was incorrect.

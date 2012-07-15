@@ -15,6 +15,8 @@
     <h3> <a href="#Files%20that%20FreeLCS%20creates%20in%20your%20system">Files
         that FreeLCS creates in your system</a></h3>
     <h3> <a href="#Usage">Usage</a></h3>
+    <h3><a href="#How%20files%20are%20processed">How files are processed</a><br>
+    </h3>
     <h3> <a href="#Loudness%20History%20Graphics">Loudness History Graphics</a></h3>
     <h3> <a href="#Mounting%20the%20server%20HotFolder%20from%20OS%20X">Mounting
         the server HotFolder from OS X</a></h3>
@@ -518,6 +520,67 @@
     </ul>
     <p><br>
     </p>
+    <h2><a id="How files are processed">How files are processed</a><br>
+    </h2>
+    <p>When you drop in files to the server the following things happen:</p>
+    <ul>
+      <li>First files are searched for audio streams. If some are found then
+        information about them is recored. If no audio is found in a file then
+        an error graphics file is created to inform the user.<br>
+      </li>
+      <li>If the fileformat and channel count are natively supported by
+        libebur128 then the file is sent to loudness calculation. Otherwise
+        audio streams are extracted from the file and losslessly compressed to
+        flac - format. (Flac is used since it compresses losslessly saving disk
+        space and supports very long files (over 4 GB) and channel counts up to
+        8 channels. Saving is also faster than saving in an uncompressed format
+        when there are many channels in the file). After audio stream extraction
+        the original file is no longer needed so it is deleted from the
+        HotFolder. Then the extracted audio streams will be put in the
+        hotfolder.<br>
+      </li>
+      <li>Two simultaneous loudness calculation processes are started for each
+        file. One calculates integrated loudness and searches for the highest
+        peak value in the file (sample peak or TruePeak depending on options
+        selected during installation). As disk reading is usually the bottleneck
+        of the system, doing two calculations on the same file simultaneously
+        speeds up processing. This is due to the fact that the first process
+        reads the file into operating system file cache as it reads through the
+        file and the second process won't have to read the physical disk at all,
+        the data can be read from the very fast file cache in Ram - memory.<br>
+      </li>
+      <li>If loudness of a file is below the target level and needs to be raised
+        and sample peaks would go over our defined max value after this volume
+        increase (-3 dBFS sample peak / -1 dB TruePeak), then a protective
+        limiter is used. Note that limiter is not used in cases where the
+        defined max peak value would not be exceeded after loudness correction.
+        Most of the time people tend to do too hot mixes and loudness needs to
+        be adjusted down and then no limiting is needed.</li>
+      <li>At this point a loudness history graphics file is created.<br>
+      </li>
+      <li>Then a loudness corrected version of the file is created. The loudness
+        is adjusted so that it will be at the target -23 LUFS level. If a
+        protective limiter was used then the resulting highest sample peaks will
+        be at maximum -3 dBFS (if sample peaks were used) and -1 dBFS if
+        TruePeak measurement was used. TruePeak measurement slows down
+        processing by a factor of 4 so use TruePeak metering only if you really
+        need it. When using sample peaks there will always be at least 3 dBs
+        headroom for the true peaks to exist, so it is quite safe to use only
+        sample peaks. No clipping should ever happen even in the worst case
+        scenario.<br>
+      </li>
+      <li>After this the original file and the resulting corrected file and
+        loudness history graphics file are queued for deletion. Deletion happens
+        after a time period that by default is 8 hours.</li>
+      <li>Note that loudness variations inside a file are not touched in any
+        way. Only the "master volume" of a file is adjusted up or down
+        preserving all relative loudness variations. This is how EBU R128
+        standard is designed to work. You can still use loudness variations any
+        way you wish but it is your responsibility to use then wisely :) EBU
+        R128 is designed to eliminate loudness variations between different
+        programs in the transmission.<br>
+      </li>
+    </ul>
     <p><br>
     </p>
     <h2><a id="Loudness History Graphics">Loudness History Graphics</a><br>
