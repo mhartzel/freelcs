@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="en">
+  <head>
+    <title>index</title>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+  </head>
+  <body>
+    <h1>FreeLCS</h1>
+    <br>
+    FreeLCS stands for <strong>Free Loudness Correction Server</strong>. The
+    software lets you easily set up a server that shares one of it's folders to
+    the network where users can drop audio files to be loudness corrected
+    according to the EBU R128 loudness standard. The server also creates a
+    loudness history graphics file which gives visual feedback of the internal
+    loudness variations in a file.<br>
+    <br>
+    The software is very fast even on modest hardware giving 20 times faster
+    than realtime processing on a server with one Intel Core 2 Duo processor, 2
+    GB Ram, 3 internal Sata disks in software RAID 0. <br>
+    <br>
+    FreeLCS uses other open source programs to get the job done (Linux,
+    libebur128, gnuplot, FFmpeg, sox).<br>
+    <br>
+    <h3><strong>News:</strong></h3>
+    <strong>2012.07.08:</strong> First public release of FreeLCS 1.00.<br>
+    <br>
+    <h2> <a id="Features">Features</a></h2>
+    <ul>
+      <li> Calculates loudness according to EBU R128 for files dropped into the
+        HotFolder.</li>
+      <li>For each file it creates an loudness history graphics file which gives
+        visual feedback of the loudness variations in the file.</li>
+      <li>Creates loudness corrected versions of each file dropped in the
+        servers HotFolder.</li>
+      <li>Uses FFmpeg to pre-process files and supports the huge number of file
+        formats FFmpeg supports.<br>
+      </li>
+      <li> Supports files with several audio streams. Each stream is demuxed to
+        a separate file and loudness corrected.</li>
+      <li>Even video files can dropped in for processing. Audio streams are
+        demuxed from the file and processed.<br>
+      </li>
+      <li> Supports channel counts from mono to 5.1.</li>
+      <li> Takes advantage of multiple processor cores to run calculations
+        simultaneously.</li>
+      <li>Uses a protective limiter to prevent clipping in cases where volume
+        must be increased.<br>
+      </li>
+      <li> Automatic file deletion after a set time.</li>
+      <li>Possible error messages are emailed to the admin.</li>
+      <li>All software is free and Open Source.<br>
+      </li>
+      <li>Very easy to use, just drop in your file and copy back the corrected
+        version.</li>
+      <li>Easy to integrate in many workflows.</li>
+      <li>Modest hardware requirements.</li>
+      <li>Written in Python 3.<br>
+      </li>
+    </ul>
+    <br>
+    <img title="Example: Loudness history graphics" src="Pictures/Beethoven-Coriolan_Overture_Op_62.wav-Loudness_Results_Graphics.jpg"><br>
+    <br>
+    <br>
+    <a href="http://sourceforge.net/projects/freelcs/">Click here to go to the
+      download page (User manual is included in the download)</a><br>
+    <br>
+    <a href="FreeLCS_1.0_User_Manual.html">Click here to go to the User manual.</a><br>
+    <br>
+    <br>
+    <br>
+  </body>
+</html>
