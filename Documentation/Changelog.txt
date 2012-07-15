@@ -1,3 +1,11 @@
+LoudnessCorrection Version 153
+-------------------------------
+- Bugfix: If there were several audiostreams in a file, then the channel count string in the extracted files name was incorrect.
+- Bugfix: When setting debug = True, the script crashed due to a critical dictionary not being defined.
+- Bugfix: Audio duration was not correctly extrated from ffmpeg output in some cases.
+- Added the possibility to use libebur128 TruePeak measurement method to find highest peaks. This is 4 times slower than just finding the sample peaks.
+- Protective limiter limits peaks to -4 dBFS when using sample peaks and to -2 dBFS when using TruePeak. In both cases resulting peaks will be about 1 dB higher than the limit.
+
 LoudnessCorrection Version 152
 -------------------------------
 - Bugfix: Introduced a bug a couple of versions ago when increased the maximum number of audiostreams that are extracted from a file from 8 to unlimited. The bug caused the program to crash when it was processing mp3 - files.

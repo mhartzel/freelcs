@@ -34,7 +34,7 @@ import email.mime.multipart
 import pickle
 import math
 
-version = '152'
+version = '153'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -146,11 +146,14 @@ if send_error_messages_to_logfile == True:
 if send_error_messages_by_email == True:
 	where_to_send_error_messages.append('email')
 
+# Should we use absolute sample peak or TruePeak calculation to determine the highest peak in audio. Possible values are: '--peak=sample' and '--peak=true'
+peak_measuring_method = '--peak=sample'
+
 ###############################################################################################################################################################################
 # Default value definitions end here :)                                                                                                                                       #
 ###############################################################################################################################################################################
 
-def calculate_integrated_loudness(event_for_integrated_loudness_calculation, filename, hotfolder_path, libebur128_commands, english, finnish):
+def calculate_integrated_loudness(event_for_integrated_loudness_calculation, filename, hotfolder_path, libebur128_commands_for_integrated_loudness_calculation, english, finnish):
 
 	"""This subroutine uses libebur128 program loudness to calculate integrated loudness, loudness range and difference from target loudness."""
 
@@ -165,12 +168,12 @@ def calculate_integrated_loudness(event_for_integrated_loudness_calculation, fil
 	integrated_loudness_calculation_stdout = ''
 	integrated_loudness_calculation_stderr = ''
 	file_to_process = hotfolder_path + os.sep + filename
-	sample_peak_db = float('-120') # Set default value for sample peak.
+	highest_peak_db = float('-120') # Set default value for sample peak.
 
 	if os.path.exists(file_to_process): # Check if the audio file still exists, user may have deleted it. If True start loudness calculation.
 		# Calculate integrated loudness and loudness range using libebur128 and parse the results from the text output of the program.
-		libebur128_commands.append(file_to_process) # Append the name of the file we are going to process at the end of libebur128 commands.
-		integrated_loudness_calculation_stdout, integrated_loudness_calculation_stderr = subprocess.Popen(libebur128_commands, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate() # Start libebur128.
+		libebur128_commands_for_integrated_loudness_calculation.append(file_to_process) # Append the name of the file we are going to process at the end of libebur128 commands.
+		integrated_loudness_calculation_stdout, integrated_loudness_calculation_stderr = subprocess.Popen(libebur128_commands_for_integrated_loudness_calculation, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate() # Start libebur128.
 		integrated_loudness_calculation_stdout_string = str(integrated_loudness_calculation_stdout.decode('UTF-8')) # Convert libebur128 output from binary to UTF-8 text.
 		integrated_loudness_calculation_stderr_string = str(integrated_loudness_calculation_stderr.decode('UTF-8')) # Convert libebur128 possible error output from binary to UTF-8 text.
 		
@@ -196,15 +199,15 @@ def calculate_integrated_loudness(event_for_integrated_loudness_calculation, fil
 			integrated_loudness_calculation_parsed_results=integrated_loudness_calculation_stdout_string.replace('LUFS', '').replace('LU','').replace(',', '').strip().split()[0:3]
 			integrated_loudness = float(integrated_loudness_calculation_parsed_results[0])
 			loudness_range = float(integrated_loudness_calculation_parsed_results[1])
-			sample_peak_float = float(integrated_loudness_calculation_parsed_results[2])
-			sample_peak_db = round(20 * math.log(sample_peak_float, 10),1)
+			highest_peak_float = float(integrated_loudness_calculation_parsed_results[2])
+			highest_peak_db = round(20 * math.log(highest_peak_float, 10),1)
 			difference_from_target_loudness = round(integrated_loudness - float('-23'), 1)
 			integrated_loudness_calculation_error_message = ''
 			# If integrated loudness measurement is below -70 LUFS, then libebur128 says the measurement is '-inf', which means roughly 'not possible to measure'. Generate error since '-inf' can not be used in calculations.
 			if integrated_loudness == float('-inf'):
 				integrated_loudness_calculation_error = True
 				integrated_loudness_calculation_error_message = 'Measured loudness is too low (below -70 LUFS).'
-		integrated_loudness_calculation_results_list = [integrated_loudness, difference_from_target_loudness, loudness_range, integrated_loudness_calculation_error, integrated_loudness_calculation_error_message, sample_peak_db] # Assign result variables to the list that is going to be read in the other loudness calculation process.
+		integrated_loudness_calculation_results_list = [integrated_loudness, difference_from_target_loudness, loudness_range, integrated_loudness_calculation_error, integrated_loudness_calculation_error_message, highest_peak_db] # Assign result variables to the list that is going to be read in the other loudness calculation process.
 		integrated_loudness_calculation_results[filename] = integrated_loudness_calculation_results_list # Put loudness calculation results in a dictionary along with the filename.		
 	else:
 		# If we get here the file we were supposed to process vanished from disk after the main program started this thread. Print a message to the user.
@@ -215,7 +218,7 @@ def calculate_integrated_loudness(event_for_integrated_loudness_calculation, fil
 	event_for_integrated_loudness_calculation.set()
 	return()
 
-def calculate_loudness_timeslices(filename, hotfolder_path, libebur128_commands, directory_for_temporary_files, directory_for_results, english, finnish):
+def calculate_loudness_timeslices(filename, hotfolder_path, libebur128_commands_for_time_slice_calculation, directory_for_temporary_files, directory_for_results, english, finnish):
 
 	"""This subroutine uses libebur128 loudness-executable to calculate file loudness segmenting the file in time slices and calculating loudness of each slice."""
 
@@ -233,9 +236,9 @@ def calculate_loudness_timeslices(filename, hotfolder_path, libebur128_commands,
 
 	if os.path.exists(file_to_process): # Check if the audio file still exists, user may have deleted it. If True start loudness calculation.
 		# Start time slice loudness calculation.
-		time_slice_duration_string = libebur128_commands[3] # Timeslice for files <10 seconds is 0.5 sec, and 3 sec for files >= 10 sec. Get the timeslice duration.
-		libebur128_commands.append(file_to_process) # Append the name of the file we are going to process at the end of libebur128 commands.
-		timeslice_loudness_calculation_stdout, timeslice_loudness_calculation_stderr = subprocess.Popen(libebur128_commands, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate() # Start libebur128.
+		time_slice_duration_string = libebur128_commands_for_time_slice_calculation[3] # Timeslice for files <10 seconds is 0.5 sec, and 3 sec for files >= 10 sec. Get the timeslice duration.
+		libebur128_commands_for_time_slice_calculation.append(file_to_process) # Append the name of the file we are going to process at the end of libebur128 commands.
+		timeslice_loudness_calculation_stdout, timeslice_loudness_calculation_stderr = subprocess.Popen(libebur128_commands_for_time_slice_calculation, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate() # Start libebur128.
 		timeslice_loudness_calculation_result_list = str(timeslice_loudness_calculation_stdout.decode('UTF-8')).split('\n') # Convert libebur128 output from binary to UTF-8 text, split values in the text by line feeds and insert these individual values in to a list.
 		timeslice_loudness_calculation_stderr_string = str(timeslice_loudness_calculation_stderr.decode('UTF-8')) # Convert libebur128 possible error output from binary to UTF-8 text.
 		
@@ -304,9 +307,15 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 	loudness_range = integrated_loudness_calculation_results_list[2]
 	integrated_loudness_calculation_error = integrated_loudness_calculation_results_list[3]
 	integrated_loudness_calculation_error_message = integrated_loudness_calculation_results_list[4]
-	sample_peak_db = integrated_loudness_calculation_results_list[5]
+	highest_peak_db = integrated_loudness_calculation_results_list[5]
+	# If TruePeak method was used to determine the highest peak, then it can be above 0 dBFS, add a plus sign if this is the case.
+	if highest_peak_db > 0:
+		highest_peak_db_string = '+' + str(highest_peak_db)
+	else:
+		highest_peak_db_string = str(highest_peak_db)
+	# If calculated loudness difference from target -23 LUFS loudness is a positive number, create a string with a plus sign and the difference number in it.
 	if difference_from_target_loudness > 0:
-		difference_from_target_loudness_string = '+' + str(difference_from_target_loudness) # If calculated loudness difference from target -23 LUFS loudness is a positive number, create a string with a plus sign and the difference number in it.
+		difference_from_target_loudness_string = '+' + str(difference_from_target_loudness)
 	else:
 		difference_from_target_loudness_string = str(difference_from_target_loudness) # The loudness difference from target loudness is negative, just create a string with the negative result number in it.
 
@@ -392,12 +401,20 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 			error_message_to_print_with_gnuplot = error_message_to_print_with_gnuplot + timeslice_calculation_error_message + '\\n'
 		create_gnuplot_commands_for_error_message(error_message_to_print_with_gnuplot, filename, directory_for_temporary_files, directory_for_results, english, finnish)		
 	else:
-		# Loudness calculation succeeded. Generate gnuplot commands for plotting the graphics. Put all gnuplot commands in a list.
+		# Loudness calculation succeeded.
+		
+		peak_measurement_string_english = '\\nSample peak: '
+		peak_measurement_string_finnish = '\\nHuipputaso: '
+		if peak_measuring_method == '--peak=true':
+			peak_measurement_string_english = '\\nTruePeak: '
+			peak_measurement_string_finnish = peak_measurement_string_english
+		
+		# Generate gnuplot commands for plotting the graphics. Put all gnuplot commands in a list.
 		gnuplot_commands=['set terminal jpeg size 1280,960 medium font \'arial\'', \
 		'set output ' + '\"' + gnuplot_temporary_output_graphicsfile.replace('"','\\"') + '\"', \
 		'set yrange [ 0 : -60 ] noreverse nowriteback', \
 		'set grid', \
-		'set title ' + '\"\'' + filename.replace('_', ' ').replace('"','\\"') + '\'\\n' + 'Integrated Loudness ' * english + 'Äänekkyystaso ' * finnish + str(integrated_loudness) + ' LUFS\\n ' + difference_from_target_loudness_string + ' dB from target loudness (-23 LUFS)\\nLoudness Range (LRA) ' * english + ' dB:tä tavoitetasosta (-23 LUFS)\\nÄänekkyyden vaihteluväli (LRA) '  * finnish + str(loudness_range) + ' LU' + '\\nSample peak: ' * english + '\\nHuipputaso: ' * finnish + str(sample_peak_db) + ' dBFS' + '\"', \
+		'set title ' + '\"\'' + filename.replace('_', ' ').replace('"','\\"') + '\'\\n' + 'Integrated Loudness ' * english + 'Äänekkyystaso ' * finnish + str(integrated_loudness) + ' LUFS\\n ' + difference_from_target_loudness_string + ' dB from target loudness (-23 LUFS)\\nLoudness Range (LRA) ' * english + ' dB:tä tavoitetasosta (-23 LUFS)\\nÄänekkyyden vaihteluväli (LRA) '  * finnish + str(loudness_range) + ' LU' + peak_measurement_string_english * english + peak_measurement_string_finnish * finnish + highest_peak_db_string + ' dBFS' + '\"', \
 		'set ylabel ' + '\"Loudness (LUFS)\"' * english + '\"Äänekkyystaso (LUFS)\"' *finnish, \
 		plotfile_x_axis_time_information, \
 		'set xlabel \"' + plotfile_x_axis_name + '\"', \
@@ -441,7 +458,7 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 		run_gnuplot(filename, directory_for_temporary_files, directory_for_results, english, finnish)
 
 		# Call a subprocess to create the loudness corrected audio file.
-		create_loudness_adjusted_wav_with_sox(timeslice_calculation_error, difference_from_target_loudness, filename, english, finnish, hotfolder_path, directory_for_results, directory_for_temporary_files, sample_peak_db)
+		create_loudness_adjusted_wav_with_sox(timeslice_calculation_error, difference_from_target_loudness, filename, english, finnish, hotfolder_path, directory_for_results, directory_for_temporary_files, highest_peak_db)
 
 
 def create_gnuplot_commands_for_error_message(error_message, filename, directory_for_temporary_files, directory_for_results, english, finnish):
@@ -546,7 +563,7 @@ def run_gnuplot(filename, directory_for_temporary_files, directory_for_results, 
 		send_error_messages_to_screen_logfile_email(error_message)
 
 
-def create_loudness_adjusted_wav_with_sox(timeslice_calculation_error, difference_from_target_loudness, filename, english, finnish, hotfolder_path, directory_for_results, directory_for_temporary_files, sample_peak_db):
+def create_loudness_adjusted_wav_with_sox(timeslice_calculation_error, difference_from_target_loudness, filename, english, finnish, hotfolder_path, directory_for_results, directory_for_temporary_files, highest_peak_db):
 
 	'''This subroutine creates a loudness corrected wav using sox'''
 
@@ -568,8 +585,17 @@ def create_loudness_adjusted_wav_with_sox(timeslice_calculation_error, differenc
 		temporary_peak_limited_targetfile = filename_and_extension[0] + '-Peak_Limited' + '.wav'
 		targetfile = directory_for_results + os.sep + filename_and_extension[0] + '_-23_LUFS' + '.wav'
 		difference_from_target_loudness_sign_inverted = difference_from_target_loudness * -1 # The sign (+/-) of the difference from target loudness needs to be flipped for sox. Plus becomes minus and vice versa.
-		audio_peaks_absolute_ceiling = -4 # This is the absolute ceiling (in dBFS) the limiter is going to limit the peaks of the audio. Peaks in the loudness corrected file will be slightly higher than this because limiting affects loudness and the loudness of the file will be recalculated before creating the final loudness corrected file.
-		hard_limiter_level = difference_from_target_loudness + audio_peaks_absolute_ceiling # This is the level peaks need to be limited to before gain correction.
+		
+		
+		# Set the absolute peak level for the resulting corrected audio file.
+		# If sample peak is used for the highest value, then set the absolute peak to be -4 dBFS (resulting peaks will be about 1 dB higher than this).
+		# If TruePeak calculations are used to measure highest peak, then set the maximum peak level to -2 dBFS (resulting peaks will be about 1 dB higher than this).
+		audio_peaks_absolute_ceiling = -4
+		if peak_measuring_method == '--peak=true':
+			audio_peaks_absolute_ceiling = -2
+		
+		# Calculate the level where absolute peaks must be limited to before gain correction, to get the resulting max peak level we want.
+		hard_limiter_level = difference_from_target_loudness + audio_peaks_absolute_ceiling
 
 		# Start sox and create loudness corrected file to temporary files directory.
 		if difference_from_target_loudness >= 0:
@@ -585,7 +611,7 @@ def create_loudness_adjusted_wav_with_sox(timeslice_calculation_error, differenc
 			
 			# Loudness correction requires increasing the volume, and peaks after correction might exceed our upper sample peak limit defined in 'audio_peaks_absolute_ceiling'. Run sox with a limiter if limiting is needed.
 			
-			if sample_peak_db + difference_from_target_loudness_sign_inverted > audio_peaks_absolute_ceiling:
+			if highest_peak_db + difference_from_target_loudness_sign_inverted > audio_peaks_absolute_ceiling:
 				# Peaks after loudness correction will exceed our upper sample peak limit defined in 'audio_peaks_absolute_ceiling'. Run sox with a limiter.
 				# Peaks will be limited below -3 dBFS because fast peaks higher than this might cause clipping in the DA-Converter when the sound is played.
 				# The limiter tries to introduce as little distortion as possible while being very effective in hard-limiting the peaks.
@@ -617,14 +643,14 @@ def create_loudness_adjusted_wav_with_sox(timeslice_calculation_error, differenc
 				
 				# Peak limiting probably changed integrated loudness of the file. We need to calculate loudness again before creating the loudness corrected file.
 				event_for_integrated_loudness_calculation = threading.Event() # Create a dummy event for loudness calculation subroutine. This is needed by the subroutine, but not used anywhere else, since we do not start loudness calculation as a thread.
-				libebur128_commands=[libebur128_path, 'scan', '-l', '--peak=sample'] # Put libebur128 commands in a list.
-				calculate_integrated_loudness(event_for_integrated_loudness_calculation, temporary_peak_limited_targetfile, directory_for_temporary_files, libebur128_commands, english, finnish)
+				libebur128_commands_for_integrated_loudness_calculation=[libebur128_path, 'scan', '-l', peak_measuring_method] # Put libebur128 commands in a list.
+				calculate_integrated_loudness(event_for_integrated_loudness_calculation, temporary_peak_limited_targetfile, directory_for_temporary_files, libebur128_commands_for_integrated_loudness_calculation, english, finnish)
 				
 				# Get loudness calculation results from the integrated loudness calculation process. Results are in list format in dictionary 'integrated_loudness_calculation_results', assing results to variables.
 				integrated_loudness_calculation_results_list = integrated_loudness_calculation_results.pop(temporary_peak_limited_targetfile)# Get loudness results for the file and remove this information from dictionary.
 				difference_from_target_loudness = integrated_loudness_calculation_results_list[1]
 				difference_from_target_loudness_sign_inverted = difference_from_target_loudness * -1 # The sign (+/-) of the difference from target loudness needs to be flipped for sox. Plus becomes minus and vice versa.
-				sample_peak_db = integrated_loudness_calculation_results_list[5]
+				highest_peak_db = integrated_loudness_calculation_results_list[5]
 				
 				# Now we need the integrated loudness of the peak limited file, adjust it's loudness with sox
 				results_from_sox_run = subprocess.Popen(['sox', directory_for_temporary_files + os.sep + temporary_peak_limited_targetfile, temporary_targetfile, 'gain', str(difference_from_target_loudness_sign_inverted)], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
@@ -716,7 +742,7 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 	filename_and_extension = os.path.splitext(filename)
 	target_filenames = []
 	global files_queued_for_deletion
-
+	
 	# Generate the beginning of the ffmpeg commandline options.
 	if ffmpeg_output_format == 'flac': # User want's resulting files to be written in flac, adjust options for that.
 		ffmpeg_commandline = ['ffmpeg', '-y', '-i', file_to_process, '-vn', '-acodec', 'flac']
@@ -729,7 +755,7 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 		# Create names for audio streams found in the file.
 		# First parse the number of audio channels in each stream ffmpeg reported and put it in a variable.
 		number_of_audio_channels = '0'
-		number_of_audio_channels_as_text = str(details_of_ffmpeg_supported_audiostreams).split(',')[2].strip() # FFmpeg reports audio channel count as a string.
+		number_of_audio_channels_as_text = str(details_of_ffmpeg_supported_audiostreams[counter]).split(',')[2].strip() # FFmpeg reports audio channel count as a string.
 		
 		# Split audio channel count to a list ('2 channels' becomes ['2', 'channels']
 		number_of_audio_channels_as_text_split_to_a_list = number_of_audio_channels_as_text.split()
@@ -1359,10 +1385,12 @@ all_ip_addresses_of_the_machine = get_ip_addresses_of_the_host_machine() # Get I
 
 # If there is a value in the variable 'configfile_path' then it is a valid path to a readable configfile.
 # If the variable is empty, use the default values for variables defined in the beginning of this script.
+
+all_settings_dict = {}
+
 if configfile_path != '':
 	
 	# Read the config variables from a file. The file contains a dictionary with the needed values.
-	all_settings_dict = {}
 	
 	try:
 		with open(configfile_path, 'rb') as configfile_handler:
@@ -1444,6 +1472,9 @@ if configfile_path != '':
 		send_error_messages_to_logfile = all_settings_dict['send_error_messages_to_logfile']
 	if 'directory_for_error_logs' in all_settings_dict:
 		directory_for_error_logs = all_settings_dict['directory_for_error_logs']
+	if 'peak_measuring_method' in all_settings_dict:
+		peak_measuring_method = all_settings_dict['peak_measuring_method']
+	
 
 # Test if the user given target path exists.
 if (not os.path.exists(target_path)):
@@ -1569,8 +1600,6 @@ if silent == False:
 while True:
 	
 	loudness_correction_program_info_and_timestamps['main_thread'] = [True, int(time.time())] # Update the heartbeat timestamp for the main thread. This is used to keep track if the main thread has crashed.
-	# Get IP-Addresses of the machine.
-	all_ip_addresses_of_the_machine = get_ip_addresses_of_the_host_machine()
 	loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'] = [sys.argv, loudness_correction_pid, all_ip_addresses_of_the_machine]
 	
 	try:
@@ -1775,15 +1804,16 @@ while True:
 								number_of_ffmpeg_supported_audiostreams = number_of_ffmpeg_supported_audiostreams + 1
 								details_of_ffmpeg_supported_audiostreams.append(item.strip())
 							if 'Duration:' in item:
-								if not 'N/A' in item:
+								audio_duration_string = str(item).split(',')[0].strip() # The first item on the line is the duration, get it.
+								audio_duration_string = audio_duration_string.split(' ')[1].strip() # Remove the string 'Duration:' that is in front of the time string we want.
+								# Check that audio duration is a valid time, if it is 'N/A' then ffmpeg can not extract the audio stream.
+								if not 'N/A' in audio_duration_string:
 									# Get the file duration as a string and also calculate it in seconds.
-									audio_duration_string = str(item).split(',')[0].strip() # The first item on the line is the duration, get it.
-									audio_duration_string = audio_duration_string.split(' ')[1].strip() # Remove the string 'Duration:' that it in front of the time string we want.
 									audio_duration_string = audio_duration_string.split('.')[0] # Remove the fraction part from time string. This rounds the time to seconds.
 									audio_duration_list = audio_duration_string.split(':') # Separate each element in the time string (hours, minutes, seconds) and put them in a list.
 									audio_duration_rounded_to_seconds = (int(audio_duration_list[0]) * 60 * 60) + (int(audio_duration_list[1]) * 60) + int(audio_duration_list[2]) # Calculate audio duration in seconds.
 								else:
-									# The string 'N/A' was on ffmpeg output on he same line as 'Duration:'. This means ffmpeg could not determine the audio duration. Set audio duration to 0 seconds and inform user about the error.
+									# The FFmpeg reported audio duration as 'N/A' then this means ffmpeg could not determine the audio duration. Set audio duration to 0 seconds and inform user about the error.
 									audio_duration_rounded_to_seconds = 0
 									error_message = 'FFmpeg Error : Audio Duration = N/A' * english + 'FFmpeg Virhe: Äänen Kesto = N/A' * finnish + ': ' + filename
 									send_error_messages_to_screen_logfile_email(error_message)
@@ -1854,24 +1884,29 @@ while True:
 				file_format_support_information = old_hotfolder_filelist_dict[filename][2] # The information about the file format is stored in a list in the dictionary, get it and store in a list.
 				natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string = file_format_support_information # Save file format information to separate variables.
 				realtime = get_realtime(english, finnish).replace('_', ' ')
-
+				
 				# If audio fileformat is natively supported by libebur128 and sox and has only one audio stream, we don't need to do extraction and flac conversion with ffmpeg, just start two loudness calculation processes for the file.
 				if (number_of_ffmpeg_supported_audiostreams == 1) and (natively_supported_file_format == True):
 					# Start simultaneously two threads to calculate file loudness. The first one calculates loudness by dividing the file in time slices and calculating the loudness of each slice individually. The second process calculates integrated loudness and loudness range of the file as a whole.
 					# Both processes can be done in almost the same time as one, since the first process reads the file in to os file cache, so the second process doesn't need to read the disk at all. Reading from cache is much much faster than reading from disk.
 					if silent == False:
 						print ('\r' + 'File' * english + 'Tiedoston' * finnish, '"' + filename + '"' + ' processing started ' * english + ' käsittely   alkoi  ' * finnish, realtime)
-					libebur128_commands=[libebur128_path, 'dump', '-s', time_slice_duration_string] # Put libebur128 commands in a list.
+					
+					# Create commands for both loudness calculation processes.
+					libebur128_commands_for_time_slice_calculation=[libebur128_path, 'dump', '-s', time_slice_duration_string] # Put libebur128 commands in a list.
+					libebur128_commands_for_integrated_loudness_calculation=[libebur128_path, 'scan', '-l', peak_measuring_method] # Put libebur128 commands in a list.
+					# Create events for both processes. When the process is ready it sets event = set, so that we now in the main thread that we can start more processes.
 					event_for_timeslice_loudness_calculation = threading.Event() # Create a unique event for the process. This event is used to signal other threads that this process has finished.
-					process_1 = threading.Thread(target=calculate_loudness_timeslices, args=(filename, hotfolder_path, libebur128_commands, directory_for_temporary_files, directory_for_results, english, finnish)) # Create a process instance.
-					thread_object = process_1.start() # Start the calculation process in it'own thread.
-
-					# Start the second calculation process that calculates integrated loudness and loudness range.
-					libebur128_commands=[libebur128_path, 'scan', '-l', '--peak=sample'] # Put libebur128 commands in a list.
 					event_for_integrated_loudness_calculation = threading.Event() # Create a unique event for the process. This event is used to signal other threads that this process has finished.
-					process_2 = threading.Thread(target=calculate_integrated_loudness, args=(event_for_integrated_loudness_calculation, filename, hotfolder_path, libebur128_commands, english, finnish)) # Create a process instance.
-					thread_object = process_2.start() # Start the calculation process in it'own thread.
-					loudness_calculation_queue[filename] = [event_for_timeslice_loudness_calculation, event_for_integrated_loudness_calculation]# Add file name and both the calculation process events to the dictionary of files that are currently being calculated upon.
+					# Add file name and both the calculation process events to the dictionary of files that are currently being calculated upon.
+					loudness_calculation_queue[filename] = [event_for_timeslice_loudness_calculation, event_for_integrated_loudness_calculation]
+					# Create threads for both processes, the threads are not started yet.
+					process_1 = threading.Thread(target=calculate_loudness_timeslices, args=(filename, hotfolder_path, libebur128_commands_for_time_slice_calculation, directory_for_temporary_files, directory_for_results, english, finnish)) # Create a process instance.
+					process_2 = threading.Thread(target=calculate_integrated_loudness, args=(event_for_integrated_loudness_calculation, filename, hotfolder_path, libebur128_commands_for_integrated_loudness_calculation, english, finnish)) # Create a process instance.
+					# Start both calculation threads.
+					thread_object = process_2.start() # Start the calculation process in it's own thread.
+					time.sleep(1)
+					thread_object = process_1.start() # Start the calculation process in it's own thread.
 				else:
 					# Filefomat is not natively supported by libebur128 and sox, or it has more than one audio streams.
 					# Start a process that extracts all audio streams from the file to flac and moves resulting files back to the HotFolder for loudness calculation.
@@ -1909,7 +1944,7 @@ while True:
 		for filename in finished_processes: # Get names of files who's processing threads have completed and print message to user.
 			realtime = get_realtime(english, finnish).replace('_', ' ')
 			del loudness_calculation_queue[filename] # Remove file name from the list of files currently being calculated upon.
-			completed_files_list.insert(0, filename) # Add filename at the beginning of the list of completed files. This list stores only the order in which the files we completed.
+			completed_files_list.insert(0, filename) # Add filename at the beginning of the list of completed files. This list stores only the order in which the files were completed.
 			completed_files_dict[filename] = realtime # This dictionary stores the time processing each file was completed.
 			if silent == False:
 				print('\r' + 'File' * english + 'Tiedoston' * finnish, '"' + filename + '"', 'processing finished' * english + 'käsittely valmistui' * finnish, realtime)
