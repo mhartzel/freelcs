@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '037'
+version = '038'
 
 ###################################
 # Function definitions start here #
@@ -1036,10 +1036,11 @@ def install_init_scripts_and_config_files(*args):
 	global ffmpeg_path
 	global gnuplot_path
 	global all_ip_addresses_of_the_machine
+	global peak_measuring_method
 	
 	put_email_details_in_a_dictionary()
 
-	all_settings_dict = {'language' : language.get(), 'english' : english, 'finnish' : finnish, 'target_path' : target_path.get(), 'hotfolder_path' : hotfolder_path.get(), \
+	all_settings_dict = { 'language' : language.get(), 'english' : english, 'finnish' : finnish, 'target_path' : target_path.get(), 'hotfolder_path' : hotfolder_path.get(), \
 	'directory_for_temporary_files' : directory_for_temporary_files.get(), 'directory_for_results' : directory_for_results.get(), 'delay_between_directory_reads' : int(delay_between_directory_reads), \
 	'number_of_processor_cores' : int(number_of_processor_cores.get()), 'file_expiry_time' : int(file_expiry_time), 'natively_supported_file_formats' : natively_supported_file_formats, \
 	'libebur128_path' : loudness_path, 'ffmpeg_output_format' : ffmpeg_output_format, 'silent' : silent, 'write_html_progress_report' : true_false_string[write_html_progress_report.get()], \
@@ -1047,7 +1048,7 @@ def install_init_scripts_and_config_files(*args):
 	'directory_for_error_logs' : directory_for_error_logs.get(), 'send_error_messages_to_logfile' : send_error_messages_to_logfile, 'heartbeat' : true_false_string[heartbeat.get()], \
 	'heartbeat_file_name' : heartbeat_file_name, 'heartbeat_write_interval' : int(heartbeat_write_interval), 'email_sending_details' : email_sending_details, \
 	'send_error_messages_by_email' : true_false_string[send_error_messages_by_email.get()], 'where_to_send_error_messages' : where_to_send_error_messages, \
-	'config_file_created_by_installer_version' : version}
+	'config_file_created_by_installer_version' : version, 'peak_measuring_method' : peak_measuring_method }
 
 	# Get the total number of items in settings dictionary and save the number in the dictionary. The number can be used for degugging settings.
 	number_of_all_items_in_dictionary = len(all_settings_dict)
@@ -1076,6 +1077,7 @@ def install_init_scripts_and_config_files(*args):
 		print()
 		print('natively_supported_file_formats =', all_settings_dict['natively_supported_file_formats'])
 		print('ffmpeg_output_format =', all_settings_dict['ffmpeg_output_format'])
+		print('peak_measuring_method =', all_settings_dict['peak_measuring_method'])
 		print()	
 		print('silent =', all_settings_dict['silent'])
 		print()	
@@ -1550,6 +1552,10 @@ def install_init_scripts_and_config_files(*args):
 	
 	# Our scripts were installed successfully, update the label the to tell it to the user.
 	loudnesscorrection_scripts_are_installed.set('Installed')
+	
+	# Disable Back - button since navigating back to the previous window and back here would delete /usr/bin/LoudnessCorrection.py. The previous window copies this file to test our root - password and then deletes it.
+	seventh_window_back_button['state'] = 'disabled'
+	
 	return(False) # False means 'No errors happened everything was installed successfully :)'.
 	
 def test_if_root_password_is_valid(*args):
@@ -2513,6 +2519,21 @@ def get_ip_addresses_of_the_host_machine():
 		print('stderr:', stderr)
 		print('all_ip_addresses_of_the_machine =', all_ip_addresses_of_the_machine)
 
+def set_sample_peak_measurement_method(*args):
+	
+	global peak_measuring_method
+	
+	if sample_peak.get() == True:
+		peak_measuring_method = '--peak=sample'
+	else:
+		peak_measuring_method = '--peak=true'
+	
+	if debug == True:
+		true_false_string = [False, True]
+		print()
+		print('sample_peak =', true_false_string[sample_peak.get()])
+		print('peak_measuring_method =', peak_measuring_method)
+
 
 ###############################
 # Main program starts here :) #
@@ -2560,6 +2581,9 @@ root_password_was_not_accepted_message = tkinter.StringVar()
 use_samba  = tkinter.BooleanVar()
 use_samba.set(True)
 web_page_name = tkinter.StringVar()
+sample_peak = tkinter.BooleanVar()
+sample_peak.set(True)
+
 # Define variables that will be used as the text content on seventh window. The variables can hold one of two values: 'Installed' / 'Not Installed'.
 ffmpeg_is_installed = tkinter.StringVar()
 sox_is_installed = tkinter.StringVar()
@@ -2632,6 +2656,7 @@ eight_window_textwidget_text_content  = ''
 all_installation_messages = ''
 all_ip_addresses_of_the_machine = []
 all_ip_addresses_of_the_machine = get_ip_addresses_of_the_host_machine()
+peak_measuring_method = '--peak=sample'
 
 # Get the directory the os uses for storing temporary files.
 directory_for_os_temporary_files = tempfile.gettempdir()
@@ -3139,7 +3164,7 @@ twentyfirst_label.grid(column=0, row=3, pady=10, padx=10, columnspan=4, sticky=(
 
 # Define a horizontal line to space out groups of rows.
 fourth_window_separator_1 = tkinter.ttk.Separator(fourth_frame_child_frame_1, orient=tkinter.HORIZONTAL)
-fourth_window_separator_1.grid(column=0, row=4, padx=10, pady=20, columnspan=5, sticky=(tkinter.W, tkinter.E))
+fourth_window_separator_1.grid(column=0, row=4, padx=10, pady=10, columnspan=5, sticky=(tkinter.W, tkinter.E))
 
 # Ram device name.
 fourth_window_label_3 = tkinter.ttk.Label(fourth_frame_child_frame_1, text='Use this ram device for creating the ram disk:')
@@ -3162,7 +3187,7 @@ fourth_window_label_4.grid(column=0, row=6, columnspan=4, pady=10, padx=10, stic
 
 # Define a horizontal line to space out groups of rows.
 fourth_window_separator_1 = tkinter.ttk.Separator(fourth_frame_child_frame_1, orient=tkinter.HORIZONTAL)
-fourth_window_separator_1.grid(column=0, row=7, padx=10, pady=20, columnspan=5, sticky=(tkinter.W, tkinter.E))
+fourth_window_separator_1.grid(column=0, row=7, padx=10, pady=10, columnspan=5, sticky=(tkinter.W, tkinter.E))
 
 # Choose which username LoudnessCorrection will run under.
 fourth_window_label_5 = tkinter.ttk.Label(fourth_frame_child_frame_1, text='Which user account LoudnessCorrection will use to run:')
@@ -3182,11 +3207,27 @@ username_combobox.grid(column=3, row=8, columnspan=2, pady=10, padx=10, sticky=(
 fourth_window_label_7 = tkinter.ttk.Label(fourth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='LoudnessCorrection will be run with non root privileges, you can choose here which user account to use.\n\nIf you choose the HotFolder to be shared to the network with Samba in the next screen, the HotFolder directory structure read and write permissions will be set so that only this user has write access to files in Hotfolder directories and all other users can only read.')
 fourth_window_label_7.grid(column=0, row=9, columnspan=4, pady=10, padx=10, sticky=(tkinter.W, tkinter.N))
 
+# Define a horizontal line to space out groups of rows.
+fourth_window_separator_1 = tkinter.ttk.Separator(fourth_frame_child_frame_1, orient=tkinter.HORIZONTAL)
+fourth_window_separator_1.grid(column=0, row=10, padx=10, pady=10, columnspan=5, sticky=(tkinter.W, tkinter.E))
+
+# Peak metering settings
+fourth_window_label_1 = tkinter.ttk.Label(fourth_frame_child_frame_1, text='Peak measurement method:')
+fourth_window_label_1.grid(column=0, row=11, columnspan=2, padx=10, sticky=(tkinter.W, tkinter.N))
+sample_peak_radiobutton = tkinter.ttk.Radiobutton(fourth_frame_child_frame_1, text='Sample Peak', variable=sample_peak, value=True, command=set_sample_peak_measurement_method)
+true_peak_radiobutton = tkinter.ttk.Radiobutton(fourth_frame_child_frame_1, text='TruePeak', variable=sample_peak, value=False, command=set_sample_peak_measurement_method)
+sample_peak_radiobutton.grid(column=3, row=11, padx=15)
+true_peak_radiobutton.grid(column=4, row=11, padx=15)
+
+# Some explanatory texts.
+peak_measurement_label = tkinter.ttk.Label(fourth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='This options lets you choose if you want to use sample peak or TruePeak measurement. The peak value is important only in cases where file loudness is below target -23 LUFS and needs to be increased. If increasing volume would cause peaks to go over a set limit (-2 dBFS for TruePeak and -4 dB for sample peak) then a protective limiter is used. The resulting max peaks will be about 1 dB above the limit (-1 dBFS / -3 dBFS).\n\nNote that using TruePeak slows down file processing by a factor of 4. When using sample peak you still have about 3 dBs headroom for the true peaks to exist.')
+peak_measurement_label.grid(column=0, row=12, pady=10, padx=10, columnspan=4, sticky=(tkinter.W, tkinter.N))
+
 # Create the buttons for the frame
 fourth_window_back_button = tkinter.Button(fourth_frame, text = "Back", command = call_third_frame_on_top)
 fourth_window_back_button.grid(column=1, row=1, padx=30, pady=10, sticky=(tkinter.E, tkinter.N))
-
 fourth_window_next_button = tkinter.Button(fourth_frame, text = "Next", command = call_fifth_frame_on_top)
+
 # If we were no successful in getting the list of ram device names from the os and create_ram_disk = True, disable the next button.
 if (len(list_of_ram_devices) == 0) and (create_a_ram_disk_for_html_report.get() == True):
 	fourth_window_next_button['state'] = 'disabled'

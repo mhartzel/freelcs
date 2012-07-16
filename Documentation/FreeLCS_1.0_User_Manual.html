@@ -302,13 +302,32 @@
         the ram disk. You need to change the default setting of "/dev/ram1" here
         only if you know you have created other ram-disks for other purposes and
         you know that device "/dev/ram1" is already used for something else.</li>
-      <li>Lastly you can select which user account is used when loudness
+      <li>Then you can select which user account is used when loudness
         correction and heartbeat checker programs are run. These two programs
         are always run as an "unprivileged" user. If you only created one user,
         then this user is used by default.<br>
       </li>
-      <li>If you are not sure what to select on this window then just leave the
-        defaults as they are and click "Next". Defaults are ok for most users :)<br>
+      <li>If you are not sure what to select for this options then just leave
+        the defaults as they are. Defaults are ok for most users :)</li>
+      <li>The last option lets you select which peak measurement method you want
+        to use: sample peak or TruePeak. TruePeak is a method that takes into
+        account invisible peaks that might exist between samples. These peaks
+        can go above the maximum allowed 0 dBFS and cause distortion in AD -
+        converters. TruePeak measurement finds these hidden peaks and gives the
+        true maximum peak value in a file. TruePeak calculation slows down file
+        processing by a factor of 4. Sample peak simply finds the highest sample
+        value in the file and uses that as the highest peak value.<br>
+      </li>
+      <li>The peak value is only important when loudness of a file falls below
+        the target -23 LUFS level and needs to be increased. There is the
+        possibility that peaks will distort after the gain correction. In these
+        cases a protective limiter is used. If peak value after gain correction
+        would go over a set limit (-4 dBFS for sample peaks and -2 dBFS for
+        TruePeaks), then the file is limited before gain correction. The
+        resulting peaks after gain correction will be max. 1 dB higher than the
+        set limit resulting in max -3 dBFS / -1 dBFS peaks. Note that if you use
+        sample peak, there will always be 3 dB headroom for the invisible peaks
+        to exist and distortion is very unlikely.<br>
       </li>
     </ul>
     <p><br>

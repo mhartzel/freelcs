@@ -1,3 +1,23 @@
+#####################################
+# Released FreeLCS 1.01 with:       #
+# - LoudnessCorrection version 154  #
+# - HeartBeat_Checker version 017   #
+# - Installer version 038           #
+#####################################
+
+Documentation
+--------------
+- Added the new window in the installer that lets user select between sample peak and TruePeak measurement.
+
+LoudnessCorrection Version 154
+-------------------------------
+- Bugfix: Added printing of peak_measurement method In debug - mode. I forgot to do that in the last version :)
+
+installer 038
+--------------
+- Bugfix: LoudnessCorrection.py was not installed to /usr/bin/ if user after installation navigated back through windows.
+- Added the possibility to select between sample peak and TruePeak measurement.
+
 Documentation
 --------------
 - Added some clarifications to the manual about what happens to the files when they are processed.

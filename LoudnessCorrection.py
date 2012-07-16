@@ -34,7 +34,7 @@ import email.mime.multipart
 import pickle
 import math
 
-version = '153'
+version = '154'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -1266,6 +1266,7 @@ def debug_variables_read_from_configfile():
 		print()
 		print('natively_supported_file_formats =', natively_supported_file_formats)
 		print('ffmpeg_output_format =', ffmpeg_output_format)
+		print('peak_measuring_method =', all_settings_dict['peak_measuring_method'])
 		print()	
 		print('silent =', silent)
 		print()	
