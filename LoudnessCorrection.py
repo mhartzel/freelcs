@@ -34,7 +34,7 @@ import email.mime.multipart
 import pickle
 import math
 
-version = '157'
+version = '158'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -1045,6 +1045,7 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 	file_to_process = hotfolder_path + os.sep + filename
 	filename_and_extension = os.path.splitext(filename)
 	target_filenames = []
+	ffmpeg_stream_mapping_commands = []
 	global files_queued_for_deletion
 	
 	# Generate the beginning of the ffmpeg commandline options.
@@ -1092,6 +1093,29 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 		ffmpeg_commandline.append(ffmpeg_output_format)
 		ffmpeg_commandline.append(directory_for_temporary_files + os.sep + target_filenames[counter])
 	
+		# Find out what is ffmpegs map number for the audio stream.
+		ffmpeg_first_element_of_stream_info = str(details_of_ffmpeg_supported_audiostreams[counter]).split(',')[0].strip()
+		ffmpeg_first_element_of_stream_info_split_by_semicolon = ffmpeg_first_element_of_stream_info.split(':')[0].strip()
+		
+		# If the word 'Stream' can not be found in the text we just cut then something went wrong.
+		if "Stream" not in ffmpeg_first_element_of_stream_info_split_by_semicolon:
+			error_message = 'Error trying to find stream mapping information from FFmpeg output' * english + 'Virhe, en löydä äänistreamin tietoja FFmpegin tulosteesta' * finnish
+			send_error_messages_to_screen_logfile_email(error_message)
+		
+		# Find the start and end character numbers for the ffmpeg map number.
+		start_of_map_number = int(ffmpeg_first_element_of_stream_info_split_by_semicolon.find('#'))
+		start_of_map_number = start_of_map_number + 1 
+		end_of_map_number = int(ffmpeg_first_element_of_stream_info_split_by_semicolon.find('('))
+		
+		# Get the map number. For the first audio stream the number usually is 0.1 and for the second 0.2 and so on.
+		map_number = ffmpeg_first_element_of_stream_info_split_by_semicolon[start_of_map_number:end_of_map_number]
+	
+		# Create a audio stream mapping command list that will be appended at the end of ffmpeg commandline.
+		ffmpeg_stream_mapping_commands.extend(['-map',  str(map_number) + ':0.' + str(counter)])
+	
+	# Add stream mapping commands at the end of FFmpeg commandline. Without this the streams will be extracted in random order and our stream numbers won't match the streams.
+	ffmpeg_commandline.extend(ffmpeg_stream_mapping_commands)
+	
 	# Create the file to use for writing stdout output from the external command we are about to run.
 	try:
 		# Define filename for the temporary file that we are going to use as stdout for the external command.
@@ -1131,7 +1155,7 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 		if 'error:' in item.lower(): # If there is the string 'error' in ffmpeg's output, there has been an error.
 			error_message = 'ERROR !!! Extracting audio streams with ffmpeg, ' * english + 'VIRHE !!! Audio streamien purkamisessa ffmpeg:illä, ' * finnish + ' ' + filename + ' : ' + results_of_gnuplot_run_list
 			send_error_messages_to_screen_logfile_email(error_message)
-
+	
 	# Delete the temporary stdout - file.
 	try:
 		os.remove(stdout_for_external_command)
