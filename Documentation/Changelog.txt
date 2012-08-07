@@ -1,3 +1,15 @@
+LoudnessCorrection Version 158
+-------------------------------
+- Bugfix: If a file has many audiostreams then FFmpeg sometimes extracts the streams in random order and stream numbers and channel counts in filenames won't match. The FFmpeg stream number is now extracted from FFmpeg output and mapping is used to extract the streams in the correct order. 
+
+LoudnessCorrection Version 157
+-------------------------------
+- Corrected some copy / paste errors that was left when doing the modifications in version 155.
+
+LoudnessCorrection Version 155
+-------------------------------
+- Hunted a hanging bug that sometimes manifests itself when processing lots of very short files (duration 1 second). I changed all instances of subprocess.Popen to use real files as the stdout and stderr buffers for the external commands that are run through subprocess.Pipe. Some sources on the net said this is safer in threading than using subprocess.PIPE. In the end I found that the hanging bug is not in LoudnessCorrection.py but in libebur128 program 'loudness'. I have made the developer aware of this problem by filing a bugreport here: https://github.com/jiixyj/libebur128/issues/14
+
 #####################################
 # Released FreeLCS 1.02 with:       #
 # - LoudnessCorrection version 154  #

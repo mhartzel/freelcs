@@ -34,7 +34,7 @@ import email.mime.multipart
 import pickle
 import math
 
-version = '154'
+version = '155'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -171,12 +171,63 @@ def calculate_integrated_loudness(event_for_integrated_loudness_calculation, fil
 	highest_peak_db = float('-120') # Set default value for sample peak.
 
 	if os.path.exists(file_to_process): # Check if the audio file still exists, user may have deleted it. If True start loudness calculation.
+	
 		# Calculate integrated loudness and loudness range using libebur128 and parse the results from the text output of the program.
-		libebur128_commands_for_integrated_loudness_calculation.append(file_to_process) # Append the name of the file we are going to process at the end of libebur128 commands.
-		integrated_loudness_calculation_stdout, integrated_loudness_calculation_stderr = subprocess.Popen(libebur128_commands_for_integrated_loudness_calculation, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate() # Start libebur128.
-		integrated_loudness_calculation_stdout_string = str(integrated_loudness_calculation_stdout.decode('UTF-8')) # Convert libebur128 output from binary to UTF-8 text.
-		integrated_loudness_calculation_stderr_string = str(integrated_loudness_calculation_stderr.decode('UTF-8')) # Convert libebur128 possible error output from binary to UTF-8 text.
 		
+		# Append the name of the file we are going to process at the end of libebur128 commands.
+		libebur128_commands_for_integrated_loudness_calculation.append(file_to_process)
+		
+		# Create files to use for writing stdout and stderr output from the external command we are about to run.
+		try:
+			# Define filenames for temporary files that we are going to use as stdout and stderr for the external command.
+			stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_integrated_loudness_calculation_stdout.txt'
+			stderr_for_external_command = directory_for_temporary_files + os.sep + filename + '_integrated_loudness_calculation_stderr.txt'
+			# Open the stdout and stderr temporary files in binary write mode.
+			with open(stdout_for_external_command, 'wb') as stdout_commandfile_handler, open(stderr_for_external_command, 'wb') as stderr_commandfile_handler:
+			
+				# Run libebur128 to calculate the integrated loudness of a audio file.
+				subprocess.Popen(libebur128_commands_for_integrated_loudness_calculation, stdout=stdout_commandfile_handler, stderr=stderr_commandfile_handler, stdin=None, close_fds=True).communicate()
+				
+				# Make sure all data written to temporary stdout and stderr - files is flushed from the os cache and written to disk.
+				stdout_commandfile_handler.flush() # Flushes written data to os cache
+				os.fsync(stdout_commandfile_handler.fileno()) # Flushes os cache to disk
+				stderr_commandfile_handler.flush() # Flushes written data to os cache
+				os.fsync(stderr_commandfile_handler.fileno()) # Flushes os cache to disk
+			
+		except IOError as reason_for_error:
+			error_message = 'Error writing to stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon kirjoittaminen epäonnistui ajettaessa komentoa: ' * finnish + libebur128_commands_for_integrated_loudness_calculation + '. ' + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message)
+		except OSError as reason_for_error:
+			error_message = 'Error writing to stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon kirjoittaminen epäonnistui ajettaessa komentoa: ' * finnish + libebur128_commands_for_integrated_loudness_calculation + '. ' + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message)
+		
+		# Open files we used as stdout and stderr for the external program and read in what the program did output to those files.
+		try:
+			with open(stdout_for_external_command, 'rb') as stdout_commandfile_handler, open(stderr_for_external_command, 'rb') as stderr_commandfile_handler:
+				integrated_loudness_calculation_stdout = stdout_commandfile_handler.read(None)
+				integrated_loudness_calculation_stderr = stderr_commandfile_handler.read(None)
+		except IOError as reason_for_error:
+			error_message = 'Error reading from stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston lukeminen epäonnistui ajettaessa komentoa: ' * finnish + libebur128_commands_for_integrated_loudness_calculation + '. ' + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message)
+		except OSError as reason_for_error:
+			error_message = 'Error reading from stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon lukeminen epäonnistui ajettaessa komentoa: ' * finnish + libebur128_commands_for_integrated_loudness_calculation + '. ' + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message)
+		
+		# Convert libebur128 output from binary to UTF-8 text.
+		integrated_loudness_calculation_stdout_string = str(integrated_loudness_calculation_stdout.decode('UTF-8')) 
+		integrated_loudness_calculation_stderr_string = str(integrated_loudness_calculation_stderr.decode('UTF-8'))
+
+		# Delete the temporary stdout and stderr - files
+		try:
+			os.remove(stdout_for_external_command)
+			os.remove(stderr_for_external_command)
+		except IOError as reason_for_error:
+			error_message = 'Error deleting stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston deletoiminen epäonnistui ajettaessa komentoa: ' * finnish + libebur128_commands_for_integrated_loudness_calculation + '. ' + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message)
+		except OSError as reason_for_error:
+			error_message = 'Error deleting stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston deletoiminen epäonnistui ajettaessa komentoa: ' * finnish + libebur128_commands_for_integrated_loudness_calculation + '. ' + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message)
+
 		# Test if libebur128 was successful in processing the file or not.
 		# If libebur128 can successfully process the file it prints the results to its stdout and the progress printout to stderr.
 		# If libebur128 encounters an error it won't print anything to stdout and prints error message to stderr. In some error cases libebur128 does not print anything to stdout or stderr.
@@ -238,9 +289,57 @@ def calculate_loudness_timeslices(filename, hotfolder_path, libebur128_commands_
 		# Start time slice loudness calculation.
 		time_slice_duration_string = libebur128_commands_for_time_slice_calculation[3] # Timeslice for files <10 seconds is 0.5 sec, and 3 sec for files >= 10 sec. Get the timeslice duration.
 		libebur128_commands_for_time_slice_calculation.append(file_to_process) # Append the name of the file we are going to process at the end of libebur128 commands.
-		timeslice_loudness_calculation_stdout, timeslice_loudness_calculation_stderr = subprocess.Popen(libebur128_commands_for_time_slice_calculation, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate() # Start libebur128.
+		
+		# Create files to use for writing stdout and stderr output from the external command we are about to run.
+		try:
+			# Define filenames for temporary files that we are going to use as stdout and stderr for the external command.
+			stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_timeslice_loudness_calculation_stdout.txt'
+			stderr_for_external_command = directory_for_temporary_files + os.sep + filename + '_timeslice_loudness_calculation_stderr.txt'
+			# Open the stdout and stderr temporary files in binary write mode.
+			with open(stdout_for_external_command, 'wb') as stdout_commandfile_handler, open(stderr_for_external_command, 'wb') as stderr_commandfile_handler:
+		
+				# Run libebur128 to calculate the loudness of individual time slices of a audio file.
+				subprocess.Popen(libebur128_commands_for_time_slice_calculation, stdout=stdout_commandfile_handler, stderr=stderr_commandfile_handler, stdin=None, close_fds=True).communicate()
+		
+				# Make sure all data written to temporary stdout and stderr - files is flushed from the os cache and written to disk.
+				stdout_commandfile_handler.flush() # Flushes written data to os cache
+				os.fsync(stdout_commandfile_handler.fileno()) # Flushes os cache to disk
+				stderr_commandfile_handler.flush() # Flushes written data to os cache
+				os.fsync(stderr_commandfile_handler.fileno()) # Flushes os cache to disk
+		
+		except IOError as reason_for_error:
+			error_message = 'Error writing to stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon kirjoittaminen epäonnistui ajettaessa komentoa: ' * finnish + libebur128_commands_for_time_slice_calculation + '. ' + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message)
+		except OSError as reason_for_error:
+			error_message = 'Error writing to stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon kirjoittaminen epäonnistui ajettaessa komentoa: ' * finnish + libebur128_commands_for_time_slice_calculation + '. ' + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message)
+		
+		# Open files we used as stdout and stderr for the external program and read in what the program did output to those files.
+		try:
+			with open(stdout_for_external_command, 'rb') as stdout_commandfile_handler, open(stderr_for_external_command, 'rb') as stderr_commandfile_handler:
+				timeslice_loudness_calculation_stdout = stdout_commandfile_handler.read(None)
+				timeslice_loudness_calculation_stderr = stderr_commandfile_handler.read(None)
+		except IOError as reason_for_error:
+			error_message = 'Error reading from stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston lukeminen epäonnistui ajettaessa komentoa: ' * finnish + libebur128_commands_for_integrated_loudness_calculation + '. ' + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message)
+		except OSError as reason_for_error:
+			error_message = 'Error reading from stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon lukeminen epäonnistui ajettaessa komentoa: ' * finnish + libebur128_commands_for_integrated_loudness_calculation + '. ' + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message)
+		
+		# Convert libebur128 output from binary to UTF-8 text.
 		timeslice_loudness_calculation_result_list = str(timeslice_loudness_calculation_stdout.decode('UTF-8')).split('\n') # Convert libebur128 output from binary to UTF-8 text, split values in the text by line feeds and insert these individual values in to a list.
 		timeslice_loudness_calculation_stderr_string = str(timeslice_loudness_calculation_stderr.decode('UTF-8')) # Convert libebur128 possible error output from binary to UTF-8 text.
+		
+		# Delete the temporary stdout and stderr - files
+		try:
+			os.remove(stdout_for_external_command)
+			os.remove(stderr_for_external_command)
+		except IOError as reason_for_error:
+			error_message = 'Error deleting stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston deletoiminen epäonnistui ajettaessa komentoa: ' * finnish + libebur128_commands_for_integrated_loudness_calculation + '. ' + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message)
+		except OSError as reason_for_error:
+			error_message = 'Error deleting stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston deletoiminen epäonnistui ajettaessa komentoa: ' * finnish + libebur128_commands_for_integrated_loudness_calculation + '. ' + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message)
 		
 		if '' in timeslice_loudness_calculation_result_list: # There usually is an empty item [''] at the end of the list, remove it.
 			timeslice_loudness_calculation_result_list.remove('')
@@ -514,22 +613,61 @@ def create_gnuplot_commands_for_error_message(error_message, filename, directory
 	# Call a subprocess to run gnuplot
 	run_gnuplot(filename, directory_for_temporary_files, directory_for_results, english, finnish)
 	
-
 def run_gnuplot(filename, directory_for_temporary_files, directory_for_results, english, finnish):
 
 	# This subroutine runs Gnuplot and generates a graphics file.
 	# Gnuplot output is searched for error messages.
-	
 	
 	commandfile_for_gnuplot = directory_for_temporary_files + os.sep + filename + '-gnuplot_commands'
 	loudness_calculation_table = directory_for_temporary_files + os.sep + filename + '-loudness_calculation_table'
 	gnuplot_temporary_output_graphicsfile = directory_for_temporary_files + os.sep + filename + '-Loudness_Results_Graphics.jpg' * english + '-Aanekkyyslaskennan_Tulokset.jpg' * finnish
 	gnuplot_output_graphicsfile = directory_for_results + os.sep + filename + '-Loudness_Results_Graphics.jpg' * english + '-Aanekkyyslaskennan_Tulokset.jpg' * finnish
 
-	# Start gnuplot and give time slice and gnuplot command file names as arguments. Gnuplot generates graphics file in the temporary files directory.
-	results_from_gnuplot_run = subprocess.Popen(['gnuplot', commandfile_for_gnuplot], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0] # Run gnuplot.
+	# Create the file to use for writing stdout output from the external command we are about to run.
+	try:
+		# Define filename for the temporary file that we are going to use as stdout for the external command.
+		stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_gnuplot_stdout.txt'
+		# Open the stdout and stderr temporary files in binary write mode.
+		with open(stdout_for_external_command, 'wb') as stdout_commandfile_handler:
+
+			# Start gnuplot and give time slice and gnuplot command file names as arguments. Gnuplot generates graphics file in the temporary files directory.
+			subprocess.Popen(['gnuplot', commandfile_for_gnuplot], stdout=stdout_commandfile_handler, stderr=stdout_commandfile_handler, stdin=None, close_fds=True).communicate()[0] # Run gnuplot.
+		
+			# Make sure all data written to temporary stdout and stderr - files is flushed from the os cache and written to disk.
+			stdout_commandfile_handler.flush() # Flushes written data to os cache
+			os.fsync(stdout_commandfile_handler.fileno()) # Flushes os cache to disk
+		
+	except IOError as reason_for_error:
+		error_message = 'Error writing to gnuplot stdout- file ' * english + 'Gnuplotin Stdout- tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message)
+	except OSError as reason_for_error:
+		error_message = 'Error writing to gnuplot stdout- file ' * english + 'Gnuplotin Stdout- tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message)
+		
+	# Open the file we used as stdout for the external program and read in what the external program wrote to it.
+	try:
+		with open(stdout_for_external_command, 'rb') as stdout_commandfile_handler:
+			results_from_gnuplot_run = stdout_commandfile_handler.read(None)
+	except IOError as reason_for_error:
+		error_message = 'Error reading from gnuplot stdout- file ' * english + 'Gnuplotin Stdout- tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message)
+	except OSError as reason_for_error:
+		error_message = 'Error reading from gnuplot stdout- file ' * english + 'Gnuplotin Stdout- tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message)
+	
+	# Convert gnuplot output from binary to UTF-8 text.
 	results_of_gnuplot_run_list = results_from_gnuplot_run.decode('UTF-8').strip()
 	
+	# Delete the temporary stdout - file.
+	try:
+		os.remove(stdout_for_external_command)
+	except IOError as reason_for_error:
+		error_message = 'Error deleting gnuplot stdout - file ' * english + 'Gnuplotin stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message)
+	except OSError as reason_for_error:
+		error_message = 'Error deleting gnuplot stdout - file ' * english + 'Gnuplotin stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message)
+		
 	# If gnuplot outputs something, there was an error. Print message to user.
 	if not len(results_of_gnuplot_run_list) == 0:
 		error_message = 'ERROR !!! Plotting graphics with Gnuplot, ' * english + 'VIRHE !!! Grafiikan piirtämisessä Gnuplotilla, ' * finnish + ' ' + filename + ' : ' + results_of_gnuplot_run_list
@@ -539,7 +677,6 @@ def run_gnuplot(filename, directory_for_temporary_files, directory_for_results, 
 	try:
 		os.remove(commandfile_for_gnuplot)
 		os.remove(loudness_calculation_table)
-		pass
 	except KeyboardInterrupt:
 		print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
 		sys.exit(0)
@@ -561,7 +698,6 @@ def run_gnuplot(filename, directory_for_temporary_files, directory_for_results, 
 	except OSError as reason_for_error:
 		error_message = 'Error moving gnuplot graphics file ' * english + 'Gnuplotin grafiikkatiedoston siirtäminen epäonnistui ' * finnish + str(reason_for_error)
 		send_error_messages_to_screen_logfile_email(error_message)
-
 
 def create_loudness_adjusted_wav_with_sox(timeslice_calculation_error, difference_from_target_loudness, filename, english, finnish, hotfolder_path, directory_for_results, directory_for_temporary_files, highest_peak_db):
 
@@ -599,11 +735,53 @@ def create_loudness_adjusted_wav_with_sox(timeslice_calculation_error, differenc
 
 		# Start sox and create loudness corrected file to temporary files directory.
 		if difference_from_target_loudness >= 0:
-			# Loudness correction requires decreasing volume, no peak limiting is needed. Run sox without limiter.
-			results_from_sox_run = subprocess.Popen(['sox', file_to_process, temporary_targetfile, 'gain', str(difference_from_target_loudness_sign_inverted)], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
+			
+			# Create the file to use for writing stdout output from the external command we are about to run.
+			try:
+				# Define filename for the temporary file that we are going to use as stdout for the external command.
+				stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_sox_stdout.txt'
+				# Open the stdout temporary file in binary write mode.
+				with open(stdout_for_external_command, 'wb') as stdout_commandfile_handler:
+					
+					# Loudness correction requires decreasing volume, no peak limiting is needed. Run sox without limiter.
+					subprocess.Popen(['sox', file_to_process, temporary_targetfile, 'gain', str(difference_from_target_loudness_sign_inverted)], stdout=stdout_commandfile_handler, stderr=stdout_commandfile_handler, stdin=None, close_fds=True).communicate()[0]
+				
+					# Make sure all data written to temporary stdout and stderr - files is flushed from the os cache and written to disk.
+					stdout_commandfile_handler.flush() # Flushes written data to os cache
+					os.fsync(stdout_commandfile_handler.fileno()) # Flushes os cache to disk
+					
+			except IOError as reason_for_error:
+				error_message = 'Error writing to sox stdout - file ' * english + 'Soxin stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+				send_error_messages_to_screen_logfile_email(error_message)
+			except OSError as reason_for_error:
+				error_message = 'Error writing to sox stdout - file ' * english + 'Soxin stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+				send_error_messages_to_screen_logfile_email(error_message)
+	
+			# Open the file we used as stdout for the external program and read in what the external program wrote to it.
+			try:
+				with open(stdout_for_external_command, 'rb') as stdout_commandfile_handler:
+					results_from_sox_run = stdout_commandfile_handler.read(None)
+			except IOError as reason_for_error:
+				error_message = 'Error reading from sox stdout - file ' * english + 'Soxin stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+				send_error_messages_to_screen_logfile_email(error_message)
+			except OSError as reason_for_error:
+				error_message = 'Error reading from sox stdout - file ' * english + 'Soxin stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+				send_error_messages_to_screen_logfile_email(error_message)	
+
+			# Convert sox output from binary to UTF-8 text.
+			results_from_sox_run_list = results_from_sox_run.decode('UTF-8').strip()
+			
+			# Delete the temporary stdout - file.
+			try:
+				os.remove(stdout_for_external_command)
+			except IOError as reason_for_error:
+				error_message = 'Error deleting sox stdout - file ' * english + 'Soxin stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+				send_error_messages_to_screen_logfile_email(error_message)
+			except OSError as reason_for_error:
+				error_message = 'Error deleting sox stdout - file ' * english + 'Soxin stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+				send_error_messages_to_screen_logfile_email(error_message)
 			
 			# If sox did output something, there was and error. Print message to user.
-			results_from_sox_run_list = results_from_sox_run.decode('UTF-8').strip()
 			if not len(results_from_sox_run_list) == 0:
 				error_message = 'ERROR !!!' * english + 'VIRHE !!!' * finnish + ' ' + filename + ': ' + results_from_sox_run_list 
 				send_error_messages_to_screen_logfile_email(error_message)
@@ -632,11 +810,52 @@ def create_loudness_adjusted_wav_with_sox(timeslice_calculation_error, differenc
 				sox_commandline.extend(compander_3)
 				sox_commandline.extend(hard_limiter)
 				
-				# Hard-limit peaks from the file with sox. No gain is added at this stage.
-				results_from_sox_run = subprocess.Popen(sox_commandline, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
+				# Create the file to use for writing stdout output from the external command we are about to run.
+				try:
+					# Define filename for the temporary file that we are going to use as stdout for the external command.
+					stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_sox_peak_limited_stdout.txt'
+					# Open the stdout temporary file in binary write mode.
+					with open(stdout_for_external_command, 'wb') as stdout_commandfile_handler:
+
+						# Hard-limit peaks from the file with sox. No gain is added at this stage.
+						subprocess.Popen(sox_commandline, stdout=stdout_commandfile_handler, stderr=stdout_commandfile_handler, stdin=None, close_fds=True).communicate()[0]
+				
+						# Make sure all data written to temporary stdout - file is flushed from the os cache and written to disk.
+						stdout_commandfile_handler.flush() # Flushes written data to os cache
+						os.fsync(stdout_commandfile_handler.fileno()) # Flushes os cache to disk
+						
+				except IOError as reason_for_error:
+					error_message = 'Error writing to (peak limiting) sox stdout - file ' * english + 'Soxin (huippujen limitointi) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+					send_error_messages_to_screen_logfile_email(error_message)
+				except OSError as reason_for_error:
+					error_message = 'Error writing to (peak limiting) sox stdout - file ' * english + 'Soxin (huippujen limitointi) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+					send_error_messages_to_screen_logfile_email(error_message)
+					
+				# Open the file we used as stdout for the external program and read in what the external program wrote to it.
+				try:
+					with open(stdout_for_external_command, 'rb') as stdout_commandfile_handler:
+						results_from_sox_run = stdout_commandfile_handler.read(None)
+				except IOError as reason_for_error:
+					error_message = 'Error reading from (peak limiting) sox stdout - file ' * english + 'Soxin (huippujen limitointi) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+					send_error_messages_to_screen_logfile_email(error_message)
+				except OSError as reason_for_error:
+					error_message = 'Error reading from (peak limiting) sox stdout - file ' * english + 'Soxin (huippujen limitointi) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+					send_error_messages_to_screen_logfile_email(error_message)
+	
+				# Convert sox output from binary to UTF-8 text.
+				results_from_sox_run_list = results_from_sox_run.decode('UTF-8').strip()
+				
+				# Delete the temporary stdout - file.
+				try:
+					os.remove(stdout_for_external_command)
+				except IOError as reason_for_error:
+					error_message = 'Error deleting (peak limiting) sox stdout - file ' * english + 'Soxin (huippujen limitointi) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+					send_error_messages_to_screen_logfile_email(error_message)
+				except OSError as reason_for_error:
+					error_message = 'Error deleting (peak limiting) sox stdout - file ' * english + 'Soxin (huippujen limitointi) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+					send_error_messages_to_screen_logfile_email(error_message)
 				
 				# If sox did output something, there was and error. Print message to user.
-				results_from_sox_run_list = results_from_sox_run.decode('UTF-8').strip()
 				if not len(results_from_sox_run_list) == 0:
 					error_message = 'ERROR !!!' * english + 'VIRHE !!!' * finnish + ' ' + filename + ': ' + results_from_sox_run_list 
 					send_error_messages_to_screen_logfile_email(error_message)
@@ -652,19 +871,104 @@ def create_loudness_adjusted_wav_with_sox(timeslice_calculation_error, differenc
 				difference_from_target_loudness_sign_inverted = difference_from_target_loudness * -1 # The sign (+/-) of the difference from target loudness needs to be flipped for sox. Plus becomes minus and vice versa.
 				highest_peak_db = integrated_loudness_calculation_results_list[5]
 				
-				# Now we need the integrated loudness of the peak limited file, adjust it's loudness with sox
-				results_from_sox_run = subprocess.Popen(['sox', directory_for_temporary_files + os.sep + temporary_peak_limited_targetfile, temporary_targetfile, 'gain', str(difference_from_target_loudness_sign_inverted)], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
+				# Create the file to use for writing stdout output from the external command we are about to run.
+				try:
+					# Define filename for the temporary file that we are going to use as stdout for the external command.
+					stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_sox_gain_correction_after_limiter_stdout.txt'
+					
+					# Open the stdout temporary file in binary write mode.
+					with open(stdout_for_external_command, 'wb') as stdout_commandfile_handler:
+				
+						# Now we need to change the loudness of the peak limited file, adjust it's loudness with sox
+						subprocess.Popen(['sox', directory_for_temporary_files + os.sep + temporary_peak_limited_targetfile, temporary_targetfile, 'gain', str(difference_from_target_loudness_sign_inverted)], stdout=stdout_commandfile_handler, stderr=stdout_commandfile_handler, stdin=None, close_fds=True).communicate()[0]
+				
+						# Make sure all data written to temporary stdout - file is flushed from the os cache and written to disk.
+						stdout_commandfile_handler.flush() # Flushes written data to os cache
+						os.fsync(stdout_commandfile_handler.fileno()) # Flushes os cache to disk
+						
+				except IOError as reason_for_error:
+					error_message = 'Error writing to sox (gain correction after peak limiting) stdout - file ' * english + 'Soxin (tason säätö huippujen limitoinnin jälkeen) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+					send_error_messages_to_screen_logfile_email(error_message)
+				except OSError as reason_for_error:
+					error_message = 'Error writing to sox (gain correction after peak limiting) stdout - file ' * english + 'Soxin (tason säätö huippujen limitoinnin jälkeen) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+					send_error_messages_to_screen_logfile_email(error_message)
+					
+				# Open the file we used as stdout for the external program and read in what the external program wrote to it.
+				try:
+					with open(stdout_for_external_command, 'rb') as stdout_commandfile_handler:
+						results_from_sox_run = stdout_commandfile_handler.read(None)
+				except IOError as reason_for_error:
+					error_message = 'Error reading from sox (gain correction after peak limiting) stdout - file ' * english + 'Soxin (tason säätö huippujen limitoinnin jälkeen) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+					send_error_messages_to_screen_logfile_email(error_message)
+				except OSError as reason_for_error:
+					error_message = 'Error reading from sox (gain correction after peak limiting) stdout - file ' * english + 'Soxin (tason säätö huippujen limitoinnin jälkeen) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+					send_error_messages_to_screen_logfile_email(error_message)
+	
+				# Convert sox output from binary to UTF-8 text.
+				results_from_sox_run_list = results_from_sox_run.decode('UTF-8').strip()
+				
+				# Delete the temporary stdout - file.
+				try:
+					os.remove(stdout_for_external_command)
+				except IOError as reason_for_error:
+					error_message = 'Error deleting sox stdout - file ' * english + 'Soxin stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+					send_error_messages_to_screen_logfile_email(error_message)
+				except OSError as reason_for_error:
+					error_message = 'Error deleting sox stdout - file ' * english + 'Soxin stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+					send_error_messages_to_screen_logfile_email(error_message)
 				
 				# If sox did output something, there was and error. Print message to user.
-				results_from_sox_run_list = results_from_sox_run.decode('UTF-8').strip()
 				if not len(results_from_sox_run_list) == 0:
 					error_message = 'ERROR !!!' * english + 'VIRHE !!!' * finnish + ' ' + filename + ': ' + results_from_sox_run_list 
 					send_error_messages_to_screen_logfile_email(error_message)
 			else:
-				# Peaks after loudness correction will not exceed our upper sample peak limit defined in 'audio_peaks_absolute_ceiling'. Run sox without a limiter.
-				results_from_sox_run = subprocess.Popen(['sox', file_to_process, temporary_targetfile, 'gain', str(difference_from_target_loudness_sign_inverted)], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
-		
+				
+				
+				# Create the file to use for writing stdout output from the external command we are about to run.
+				try:
+					# Define filename for the temporary file that we are going to use as stdout for the external command.
+					stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_sox_gain_correction_when_no_limiting_needed_stdout.txt'
+					# Open the stdout temporary file in binary write mode.
+					with open(stdout_for_external_command, 'wb') as stdout_commandfile_handler:
+						
+						# Peaks after loudness correction will not exceed our upper sample peak limit defined in 'audio_peaks_absolute_ceiling'. Run sox without a limiter.
+						subprocess.Popen(['sox', file_to_process, temporary_targetfile, 'gain', str(difference_from_target_loudness_sign_inverted)], stdout=stdout_commandfile_handler, stderr=stdout_commandfile_handler, stdin=None, close_fds=True).communicate()[0]
+						
+						# Make sure all data written to temporary stdout - file is flushed from the os cache and written to disk.
+						stdout_commandfile_handler.flush() # Flushes written data to os cache
+						os.fsync(stdout_commandfile_handler.fileno()) # Flushes os cache to disk
+						
+				except IOError as reason_for_error:
+					error_message = 'Error writing to sox (gain correction when no peak limiting needed) stdout - file ' * english + 'Soxin (tason säätö huippujen kun limitointia ei tarvita) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+					send_error_messages_to_screen_logfile_email(error_message)
+				except OSError as reason_for_error:
+					error_message = 'Error writing to (gain correction when no peak limiting needed) sox stdout - file ' * english + 'Soxin (tason säätö huippujen kun limitointia ei tarvita) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+					send_error_messages_to_screen_logfile_email(error_message)
+					
+				# Open the file we used as stdout for the external program and read in what the external program wrote to it.
+				try:
+					with open(stdout_for_external_command, 'rb') as stdout_commandfile_handler:
+						results_from_sox_run = stdout_commandfile_handler.read(None)
+				except IOError as reason_for_error:
+					error_message = 'Error reading from sox (gain correction when no peak limiting needed) stdout - file ' * english + 'Soxin (tason säätö huippujen kun limitointia ei tarvita) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+					send_error_messages_to_screen_logfile_email(error_message)
+				except OSError as reason_for_error:
+					error_message = 'Error reading from sox (gain correction when no peak limiting needed) stdout - file ' * english + 'Soxin (tason säätö huippujen kun limitointia ei tarvita) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+					send_error_messages_to_screen_logfile_email(error_message)
+	
+				# Convert sox output from binary to UTF-8 text.
 				results_from_sox_run_list = results_from_sox_run.decode('UTF-8').strip()
+				
+				# Delete the temporary stdout - file.
+				try:
+					os.remove(stdout_for_external_command)
+				except IOError as reason_for_error:
+					error_message = 'Error deleting sox stdout - file ' * english + 'Soxin stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+					send_error_messages_to_screen_logfile_email(error_message)
+				except OSError as reason_for_error:
+					error_message = 'Error deleting sox stdout - file ' * english + 'Soxin stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+					send_error_messages_to_screen_logfile_email(error_message)
+				
 				# If sox did output something, there was and error. Print message to user.
 				if not len(results_from_sox_run_list) == 0:
 					error_message = 'ERROR !!!' * english + 'VIRHE !!!' * finnish + ' ' + filename + ': ' + results_from_sox_run_list 
@@ -787,15 +1091,56 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 		ffmpeg_commandline.append('-f')
 		ffmpeg_commandline.append(ffmpeg_output_format)
 		ffmpeg_commandline.append(directory_for_temporary_files + os.sep + target_filenames[counter])
-
-	# Run ffmpeg and parse output
-	ffmpeg_run_output = subprocess.Popen(ffmpeg_commandline, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
+	
+	# Create the file to use for writing stdout output from the external command we are about to run.
+	try:
+		# Define filename for the temporary file that we are going to use as stdout for the external command.
+		stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_ffmpeg_audio_stream_demux_stdout.txt'
+		# Open the stdout temporary file in binary write mode.
+		with open(stdout_for_external_command, 'wb') as stdout_commandfile_handler:
+	
+			# Run ffmpeg and parse output
+			subprocess.Popen(ffmpeg_commandline, stdout=stdout_commandfile_handler, stderr=stdout_commandfile_handler, stdin=None, close_fds=True).communicate()[0]
+	
+			# Make sure all data written to temporary stdout - file is flushed from the os cache and written to disk.
+			stdout_commandfile_handler.flush() # Flushes written data to os cache
+			os.fsync(stdout_commandfile_handler.fileno()) # Flushes os cache to disk
+	
+	except IOError as reason_for_error:
+		error_message = 'Error writing to ffmpeg (audio stream demux) stdout - file ' * english + 'FFmpeg (audio streamien demux) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message)
+	except OSError as reason_for_error:
+		error_message = 'Error writing to ffmpeg (audio stream demux) stdout - file ' * english + 'FFmpeg (audio streamien demux) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message)
+	
+	# Open the file we used as stdout for the external program and read in what the external program wrote to it.
+	try:
+		with open(stdout_for_external_command, 'rb') as stdout_commandfile_handler:
+			ffmpeg_run_output = stdout_commandfile_handler.read(None)
+	except IOError as reason_for_error:
+		error_message = 'Error reading from ffmpeg (audio stream demux) stdout - file ' * english + 'FFmpeg (audio streamien demux) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message)
+	except OSError as reason_for_error:
+		error_message = 'Error reading from ffmpeg (audio stream demux) stdout - file ' * english + 'FFmpeg (audio streamien demux) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message)
+	
+	
 	ffmpeg_run_output_decoded = ffmpeg_run_output.decode('UTF-8')
 	ffmpeg_run_output_result_list = str(ffmpeg_run_output_decoded).split('\n')
 	for item in ffmpeg_run_output_result_list:
 		if 'error:' in item.lower(): # If there is the string 'error' in ffmpeg's output, there has been an error.
 			error_message = 'ERROR !!! Extracting audio streams with ffmpeg, ' * english + 'VIRHE !!! Audio streamien purkamisessa ffmpeg:illä, ' * finnish + ' ' + filename + ' : ' + results_of_gnuplot_run_list
 			send_error_messages_to_screen_logfile_email(error_message)
+
+	# Delete the temporary stdout - file.
+	try:
+		os.remove(stdout_for_external_command)
+	except IOError as reason_for_error:
+		error_message = 'Error deleting ffmpeg (audio stream demux) stdout - file ' * english + 'FFmpeg (audio streamien demux) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message)
+	except OSError as reason_for_error:
+		error_message = 'Error deleting ffmpeg (audio stream demux) stdout - file ' * english + 'FFmpeg (audio streamien demux) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message)
 
 	# Move each audio file we created from temporary directory to results directory.
 	for item in target_filenames:
@@ -1298,11 +1643,56 @@ def get_ip_addresses_of_the_host_machine():
 	if debug == True:
 		print()
 		print('Running commands:', commands_to_run)
+	
+	# Create files to use for writing stdout and stderr output from the external command we are about to run.
+	try:
+		# Define filenames for temporary files that we are going to use as stdout and stderr for the external command.
+		stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_hostname_command_stdout.txt'
+		stderr_for_external_command = directory_for_temporary_files + os.sep + filename + '_hostname_command_stderr.txt'
+		# Open the stdout and stderr temporary files in binary write mode.
+		with open(stdout_for_external_command, 'wb') as stdout_commandfile_handler, open(stderr_for_external_command, 'wb') as stderr_commandfile_handler:
+	
+			# Run our command.
+			subprocess.Popen(commands_to_run, stdout=stdout_commandfile_handler, stderr=stderr_commandfile_handler, stdin=None, close_fds=True).communicate()
+			
+			# Make sure all data written to temporary stdout and stderr - files is flushed from the os cache and written to disk.
+			stdout_commandfile_handler.flush() # Flushes written data to os cache
+			os.fsync(stdout_commandfile_handler.fileno()) # Flushes os cache to disk
+			stderr_commandfile_handler.flush() # Flushes written data to os cache
+			os.fsync(stderr_commandfile_handler.fileno()) # Flushes os cache to disk
+			
+	except IOError as reason_for_error:
+		error_message = 'Error writing to stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon kirjoittaminen epäonnistui ajettaessa komentoa: ' * finnish + commands_to_run + '. ' + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message)
+	except OSError as reason_for_error:
+		error_message = 'Error writing to stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon kirjoittaminen epäonnistui ajettaessa komentoa: ' * finnish + commands_to_run + '. ' + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message)
 
-	# Run our command.
-	stdout, stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+	# Open files we used as stdout and stderr for the external program and read in what the program did output to those files.
+	try:
+		with open(stdout_for_external_command, 'rb') as stdout_commandfile_handler, open(stderr_for_external_command, 'rb') as stderr_commandfile_handler:
+			stdout = stdout_commandfile_handler.read(None)
+			stderr = stderr_commandfile_handler.read(None)
+	except IOError as reason_for_error:
+		error_message = 'Error reading from stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston lukeminen epäonnistui ajettaessa komentoa: ' * finnish + commands_to_run + '. ' + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message)
+	except OSError as reason_for_error:
+		error_message = 'Error reading from stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon lukeminen epäonnistui ajettaessa komentoa: ' * finnish + commands_to_run + '. ' + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message)
+	
 	stdout = str(stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
 	stderr = str(stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+	
+	# Delete the temporary stdout and stderr - files
+	try:
+		os.remove(stdout_for_external_command)
+		os.remove(stderr_for_external_command)
+	except IOError as reason_for_error:
+		error_message = 'Error deleting stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston deletoiminen epäonnistui ajettaessa komentoa: ' * finnish + commands_to_run + '. ' + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message)
+	except OSError as reason_for_error:
+		error_message = 'Error deleting stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston deletoiminen epäonnistui ajettaessa komentoa: ' * finnish + commands_to_run + '. ' + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message)
 	
 	all_ip_addresses_of_the_machine = stdout.split()
 	
@@ -1794,11 +2184,52 @@ while True:
 						time_slice_duration_string = '3' # Set the default value to use in timeslice loudness calculation. This will be changed by the program to 0.5, if file duration is <= 9 seconds.
 						ffmpeg_error_message = ''
 						
-						# Examine the file with ffmpeg and parse its output.
-						ffmpeg_run_output = subprocess.Popen(['ffmpeg', '-i', file_to_test], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0] # Run ffmpeg.
+						# Create the file to use for writing stdout output from the external command we are about to run.
+						try:
+							# Define filename for the temporary file that we are going to use as stdout for the external command.
+							stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_ffmpeg_find_audio_streams_stdout.txt'
+							# Open the stdout temporary file in binary write mode.
+							with open(stdout_for_external_command, 'wb') as stdout_commandfile_handler:
+						
+								# Examine the file with ffmpeg and parse its output.
+								subprocess.Popen(['ffmpeg', '-i', file_to_test], stdout=stdout_commandfile_handler, stderr=stdout_commandfile_handler, stdin=None, close_fds=True).communicate()[0] # Run ffmpeg.
+						
+								# Make sure all data written to temporary stdout - file is flushed from the os cache and written to disk.
+								stdout_commandfile_handler.flush() # Flushes written data to os cache
+								os.fsync(stdout_commandfile_handler.fileno()) # Flushes os cache to disk
+								
+						except IOError as reason_for_error:
+							error_message = 'Error writing to ffmpeg stdout - file ' * english + 'FFmpegin stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+							send_error_messages_to_screen_logfile_email(error_message)
+						except OSError as reason_for_error:
+							error_message = 'Error writing to ffmpeg stdout - file ' * english + 'FFmpegin stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+							send_error_messages_to_screen_logfile_email(error_message)
+							
+						# Open the file we used as stdout for the external program and read in what the external program wrote to it.
+						try:
+							with open(stdout_for_external_command, 'rb') as stdout_commandfile_handler:
+								ffmpeg_run_output = stdout_commandfile_handler.read(None)
+						except IOError as reason_for_error:
+							error_message = 'Error reading from ffmpeg stdout - file ' * english + 'FFmpegin stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+							send_error_messages_to_screen_logfile_email(error_message)
+						except OSError as reason_for_error:
+							error_message = 'Error reading from ffmpeg stdout - file ' * english + 'FFmpegin stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+							send_error_messages_to_screen_logfile_email(error_message)
+						
+						# Convert ffmpeg output from binary to UTF-8 text.
 						ffmpeg_run_output_decoded = ffmpeg_run_output.decode('UTF-8') # Convert ffmpeg output from binary to utf-8 text.
 						ffmpeg_run_output_result_list = str(ffmpeg_run_output_decoded).split('\n') # Split ffmpeg output by linefeeds to a list.
-
+						
+						# Delete the temporary stdout - file.
+						try:
+							os.remove(stdout_for_external_command)
+						except IOError as reason_for_error:
+							error_message = 'Error deleting ffmpeg stdout - file ' * english + 'FFmpegin stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+							send_error_messages_to_screen_logfile_email(error_message)
+						except OSError as reason_for_error:
+							error_message = 'Error deleting ffmpeg stdout - file ' * english + 'FFmpegin stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+							send_error_messages_to_screen_logfile_email(error_message)
+						
 						# Parse ffmpeg output inspecting it line by line.
 						for item in ffmpeg_run_output_result_list:
 							if 'Audio:' in item: # There is the string 'Audio' for each audio stream that ffmpeg finds. Count how many 'Audio' strings is found and put the strings in a list. The string holds detailed information about the stream and we print it later.
@@ -1906,7 +2337,6 @@ while True:
 					process_2 = threading.Thread(target=calculate_integrated_loudness, args=(event_for_integrated_loudness_calculation, filename, hotfolder_path, libebur128_commands_for_integrated_loudness_calculation, english, finnish)) # Create a process instance.
 					# Start both calculation threads.
 					thread_object = process_2.start() # Start the calculation process in it's own thread.
-					time.sleep(1)
 					thread_object = process_1.start() # Start the calculation process in it's own thread.
 				else:
 					# Filefomat is not natively supported by libebur128 and sox, or it has more than one audio streams.
