@@ -34,7 +34,7 @@ import email.mime.multipart
 import pickle
 import math
 
-version = '155'
+version = '157'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -195,10 +195,10 @@ def calculate_integrated_loudness(event_for_integrated_loudness_calculation, fil
 				os.fsync(stderr_commandfile_handler.fileno()) # Flushes os cache to disk
 			
 		except IOError as reason_for_error:
-			error_message = 'Error writing to stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon kirjoittaminen epäonnistui ajettaessa komentoa: ' * finnish + libebur128_commands_for_integrated_loudness_calculation + '. ' + str(reason_for_error)
+			error_message = 'Error writing to stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon kirjoittaminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(libebur128_commands_for_integrated_loudness_calculation) + '. ' + str(reason_for_error)
 			send_error_messages_to_screen_logfile_email(error_message)
 		except OSError as reason_for_error:
-			error_message = 'Error writing to stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon kirjoittaminen epäonnistui ajettaessa komentoa: ' * finnish + libebur128_commands_for_integrated_loudness_calculation + '. ' + str(reason_for_error)
+			error_message = 'Error writing to stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon kirjoittaminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(libebur128_commands_for_integrated_loudness_calculation) + '. ' + str(reason_for_error)
 			send_error_messages_to_screen_logfile_email(error_message)
 		
 		# Open files we used as stdout and stderr for the external program and read in what the program did output to those files.
@@ -207,10 +207,10 @@ def calculate_integrated_loudness(event_for_integrated_loudness_calculation, fil
 				integrated_loudness_calculation_stdout = stdout_commandfile_handler.read(None)
 				integrated_loudness_calculation_stderr = stderr_commandfile_handler.read(None)
 		except IOError as reason_for_error:
-			error_message = 'Error reading from stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston lukeminen epäonnistui ajettaessa komentoa: ' * finnish + libebur128_commands_for_integrated_loudness_calculation + '. ' + str(reason_for_error)
+			error_message = 'Error reading from stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston lukeminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(libebur128_commands_for_integrated_loudness_calculation) + '. ' + str(reason_for_error)
 			send_error_messages_to_screen_logfile_email(error_message)
 		except OSError as reason_for_error:
-			error_message = 'Error reading from stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon lukeminen epäonnistui ajettaessa komentoa: ' * finnish + libebur128_commands_for_integrated_loudness_calculation + '. ' + str(reason_for_error)
+			error_message = 'Error reading from stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon lukeminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(libebur128_commands_for_integrated_loudness_calculation) + '. ' + str(reason_for_error)
 			send_error_messages_to_screen_logfile_email(error_message)
 		
 		# Convert libebur128 output from binary to UTF-8 text.
@@ -222,10 +222,10 @@ def calculate_integrated_loudness(event_for_integrated_loudness_calculation, fil
 			os.remove(stdout_for_external_command)
 			os.remove(stderr_for_external_command)
 		except IOError as reason_for_error:
-			error_message = 'Error deleting stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston deletoiminen epäonnistui ajettaessa komentoa: ' * finnish + libebur128_commands_for_integrated_loudness_calculation + '. ' + str(reason_for_error)
+			error_message = 'Error deleting stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston deletoiminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(libebur128_commands_for_integrated_loudness_calculation) + '. ' + str(reason_for_error)
 			send_error_messages_to_screen_logfile_email(error_message)
 		except OSError as reason_for_error:
-			error_message = 'Error deleting stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston deletoiminen epäonnistui ajettaessa komentoa: ' * finnish + libebur128_commands_for_integrated_loudness_calculation + '. ' + str(reason_for_error)
+			error_message = 'Error deleting stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston deletoiminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(libebur128_commands_for_integrated_loudness_calculation) + '. ' + str(reason_for_error)
 			send_error_messages_to_screen_logfile_email(error_message)
 
 		# Test if libebur128 was successful in processing the file or not.
@@ -308,10 +308,10 @@ def calculate_loudness_timeslices(filename, hotfolder_path, libebur128_commands_
 				os.fsync(stderr_commandfile_handler.fileno()) # Flushes os cache to disk
 		
 		except IOError as reason_for_error:
-			error_message = 'Error writing to stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon kirjoittaminen epäonnistui ajettaessa komentoa: ' * finnish + libebur128_commands_for_time_slice_calculation + '. ' + str(reason_for_error)
+			error_message = 'Error writing to stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon kirjoittaminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(libebur128_commands_for_time_slice_calculation) + '. ' + str(reason_for_error)
 			send_error_messages_to_screen_logfile_email(error_message)
 		except OSError as reason_for_error:
-			error_message = 'Error writing to stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon kirjoittaminen epäonnistui ajettaessa komentoa: ' * finnish + libebur128_commands_for_time_slice_calculation + '. ' + str(reason_for_error)
+			error_message = 'Error writing to stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon kirjoittaminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(libebur128_commands_for_time_slice_calculation) + '. ' + str(reason_for_error)
 			send_error_messages_to_screen_logfile_email(error_message)
 		
 		# Open files we used as stdout and stderr for the external program and read in what the program did output to those files.
@@ -320,10 +320,10 @@ def calculate_loudness_timeslices(filename, hotfolder_path, libebur128_commands_
 				timeslice_loudness_calculation_stdout = stdout_commandfile_handler.read(None)
 				timeslice_loudness_calculation_stderr = stderr_commandfile_handler.read(None)
 		except IOError as reason_for_error:
-			error_message = 'Error reading from stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston lukeminen epäonnistui ajettaessa komentoa: ' * finnish + libebur128_commands_for_integrated_loudness_calculation + '. ' + str(reason_for_error)
+			error_message = 'Error reading from stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston lukeminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(libebur128_commands_for_time_slice_calculation) + '. ' + str(reason_for_error)
 			send_error_messages_to_screen_logfile_email(error_message)
 		except OSError as reason_for_error:
-			error_message = 'Error reading from stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon lukeminen epäonnistui ajettaessa komentoa: ' * finnish + libebur128_commands_for_integrated_loudness_calculation + '. ' + str(reason_for_error)
+			error_message = 'Error reading from stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon lukeminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(libebur128_commands_for_time_slice_calculation) + '. ' + str(reason_for_error)
 			send_error_messages_to_screen_logfile_email(error_message)
 		
 		# Convert libebur128 output from binary to UTF-8 text.
@@ -335,10 +335,10 @@ def calculate_loudness_timeslices(filename, hotfolder_path, libebur128_commands_
 			os.remove(stdout_for_external_command)
 			os.remove(stderr_for_external_command)
 		except IOError as reason_for_error:
-			error_message = 'Error deleting stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston deletoiminen epäonnistui ajettaessa komentoa: ' * finnish + libebur128_commands_for_integrated_loudness_calculation + '. ' + str(reason_for_error)
+			error_message = 'Error deleting stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston deletoiminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(libebur128_commands_for_time_slice_calculation) + '. ' + str(reason_for_error)
 			send_error_messages_to_screen_logfile_email(error_message)
 		except OSError as reason_for_error:
-			error_message = 'Error deleting stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston deletoiminen epäonnistui ajettaessa komentoa: ' * finnish + libebur128_commands_for_integrated_loudness_calculation + '. ' + str(reason_for_error)
+			error_message = 'Error deleting stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston deletoiminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(libebur128_commands_for_time_slice_calculation) + '. ' + str(reason_for_error)
 			send_error_messages_to_screen_logfile_email(error_message)
 		
 		if '' in timeslice_loudness_calculation_result_list: # There usually is an empty item [''] at the end of the list, remove it.
@@ -1059,7 +1059,7 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 		# Create names for audio streams found in the file.
 		# First parse the number of audio channels in each stream ffmpeg reported and put it in a variable.
 		number_of_audio_channels = '0'
-		number_of_audio_channels_as_text = str(details_of_ffmpeg_supported_audiostreams[counter]).split(',')[2].strip() # FFmpeg reports audio channel count as a string.
+		number_of_audio_channels_as_text = str(details_of_ffmpeg_supported_audiostreams[counter]).split(',')[2].strip() # FFmpeg reports audio channel count as a string.		
 		
 		# Split audio channel count to a list ('2 channels' becomes ['2', 'channels']
 		number_of_audio_channels_as_text_split_to_a_list = number_of_audio_channels_as_text.split()
@@ -1636,6 +1636,7 @@ def debug_variables_read_from_configfile():
 def get_ip_addresses_of_the_host_machine():
 	
 	global all_ip_addresses_of_the_machine
+	global directory_for_temporary_files
 	
 	# Create the commandline we need to run as root.
 	commands_to_run = ['hostname', '-I']
@@ -1647,8 +1648,9 @@ def get_ip_addresses_of_the_host_machine():
 	# Create files to use for writing stdout and stderr output from the external command we are about to run.
 	try:
 		# Define filenames for temporary files that we are going to use as stdout and stderr for the external command.
-		stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_hostname_command_stdout.txt'
-		stderr_for_external_command = directory_for_temporary_files + os.sep + filename + '_hostname_command_stderr.txt'
+		stdout_for_external_command = directory_for_temporary_files + os.sep + 'Hostname_command_stdout.txt'
+		stderr_for_external_command = directory_for_temporary_files + os.sep + 'Hostname_command_stderr.txt'
+				
 		# Open the stdout and stderr temporary files in binary write mode.
 		with open(stdout_for_external_command, 'wb') as stdout_commandfile_handler, open(stderr_for_external_command, 'wb') as stderr_commandfile_handler:
 	
@@ -1662,10 +1664,10 @@ def get_ip_addresses_of_the_host_machine():
 			os.fsync(stderr_commandfile_handler.fileno()) # Flushes os cache to disk
 			
 	except IOError as reason_for_error:
-		error_message = 'Error writing to stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon kirjoittaminen epäonnistui ajettaessa komentoa: ' * finnish + commands_to_run + '. ' + str(reason_for_error)
+		error_message = 'Error writing to stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon kirjoittaminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(commands_to_run) + '. ' + str(reason_for_error)
 		send_error_messages_to_screen_logfile_email(error_message)
 	except OSError as reason_for_error:
-		error_message = 'Error writing to stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon kirjoittaminen epäonnistui ajettaessa komentoa: ' * finnish + commands_to_run + '. ' + str(reason_for_error)
+		error_message = 'Error writing to stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon kirjoittaminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(commands_to_run) + '. ' + str(reason_for_error)
 		send_error_messages_to_screen_logfile_email(error_message)
 
 	# Open files we used as stdout and stderr for the external program and read in what the program did output to those files.
@@ -1674,10 +1676,10 @@ def get_ip_addresses_of_the_host_machine():
 			stdout = stdout_commandfile_handler.read(None)
 			stderr = stderr_commandfile_handler.read(None)
 	except IOError as reason_for_error:
-		error_message = 'Error reading from stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston lukeminen epäonnistui ajettaessa komentoa: ' * finnish + commands_to_run + '. ' + str(reason_for_error)
+		error_message = 'Error reading from stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston lukeminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(commands_to_run) + '. ' + str(reason_for_error)
 		send_error_messages_to_screen_logfile_email(error_message)
 	except OSError as reason_for_error:
-		error_message = 'Error reading from stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon lukeminen epäonnistui ajettaessa komentoa: ' * finnish + commands_to_run + '. ' + str(reason_for_error)
+		error_message = 'Error reading from stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon lukeminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(commands_to_run) + '. ' + str(reason_for_error)
 		send_error_messages_to_screen_logfile_email(error_message)
 	
 	stdout = str(stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
@@ -1688,10 +1690,10 @@ def get_ip_addresses_of_the_host_machine():
 		os.remove(stdout_for_external_command)
 		os.remove(stderr_for_external_command)
 	except IOError as reason_for_error:
-		error_message = 'Error deleting stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston deletoiminen epäonnistui ajettaessa komentoa: ' * finnish + commands_to_run + '. ' + str(reason_for_error)
+		error_message = 'Error deleting stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston deletoiminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(commands_to_run) + '. ' + str(reason_for_error)
 		send_error_messages_to_screen_logfile_email(error_message)
 	except OSError as reason_for_error:
-		error_message = 'Error deleting stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston deletoiminen epäonnistui ajettaessa komentoa: ' * finnish + commands_to_run + '. ' + str(reason_for_error)
+		error_message = 'Error deleting stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston deletoiminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(commands_to_run) + '. ' + str(reason_for_error)
 		send_error_messages_to_screen_logfile_email(error_message)
 	
 	all_ip_addresses_of_the_machine = stdout.split()
@@ -1767,7 +1769,6 @@ unsupported_ignored_files_dict = {} # This dictionary holds the names of files t
 html_progress_report_counter = 0 # This variable is used to count the seconds between writing loudness calculation queue information to a html - page on disk
 loudness_correction_pid = os.getpid() # Get the PID of this program.
 all_ip_addresses_of_the_machine = [] # This variable stores in a list all IP-Addresses this machine has. This info is inserted into error emails.
-all_ip_addresses_of_the_machine = get_ip_addresses_of_the_host_machine() # Get IP-Addresses of the machine.
 
 
 ###############################################################################################################################################################################
@@ -1899,7 +1900,7 @@ if (not os.path.exists(web_page_path + os.sep + '.temporary_files')):
 		if silent == False:
 			print('Created directory' * english + 'Loin hakemiston' * finnish, str(web_page_path + os.sep + '.temporary_files'))
 
-# Test that programs gnuplot, sox, ffmpeg and libebur128 loudness-executable can be found in the path and that they have executable permiossions on.
+# Test that programs gnuplot, sox, ffmpeg and libebur128 loudness-executable can be found in the path and that they have executable permissions on.
 gnuplot_executable_found = False
 sox_executable_found = False
 ffmpeg_executable_found = False
@@ -1940,6 +1941,9 @@ else:
 
 # Define the name of the error logfile.
 error_logfile_path = directory_for_error_logs + os.sep + 'error_log-' + str(get_realtime(english, finnish)) + '.txt' # Error log filename is 'error_log' + current date + time
+
+# Get IP-Addresses of the machine.
+all_ip_addresses_of_the_machine = get_ip_addresses_of_the_host_machine()
 
 # The dictionary 'loudness_correction_program_info_and_timestamps' is used to send information to the HeartBeat_Checker - program that is run indipendently of the LoudnessCorrection - script.
 # Some threads in LoudnessCorrection write periodically a timestamp to this dictionary indicating they are still alive. 
@@ -1985,9 +1989,11 @@ if silent == False:
 	print('-' * (len(version_string_to_print) + 1))
 	print()
 
-#################
-# The main loop #
-#################
+
+#############################
+# The main loop starts here #
+#############################
+
 while True:
 	
 	loudness_correction_program_info_and_timestamps['main_thread'] = [True, int(time.time())] # Update the heartbeat timestamp for the main thread. This is used to keep track if the main thread has crashed.
@@ -2339,7 +2345,7 @@ while True:
 					thread_object = process_2.start() # Start the calculation process in it's own thread.
 					thread_object = process_1.start() # Start the calculation process in it's own thread.
 				else:
-					# Filefomat is not natively supported by libebur128 and sox, or it has more than one audio streams.
+					# Fileformat is not natively supported by libebur128 and sox, or it has more than one audio streams.
 					# Start a process that extracts all audio streams from the file to flac and moves resulting files back to the HotFolder for loudness calculation.
 					if silent == False:
 						print ('\r' + 'File' * english + 'Tiedoston' * finnish, '"' + filename + '"' + ' conversion started ' * english + '  muunnos    alkoi  ' * finnish, realtime)
