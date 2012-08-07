@@ -1,8 +1,23 @@
 #####################################
+# Released FreeLCS 1.02 with:       #
+# - LoudnessCorrection version 154  #
+# - HeartBeat_Checker version 017   #
+# - Installer version 038           #
+# - Latest Documentation            #
+#####################################
+
+Documentation
+--------------
+- Corrected some typos and made minor clarifications.
+- Corrected an error in the command needed to install required packages. The requirements was missing idle3.
+- Added info about how to report bugs and get error messages from the programs.
+
+#####################################
 # Released FreeLCS 1.01 with:       #
 # - LoudnessCorrection version 154  #
 # - HeartBeat_Checker version 017   #
 # - Installer version 038           #
+# - Latest Documentation            #
 #####################################
 
 Documentation
@@ -36,6 +51,14 @@ LoudnessCorrection Version 152
 - Bugfix: File duration was displayed incorrectly in the loudness history graphics file if duration was exactly 10 seconds.
 - Loudness history graphics display is calculated with 0.5 sec resolution if file duration is under 12 seconds (was previously for files less than 10 seconds). Resolution for longer files is 3 seconds.
 
+#####################################
+# Released FreeLCS 1.00 with:       #
+# - LoudnessCorrection version 151  #
+# - HeartBeat_Checker version 017   #
+# - Installer version 037           #
+# - Latest Documentation            #
+#####################################
+
 Documentation
 --------------
 - Added documentation for FreeLCS 1.0 :)
@@ -53,8 +76,9 @@ installer 035
 - Bugfix: Installer let the user go to the next window even though loudnesscorrection_init_script was not installed yet.
 - Bigfix: Some directory ownership and permissions were not set correctly if the user selected not to create a ram disk.
 
-First Public Git Commit :)
---------------------------
+#####################################
+# First Public Git Commit :)        #
+#####################################
 
 HeartBeat_Checker version 015
 -------------------------------

@@ -36,6 +36,11 @@
         loudness correction usage</a></h3>
     <h3><a href="#Setting%20up%20automatic%20security%20updates">Setting up
         automatic security updates</a></h3>
+    <h3><a href="#How%20to%20report%20a%20bug">How to report a bug</a></h3>
+    <h3><a href="#Run%20FreeLCS%20programs%20so%20that%20possible%20error%20messages%20can%20be%20seen">Run
+        FreeLCS programs so that possible error messages can be seen</a></h3>
+    <br>
+    <br>
     <br>
     <br>
     <br>
@@ -74,7 +79,7 @@
     <ul>
       <li> Calculates loudness according to EBU R128 for files dropped into the
         HotFolder.</li>
-      <li>For each file it creates an loudness history graphics file which gives
+      <li>For each file it creates a loudness history graphics file which gives
         visual feedback of the loudness variations in the file.</li>
       <li>Creates loudness corrected versions of each file dropped in the
         servers HotFolder.</li>
@@ -83,7 +88,7 @@
       </li>
       <li> Supports files with several audio streams. Each stream is demuxed to
         a separate file and loudness corrected.</li>
-      <li>Even video files can dropped in for processing. Audio streams are
+      <li>Even video files can be dropped in for processing. Audio streams are
         demuxed from the file and processed.<br>
       </li>
       <li> Supports channel counts from mono to 5.1.</li>
@@ -110,7 +115,8 @@
     <br>
     <ul>
       <li>You need a computer with at least 2 processor cores.</li>
-      <li>2 GB of RAM&nbsp; (there probably is not much advantage having more).</li>
+      <li>2 GB of RAM&nbsp; (there probably is not much advantage in having
+        more).</li>
       <li> Ubuntu Linux 12.04. This version of Ubuntu will be supported by
         Canonical until April 2017, meaning there will be security updates for 5
         years after the release.</li>
@@ -129,9 +135,9 @@
     <br>
     <h2> <a id="Installation">Installation</a></h2>
     <ul>
-      <li>First install Ubuntu 12.04. If you don't know whether to choose the 32
-        or 64 bit version, use the 32 bit one if you have less than 4 GB of ram
-        and 64 bit if you have more.</li>
+      <li>First install Ubuntu 12.04. If you don't know whether to choose 32 or
+        64 bit version, use the 32 bit one if you have less than 4 GB of ram and
+        64 bit if you have more.</li>
       <li>It is recommended to use the JFS - filesystem for all disks, since the
         default filesystem ext4 has some quite serious bugs / design flaws that
         are probably never going to be fixed. JFS was designed by IBM to be a
@@ -144,13 +150,46 @@
       </li>
       <li>After Ubuntu is installed log in as the first user you created during
         installation.</li>
-      <li>Next you must install python3. Give the following command in the
-        terminal window (you can copy and paste it from here):</li>
+      <li>Next you must install python3 and idle3. Press the "windows" key on
+        the keyboard to bring up Ubuntu search function, write: <strong>term</strong><br>
+        You should now see an icon for "Terminal", start it up by clicking on
+        it.</li>
     </ul>
+    <p><br>
+    </p>
+    <p><img alt="" src="Pictures/Terminal-01.jpg"><br>
+    </p>
+    <p><br>
+    </p>
+    <ul>
+      <li>Write the following command in the terminal window (you can copy and
+        paste it from below. Note that that keyboard command for paste in
+        Terminal is: <strong>shift + ctrl + v</strong>):</li>
+    </ul>
+    <p><br>
+    </p>
     <blockquote>
       <blockquote>
-        <p><strong>sudo apt-get -y install python3</strong></p>
+        <p><strong>sudo apt-get -y install python3 idle3<br>
+          </strong></p>
       </blockquote>
+    </blockquote>
+    <ul>
+    </ul>
+    <p><br>
+    </p>
+    <ul>
+      <li>Press enter to run the command.<br>
+      </li>
+    </ul>
+    <p><br>
+      <strong></strong></p>
+    <p><img alt="" src="Pictures/Terminal-02.jpg"><br>
+      <strong></strong></p>
+    <p><strong><br>
+      </strong></p>
+    <blockquote>
+      <blockquote> </blockquote>
     </blockquote>
     <ul>
       <li>The command will ask for your password. Type in the password and press
@@ -159,7 +198,7 @@
       <li>Now that python3 is installed you can start the FreeLCS installation
         program, it will ask you some details about how you would like the
         loudness correction server to work and installs the rest of the programs
-        it needs.</li>
+        FreeLCS needs.</li>
       <li>Next unzip the FreeLCS - package by clicking it with the right mouse
         button and selecting " <strong>Extract Here</strong>". A new directory
         will be created and all FreeLCS files will be unzipped there.<br>
@@ -193,7 +232,7 @@
     <p><br>
     </p>
     <ul>
-      <li>Double click the "<strong>installer.py</strong>" - file. A menu will
+      <li>Double click the "<strong>installer.py</strong>" - file. A window will
         appear, click "<strong>Run</strong>".<br>
       </li>
     </ul>
@@ -215,8 +254,8 @@
     <p><br>
     </p>
     <ul>
-      <li>The next screen will ask about some details of you would like loudness
-        correction to work.</li>
+      <li>The next screen will ask some details about how you would like
+        loudness correction to work.</li>
       <li>The first section will allow you to define the path to the target
         directory. Some directories are automatically created inside this target
         directory, the most important of these is the '<strong>HotFolder</strong>'.
@@ -253,20 +292,22 @@
         messages to the admin.<br>
       </li>
       <li>Input your email details here. Smtp - server is the email server you
-        use to send email out to the world.</li>
+        use to send email out to the world. (Note that if you use <strong>Gmail</strong>,
+        the settings to use are displayed printed in light gray).<br>
+      </li>
       <li>You can add max 5 addresses that the messages are sent to. When you
         have filled in email details, click the "Send" - button to test that
         email sending really works. The bottom of the window displays a message
         if email sending is succesful.<br>
       </li>
-      <li>HeartBeat Checker is a separate program that monitors the health of
-        the loudness correction program. If Loudness correction crashes for some
-        reason, HeartBeat Checker sends you email. If your loudness correction
-        server is mission critical then enable this option.</li>
+      <li><strong>HeartBeat Checker</strong> is a separate program that monitors
+        the health of the loudness correction program. If Loudness correction
+        crashes for some reason, HeartBeat Checker sends you email. If your
+        loudness correction server is mission critical then enable this option.</li>
       <li>(Note that the password you give here is not encrypted when it is
         stored in the file "<strong>/etc/LoudnessCorrection_Settings.pickle</strong>".
         Scripts can not securely encrypt anything since the scripts themselves
-        can be easily read and any encryption method used can be found out by
+        can be easily read and any encryption method used can be seen by
         examining the source code :)<br>
       </li>
     </ul>
@@ -281,13 +322,14 @@
             progress report</strong></a>" written to the HotFolder. It is an
         html-page that can be viewed with a web-browser and it displays the
         loudness calculation queue inside the server. On the page you can see
-        how many unprocessed files are waiting to be processed and names of the
-        last 100 processed files and times they were processed. The "html
-        progress report" is a tool for the admin to see what's going on inside
-        the server, this feature is not needed by normal users. Current time is
-        displayed on the page also and if it is advancing then the server is
-        alive and well :) The default path for the "Html progress report" is "<strong>Target
-          Directory / LoudnessCorrection / 00-Calculation_Queue_Information /
+        how many files are waiting to be processed and names of the last 100
+        processed files and times they were processed. The "<strong>html
+          progress report</strong>" is a tool for the admin to see what's going
+        on inside the server, this feature is not needed by normal users.
+        Current time is displayed on the page also and if it is advancing then
+        the server is alive and well :) The default path for the "Html progress
+        report" is "<strong>Target Directory / LoudnessCorrection /
+          00-Calculation_Queue_Information /
           00-Calculation_Queue_Information.html</strong>".<br>
       </li>
       <li>The "Html progress report" is updated once in every 5 seconds. During
@@ -299,35 +341,38 @@
         quickly and traffic jams on hard disks don't affect them at all.</li>
       <li>If you wan't the progress report to be written on a ram-disk, then you
         can select which of the operating systems ram-devices are used to create
-        the ram disk. You need to change the default setting of "/dev/ram1" here
-        only if you know you have created other ram-disks for other purposes and
-        you know that device "/dev/ram1" is already used for something else.</li>
+        the ram disk. You need to change the default setting of "<strong>/dev/ram1</strong>"
+        here only if you know you have created other ram-disks for other
+        purposes and you know that device "/dev/ram1" is already used for
+        something else.</li>
       <li>Then you can select which user account is used when loudness
         correction and heartbeat checker programs are run. These two programs
         are always run as an "unprivileged" user. If you only created one user,
         then this user is used by default.<br>
       </li>
-      <li>If you are not sure what to select for this options then just leave
-        the defaults as they are. Defaults are ok for most users :)</li>
-      <li>The last option lets you select which peak measurement method you want
-        to use: sample peak or TruePeak. TruePeak is a method that takes into
-        account invisible peaks that might exist between samples. These peaks
-        can go above the maximum allowed 0 dBFS and cause distortion in AD -
-        converters. TruePeak measurement finds these hidden peaks and gives the
-        true maximum peak value in a file. TruePeak calculation slows down file
-        processing by a factor of 4. Sample peak simply finds the highest sample
-        value in the file and uses that as the highest peak value.<br>
+      <li>If you are not sure what to select for options described above, then
+        just leave the defaults as they are. Defaults are ok for most users :)</li>
+      <li>The last option on this window lets you select which peak measurement
+        method you want to use: <strong>sample peak</strong> or <strong>TruePeak</strong>.
+        TruePeak is a method that takes into account invisible peaks that might
+        exist between audio samples. These peaks can go above the maximum
+        allowed 0 dBFS and cause distortion in DA - converters. TruePeak
+        measurement finds these hidden peaks and gives the true maximum peak
+        value in a file. TruePeak calculation slows down file processing by a
+        factor of 4. Sample peak simply finds the highest sample value in the
+        file and uses that as the highest peak value.<br>
       </li>
       <li>The peak value is only important when loudness of a file falls below
-        the target -23 LUFS level and needs to be increased. There is the
-        possibility that peaks will distort after the gain correction. In these
-        cases a protective limiter is used. If peak value after gain correction
-        would go over a set limit (-4 dBFS for sample peaks and -2 dBFS for
-        TruePeaks), then the file is limited before gain correction. The
-        resulting peaks after gain correction will be max. 1 dB higher than the
-        set limit resulting in max -3 dBFS / -1 dBFS peaks. Note that if you use
-        sample peak, there will always be 3 dB headroom for the invisible peaks
-        to exist and distortion is very unlikely.<br>
+        the target -23 LUFS and needs to be increased. There is the possibility
+        that peaks will distort after the gain correction. In these cases a
+        protective limiter is used. If peak value after gain correction would go
+        over a set limit (-4 dBFS for sample peaks and -2 dBFS for TruePeaks),
+        then the file is limited before gain correction. The resulting peaks
+        after gain correction will be max. 1 dB higher than the set limit
+        resulting in max -3 dBFS / -1 dBFS peaks. Note that if you use sample
+        peak, there will always be 3 dB headroom for the invisible peaks to
+        exist and distortion is very unlikely. If you are unsure what to use
+        then select sample peak here, it is ok for most users.<br>
       </li>
     </ul>
     <p><br>
@@ -337,14 +382,14 @@
     <p><br>
     </p>
     <ul>
-      <li>The next window will let you select if you wan't the "HotFolder" to be
-        shared to the network. Select "Yes" if you wan't users to be able to
-        drop in files to the HotFolder through the network.</li>
+      <li>The next window will let you select if you want the "HotFolder" to be
+        shared to the network. Select "Yes" if you want users to be able to drop
+        in files to the HotFolder through the network.</li>
       <li>If you select "Yes" the the samba-server is used for creating the
         network share and the default samba configuration is shown on the
-        window. You can edit the configuration in the window, but only change it
-        if you know your&nbsp; settings will work in your network. In all other
-        cases just leave the configuration as it is and click "Next".<br>
+        window. You can edit the configuration, but only change it if you know
+        your&nbsp; settings will work in your network. In all other cases just
+        leave the configuration as it is and click "Next".<br>
       </li>
     </ul>
     <p><br>
@@ -356,8 +401,8 @@
     <ul>
       <li>The next window asks for the "root" - users password. It is the same
         password that you set up for the first user you created during Ubuntu
-        installation. The root password is needed when loudness correction
-        settings and programs are written into Linux system directories.<br>
+        installation. The root password is needed when FreeLCS files are written
+        into Linux system directories.<br>
       </li>
     </ul>
     <p><br>
@@ -367,10 +412,10 @@
     <p><br>
     </p>
     <ul>
-      <li>The next window will list all external programs that FreeLCS needs to
-        do it's job. Just click the "<strong>Install</strong>" - button and the
-        installer will download and install all needed Ubuntu packages. It will
-        also download libebur128 source code, compile and install it.</li>
+      <li>The next window will list all external programs that FreeLCS needs.
+        Just click the "<strong>Install</strong>" - button and the installer
+        will download and install everything for you. (It will also download
+        libebur128 source code, compile and install it).</li>
       <li>The installation takes a couple of minutes and the window freezes
         while the installer launches external programs to do the actual
         installation. So don't try to click on anything on the window while the
@@ -388,7 +433,7 @@
     </p>
     <ul>
       <li>When the installation is finished the window looks like the screenshot
-        below. Click the button "<strong>Next</strong>".<br>
+        below. Click the "<strong>Next</strong>" -&nbsp; button.<br>
       </li>
     </ul>
     <p><br>
@@ -402,9 +447,9 @@
         by typing the commands displayed in the window into a terminal window.
         The easiest way to start loudness correction however is to restart the
         computer.</li>
-      <li>There is a deliberate delay for starting up loudness correction and
-        heartbeat checker. This makes sure all needed system services are up
-        when our scripts run at computer startup.<br>
+      <li>Note that there is a deliberate delay for starting up loudness
+        correction and heartbeat checker after computer has booted up. This
+        makes sure all needed system services are up when our scripts run.<br>
       </li>
     </ul>
     <p><br>
@@ -419,41 +464,41 @@
     <br>
     FreeLCS is made up of these files:<br>
     <br>
-    <u><strong>/etc/init.d/loudness_correction_init_script</strong></u><br>
+    <strong>/etc/init.d/loudness_correction_init_script</strong><br>
     <br>
-    This script is started by a link in the <strong>/etc/rc2.d</strong> -
-    folder when the computer starts up (See the file below). This file creates
-    the ram disk, creates directories in the HotFolder if they do not exist and
-    sets their permissions so that network users can not delete critical files
-    and folders in the HotFolder. This script also starts up
-    LoudnessCorrection.py and HeartBeat_Checker.py - programs.<br>
+    This script starts up all FreeLCS programs. The script is started by a link
+    in the <strong>/etc/rc2.d</strong> - folder when the computer starts up
+    (See the file below). This file creates the ram disk, creates directories in
+    the HotFolder if they do not exist and sets their permissions so that
+    network users can not delete critical files and folders in the HotFolder.
+    This script also starts up LoudnessCorrection.py and HeartBeat_Checker.py -
+    programs.<br>
     <br>
-    <u><strong>/etc/rc2.d/S99loudness_correction_init_script</strong></u><br>
+    <strong>/etc/rc2.d/S99loudness_correction_init_script</strong><br>
     <br>
     This file is a link that points to "<strong>/etc/init.d/loudness_correction_init_script</strong>"
     &nbsp; this link is used to start up "<strong>/etc/init.d/loudness_correction_init_script</strong>"
     when the computer starts up. Without this link the script "<strong>loudness_correction_init_script</strong>"
     won't run.<br>
     <br>
-    <u><strong>/usr/bin/LoudnessCorrection.py</strong></u><br>
+    <strong>/usr/bin/LoudnessCorrection.py</strong><br>
     <br>
     This is the main program of FreeLCS. It is the one that processes all files
     dropped into HotFolder.<br>
     <strong><br>
-      <u>/usr/bin/HeartBeat_Checker.py</u></strong><u>&nbsp;</u>&nbsp;&nbsp;
-    &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; <br>
+      /usr/bin/HeartBeat_Checker.py</strong><br>
     &nbsp;<br>
     This program is started only if you selected it in the installer. It
-    monitors the health of the LoudnessCorrection - program and sends email if
-    LoudnessCorrection crashes.<br>
+    monitors the health of the LoudnessCorrection.py - program and sends email
+    if LoudnessCorrection crashes.<br>
     <br>
-    <strong><u>/etc/LoudnessCorrection_Settings.pickle</u><br>
+    <strong>/etc/LoudnessCorrection_Settings.pickle<br>
       <br>
     </strong>The settings that you defined when running the installer are stored
     in this file. LoudnessCorrection.py and HeartBeat_Checker.py both read their
-    settings from this file when they are starting up.<br>
+    settings from this file when they start up.<br>
     <br>
-    <u><strong>/etc/samba/smb.conf</strong></u><br>
+    <strong>/etc/samba/smb.conf</strong><br>
     <br>
     This is the configuration file for the samba server that shares the
     HotFolder to the network. Hotfolder is shared to the network only if you
@@ -486,7 +531,7 @@
         is used to store two files that normally aren't of interest to normal
         users. The first one is "<strong>00-Calculation_Queue_Information.html</strong>".
         That is an html-file that can be opened in a web-browser. The page is
-        updated oevery 5 seconds and it shows how many files are waiting to be
+        updated every 5 seconds and it shows how many files are waiting to be
         processed, which files are currently worked upon and so on. The second
         file that is stored in this folder is "<strong>00-HeartBeat.pickle</strong>".
         LoudnessCorrection writes periodically timestamps and other information
@@ -530,8 +575,8 @@
       <li>In a while files start to appear there. The first file will be the
         loudness calculation history graphics file and some time after that the
         loudness corrected sound file appears. Drag the corrected sound files
-        back to your computer. Each corrected file will have the string&nbsp;
-        "_-23_LUFS" added at the end of its name.</li>
+        back to your computer. Each corrected file will have the string&nbsp; "<strong>_-23_LUFS</strong>"
+        added at the end of its name.</li>
       <li>All files in the root of the "<strong>HotFolder</strong>" and&nbsp; "<strong>00-Corrected_Files</strong>"
         will be automatically deleted after a time period that you defined in
         the installer program. By default it is 8 hours.<br>
@@ -543,30 +588,33 @@
     </h2>
     <p>When you drop in files to the server the following things happen:</p>
     <ul>
-      <li>First files are searched for audio streams. If some are found then
-        information about them is recored. If no audio is found in a file then
-        an error graphics file is created to inform the user.<br>
+      <li>First files are searched for audio streams. If no audio is found in a
+        file then an error graphics file is created to inform the user.<br>
       </li>
       <li>If the fileformat and channel count are natively supported by
-        libebur128 then the file is sent to loudness calculation. Otherwise
-        audio streams are extracted from the file and losslessly compressed to
-        flac - format. (Flac is used since it compresses losslessly saving disk
-        space and supports very long files (over 4 GB) and channel counts up to
-        8 channels. Saving is also faster than saving in an uncompressed format
-        when there are many channels in the file). After audio stream extraction
-        the original file is no longer needed so it is deleted from the
-        HotFolder. Then the extracted audio streams will be put in the
-        hotfolder.<br>
+        libebur128 then the file is sent directly to loudness calculation.
+        Otherwise audio streams are extracted from the file and losslessly
+        compressed to flac - format. (Flac is used since it compresses
+        losslessly saving disk space and because it supports very large files
+        (over 4 GB) and also supports channel counts up to 8 channels. Saving is
+        also faster than saving in an uncompressed format when there are many
+        channels in the file). After audio stream extraction the original file
+        is no longer needed so it is deleted from the HotFolder. Then the
+        extracted audio files are put in the hotfolder and sent to loudness
+        calculation.<br>
       </li>
       <li>Two simultaneous loudness calculation processes are started for each
         file. One calculates integrated loudness and searches for the highest
         peak value in the file (sample peak or TruePeak depending on options
-        selected during installation). As disk reading is usually the bottleneck
-        of the system, doing two calculations on the same file simultaneously
-        speeds up processing. This is due to the fact that the first process
-        reads the file into operating system file cache as it reads through the
-        file and the second process won't have to read the physical disk at all,
-        the data can be read from the very fast file cache in Ram - memory.<br>
+        selected during installation). The other process calculates short term
+        loudness of the file. Short term loudness information is used for
+        drawing the loudness history graphics file. As disk reading is usually
+        the bottleneck of the system, doing two calculations on the same file
+        simultaneously speeds up processing. This is due to the fact that the
+        first process reads the file into operating system file cache as it
+        reads through the file and the second process won't have to read the
+        physical hard disk at all, it can read the file data from the very fast
+        file cache in Ram - memory.<br>
       </li>
       <li>If loudness of a file is below the target level and needs to be raised
         and sample peaks would go over our defined max value after this volume
@@ -575,7 +623,8 @@
         defined max peak value would not be exceeded after loudness correction.
         Most of the time people tend to do too hot mixes and loudness needs to
         be adjusted down and then no limiting is needed.</li>
-      <li>At this point a loudness history graphics file is created.<br>
+      <li>At this point a loudness history graphics file is created. The
+        graphics file shows the loudness of the uncorrected original file.<br>
       </li>
       <li>Then a loudness corrected version of the file is created. The loudness
         is adjusted so that it will be at the target -23 LUFS level. If a
@@ -595,7 +644,7 @@
         way. Only the "master volume" of a file is adjusted up or down
         preserving all relative loudness variations. This is how EBU R128
         standard is designed to work. You can still use loudness variations any
-        way you wish but it is your responsibility to use then wisely :) EBU
+        way you wish but it is your responsibility to use them wisely :) EBU
         R128 is designed to eliminate loudness variations between different
         programs in the transmission.<br>
       </li>
@@ -614,8 +663,8 @@
         is -23 on the LUFS scale (0 LU also means -23 LUFS).</li>
       <li>The dark green horizontal line shows the integrated loudness of your
         file. It averages the loudness across the length of your whole file into
-        a single number. This is the loudness of the file and for it to be at
-        the target level according to the EBU R128 standard it must be -23 LUFS.</li>
+        a single number. This is the loudness of the file and it must be at -23
+        LUFS to be at the target level according to the EBU R128 standard.</li>
       <li>All files will be loudness corrected to have integrated loudness of
         -23 LUFS.<br>
       </li>
@@ -662,9 +711,8 @@
     <p><img src="Pictures/Mounting_From_OS_X-03.jpg"><br>
     </p>
     <ul>
-      <li>The FreeLCS network share is mounted and Finder opens an window
-        showing the contents of the HotFolder. Now you can start using the
-        server :) </li>
+      <li>The FreeLCS network share is mounted and Finder opens a window showing
+        contents of the HotFolder. Now you can start using the server :) </li>
     </ul>
     <p><br>
     </p>
@@ -672,13 +720,14 @@
     <p><br>
     </p>
     <h2><a id="Making an permanent alias to the HotFolder in OS X">Making an
-        permanent alias to the HotFolder in OS X</a></h2>
-    <p>When you have mounted the HotFolder you can make an alias that stays on
-      your desktop. You can then skip all the steps above and mount the
+        permanent alias to the HotFolder in OS X<br>
+      </a></h2>
+    <p>When you have mounted the HotFolder you can make an alias for it that
+      stays on your desktop. You can then skip all the steps above and mount the
       HotFolder just by double clicking on the alias.</p>
     <ul>
       <li>First you must have mounted the HotFolder.</li>
-      <li>Open an Finder - window and scroll to the bottom of the device list on
+      <li>Open a Finder - window and scroll to the bottom of the device list on
         the left panel. You should see an entry there that has the name of your
         computer, by default it is "admin's Mac". Click on it.</li>
       <li>Now you should see all mounted devices in the Finder window and "<strong>LoudnessCorrection</strong>"
@@ -693,8 +742,8 @@
     <p><img src="Pictures/Mounting_From_OS_X-05.jpg"><br>
     </p>
     <ul>
-      <li>Now on your desktop there should be an "LoudnessCorrection" - icon
-        with a curved arrow on top of it. An icon like this is called an alias.<br>
+      <li>Now on your desktop there should be a "LoudnessCorrection" - icon with
+        a curved arrow on top of it. An icon like this is called an alias.<br>
       </li>
       <li>From now on you can mount the LoudnessCorrection HotFolder just by
         double clicking on the alias.<br>
@@ -802,14 +851,15 @@
     <br>
     The upper part of the window shows the names of next 10 first files that are
     coming in for processing and above that the total number of files waiting in
-    queue is shown. Date and time are also shown and updated every 5 seconds so
-    you can easily check that the server is up and running.<br>
+    queue is shown. Date and time are also shown and updated every 5 seconds.
+    You can use the time display to easily check if the server is up and
+    running.<br>
     <br>
     The middle gray part shows the names of files that are currently being
     processed. The number of files that are simultaneously processed depends on
     what you selected as the "<strong>Number Of Processor Cores To Use</strong>"
     in the installer. Each file is simultaneously processed by two processor
-    cores so if you selected six cores to be used, then three files can be
+    cores so if you selected six cores to be used, then three files are
     processed at the same time (as in the example picture below).<br>
     <br>
     The bottom of the page shows the last 100 files that were processed.<br>
@@ -873,10 +923,11 @@
         admin will be able to give you.<br>
       </li>
       <ul>
-        <li>The static address for the server</li>
-        <li>Network mask</li>
-        <li>The ip-address of the gateway machine. All traffic from your network
-          to internet goes through this gateway machine.<br>
+        <li>The static address for the server.</li>
+        <li>Network mask.</li>
+        <li>The ip-address of the gateway machine. Gateway machine is the
+          machine that is connected to your internal network and internet.
+          Gateway routes traffic from the internal network to internet.<br>
         </li>
         <li>The ip-addresses of your network name servers (DNS).</li>
       </ul>
@@ -909,8 +960,8 @@
     <br>
     First collect a bunch of typical files that the server is going to process
     when doing real work. The total size of the files should at minimum be
-    double the size of ram you have in your server, but more is better. Save the
-    files on the server, but don't put them in the HotFolder yet.<br>
+    double the size of ram you have in your server, but more files is better.
+    Save the files on the server, but don't put them in the HotFolder yet.<br>
     <br>
     <ol>
       <li>Delete all files from the HotFolder.<br>
@@ -919,15 +970,16 @@
           Cores To Use</strong>" to the number of physical processor cores you
         have and reboot.</li>
       <li>Wait for two minutes after the computer has booted up so that
-        LoudnessCorrection has time to start also. (There is a deliberate 90
+        LoudnessCorrection has time to start up. (There is a deliberate 90
         second delay before LoudnessCorrection is started up).</li>
       <li>Open the html-progress report in your web-browser and see that the
-        time there is advancing. If not then LoudnessCorrection is not yet
-        running.<br>
+        time displayed on the page is advancing. If not then LoudnessCorrection
+        is not yet running.<br>
       </li>
-      <li>Make a copy of the test files to the HotFolder by creating hard links
-        for the files in the HotFolder. This makes the files appear instantly in
-        the HotFolder.<br>
+      <li>Now you need to make the test files appear in the HotFolder. The
+        quickest way to make this happen is to create hard links for the test
+        files in the HotFolder. This makes the files appear immediately without
+        making physical copies of the files.<br>
       </li>
     </ol>
     <blockquote>
@@ -947,8 +999,8 @@
     </ol>
     <p>You should find the fastest processing time in 2 - 4 rounds of the test.</p>
     <p><br>
-      Our test server sweet spot is to use six cores even though there is only
-      two. Our test server specs are:<br>
+      Our test servers sweet spot is to use six cores even though there is only
+      two physical processor cores. Our test server specs are:<br>
       <br>
       1 x Intel Core 2 Duo Processor<br>
       2 GB Ram<br>
@@ -983,7 +1035,7 @@
       <li>Install 3 Sata disks in the computer. Ubuntu gave our disks
         device-names: <strong>sdb, sdc , sdd.<br>
         </strong></li>
-      <li>Get root-permissions with the command: <strong>sudo su</strong><br>
+      <li>Get root-permission with the command: <strong>sudo su</strong><br>
       </li>
       <li>Partition each disk as type: <strong>Primary</strong>, &nbsp; <strong>fd
           (Linux raid autodetect)</strong>.</li>
@@ -993,13 +1045,15 @@
           /dev/sdd1</strong></li>
       <li>If mdadm complains that: "Device Or Resource Busy", then mdadm may
         already be using some of the disks and you need to tell it not to. The
-        command: <strong>cat /proc/mdstat</strong>&nbsp; lists raid-devices,
-        stop them with the command (device name is md127 in the example, check
-        the real device name from the output of: cat /proc/mdstat): <strong>mdadm
-          --stop /dev/md127</strong>&nbsp;&nbsp;&nbsp; now try creating the
-        raid-device again with the command on the previous line.</li>
+        command: <strong>cat /proc/mdstat</strong>&nbsp; lists currently
+        existing raid-devices, stop them with the command (device name is md127
+        in the example, check the real device name from the output of: cat
+        /proc/mdstat): <strong>mdadm --stop /dev/md127</strong>&nbsp;&nbsp;&nbsp;
+        now try creating the raid-device again with the command on the previous
+        line.</li>
       <li>When raid-device creation succeeds without error messages, format the
-        raid device with the JFS filesystem: <strong>mkfs.jfs /dev/md0</strong></li>
+        raid device with the <strong>JFS</strong> filesystem: <strong>mkfs.jfs
+          /dev/md0</strong></li>
       <li>Now the raid device exists, but Linux forgets about it in the next
         boot unless we tell it to configure it again when booting up. The next
         commands will save the configuration:</li>
@@ -1017,9 +1071,9 @@
           /mountpoint/raid-disk</strong>&nbsp;&nbsp;&nbsp; and make it readable
         and writable for everyone:<strong> chmod -R 777 &nbsp;</strong><strong>
           /mountpoint</strong></li>
-      <li>Add the device to your /etc/fstab so that it gets automatically
-        mounted next time the computer starts up. Add the following line in <strong>
-          /etc/fstab</strong>: <br>
+      <li>Add the device to your <strong>/etc/fstab</strong> so that it gets
+        automatically mounted next time the computer starts up. Add the
+        following line in <strong> /etc/fstab</strong>: <br>
       </li>
     </ul>
     <blockquote>
@@ -1036,7 +1090,7 @@
           /mountpoint</strong></li>
       <li>In case of trouble this command tells about active raid-devices and
         disks that belong to them (check that the name of the active raid
-        matches the name used on the /etc/fstab): <strong>cat /proc/mdstat</strong></li>
+        matches the name you used on the /etc/fstab): <strong>cat /proc/mdstat</strong></li>
     </ul>
     <br>
     <h2> <a id="Notes on loudness correction usage">Notes on loudness
@@ -1060,18 +1114,19 @@
         not be any need for audio post production anymore.<br>
       </li>
       <li>Loudness correction does not touch the internal dynamics of a file. If
-        you have too wide loudness variations they will be there after loudness
-        correction too. Correction only adjusts the 'main level' of a file. If
-        integrated loudness of a file is -19 LUFS, loudness correction will make
-        all parts of the file 4 dBs quieter and relative loudness variations
-        inside the file will remain the same. This is how EBU R128 standard is
-        designed to work, you can still have loud and soft parts in your mix,
-        but it is your responsibility to use them wisely :)<br>
+        you have too wide loudness variations in a file they will be there also
+        after loudness correction. Correction only adjusts the 'main level' of a
+        file. If integrated loudness of a file is -19 LUFS, loudness correction
+        will make all parts of the file 4 dBs quieter and relative loudness
+        variations inside the file will remain the same. This is how EBU R128
+        standard is designed to work, you can still have loud and soft parts in
+        your mix, but it is your responsibility to use them wisely :)<br>
       </li>
-      <li>FFmpeg seems to support MXF - files also, but processing these might
-        be problematic. Inside an MXF - file audio channels of a mix might be
+      <li>FFmpeg seems to support MXF - files also, but processing MXF might be
+        problematic. Inside an MXF - file audio channels of a mix might be
         stored together in one file or separately and loudness correction has no
-        way of knowing what is the case.<br>
+        way of knowing what is the case. Loudness correction only works
+        correctly when all channel of a mix are in the same file.<br>
       </li>
     </ul>
     <br>
@@ -1130,7 +1185,8 @@
     <br>
     <br>
     <ul>
-      <li>Select "<strong>Download and install automatically</strong>".<br>
+      <li>Select "<strong>Download and install automatically</strong>" from the
+        drop down list.<br>
       </li>
     </ul>
     <p><br>
@@ -1168,14 +1224,19 @@
       <li>Next we need to make the computer restart automatically once a week. A
         good time to reboot might be for example:<strong> every monday morning
           at 07:00 am</strong>.</li>
-      <li>Crontab can be used to run commands at preset times.</li>
-      <li>Open a terminal an write in the commands (asks for root password):</li>
+      <li><strong>Cron </strong>can be used to run commands at preset times.
+        The configuration for Cron is called <strong>Crontab</strong>. It is a
+        simple text file and we add our commands to it using a text editor.<br>
+      </li>
+      <li>Open a terminal an write in the command: (asks for root password):</li>
     </ul>
     <blockquote>
       <blockquote>
         <p><strong>sudo crontab -e</strong></p>
       </blockquote>
     </blockquote>
+    <p><br>
+    </p>
     <p>Ubuntu will prompt:</p>
     <blockquote>
       <blockquote>
@@ -1191,12 +1252,13 @@
           Choose 1-4 [2]:</p>
       </blockquote>
     </blockquote>
-    <p>Ubuntu wants to know which text based text editor you would like to use
-      to edit the crontab, press "2". This will select the "nano" - editor.<br>
+    <p>This means that Ubuntu wants to know which text based text editor you
+      would like to use to edit the crontab - file, press "2". This will select
+      the "nano" - text editor.<br>
     </p>
-    <p>Now the text editor opens up and shows some text that was automatically
-      inserted into the crontab, navigate to the bottom of it and add the
-      following line:<br>
+    <p>Now the text editor opens up in Terminal and shows some text that Ubuntu
+      automatically inserted into the crontab, navigate to the bottom of it and
+      add the following line:<br>
     </p>
     <br>
     <blockquote>
@@ -1205,13 +1267,12 @@
     </blockquote>
     <br>
     This command will reboot the computer every monday at 07:00 am. Save the
-    crontab with keyboard command <strong>ctrl + o</strong>, then press enter
-    to accept the filename. Now that text is saved, exit the editor with
-    keyboard command <strong>ctrl + x</strong>. The crontab comes into effect
-    immediately.<br>
+    crontab - file with the keyboard command <strong>ctrl + o</strong>, then
+    press enter to accept the filename. Now that text is saved, exit the editor
+    with the keyboard command <strong>ctrl + x</strong>. The crontab comes into
+    effect immediately, no need to reboot.<br>
     <br>
-    The fields in the crontab command line mean (from left to right) (text
-    copied from crontab man page):<br>
+    The fields in the crontab commandline mean (from left to right):<br>
     <br>
     <u><strong>Field</strong></u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     <u><strong>Allowed Values</strong></u><br>
@@ -1220,17 +1281,154 @@
     0-59<br>
     Hours&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     0-23<br>
-    Day of month&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1-31<br>
+    Day of month&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1-31 (* means every
+    day)<br>
     Month&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    1-12<br>
+    1-12 (* means every month)<br>
     Day of week&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0-7 (0 or
     7 is Sun)<br>
     <br>
+    The last field is the full path to the command we want Cron to run.<br>
+    <br>
+    <br>
+    <h2><a id="How to report a bug">How to report a bug</a></h2>
+    <br>
+    If you have found an error in FreeLCS software or documentation please
+    report it so that it can be corrected.<br>
+    <br>
+    If you find that FreeLCS software crashes or behaves in ways it should not,
+    try first to find out if the problem is caused by a file in the HotFolder.
+    If a certain file or file format causes the problem please make a copy of
+    the file / files for later use. The files might be needed to confirm that
+    the bugfix really solves the problem.<br>
+    <br>
+    When you file a bugreport keep in mind that the developer needs to be able
+    to reproduce the bug in his own system in order to fix it. So when reporting
+    a bug report the following:<br>
+    <ul>
+      <li>The operating system version that you use (Ubuntu 12.04 32bit or 64
+        bit)</li>
+      <li>The version of the FreeLCS - package that you use.<br>
+      </li>
+      <li>The steps that needs to be done in order to make the bug appear.</li>
+      <li>If a file causes the bug and you want to send the file to the
+        developer, then store the file in a cloud file storage system for
+        example DropBox's Public - folder and add the download link to the bug
+        report.</li>
+      <li>Error messages are good sources for information when hunting a bug, so
+        if you get one please add it to the bug report.</li>
+      <li>If a program just stops working, then it has crashed. In most cases
+        the program is not able to show any error message to the user because
+        the program runs in the background. An error message holds valuable
+        information about what went wrong and if you want to help to sort out
+        the cause of the error you can run the program manually in Terminal.
+        When a program is run manually in Terminal the user can see all possible
+        error messages. <a href="#Run%20FreeLCS%20programs%20so%20that%20possible%20error%20messages%20can%20be%20seen">Click
+          here to see how a program can be manually run in the Terminal</a>.<br>
+      </li>
+    </ul>
+    Report bugs here (requires creating an free account):
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <a href="https://sourceforge.net/p/freelcs/tickets/">https://sourceforge.net/p/freelcs/tickets/</a><br>
+    When you have logged in navigate to the link above and click the "<strong>Create
+      Ticket</strong>" - button on the left. When you create a ticket, the
+    developer gets the bugreport in email.<br>
+    <br>
+    <a href="https://sourceforge.net/p/freelcs/tickets/"></a><br>
+    <img alt="" src="Pictures/Report_a_bug-01.jpg"><br>
+    <a href="https://sourceforge.net/p/freelcs/tickets/"></a><br>
+    <br>
+    <h2><a id="Run FreeLCS programs so that possible error messages can be seen">Run
+        FreeLCS programs so that possible error messages can be seen</a></h2>
+    <h3><br>
+    </h3>
+    <h3>LoudnessCorrection.py</h3>
+    <br>
+    LoudnessCorrection.py is the program that is responsible for processing the
+    files that appear in the HotFolder. Normally LoudnessCorrection.py runs in
+    the background and has no way to display error messages to the user. The
+    program can however be manually started in the Terminal.<br>
+    <ul>
+      <li>Open the Terminal and stop all FreeLCS programs with the command (asks
+        for root password): <strong>sudo
+          /etc/init.d/loudnesscorrection_init_script stop</strong></li>
+    </ul>
+    <p>Now there are two ways to run LoudnessCorrection.py, the first one
+      discards all settings user defined in the installer and runs with default
+      settings. When you run the program in this mode you need to add the full
+      path to the target directory at the end of the command. The target
+      directory is the directory which has Hotfolder "<strong>LoudnessCorrection</strong>"
+      inside it. Note that running the program like this the language defaults
+      to english meaning the program expects the HotFolder name to be "<strong>LoudnessCorrection</strong>".</p>
+    <ul>
+      <li>Run the program with default settings: <strong>/usr/bin/LoudnessCorrection.py
+          /mountpoint/</strong></li>
+    </ul>
+    <p>Note that when running in this mode the program outputs a lot of text, it
+      tells all the time what it is doing.<br>
+    </p>
+    <p><br>
+    </p>
+    <p>The second way to run LoudnessCorrection.py is to use the settings that
+      user defined in the installer. The settings are stored in file <strong>/etc/Loudness_Correction_Settings.pickle</strong></p>
+    <ul>
+      <li>Run the program with user defined settings: <strong>/usr/bin/LoudnessCorrection.py
+          -configfile /etc/Loudness_Correction_Settings.pickle</strong><br>
+      </li>
+    </ul>
+    <a href="https://sourceforge.net/p/freelcs/tickets/"></a> <br>
+    When running in this mode there will be no output unless the program
+    crashes. <br>
+    <br>
+    <br>
+    <h3>HeartBeat_Checker.py</h3>
+    <ul>
+      <li>If you have not already done so open the Terminal and stop all FreeLCS
+        programs (asks for root password): <strong>sudo
+          /etc/init.d/loudnesscorrection_init_script stop</strong><br>
+      </li>
+      <li>Run HeartBeat_Checker manually in Terminal: <strong>/usr/bin/HeartBeat_Checker.py
+          -configfile /etc/Loudness_Correction_Settings.pickle</strong></li>
+    </ul>
+    <br>
+    HeartBeat_Checker does not display anything unless it crashes.<br>
+    <br>
+    <br>
+    <br>
+    <h3>Installer.py</h3>
+    <ul>
+      <li>Open Terminal and navigate to the directory where installer.py is
+        located.</li>
+      <li>Make installer executable with this command: <strong>chmod 755
+          installer.py</strong></li>
+      <li>Run installer with command:&nbsp; <strong>./installer.py</strong></li>
+    </ul>
+    <p>Installer only displays something if it crashes.<br>
+    </p>
+    <br>
+    <h3>Typical Python error message</h3>
+    <br>
+    If a program crashes then the Python3 interpreter displays an error message
+    telling what went wrong. A typical Python error message looks like this:<br>
+    <br>
+    <br>
+    <img alt="" src="Pictures/Python_Error_Message-01.jpg"><br>
+    <br>
+    <br>
+    If you get a message like this please copy it to the bug report. This
+    message is valuable since it tells the developer exactly on which line of
+    the program code the error happened.<br>
+    <br>
+    To copy text from the Terminal first select the text to be copied and then
+    copy it with the keyboard command: <strong>shift + ctrl + c</strong><br>
+    <br>
+    Paste the text to the bug report.<br>
     <br>
     <br>
     <br>
     <br>
     <br>
     <br>
+    <a href="https://sourceforge.net/p/freelcs/tickets/"> </a>
   </body>
 </html>
