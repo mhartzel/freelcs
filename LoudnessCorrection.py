@@ -34,7 +34,7 @@ import email.mime.multipart
 import pickle
 import math
 
-version = '158'
+version = '159'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -1060,7 +1060,8 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 		# Create names for audio streams found in the file.
 		# First parse the number of audio channels in each stream ffmpeg reported and put it in a variable.
 		number_of_audio_channels = '0'
-		number_of_audio_channels_as_text = str(details_of_ffmpeg_supported_audiostreams[counter]).split(',')[2].strip() # FFmpeg reports audio channel count as a string.		
+		ffmpeg_stream_info = str(details_of_ffmpeg_supported_audiostreams[counter])		
+		number_of_audio_channels_as_text = str(ffmpeg_stream_info.split(',')[2].strip()) # FFmpeg reports audio channel count as a string.		
 		
 		# Split audio channel count to a list ('2 channels' becomes ['2', 'channels']
 		number_of_audio_channels_as_text_split_to_a_list = number_of_audio_channels_as_text.split()
@@ -1093,22 +1094,32 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 		ffmpeg_commandline.append(ffmpeg_output_format)
 		ffmpeg_commandline.append(directory_for_temporary_files + os.sep + target_filenames[counter])
 	
-		# Find out what is ffmpegs map number for the audio stream.
-		ffmpeg_first_element_of_stream_info = str(details_of_ffmpeg_supported_audiostreams[counter]).split(',')[0].strip()
-		ffmpeg_first_element_of_stream_info_split_by_semicolon = ffmpeg_first_element_of_stream_info.split(':')[0].strip()
+		# Find out what is FFmpegs map number for the audio stream.	
+		for map_number_counter in range(ffmpeg_stream_info.find('#') + 1, len(ffmpeg_stream_info)):
+			if ffmpeg_stream_info[map_number_counter] == '.':
+				continue
+			if ffmpeg_stream_info[map_number_counter].isalnum() == False:
+				break
+
+		map_number = ffmpeg_stream_info[ffmpeg_stream_info.find('#') + 1:map_number_counter]
 		
-		# If the word 'Stream' can not be found in the text we just cut then something went wrong.
-		if "Stream" not in ffmpeg_first_element_of_stream_info_split_by_semicolon:
-			error_message = 'Error trying to find stream mapping information from FFmpeg output' * english + 'Virhe, en löydä äänistreamin tietoja FFmpegin tulosteesta' * finnish
+		# Test if we really have found the stream number.
+		mapnumber_digit_1 = ''
+		mapnumber_digit_2 = ''
+		map_number_test_list = map_number.split('.')
+		
+		try:
+			
+			mapnumber_digit_1 = map_number_test_list[0]
+			mapnumber_digit_2 = map_number_test_list[1]
+			
+			if (mapnumber_digit_1.isalnum() == False) or (mapnumber_digit_2.isalnum() == False):
+				error_message = 'Error: stream map number found in FFmpeg output is not a number: ' * english + 'Virhe: FFmpegin tulosteesta löydetty streamin numero ei ole numero: ' * finnish + map_number
+				send_error_messages_to_screen_logfile_email(error_message)
+			
+		except IndexError:
+			error_message = 'Error: stream map number found in FFmpeg output is not a number: ' * english + 'Virhe: FFmpegin tulosteesta löydetty streamin numero ei ole numero: ' * finnish + map_number
 			send_error_messages_to_screen_logfile_email(error_message)
-		
-		# Find the start and end character numbers for the ffmpeg map number.
-		start_of_map_number = int(ffmpeg_first_element_of_stream_info_split_by_semicolon.find('#'))
-		start_of_map_number = start_of_map_number + 1 
-		end_of_map_number = int(ffmpeg_first_element_of_stream_info_split_by_semicolon.find('('))
-		
-		# Get the map number. For the first audio stream the number usually is 0.1 and for the second 0.2 and so on.
-		map_number = ffmpeg_first_element_of_stream_info_split_by_semicolon[start_of_map_number:end_of_map_number]
 	
 		# Create a audio stream mapping command list that will be appended at the end of ffmpeg commandline.
 		ffmpeg_stream_mapping_commands.extend(['-map',  str(map_number) + ':0.' + str(counter)])
@@ -2247,7 +2258,12 @@ while True:
 							send_error_messages_to_screen_logfile_email(error_message)
 						
 						# Convert ffmpeg output from binary to UTF-8 text.
-						ffmpeg_run_output_decoded = ffmpeg_run_output.decode('UTF-8') # Convert ffmpeg output from binary to utf-8 text.
+						try:
+							ffmpeg_run_output_decoded = ffmpeg_run_output.decode('UTF-8') # Convert ffmpeg output from binary to utf-8 text.
+						except UnicodeDecodeError:
+							# If UTF-8 conversion fails, try with another character map.
+							ffmpeg_run_output_decoded = ffmpeg_run_output.decode('ISO-8859-15') # Convert ffmpeg output from binary to text.
+							
 						ffmpeg_run_output_result_list = str(ffmpeg_run_output_decoded).split('\n') # Split ffmpeg output by linefeeds to a list.
 						
 						# Delete the temporary stdout - file.

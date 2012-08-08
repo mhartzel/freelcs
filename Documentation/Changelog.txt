@@ -1,3 +1,14 @@
+LoudnessCorrection Version 160
+-------------------------------
+- Moved FFmpeg output parsing that was split in two parts of the program to its own subroutine: parse_ffmpeg_output. This is quite a big change, so some parsing bugs may remain because of this change.
+- Bugfix: it seems that transport streams can have audio streams with a channel count of 0 which is surprising. These are now skipped.
+
+LoudnessCorrection Version 159
+-------------------------------
+- Added an check for if FFmpeg extracted stream number is valid.
+- Bugfix: Fixed a crash that happened when a file was inspected with FFmpeg and it output info (transportstream metadata) that contained characters that could not be interpreted in UTF-8. In these cases ISO-8859-15 is now used.
+- Bugfix: FFmpeg output format changes slightly depending what stream info it finds. Stream map numbers were not always found.
+
 LoudnessCorrection Version 158
 -------------------------------
 - Bugfix: If a file has many audiostreams then FFmpeg sometimes extracts the streams in random order and stream numbers and channel counts in filenames won't match. The FFmpeg stream number is now extracted from FFmpeg output and mapping is used to extract the streams in the correct order. 
