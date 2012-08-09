@@ -1,7 +1,6 @@
 LoudnessCorrection Version 160
 -------------------------------
-- Moved FFmpeg output parsing that was split in two parts of the program to its own subroutine: parse_ffmpeg_output. This is quite a big change, so some parsing bugs may remain because of this change.
-- Bugfix: it seems that transport streams can have audio streams with a channel count of 0 which is surprising. These are now skipped.
+- Audio stream information is found out using FFmpeg. FFmpeg output parsing is split in two parts in the program. Started to move all FFmpeg output parsing to its own subroutine: get_audio_stream_information_with_ffmpeg. 
 
 LoudnessCorrection Version 159
 -------------------------------

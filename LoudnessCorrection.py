@@ -34,7 +34,7 @@ import email.mime.multipart
 import pickle
 import math
 
-version = '159'
+version = '160'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -1041,7 +1041,7 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 	# The original file is queued for deletion.
 
 	# Get the information ffmpeg previously found out about the audio streams in the file and put each piece of information in a variable.
-	natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string = file_format_support_information
+	natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds = file_format_support_information
 	file_to_process = hotfolder_path + os.sep + filename
 	filename_and_extension = os.path.splitext(filename)
 	target_filenames = []
@@ -1089,7 +1089,7 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 		# Compile the name of the audiostream to an list of all audio stream filenames.
 		target_filenames.append(filename_and_extension[0] + '-AudioStream-' + str(counter + 1) + '-AudioChannels-' * english + '-AaniKanavia-' * finnish  + number_of_audio_channels + '.' + ffmpeg_output_format)
 		
-		# Generate options for each audio stream found.
+		# Generate FFmpeg extract options for audio stream.
 		ffmpeg_commandline.append('-f')
 		ffmpeg_commandline.append(ffmpeg_output_format)
 		ffmpeg_commandline.append(directory_for_temporary_files + os.sep + target_filenames[counter])
@@ -1109,14 +1109,12 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 		map_number_test_list = map_number.split('.')
 		
 		try:
-			
 			mapnumber_digit_1 = map_number_test_list[0]
 			mapnumber_digit_2 = map_number_test_list[1]
 			
 			if (mapnumber_digit_1.isalnum() == False) or (mapnumber_digit_2.isalnum() == False):
 				error_message = 'Error: stream map number found in FFmpeg output is not a number: ' * english + 'Virhe: FFmpegin tulosteesta löydetty streamin numero ei ole numero: ' * finnish + map_number
 				send_error_messages_to_screen_logfile_email(error_message)
-			
 		except IndexError:
 			error_message = 'Error: stream map number found in FFmpeg output is not a number: ' * english + 'Virhe: FFmpegin tulosteesta löydetty streamin numero ei ole numero: ' * finnish + map_number
 			send_error_messages_to_screen_logfile_email(error_message)
@@ -1740,6 +1738,108 @@ def get_ip_addresses_of_the_host_machine():
 		print('stdout:', stdout)
 		print('stderr:', stderr)
 		print('all_ip_addresses_of_the_machine =', all_ip_addresses_of_the_machine)
+		
+def get_audio_stream_information_with_ffmpeg(filename):
+	
+	natively_supported_file_format = False # This variable tells if the file format is natively supported by libebur128 and sox. We do not yet know the format of the file, we just set the default here. If format is not natively supported by libebur128 and sox, file will be first extracted to flac with ffmpeg.
+	ffmpeg_supported_fileformat = False # This variable tells if the file format is natively supported by ffmpeg. We do not yet know the format of the file, we just set the default here. If format is not supported by ffmpeg, we have no way of processing the file and will be queued for deletion.
+	number_of_ffmpeg_supported_audiostreams = 0 # This variable holds the number of audio streams ffmpeg finds in the file.
+	details_of_ffmpeg_supported_audiostreams = [] # Holds ffmpeg produced information about audio streams found in file (example: 'Stream #0.1[0x82]: Audio: ac3, 48000 Hz, 5.1, s16, 384 kb/s' )
+	
+	audio_duration_string = ''
+	audio_duration_list = []
+	audio_duration_rounded_to_seconds = 0
+	ffmpeg_error_message = ''
+	
+	# Create the file to use for writing stdout output from the external command we are about to run.
+	try:
+		# Define filename for the temporary file that we are going to use as stdout for the external command.
+		stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_ffmpeg_find_audio_streams_stdout.txt'
+		# Open the stdout temporary file in binary write mode.
+		with open(stdout_for_external_command, 'wb') as stdout_commandfile_handler:
+	
+			# Examine the file with ffmpeg and parse its output.
+			subprocess.Popen(['ffmpeg', '-i', file_to_test], stdout=stdout_commandfile_handler, stderr=stdout_commandfile_handler, stdin=None, close_fds=True).communicate()[0] # Run ffmpeg.
+	
+			# Make sure all data written to temporary stdout - file is flushed from the os cache and written to disk.
+			stdout_commandfile_handler.flush() # Flushes written data to os cache
+			os.fsync(stdout_commandfile_handler.fileno()) # Flushes os cache to disk
+			
+	except IOError as reason_for_error:
+		error_message = 'Error writing to ffmpeg stdout - file ' * english + 'FFmpegin stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message)
+	except OSError as reason_for_error:
+		error_message = 'Error writing to ffmpeg stdout - file ' * english + 'FFmpegin stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message)
+		
+	# Open the file we used as stdout for the external program and read in what the external program wrote to it.
+	try:
+		with open(stdout_for_external_command, 'rb') as stdout_commandfile_handler:
+			ffmpeg_run_output = stdout_commandfile_handler.read(None)
+	except IOError as reason_for_error:
+		error_message = 'Error reading from ffmpeg stdout - file ' * english + 'FFmpegin stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message)
+	except OSError as reason_for_error:
+		error_message = 'Error reading from ffmpeg stdout - file ' * english + 'FFmpegin stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message)
+	
+	# Convert ffmpeg output from binary to UTF-8 text.
+	try:
+		ffmpeg_run_output_decoded = ffmpeg_run_output.decode('UTF-8') # Convert ffmpeg output from binary to utf-8 text.
+	except UnicodeDecodeError:
+		# If UTF-8 conversion fails, try conversion with another character map.
+		ffmpeg_run_output_decoded = ffmpeg_run_output.decode('ISO-8859-15') # Convert ffmpeg output from binary to text.
+		
+	ffmpeg_run_output_result_list = str(ffmpeg_run_output_decoded).split('\n') # Split ffmpeg output by linefeeds to a list.
+	
+	# Delete the temporary stdout - file.
+	try:
+		os.remove(stdout_for_external_command)
+	except IOError as reason_for_error:
+		error_message = 'Error deleting ffmpeg stdout - file ' * english + 'FFmpegin stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message)
+	except OSError as reason_for_error:
+		error_message = 'Error deleting ffmpeg stdout - file ' * english + 'FFmpegin stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message)
+	
+	# Parse ffmpeg output inspecting it line by line.
+	for item in ffmpeg_run_output_result_list:
+		if 'Audio:' in item: # There is the string 'Audio' for each audio stream that ffmpeg finds. Count how many 'Audio' strings is found and put the strings in a list. The string holds detailed information about the stream and we print it later.
+			number_of_ffmpeg_supported_audiostreams = number_of_ffmpeg_supported_audiostreams + 1
+			details_of_ffmpeg_supported_audiostreams.append(item.strip())
+		if 'Duration:' in item:
+			audio_duration_string = str(item).split(',')[0].strip() # The first item on the line is the duration, get it.
+			audio_duration_string = audio_duration_string.split(' ')[1].strip() # Remove the string 'Duration:' that is in front of the time string we want.
+			# Check that audio duration is a valid time, if it is 'N/A' then ffmpeg can not extract the audio stream.
+			if not 'N/A' in audio_duration_string:
+				# Get the file duration as a string and also calculate it in seconds.
+				audio_duration_string = audio_duration_string.split('.')[0] # Remove the fraction part from time string. This rounds the time to seconds.
+				audio_duration_list = audio_duration_string.split(':') # Separate each element in the time string (hours, minutes, seconds) and put them in a list.
+				audio_duration_rounded_to_seconds = (int(audio_duration_list[0]) * 60 * 60) + (int(audio_duration_list[1]) * 60) + int(audio_duration_list[2]) # Calculate audio duration in seconds.
+			else:
+				# The FFmpeg reported audio duration as 'N/A' then this means ffmpeg could not determine the audio duration. Set audio duration to 0 seconds and inform user about the error.
+				audio_duration_rounded_to_seconds = 0
+				error_message = 'FFmpeg Error : Audio Duration = N/A' * english + 'FFmpeg Virhe: Äänen Kesto = N/A' * finnish + ': ' + filename
+				send_error_messages_to_screen_logfile_email(error_message)
+		if filename + ':' in item: # Try to recognize some ffmpeg error messages, these always start with the filename + ':'
+			ffmpeg_error_message = item.split(':')[1] # Get the reason for error from ffmpeg output.
+	if number_of_ffmpeg_supported_audiostreams > 0: # If ffmpeg found audio streams check if the file extension is one of the libebur128 and sox supported ones (wav, flac, ogg).
+		ffmpeg_supported_fileformat = True
+		if str(os.path.splitext(filename)[1]).lower() in natively_supported_file_formats:
+			natively_supported_file_format = True
+	if (number_of_ffmpeg_supported_audiostreams == 1) and (str(os.path.splitext(filename)[1]).lower() == '.wav'): # Test if wav - file has more than two channels, since libebur128 only supports mono and stereo wav - files.  If there are more channels, queue file to audio extraction and flac conversion with ffmpeg.
+		number_of_audio_channels = str(details_of_ffmpeg_supported_audiostreams).split(',')[2].strip() # Get the number of audio channels from ffmpeg output. FFmpeg output is in a list, since wav does not support more than 1 audiostreams, the list always has only 1 item and can be safely converted to string for manipulation.
+		if  (number_of_audio_channels != '1 channels') and (number_of_audio_channels != 'mono') and (number_of_audio_channels != '2 channels') and (number_of_audio_channels != 'stereo'): # If there are more than 2 channels in wav, queue file for audio extraction and flac conversion with ffmpeg.
+			natively_supported_file_format = False
+	if (number_of_ffmpeg_supported_audiostreams == 1) and (str(os.path.splitext(filename)[1]).lower() == '.ogg'): # Test if ogg - file has more than two channels, since sox only supports mono and stereo - files. If there are more channels, queue file to audio extraction and flac compression with ffmpeg.
+		number_of_audio_channels = str(details_of_ffmpeg_supported_audiostreams).split(',')[2].strip() # Get the number of audio channels from ffmpeg output.
+		if  (number_of_audio_channels != '1 channels') and (number_of_audio_channels != 'mono') and (number_of_audio_channels != '2 channels') and (number_of_audio_channels != 'stereo'): # If there are more than 2 channels in ogg, queue file for audio extraction and flac conversion with ffmpeg.
+			natively_supported_file_format = False
+
+
+
+	file_format_support_information = [natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds]
+	return(file_format_support_information, ffmpeg_error_message)
 
 ##############################################################################################
 #                                The main program starts here:)                              #
@@ -2056,13 +2156,14 @@ while True:
 		if not filename in list_of_files:
 			unsupported_ignored_files_dict.pop(filename) # If unsupported file that previously was in HotFolder has vanished, remove its name from the unsupported files list.
 			continue
-		if int(time.time()) - unsupported_ignored_files_dict[filename] >= file_expiry_time:
+		if int(time.time()) - unsupported_ignored_files_dict[filename] >= file_expiry_time: # If file has expired then queue it for deletion.
 			files_queued_for_deletion.append(filename)
 	# If user has deleted a file that did already make it to the 'list_of_growing_files' remove it from list.
 	for filename in list_of_growing_files:
 		if not filename in list_of_files:
 			list_of_growing_files.remove(filename) # If file that previously was in HotFolder has vanished, remove its name from the list_of_growing_files.
 			continue
+	
 	# Process filenames found in the directory
 	try:
 		for filename in list_of_files:
@@ -2212,103 +2313,15 @@ while True:
 					except OSError:
 						we_have_true_read_access_to_the_file = False
 					
-					# Test with ffmpeg if the file has audio streams in it, if true queue file for loudness calculation  
 					if we_have_true_read_access_to_the_file == True:
 						
-						natively_supported_file_format = False # This variable tells if the file format is natively supported by libebur128 and sox. We do not yet know the format of the file, we just set the default here. If format is not natively supported by libebur128 and sox, file will be first extracted to flac with ffmpeg.
-						ffmpeg_supported_fileformat = False # This variable tells if the file format is natively supported by ffmpeg. We do not yet know the format of the file, we just set the default here. If format is not supported by ffmpeg, we have no way of processing the file and will be queued for deletion.
-						number_of_ffmpeg_supported_audiostreams = 0 # This variable holds the number of audio streams ffmpeg finds in the file.
-						details_of_ffmpeg_supported_audiostreams = [] # Holds ffmpeg produced information about audio streams found in file (example: 'Stream #0.1[0x82]: Audio: ac3, 48000 Hz, 5.1, s16, 384 kb/s' )
-						audio_duration_string = ''
-						audio_duration_list = []
-						audio_duration_rounded_to_seconds = 0
-						time_slice_duration_string = '3' # Set the default value to use in timeslice loudness calculation. This will be changed by the program to 0.5, if file duration is <= 9 seconds.
-						ffmpeg_error_message = ''
+						time_slice_duration_string = '3' # Set the default value to use in timeslice loudness calculation.
 						
-						# Create the file to use for writing stdout output from the external command we are about to run.
-						try:
-							# Define filename for the temporary file that we are going to use as stdout for the external command.
-							stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_ffmpeg_find_audio_streams_stdout.txt'
-							# Open the stdout temporary file in binary write mode.
-							with open(stdout_for_external_command, 'wb') as stdout_commandfile_handler:
-						
-								# Examine the file with ffmpeg and parse its output.
-								subprocess.Popen(['ffmpeg', '-i', file_to_test], stdout=stdout_commandfile_handler, stderr=stdout_commandfile_handler, stdin=None, close_fds=True).communicate()[0] # Run ffmpeg.
-						
-								# Make sure all data written to temporary stdout - file is flushed from the os cache and written to disk.
-								stdout_commandfile_handler.flush() # Flushes written data to os cache
-								os.fsync(stdout_commandfile_handler.fileno()) # Flushes os cache to disk
-								
-						except IOError as reason_for_error:
-							error_message = 'Error writing to ffmpeg stdout - file ' * english + 'FFmpegin stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
-							send_error_messages_to_screen_logfile_email(error_message)
-						except OSError as reason_for_error:
-							error_message = 'Error writing to ffmpeg stdout - file ' * english + 'FFmpegin stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
-							send_error_messages_to_screen_logfile_email(error_message)
-							
-						# Open the file we used as stdout for the external program and read in what the external program wrote to it.
-						try:
-							with open(stdout_for_external_command, 'rb') as stdout_commandfile_handler:
-								ffmpeg_run_output = stdout_commandfile_handler.read(None)
-						except IOError as reason_for_error:
-							error_message = 'Error reading from ffmpeg stdout - file ' * english + 'FFmpegin stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
-							send_error_messages_to_screen_logfile_email(error_message)
-						except OSError as reason_for_error:
-							error_message = 'Error reading from ffmpeg stdout - file ' * english + 'FFmpegin stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
-							send_error_messages_to_screen_logfile_email(error_message)
-						
-						# Convert ffmpeg output from binary to UTF-8 text.
-						try:
-							ffmpeg_run_output_decoded = ffmpeg_run_output.decode('UTF-8') # Convert ffmpeg output from binary to utf-8 text.
-						except UnicodeDecodeError:
-							# If UTF-8 conversion fails, try with another character map.
-							ffmpeg_run_output_decoded = ffmpeg_run_output.decode('ISO-8859-15') # Convert ffmpeg output from binary to text.
-							
-						ffmpeg_run_output_result_list = str(ffmpeg_run_output_decoded).split('\n') # Split ffmpeg output by linefeeds to a list.
-						
-						# Delete the temporary stdout - file.
-						try:
-							os.remove(stdout_for_external_command)
-						except IOError as reason_for_error:
-							error_message = 'Error deleting ffmpeg stdout - file ' * english + 'FFmpegin stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
-							send_error_messages_to_screen_logfile_email(error_message)
-						except OSError as reason_for_error:
-							error_message = 'Error deleting ffmpeg stdout - file ' * english + 'FFmpegin stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
-							send_error_messages_to_screen_logfile_email(error_message)
-						
-						# Parse ffmpeg output inspecting it line by line.
-						for item in ffmpeg_run_output_result_list:
-							if 'Audio:' in item: # There is the string 'Audio' for each audio stream that ffmpeg finds. Count how many 'Audio' strings is found and put the strings in a list. The string holds detailed information about the stream and we print it later.
-								number_of_ffmpeg_supported_audiostreams = number_of_ffmpeg_supported_audiostreams + 1
-								details_of_ffmpeg_supported_audiostreams.append(item.strip())
-							if 'Duration:' in item:
-								audio_duration_string = str(item).split(',')[0].strip() # The first item on the line is the duration, get it.
-								audio_duration_string = audio_duration_string.split(' ')[1].strip() # Remove the string 'Duration:' that is in front of the time string we want.
-								# Check that audio duration is a valid time, if it is 'N/A' then ffmpeg can not extract the audio stream.
-								if not 'N/A' in audio_duration_string:
-									# Get the file duration as a string and also calculate it in seconds.
-									audio_duration_string = audio_duration_string.split('.')[0] # Remove the fraction part from time string. This rounds the time to seconds.
-									audio_duration_list = audio_duration_string.split(':') # Separate each element in the time string (hours, minutes, seconds) and put them in a list.
-									audio_duration_rounded_to_seconds = (int(audio_duration_list[0]) * 60 * 60) + (int(audio_duration_list[1]) * 60) + int(audio_duration_list[2]) # Calculate audio duration in seconds.
-								else:
-									# The FFmpeg reported audio duration as 'N/A' then this means ffmpeg could not determine the audio duration. Set audio duration to 0 seconds and inform user about the error.
-									audio_duration_rounded_to_seconds = 0
-									error_message = 'FFmpeg Error : Audio Duration = N/A' * english + 'FFmpeg Virhe: Äänen Kesto = N/A' * finnish + ': ' + filename
-									send_error_messages_to_screen_logfile_email(error_message)
-							if filename + ':' in item: # Try to recognize some ffmpeg error messages, these always start with the filename + ':'
-								ffmpeg_error_message = item.split(':')[1] # Get the reason for error from ffmpeg output.
-						if number_of_ffmpeg_supported_audiostreams > 0: # If ffmpeg found audio streams check if the file extension is one of the libebur128 and sox supported ones (wav, flac, ogg).
-							ffmpeg_supported_fileformat = True
-							if str(os.path.splitext(filename)[1]).lower() in natively_supported_file_formats:
-								natively_supported_file_format = True
-						if (number_of_ffmpeg_supported_audiostreams == 1) and (str(os.path.splitext(filename)[1]).lower() == '.wav'): # Test if wav - file has more than two channels, since libebur128 only supports mono and stereo wav - files.  If there are more channels, queue file to audio extraction and flac conversion with ffmpeg.
-							number_of_audio_channels = str(details_of_ffmpeg_supported_audiostreams).split(',')[2].strip() # Get the number of audio channels from ffmpeg output. FFmpeg output is in a list, since wav does not support more than 1 audiostreams, the list always has only 1 item and can be safely converted to string for manipulation.
-							if  (number_of_audio_channels != '1 channels') and (number_of_audio_channels != 'mono') and (number_of_audio_channels != '2 channels') and (number_of_audio_channels != 'stereo'): # If there are more than 2 channels in wav, queue file for audio extraction and flac conversion with ffmpeg.
-								natively_supported_file_format = False
-						if (number_of_ffmpeg_supported_audiostreams == 1) and (str(os.path.splitext(filename)[1]).lower() == '.ogg'): # Test if ogg - file has more than two channels, since sox only supports mono and stereo wav - files. If there are more channels, queue file to audio extraction and flac compression with ffmpeg.
-							number_of_audio_channels = str(details_of_ffmpeg_supported_audiostreams).split(',')[2].strip() # Get the number of audio channels from ffmpeg output.
-							if  (number_of_audio_channels != '1 channels') and (number_of_audio_channels != 'mono') and (number_of_audio_channels != '2 channels') and (number_of_audio_channels != 'stereo'): # If there are more than 2 channels in ogg, queue file for audio extraction and flac conversion with ffmpeg.
-								natively_supported_file_format = False
+						# Call a subroutine to inspect file with FFmpeg to get audio stream information.
+						ffmpeg_parsed_audio_stream_information, ffmpeg_error_message = get_audio_stream_information_with_ffmpeg(filename)
+						# Assing audio stream information to variables.
+						natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds = ffmpeg_parsed_audio_stream_information
+
 						if (ffmpeg_supported_fileformat == False) and (filename not in unsupported_ignored_files_dict):
 							# No audiostreams were found in the file, plot an error graphics file to tell the user about it and add the filename and the time it was first seen to the list of files we will ignore.
 							if ffmpeg_error_message == '': # Check if ffmpeg printed an error message.
@@ -2332,9 +2345,9 @@ while True:
 						if  audio_duration_rounded_to_seconds >= 12:
 							time_slice_duration_string = '3'
 						
-						# If ffmpeg finds audiostreams in the file, queue it for loudness calculation and print message to user.
+						# If ffmpeg found audiostreams in the file, queue it for loudness calculation and print message to user.
 						if filename not in unsupported_ignored_files_dict:
-							file_format_support_information = [natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string]
+							file_format_support_information = [natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds]
 							files_queued_to_loudness_calculation.append(filename)
 							if silent == False:
 								print('\r' + adjust_line_printout, '"' + str(filename) + '"', 'is in the job queue as number' * english + 'on laskentajonossa numerolla' * finnish, len(files_queued_to_loudness_calculation))
@@ -2360,7 +2373,7 @@ while True:
 			if len(files_queued_to_loudness_calculation) > 0: # Check if there are files queued for processing waiting in the queue.
 				filename = files_queued_to_loudness_calculation.pop(0) # Remove the first file from the queue and put it in a variable.
 				file_format_support_information = old_hotfolder_filelist_dict[filename][2] # The information about the file format is stored in a list in the dictionary, get it and store in a list.
-				natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string = file_format_support_information # Save file format information to separate variables.
+				natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds = file_format_support_information # Save file format information to separate variables.
 				realtime = get_realtime(english, finnish).replace('_', ' ')
 				
 				# If audio fileformat is natively supported by libebur128 and sox and has only one audio stream, we don't need to do extraction and flac conversion with ffmpeg, just start two loudness calculation processes for the file.
