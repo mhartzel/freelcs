@@ -1,11 +1,22 @@
+LoudnessCorrection Version 161
+-------------------------------
+- All FFmpeg output parsing is now in its own subroutine and easier to change when new needs arise.
+- Bugfix: it seems that transport streams can have audio streams with a channel count of 0 which is quite surprising. These dummy streams are now skipped.
+- Bugfix: corrected another instance of a bug corrected in 159, when FFmpeg output contained characters that could not be translated to UTF-8 and caused a crash. Now ISO-8859-15 is used in these cases.
+- Corrected variable name: 'peak_measuring_method' to 'peak_measurement_method'.
+
+installer 039
+--------------
+- Corrected variable name: 'peak_measuring_method' to 'peak_measurement_method'.
+
 LoudnessCorrection Version 160
 -------------------------------
-- Audio stream information is found out using FFmpeg. FFmpeg output parsing is split in two parts in the program. Started to move all FFmpeg output parsing to its own subroutine: get_audio_stream_information_with_ffmpeg. 
+- Audio stream information is found out using FFmpeg. FFmpeg output parsing is split into two parts in the program. Started to move all FFmpeg output parsing to its own subroutine: get_audio_stream_information_with_ffmpeg. 
 
 LoudnessCorrection Version 159
 -------------------------------
 - Added an check for if FFmpeg extracted stream number is valid.
-- Bugfix: Fixed a crash that happened when a file was inspected with FFmpeg and it output info (transportstream metadata) that contained characters that could not be interpreted in UTF-8. In these cases ISO-8859-15 is now used.
+- Bugfix: Fixed a crash that happened when a file was inspected with FFmpeg and it output info (transportstream metadata) that contained characters that could not be translated to UTF-8. In these cases ISO-8859-15 is now used.
 - Bugfix: FFmpeg output format changes slightly depending what stream info it finds. Stream map numbers were not always found.
 
 LoudnessCorrection Version 158
@@ -18,7 +29,7 @@ LoudnessCorrection Version 157
 
 LoudnessCorrection Version 155
 -------------------------------
-- Hunted a hanging bug that sometimes manifests itself when processing lots of very short files (duration 1 second). I changed all instances of subprocess.Popen to use real files as the stdout and stderr buffers for the external commands that are run through subprocess.Pipe. Some sources on the net said this is safer in threading than using subprocess.PIPE. In the end I found that the hanging bug is not in LoudnessCorrection.py but in libebur128 program 'loudness'. I have made the developer aware of this problem by filing a bugreport here: https://github.com/jiixyj/libebur128/issues/14
+- Hunted a hanging bug that sometimes manifests itself when processing lots of very short files (duration 1 second). I changed all instances of subprocess.Popen to use real files as the stdout and stderr buffers for the external commands that are run through subprocess.Popen. Some sources on the net said this is safer in threading than using subprocess.PIPE. In the end I found that the hanging bug is not in LoudnessCorrection.py but in libebur128 program 'loudness'. I have made the developer aware of this problem by filing a bugreport here: https://github.com/jiixyj/libebur128/issues/14
 
 #####################################
 # Released FreeLCS 1.02 with:       #

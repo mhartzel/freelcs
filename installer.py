@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '038'
+version = '039'
 
 ###################################
 # Function definitions start here #
@@ -1036,7 +1036,7 @@ def install_init_scripts_and_config_files(*args):
 	global ffmpeg_path
 	global gnuplot_path
 	global all_ip_addresses_of_the_machine
-	global peak_measuring_method
+	global peak_measurement_method
 	
 	put_email_details_in_a_dictionary()
 
@@ -1048,7 +1048,7 @@ def install_init_scripts_and_config_files(*args):
 	'directory_for_error_logs' : directory_for_error_logs.get(), 'send_error_messages_to_logfile' : send_error_messages_to_logfile, 'heartbeat' : true_false_string[heartbeat.get()], \
 	'heartbeat_file_name' : heartbeat_file_name, 'heartbeat_write_interval' : int(heartbeat_write_interval), 'email_sending_details' : email_sending_details, \
 	'send_error_messages_by_email' : true_false_string[send_error_messages_by_email.get()], 'where_to_send_error_messages' : where_to_send_error_messages, \
-	'config_file_created_by_installer_version' : version, 'peak_measuring_method' : peak_measuring_method }
+	'config_file_created_by_installer_version' : version, 'peak_measurement_method' : peak_measurement_method }
 
 	# Get the total number of items in settings dictionary and save the number in the dictionary. The number can be used for degugging settings.
 	number_of_all_items_in_dictionary = len(all_settings_dict)
@@ -1077,7 +1077,7 @@ def install_init_scripts_and_config_files(*args):
 		print()
 		print('natively_supported_file_formats =', all_settings_dict['natively_supported_file_formats'])
 		print('ffmpeg_output_format =', all_settings_dict['ffmpeg_output_format'])
-		print('peak_measuring_method =', all_settings_dict['peak_measuring_method'])
+		print('peak_measurement_method =', all_settings_dict['peak_measurement_method'])
 		print()	
 		print('silent =', all_settings_dict['silent'])
 		print()	
@@ -2521,18 +2521,18 @@ def get_ip_addresses_of_the_host_machine():
 
 def set_sample_peak_measurement_method(*args):
 	
-	global peak_measuring_method
+	global peak_measurement_method
 	
 	if sample_peak.get() == True:
-		peak_measuring_method = '--peak=sample'
+		peak_measurement_method = '--peak=sample'
 	else:
-		peak_measuring_method = '--peak=true'
+		peak_measurement_method = '--peak=true'
 	
 	if debug == True:
 		true_false_string = [False, True]
 		print()
 		print('sample_peak =', true_false_string[sample_peak.get()])
-		print('peak_measuring_method =', peak_measuring_method)
+		print('peak_measurement_method =', peak_measurement_method)
 
 
 ###############################
@@ -2656,7 +2656,7 @@ eight_window_textwidget_text_content  = ''
 all_installation_messages = ''
 all_ip_addresses_of_the_machine = []
 all_ip_addresses_of_the_machine = get_ip_addresses_of_the_host_machine()
-peak_measuring_method = '--peak=sample'
+peak_measurement_method = '--peak=sample'
 
 # Get the directory the os uses for storing temporary files.
 directory_for_os_temporary_files = tempfile.gettempdir()

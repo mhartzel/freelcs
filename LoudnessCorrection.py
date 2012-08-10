@@ -34,7 +34,7 @@ import email.mime.multipart
 import pickle
 import math
 
-version = '160'
+version = '161'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -147,7 +147,7 @@ if send_error_messages_by_email == True:
 	where_to_send_error_messages.append('email')
 
 # Should we use absolute sample peak or TruePeak calculation to determine the highest peak in audio. Possible values are: '--peak=sample' and '--peak=true'
-peak_measuring_method = '--peak=sample'
+peak_measurement_method = '--peak=sample'
 
 ###############################################################################################################################################################################
 # Default value definitions end here :)                                                                                                                                       #
@@ -504,7 +504,7 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 		
 		peak_measurement_string_english = '\\nSample peak: '
 		peak_measurement_string_finnish = '\\nHuipputaso: '
-		if peak_measuring_method == '--peak=true':
+		if peak_measurement_method == '--peak=true':
 			peak_measurement_string_english = '\\nTruePeak: '
 			peak_measurement_string_finnish = peak_measurement_string_english
 		
@@ -727,7 +727,7 @@ def create_loudness_adjusted_wav_with_sox(timeslice_calculation_error, differenc
 		# If sample peak is used for the highest value, then set the absolute peak to be -4 dBFS (resulting peaks will be about 1 dB higher than this).
 		# If TruePeak calculations are used to measure highest peak, then set the maximum peak level to -2 dBFS (resulting peaks will be about 1 dB higher than this).
 		audio_peaks_absolute_ceiling = -4
-		if peak_measuring_method == '--peak=true':
+		if peak_measurement_method == '--peak=true':
 			audio_peaks_absolute_ceiling = -2
 		
 		# Calculate the level where absolute peaks must be limited to before gain correction, to get the resulting max peak level we want.
@@ -862,7 +862,7 @@ def create_loudness_adjusted_wav_with_sox(timeslice_calculation_error, differenc
 				
 				# Peak limiting probably changed integrated loudness of the file. We need to calculate loudness again before creating the loudness corrected file.
 				event_for_integrated_loudness_calculation = threading.Event() # Create a dummy event for loudness calculation subroutine. This is needed by the subroutine, but not used anywhere else, since we do not start loudness calculation as a thread.
-				libebur128_commands_for_integrated_loudness_calculation=[libebur128_path, 'scan', '-l', peak_measuring_method] # Put libebur128 commands in a list.
+				libebur128_commands_for_integrated_loudness_calculation=[libebur128_path, 'scan', '-l', peak_measurement_method] # Put libebur128 commands in a list.
 				calculate_integrated_loudness(event_for_integrated_loudness_calculation, temporary_peak_limited_targetfile, directory_for_temporary_files, libebur128_commands_for_integrated_loudness_calculation, english, finnish)
 				
 				# Get loudness calculation results from the integrated loudness calculation process. Results are in list format in dictionary 'integrated_loudness_calculation_results', assing results to variables.
@@ -1028,102 +1028,21 @@ def get_realtime(english, finnish):
 	realtime = year + '.' + month + '.' + day + '_' + 'at' * english + 'klo' * finnish + '_' + hours + '.' + minutes + '.' + seconds
 	return (realtime)
 
-def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversion, event_2_for_ffmpeg_audiostream_conversion, filename, file_format_support_information, hotfolder_path, directory_for_temporary_files, adjust_line_printout, english, finnish, ffmpeg_output_format):
-
+def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversion, event_2_for_ffmpeg_audiostream_conversion, filename, file_format_support_information, hotfolder_path, directory_for_temporary_files, english, finnish):
+	# decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversion, event_2_for_ffmpeg_audiostream_conversion, filename, file_format_support_information, hotfolder_path, directory_for_temporary_files, adjust_line_printout, english, finnish, ffmpeg_output_format)
 	'''This subprocess decompresses the first 8 audiostreams from a file with ffmpeg'''
 
 	# This subprocess works like this:
 	# ---------------------------------
-	# The process gets the number of audio streams ffmpeg previously found in the file.
-	# FFmpeg options for extracting audio streams are created and ffmpeg started.
-	# The resulting files are losslessly compressed with flac to save disk space. (Flac also supports file sizes larger than 4 GB. Note: Flac compression routines in ffmpeg are based on flake and are much faster than the ones in the standard flac - command).
+	# FFmpeg is started to extract all valid audio streams from the file.
+	# The extracted files are losslessly compressed with flac to save disk space. (Flac also supports file sizes larger than 4 GB. Note: Flac compression routines in ffmpeg are based on flake and are much faster than the ones in the standard flac - command).
 	# The resulting files are moved to the HotFolder so the program sees them as new files and queues them for loudness calculation.
 	# The original file is queued for deletion.
 
-	# Get the information ffmpeg previously found out about the audio streams in the file and put each piece of information in a variable.
-	natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds = file_format_support_information
-	file_to_process = hotfolder_path + os.sep + filename
-	filename_and_extension = os.path.splitext(filename)
-	target_filenames = []
-	ffmpeg_stream_mapping_commands = []
 	global files_queued_for_deletion
 	
-	# Generate the beginning of the ffmpeg commandline options.
-	if ffmpeg_output_format == 'flac': # User want's resulting files to be written in flac, adjust options for that.
-		ffmpeg_commandline = ['ffmpeg', '-y', '-i', file_to_process, '-vn', '-acodec', 'flac']
-	else:
-		# User want's resulting files to be written in wav, adjust options for that.
-		ffmpeg_commandline = ['ffmpeg', '-y', '-i', file_to_process, '-vn', '-acodec', 'pcm_s16le']
-
-	# Generate the rest of the ffmpeg options.
-	for counter in range(0, number_of_ffmpeg_supported_audiostreams):
-		# Create names for audio streams found in the file.
-		# First parse the number of audio channels in each stream ffmpeg reported and put it in a variable.
-		number_of_audio_channels = '0'
-		ffmpeg_stream_info = str(details_of_ffmpeg_supported_audiostreams[counter])		
-		number_of_audio_channels_as_text = str(ffmpeg_stream_info.split(',')[2].strip()) # FFmpeg reports audio channel count as a string.		
-		
-		# Split audio channel count to a list ('2 channels' becomes ['2', 'channels']
-		number_of_audio_channels_as_text_split_to_a_list = number_of_audio_channels_as_text.split()
-		
-		# If the first item in the list is an integer bigger that 0 use it as the channel count.
-		# If the conversion from string to int raises an error, then the item is not a number, but a string like 'stereo'.
-		try:
-			if int(number_of_audio_channels_as_text_split_to_a_list[0]) > 0:
-				number_of_audio_channels = str(number_of_audio_channels_as_text_split_to_a_list[0])
-		except ValueError:
-			pass
-	
-		# FFmpeg sometimes reports some channel counts differently. Test for these cases and convert the channel count to an simple number.
-		if number_of_audio_channels_as_text == 'mono':
-			number_of_audio_channels = '1'
-		if number_of_audio_channels_as_text == 'stereo':
-			number_of_audio_channels = '2'
-		if number_of_audio_channels_as_text == '5.1':
-			number_of_audio_channels = '6'
-		
-		if number_of_audio_channels == '0':
-			error_message = 'ERROR !!! I could not parse FFmpeg channel count string: ' * english + 'VIRHE !!! En osannut tulkita ffmpeg:in antamaa kanavien lukumäärää: ' * finnish + '\'' + str(number_of_audio_channels_as_text_split_to_a_list[0]) + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
-			send_error_messages_to_screen_logfile_email(error_message)
-		
-		# Compile the name of the audiostream to an list of all audio stream filenames.
-		target_filenames.append(filename_and_extension[0] + '-AudioStream-' + str(counter + 1) + '-AudioChannels-' * english + '-AaniKanavia-' * finnish  + number_of_audio_channels + '.' + ffmpeg_output_format)
-		
-		# Generate FFmpeg extract options for audio stream.
-		ffmpeg_commandline.append('-f')
-		ffmpeg_commandline.append(ffmpeg_output_format)
-		ffmpeg_commandline.append(directory_for_temporary_files + os.sep + target_filenames[counter])
-	
-		# Find out what is FFmpegs map number for the audio stream.	
-		for map_number_counter in range(ffmpeg_stream_info.find('#') + 1, len(ffmpeg_stream_info)):
-			if ffmpeg_stream_info[map_number_counter] == '.':
-				continue
-			if ffmpeg_stream_info[map_number_counter].isalnum() == False:
-				break
-
-		map_number = ffmpeg_stream_info[ffmpeg_stream_info.find('#') + 1:map_number_counter]
-		
-		# Test if we really have found the stream number.
-		mapnumber_digit_1 = ''
-		mapnumber_digit_2 = ''
-		map_number_test_list = map_number.split('.')
-		
-		try:
-			mapnumber_digit_1 = map_number_test_list[0]
-			mapnumber_digit_2 = map_number_test_list[1]
-			
-			if (mapnumber_digit_1.isalnum() == False) or (mapnumber_digit_2.isalnum() == False):
-				error_message = 'Error: stream map number found in FFmpeg output is not a number: ' * english + 'Virhe: FFmpegin tulosteesta löydetty streamin numero ei ole numero: ' * finnish + map_number
-				send_error_messages_to_screen_logfile_email(error_message)
-		except IndexError:
-			error_message = 'Error: stream map number found in FFmpeg output is not a number: ' * english + 'Virhe: FFmpegin tulosteesta löydetty streamin numero ei ole numero: ' * finnish + map_number
-			send_error_messages_to_screen_logfile_email(error_message)
-	
-		# Create a audio stream mapping command list that will be appended at the end of ffmpeg commandline.
-		ffmpeg_stream_mapping_commands.extend(['-map',  str(map_number) + ':0.' + str(counter)])
-	
-	# Add stream mapping commands at the end of FFmpeg commandline. Without this the streams will be extracted in random order and our stream numbers won't match the streams.
-	ffmpeg_commandline.extend(ffmpeg_stream_mapping_commands)
+	# In list 'file_format_support_information' we already have all the information FFmpeg was able to find about the valid audio streams in the file, assign all info to variables.
+	natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames = file_format_support_information
 	
 	# Create the file to use for writing stdout output from the external command we are about to run.
 	try:
@@ -1132,7 +1051,7 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 		# Open the stdout temporary file in binary write mode.
 		with open(stdout_for_external_command, 'wb') as stdout_commandfile_handler:
 	
-			# Run ffmpeg and parse output
+			# Run ffmpeg to extract valid audio streams and parse output
 			subprocess.Popen(ffmpeg_commandline, stdout=stdout_commandfile_handler, stderr=stdout_commandfile_handler, stdin=None, close_fds=True).communicate()[0]
 	
 			# Make sure all data written to temporary stdout - file is flushed from the os cache and written to disk.
@@ -1157,12 +1076,17 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 		error_message = 'Error reading from ffmpeg (audio stream demux) stdout - file ' * english + 'FFmpeg (audio streamien demux) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
 		send_error_messages_to_screen_logfile_email(error_message)
 	
+	# Convert ffmpeg output from binary to UTF-8 text.
+	try:
+		ffmpeg_run_output_decoded = ffmpeg_run_output.decode('UTF-8') # Convert ffmpeg output from binary to utf-8 text.
+	except UnicodeDecodeError:
+		# If UTF-8 conversion fails, try conversion with another character map.
+		ffmpeg_run_output_decoded = ffmpeg_run_output.decode('ISO-8859-15') # Convert ffmpeg output from binary to text.
 	
-	ffmpeg_run_output_decoded = ffmpeg_run_output.decode('UTF-8')
 	ffmpeg_run_output_result_list = str(ffmpeg_run_output_decoded).split('\n')
 	for item in ffmpeg_run_output_result_list:
 		if 'error:' in item.lower(): # If there is the string 'error' in ffmpeg's output, there has been an error.
-			error_message = 'ERROR !!! Extracting audio streams with ffmpeg, ' * english + 'VIRHE !!! Audio streamien purkamisessa ffmpeg:illä, ' * finnish + ' ' + filename + ' : ' + results_of_gnuplot_run_list
+			error_message = 'ERROR !!! Extracting audio streams with ffmpeg, ' * english + 'VIRHE !!! Audio streamien purkamisessa ffmpeg:illä, ' * finnish + ' ' + filename + ' : ' + item
 			send_error_messages_to_screen_logfile_email(error_message)
 	
 	# Delete the temporary stdout - file.
@@ -1644,7 +1568,7 @@ def debug_variables_read_from_configfile():
 		print()
 		print('natively_supported_file_formats =', natively_supported_file_formats)
 		print('ffmpeg_output_format =', ffmpeg_output_format)
-		print('peak_measuring_method =', all_settings_dict['peak_measuring_method'])
+		print('peak_measurement_method =', all_settings_dict['peak_measurement_method'])
 		print()	
 		print('silent =', silent)
 		print()	
@@ -1739,8 +1663,13 @@ def get_ip_addresses_of_the_host_machine():
 		print('stderr:', stderr)
 		print('all_ip_addresses_of_the_machine =', all_ip_addresses_of_the_machine)
 		
-def get_audio_stream_information_with_ffmpeg(filename):
+def get_audio_stream_information_with_ffmpeg(filename, hotfolder_path, directory_for_temporary_files, ffmpeg_output_format):
 	
+	# This subprocess works like this:
+	# ---------------------------------
+	# The process runs FFmpeg the get information about audio streams in a file.
+	# FFmpeg output is then parsed and a FFmpeg commandline created that will later be used to extract all valid audio streams from the file.
+
 	natively_supported_file_format = False # This variable tells if the file format is natively supported by libebur128 and sox. We do not yet know the format of the file, we just set the default here. If format is not natively supported by libebur128 and sox, file will be first extracted to flac with ffmpeg.
 	ffmpeg_supported_fileformat = False # This variable tells if the file format is natively supported by ffmpeg. We do not yet know the format of the file, we just set the default here. If format is not supported by ffmpeg, we have no way of processing the file and will be queued for deletion.
 	number_of_ffmpeg_supported_audiostreams = 0 # This variable holds the number of audio streams ffmpeg finds in the file.
@@ -1750,6 +1679,12 @@ def get_audio_stream_information_with_ffmpeg(filename):
 	audio_duration_list = []
 	audio_duration_rounded_to_seconds = 0
 	ffmpeg_error_message = ''
+	time_slice_duration_string = '3' # Set the default value to use in timeslice loudness calculation.
+	file_to_process = hotfolder_path + os.sep + filename
+	filename_and_extension = os.path.splitext(filename)
+	target_filenames = []
+	ffmpeg_stream_mapping_commands = []
+	ffmpeg_commandline = []
 	
 	# Create the file to use for writing stdout output from the external command we are about to run.
 	try:
@@ -1801,10 +1736,16 @@ def get_audio_stream_information_with_ffmpeg(filename):
 	except OSError as reason_for_error:
 		error_message = 'Error deleting ffmpeg stdout - file ' * english + 'FFmpegin stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
 		send_error_messages_to_screen_logfile_email(error_message)
+		
+	#############################################################################################
+	# Find lines from FFmpeg output that have information about audio streams and file duration #
+	#############################################################################################
 	
-	# Parse ffmpeg output inspecting it line by line.
 	for item in ffmpeg_run_output_result_list:
 		if 'Audio:' in item: # There is the string 'Audio' for each audio stream that ffmpeg finds. Count how many 'Audio' strings is found and put the strings in a list. The string holds detailed information about the stream and we print it later.
+			# Transportstreams can have streams that have 0 audio channels, skip these dummy streams.
+			if '0 channels' in item:
+				continue
 			number_of_ffmpeg_supported_audiostreams = number_of_ffmpeg_supported_audiostreams + 1
 			details_of_ffmpeg_supported_audiostreams.append(item.strip())
 		if 'Duration:' in item:
@@ -1823,22 +1764,102 @@ def get_audio_stream_information_with_ffmpeg(filename):
 				send_error_messages_to_screen_logfile_email(error_message)
 		if filename + ':' in item: # Try to recognize some ffmpeg error messages, these always start with the filename + ':'
 			ffmpeg_error_message = item.split(':')[1] # Get the reason for error from ffmpeg output.
+	
+	###################################################################################################
+	# Generate the commandline that will later be used to extract all valid audio streams with FFmpeg #
+	###################################################################################################
+	
+	if ffmpeg_output_format == 'flac': # User want's resulting files to be written in flac, adjust options for that.
+		ffmpeg_commandline = ['ffmpeg', '-y', '-i', file_to_process, '-vn', '-acodec', 'flac']
+	else:
+		# User want's resulting files to be written in wav, adjust options for that.
+		ffmpeg_commandline = ['ffmpeg', '-y', '-i', file_to_process, '-vn', '-acodec', 'pcm_s16le']
+	
+	# Go through FFmpeg output that tells about audio streams and find channel counts for each stream #
+	for counter in range(0, number_of_ffmpeg_supported_audiostreams):
+		# Create names for audio streams found in the file.
+		# First parse the number of audio channels in each stream ffmpeg reported and put it in a variable.
+		number_of_audio_channels = '0'
+		ffmpeg_stream_info = str(details_of_ffmpeg_supported_audiostreams[counter])		
+		number_of_audio_channels_as_text = str(ffmpeg_stream_info.split(',')[2].strip()) # FFmpeg reports audio channel count as a string.		
+		
+		# Split audio channel count to a list ('2 channels' becomes ['2', 'channels']
+		number_of_audio_channels_as_text_split_to_a_list = number_of_audio_channels_as_text.split()
+		
+		# If the first item in the list is an integer bigger that 0 use it as the channel count.
+		# If the conversion from string to int raises an error, then the item is not a number, but a string like 'stereo'.
+		try:
+			if int(number_of_audio_channels_as_text_split_to_a_list[0]) > 0:
+				number_of_audio_channels = str(number_of_audio_channels_as_text_split_to_a_list[0])
+		except ValueError:
+			pass
+	
+		# FFmpeg sometimes reports some channel counts differently. Test for these cases and convert the channel count to an simple number.
+		if number_of_audio_channels_as_text == 'mono':
+			number_of_audio_channels = '1'
+		if number_of_audio_channels_as_text == 'stereo':
+			number_of_audio_channels = '2'
+		if number_of_audio_channels_as_text == '5.1':
+			number_of_audio_channels = '6'
+		
+		if number_of_audio_channels == '0':
+			error_message = 'ERROR !!! I could not parse FFmpeg channel count string: ' * english + 'VIRHE !!! En osannut tulkita ffmpeg:in antamaa kanavien lukumäärää: ' * finnish + '\'' + str(number_of_audio_channels_as_text_split_to_a_list[0]) + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
+			send_error_messages_to_screen_logfile_email(error_message)
+		
+		# Compile the name of the audiostream to an list of all audio stream filenames.
+		target_filenames.append(filename_and_extension[0] + '-AudioStream-' + str(counter + 1) + '-AudioChannels-' * english + '-AaniKanavia-' * finnish  + number_of_audio_channels + '.' + ffmpeg_output_format)
+		
+		# Generate FFmpeg extract options for audio stream.
+		ffmpeg_commandline.append('-f')
+		ffmpeg_commandline.append(ffmpeg_output_format)
+		ffmpeg_commandline.append(directory_for_temporary_files + os.sep + target_filenames[counter])
+	
+		# Find out what is FFmpegs map number for the audio stream.	
+		for map_number_counter in range(ffmpeg_stream_info.find('#') + 1, len(ffmpeg_stream_info)):
+			if ffmpeg_stream_info[map_number_counter] == '.':
+				continue
+			if ffmpeg_stream_info[map_number_counter].isalnum() == False:
+				break
+
+		map_number = ffmpeg_stream_info[ffmpeg_stream_info.find('#') + 1:map_number_counter]
+		
+		# Test if we really have found the stream number.
+		mapnumber_digit_1 = ''
+		mapnumber_digit_2 = ''
+		map_number_test_list = map_number.split('.')
+		
+		try:
+			mapnumber_digit_1 = map_number_test_list[0]
+			mapnumber_digit_2 = map_number_test_list[1]
+			
+			if (mapnumber_digit_1.isalnum() == False) or (mapnumber_digit_2.isalnum() == False):
+				error_message = 'Error: stream map number found in FFmpeg output is not a number: ' * english + 'Virhe: FFmpegin tulosteesta löydetty streamin numero ei ole numero: ' * finnish + map_number
+				send_error_messages_to_screen_logfile_email(error_message)
+		except IndexError:
+			error_message = 'Error: stream map number found in FFmpeg output is not in correct format: ' * english + 'Virhe: FFmpegin tulosteesta löydetty streamin numero ei ole oikeassa formaatissa: ' * finnish + map_number
+			send_error_messages_to_screen_logfile_email(error_message)
+	
+		# Create a audio stream mapping command list that will be appended at the end of ffmpeg commandline. Without this the streams would be extracted in random order and our stream numbers wouldn't match the streams.
+		ffmpeg_stream_mapping_commands.extend(['-map',  str(map_number) + ':0.' + str(counter)])
+	
+	# Complete the FFmpeg commandline by adding stream mapping commands at the end of it. The commandline is later used to extract all valid audio streams from the file.
+	ffmpeg_commandline.extend(ffmpeg_stream_mapping_commands)
+	
+	# In case the file has only 1 audio stream and the format is wav or ogg do an additional check.
+	# libebur128 only supports wav and ogg files that have max 2 channels. If there are more then the audio must be converted to flac before loudness calculation.
+	# 'natively_supported_file_format = False'  means audio must be converted to flac before prosessing.
 	if number_of_ffmpeg_supported_audiostreams > 0: # If ffmpeg found audio streams check if the file extension is one of the libebur128 and sox supported ones (wav, flac, ogg).
 		ffmpeg_supported_fileformat = True
 		if str(os.path.splitext(filename)[1]).lower() in natively_supported_file_formats:
 			natively_supported_file_format = True
-	if (number_of_ffmpeg_supported_audiostreams == 1) and (str(os.path.splitext(filename)[1]).lower() == '.wav'): # Test if wav - file has more than two channels, since libebur128 only supports mono and stereo wav - files.  If there are more channels, queue file to audio extraction and flac conversion with ffmpeg.
-		number_of_audio_channels = str(details_of_ffmpeg_supported_audiostreams).split(',')[2].strip() # Get the number of audio channels from ffmpeg output. FFmpeg output is in a list, since wav does not support more than 1 audiostreams, the list always has only 1 item and can be safely converted to string for manipulation.
-		if  (number_of_audio_channels != '1 channels') and (number_of_audio_channels != 'mono') and (number_of_audio_channels != '2 channels') and (number_of_audio_channels != 'stereo'): # If there are more than 2 channels in wav, queue file for audio extraction and flac conversion with ffmpeg.
+	if (number_of_ffmpeg_supported_audiostreams == 1) and (str(os.path.splitext(filename)[1]).lower() == '.wav'): # Test if wav - file has more than two channels, since libebur128 only supports mono and stereo wav - files.  If there are more channels, audio extraction and flac compression will be done with with ffmpeg.
+		if  (number_of_audio_channels != '1') and (number_of_audio_channels != '2'): # If there are more than 2 channels in wav, audio extraction and flac compression will be done with with ffmpeg.
 			natively_supported_file_format = False
-	if (number_of_ffmpeg_supported_audiostreams == 1) and (str(os.path.splitext(filename)[1]).lower() == '.ogg'): # Test if ogg - file has more than two channels, since sox only supports mono and stereo - files. If there are more channels, queue file to audio extraction and flac compression with ffmpeg.
-		number_of_audio_channels = str(details_of_ffmpeg_supported_audiostreams).split(',')[2].strip() # Get the number of audio channels from ffmpeg output.
-		if  (number_of_audio_channels != '1 channels') and (number_of_audio_channels != 'mono') and (number_of_audio_channels != '2 channels') and (number_of_audio_channels != 'stereo'): # If there are more than 2 channels in ogg, queue file for audio extraction and flac conversion with ffmpeg.
+	if (number_of_ffmpeg_supported_audiostreams == 1) and (str(os.path.splitext(filename)[1]).lower() == '.ogg'): # Test if ogg - file has more than two channels, since sox only supports mono and stereo - files. If there are more channels, audio extraction and flac compression will be done with with ffmpeg.
+		if  (number_of_audio_channels != '1') and (number_of_audio_channels != '2'): # If there are more than 2 channels in ogg, audio extraction and flac compression will be done with with ffmpeg.
 			natively_supported_file_format = False
-
-
-
-	file_format_support_information = [natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds]
+	
+	file_format_support_information = [natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames]
 	return(file_format_support_information, ffmpeg_error_message)
 
 ##############################################################################################
@@ -1999,8 +2020,8 @@ if configfile_path != '':
 		send_error_messages_to_logfile = all_settings_dict['send_error_messages_to_logfile']
 	if 'directory_for_error_logs' in all_settings_dict:
 		directory_for_error_logs = all_settings_dict['directory_for_error_logs']
-	if 'peak_measuring_method' in all_settings_dict:
-		peak_measuring_method = all_settings_dict['peak_measuring_method']
+	if 'peak_measurement_method' in all_settings_dict:
+		peak_measurement_method = all_settings_dict['peak_measurement_method']
 	
 
 # Test if the user given target path exists.
@@ -2315,12 +2336,10 @@ while True:
 					
 					if we_have_true_read_access_to_the_file == True:
 						
-						time_slice_duration_string = '3' # Set the default value to use in timeslice loudness calculation.
-						
 						# Call a subroutine to inspect file with FFmpeg to get audio stream information.
-						ffmpeg_parsed_audio_stream_information, ffmpeg_error_message = get_audio_stream_information_with_ffmpeg(filename)
+						ffmpeg_parsed_audio_stream_information, ffmpeg_error_message = get_audio_stream_information_with_ffmpeg(filename, hotfolder_path, directory_for_temporary_files, ffmpeg_output_format)
 						# Assing audio stream information to variables.
-						natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds = ffmpeg_parsed_audio_stream_information
+						natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames = ffmpeg_parsed_audio_stream_information
 
 						if (ffmpeg_supported_fileformat == False) and (filename not in unsupported_ignored_files_dict):
 							# No audiostreams were found in the file, plot an error graphics file to tell the user about it and add the filename and the time it was first seen to the list of files we will ignore.
@@ -2333,8 +2352,10 @@ while True:
 							send_error_messages_to_screen_logfile_email(error_message)
 							create_gnuplot_commands_for_error_message(error_message, filename, directory_for_temporary_files, directory_for_results, english, finnish)
 							unsupported_ignored_files_dict[filename] = int(time.time())
+						
+						# If file duration was not found, or it is less than one second, then we have an error.
+						# Don't process file, inform user by plotting an error graphics file and add the filename to the list of files we will ignore.
 						if (ffmpeg_supported_fileformat == True) and (not audio_duration_rounded_to_seconds > 0) and (filename not in unsupported_ignored_files_dict):
-							# If file duration was not found, or it is less than one second, then we have an error. Don't process file, inform user by plotting an error graphics file and add the filename to the list of files we will ignore.
 							error_message = 'Audio duration less than 1 second: ' * english + 'Tiedoston: ' * finnish + filename + ' ääniraidan pituus on alle 1 sekunti.' * finnish
 							send_error_messages_to_screen_logfile_email(error_message)
 							create_gnuplot_commands_for_error_message(error_message, filename, directory_for_temporary_files, directory_for_results, english, finnish)
@@ -2347,7 +2368,7 @@ while True:
 						
 						# If ffmpeg found audiostreams in the file, queue it for loudness calculation and print message to user.
 						if filename not in unsupported_ignored_files_dict:
-							file_format_support_information = [natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds]
+							file_format_support_information = [natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames]
 							files_queued_to_loudness_calculation.append(filename)
 							if silent == False:
 								print('\r' + adjust_line_printout, '"' + str(filename) + '"', 'is in the job queue as number' * english + 'on laskentajonossa numerolla' * finnish, len(files_queued_to_loudness_calculation))
@@ -2373,7 +2394,7 @@ while True:
 			if len(files_queued_to_loudness_calculation) > 0: # Check if there are files queued for processing waiting in the queue.
 				filename = files_queued_to_loudness_calculation.pop(0) # Remove the first file from the queue and put it in a variable.
 				file_format_support_information = old_hotfolder_filelist_dict[filename][2] # The information about the file format is stored in a list in the dictionary, get it and store in a list.
-				natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds = file_format_support_information # Save file format information to separate variables.
+				natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames = file_format_support_information # Save file format information to separate variables.
 				realtime = get_realtime(english, finnish).replace('_', ' ')
 				
 				# If audio fileformat is natively supported by libebur128 and sox and has only one audio stream, we don't need to do extraction and flac conversion with ffmpeg, just start two loudness calculation processes for the file.
@@ -2385,7 +2406,7 @@ while True:
 					
 					# Create commands for both loudness calculation processes.
 					libebur128_commands_for_time_slice_calculation=[libebur128_path, 'dump', '-s', time_slice_duration_string] # Put libebur128 commands in a list.
-					libebur128_commands_for_integrated_loudness_calculation=[libebur128_path, 'scan', '-l', peak_measuring_method] # Put libebur128 commands in a list.
+					libebur128_commands_for_integrated_loudness_calculation=[libebur128_path, 'scan', '-l', peak_measurement_method] # Put libebur128 commands in a list.
 					# Create events for both processes. When the process is ready it sets event = set, so that we now in the main thread that we can start more processes.
 					event_for_timeslice_loudness_calculation = threading.Event() # Create a unique event for the process. This event is used to signal other threads that this process has finished.
 					event_for_integrated_loudness_calculation = threading.Event() # Create a unique event for the process. This event is used to signal other threads that this process has finished.
@@ -2407,7 +2428,7 @@ while True:
 							print('\r' + adjust_line_printout, ' ' + details_of_ffmpeg_supported_audiostreams[counter])
 					event_1_for_ffmpeg_audiostream_conversion = threading.Event() # Create two unique events for the process. The events are being used to signal other threads that this process has finished. This thread does not really need two events, only one, but as other calculation processes are started in pairs resulting two events per file, two events must be created here also for this process..
 					event_2_for_ffmpeg_audiostream_conversion = threading.Event()
-					process_3 = threading.Thread(target = decompress_audio_streams_with_ffmpeg, args=(event_1_for_ffmpeg_audiostream_conversion, event_2_for_ffmpeg_audiostream_conversion, filename, file_format_support_information, hotfolder_path, directory_for_temporary_files, adjust_line_printout, english, finnish, ffmpeg_output_format)) # Create a process instance.
+					process_3 = threading.Thread(target = decompress_audio_streams_with_ffmpeg, args=(event_1_for_ffmpeg_audiostream_conversion, event_2_for_ffmpeg_audiostream_conversion, filename, file_format_support_information, hotfolder_path, directory_for_temporary_files, english, finnish)) # Create a process instance.
 					thread_object = process_3.start() # Start the process in it'own thread.
 					loudness_calculation_queue[filename] = [event_1_for_ffmpeg_audiostream_conversion, event_2_for_ffmpeg_audiostream_conversion] # Add file name and both process events to the dictionary of files that are currently being calculated upon.
 
