@@ -39,7 +39,7 @@
     <h3><a href="#How%20to%20report%20a%20bug">How to report a bug</a></h3>
     <h3><a href="#Run%20FreeLCS%20programs%20so%20that%20possible%20error%20messages%20can%20be%20seen">Run
         FreeLCS programs so that possible error messages can be seen</a></h3>
-    <br>
+    <h3><a href="#FreeLCS%20development">FreeLCS development</a></h3>
     <br>
     <br>
     <br>
@@ -1425,7 +1425,36 @@
     Paste the text to the bug report.<br>
     <br>
     <br>
+    <h2><a id="FreeLCS development">FreeLCS development</a></h2>
     <br>
+    FreeLCS development happens on Github (
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <a href="https://github.com/mhartzel/freelcs">https://github.com/mhartzel/freelcs</a>).
+    All new versions of software are uploaded there before official release.
+    Unreleased versions are untested so it is recommended that normal users do
+    not use these versions on their production servers. The reason for this is
+    that when new program code is added and old is modified it is possible that
+    new bugs creep in.<br>
+    <br>
+    If however you have encountered a bug you can navigate to that webpage and
+    check the changelog there (Documentation/Changelog.txt) to see if the bug
+    has already been fixed. If you want to test the latest software versions you
+    can download all files in the git-repository like this:<br>
+    <ul>
+      <li>Open the Terminal and get root - permissions (asks for root password):
+        <strong>sudo su</strong><br>
+      </li>
+      <li>Install git - software: <strong>apt-get -y install git</strong><br>
+      </li>
+      <li>Navigate to the directory where you want to Download the latest
+        FreeLCS files.</li>
+      <li>Download the git-repository with the command: <strong>git clone
+          http://github.com/mhartzel/freelcs.git</strong><br>
+      </li>
+      <li>This will create a new directory 'freelcs' and put all files inside
+        it.<br>
+      </li>
+    </ul>
     <br>
     <br>
     <br>

@@ -1,3 +1,7 @@
+Documentation
+--------------
+- Added info about how to download unreleased development versions of the software.
+
 HeartBeat_Checker version 018
 -------------------------------
 - Bugfix: HeartBeat Checker adds the time when an error happened to the email it sends to admin. The time was not always correct.
@@ -5,7 +9,7 @@ HeartBeat_Checker version 018
 
 LoudnessCorrection Version 162
 -------------------------------
-- LoudnessCOrrection now adds its version number to the timestamp-file that HeartBeat_Checker monitors.
+- LoudnessCorrection now adds its version number to the timestamp-file that HeartBeat_Checker monitors.
 
 LoudnessCorrection Version 161
 -------------------------------
