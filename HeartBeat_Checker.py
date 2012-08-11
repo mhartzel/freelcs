@@ -14,7 +14,7 @@ import email.mime.multipart
 import pickle
 import subprocess
 
-version = '017'
+version = '018'
 
 # User can set some defaults here that are used if the program is started without giving it the path to a configfile.
 silent = False # Use True if you don't want this program to output anything to screen.
@@ -38,18 +38,21 @@ def send_email(message_recipients, message_title, message_text_string, message_a
    
 	global loudness_correction_commandline
 	global loudness_correction_pid
-	global all_ip_addresses_of_the_machine	
+	global all_ip_addresses_of_the_machine
+	global loudness_correction_version
+	global version
+	global heartbeat_checker_pid
 	
-	# Compile info about the machine LoudnessCorrection runs on into a variable. This info is inserted below the error email message.
-	machine_info = '\nMachine info:\n----------------------------\n' + 'Commandline: ' + ' '.join(loudness_correction_commandline) + '\n' + 'IP-Addresses: ' + ','.join(all_ip_addresses_of_the_machine) + '\n' + 'PID: ' + str(loudness_correction_pid) + '\n\n'
-
+	# Compile info about LoudnessCorrection and HeartBeat Checker. This info is inserted into the error email message.
+	program_info = '\nLoudnessCorrection info:\n--------------------------------------\n' + 'Commandline: ' + ' '.join(loudness_correction_commandline) + '\n' + 'IP-Addresses: ' + ','.join(all_ip_addresses_of_the_machine) + '\n' + 'PID: ' + str(loudness_correction_pid) + '\n' + 'LoudnessCorrection version: ' + loudness_correction_version +  '\n\n' + 'HeartBeat Checker info:\n--------------------------------------\n' + 'Commandline: ' + ' '.join(sys.argv) + '\n' + 'PID: ' + str(heartbeat_checker_pid) + '\n' +'HeartBeat Checker version: ' + version + '\n\n'
+	
 	# Compile the start of the email message.
 	email_message_content = email.mime.multipart.MIMEMultipart()
 	email_message_content['From'] = smtp_username
 	email_message_content['To'] = ', '.join(message_recipients)
 	email_message_content['Subject'] = message_title
 
-	message_text_string = message_text_string + machine_info
+	message_text_string = message_text_string + program_info
 	
 	# Append the user given lines of text to the email message.
 	email_message_content.attach(email.mime.text.MIMEText(message_text_string.encode('utf-8'), _charset='utf-8'))
@@ -146,10 +149,12 @@ alert_email_has_been_sent = False
 heartbeat_file_read_error_message_has_been_sent = False
 configfile_path = ''
 startup_message_has_been_sent = False
+heartbeat_checker_pid = os.getpid() # Get the PID of this program.
 
 loudness_correction_commandline = ['Not known yet']
 loudness_correction_pid = 'Not known yet'
 all_ip_addresses_of_the_machine = ['Not known yet'] # This variable stores in a list all IP-Addresses of the machine LoudnessCorrection runs on. This info is inserted into error emails.
+loudness_correction_version = 'Not known yet'
 
 heartbeat_file_name = '00-HeartBeat.pickle'
 heartbeat_file_was_found = False
@@ -248,7 +253,7 @@ if configfile_path != '':
 	if 'email_sending_details' in all_settings_dict:
 		email_sending_details = all_settings_dict['email_sending_details']
 
-	# Assing values read from the configfile to local variables.
+	# Assing email settings read from the configfile to local variables.
 	heartbeat_file_path = web_page_path + os.sep + heartbeat_file_name
 	use_tls = email_sending_details['use_tls']
 	smtp_server_requires_authentication = email_sending_details['smtp_server_requires_authentication']
@@ -272,6 +277,7 @@ while True:
 	message_text_list=['\n']
 	message_text_string = ''
 	heartbeat_file_read_error = False
+	time_string = parse_time(time.time()) # Parse current time to a nicely formatted string.
 	
 	try:
 		with open(heartbeat_file_path, 'rb') as heartbeat_file_handler:
@@ -280,29 +286,25 @@ while True:
 		print('\n\nUser cancelled operation.\n')
 		sys.exit(0)
 	except IOError as reason_for_error:
-		time_string = parse_time(time.time()) # Parse current time to a nicely formatted string.
 		if silent == False:
 			print(time_string + ':   ' + 'Error reading HeartBeat-file: ' + str(reason_for_error))
 		heartbeat_file_read_error = True
-		message_text_list.append(time_string + ':   ' + 'Error reading HeartBeat-file: ' + str(reason_for_error) + '\n')
-		message_text_list.append('\n')
+		message_text_list.append(time_string + ':   ' + 'Error reading HeartBeat-file: ' + str(reason_for_error) + '\n\n')
 	except OSError as reason_for_error:
 		if silent == False:
 			print(time_string + ':   ' + 'Error reading HeartBeat-file: ' + str(reason_for_error))
 		heartbeat_file_read_error = True
-		message_text_list.append(time_string + ':   ' + 'Error reading HeartBeat-file: ' + str(reason_for_error) + '\n')
-		message_text_list.append('\n')
+		message_text_list.append(time_string + ':   ' + 'Error reading HeartBeat-file: ' + str(reason_for_error) + '\n\n')
 	except EOFError as reason_for_error:
 		if silent == False:
 			print(time_string + ':   ' + 'Error reading HeartBeat-file: ' + str(reason_for_error))
 		heartbeat_file_read_error = True
-		message_text_list.append(time_string + ':   ' + 'Error reading HeartBeat-file: ' + str(reason_for_error) + '\n')
-		message_text_list.append('\n')
+		message_text_list.append(time_string + ':   ' + 'Error reading HeartBeat-file: ' + str(reason_for_error) + '\n\n')
 		
 	############################################################################################################
 	# Test if there was an error reading the HeartBeat - file, if so send email alert to user.
 	############################################################################################################
-	if (heartbeat_file_read_error) == True and (heartbeat_file_read_error_message_has_been_sent == False):
+	if (heartbeat_file_read_error == True) and (heartbeat_file_read_error_message_has_been_sent == False):
 		# Consolidate email text lines to one string adding carriage return after each text line.
 		message_text_string = '\n'.join(message_text_list)
 		send_email(message_recipients, message_title, message_text_string, message_attachment_path)
@@ -313,12 +315,12 @@ while True:
 		# If HeartBeat - file became readable again print / send message to the admin.
 		if (heartbeat_file_read_error == False) and (heartbeat_file_read_error_message_has_been_sent == True):
 			heartbeat_file_read_error_message_has_been_sent = False
-			time_string = parse_time(time.time()) # Parse current time to a nicely formatted string.
 			
 			# Read LoudnessCorrection pid and commandline from the heartBeat pickle.
 			loudness_correction_commandline = loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'][0]
 			loudness_correction_pid = loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'][1]
 			all_ip_addresses_of_the_machine = loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'][2]
+			loudness_correction_version = loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'][3]
 	
 			message_text_string = 'Heartbeat - file became readable again at: ' + time_string + '\n'
 			send_email(message_recipients, message_title, message_text_string, message_attachment_path)
@@ -333,17 +335,17 @@ while True:
 		continue
 
 	# There was no errors in reading HeartBeat - file, reset some variables.
-	# First read LoudnessCorrection pid and commandline from the heartBeat pickle.
+	# First read LoudnessCorrection pid, commandline, ip-address and version number from the heartBeat pickle.
 	loudness_correction_commandline = loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'][0]
 	loudness_correction_pid = loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'][1]
 	all_ip_addresses_of_the_machine = loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'][2]
+	loudness_correction_version = loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'][3]
 	
 	# Send an email telling HeartBeat_Checker has started.
 	if startup_message_has_been_sent == False:
 		startup_message_has_been_sent = True
-		time_string = parse_time(time.time()) # Parse current time to a nicely formatted string.
 		message_text_list = ['HeartBeat_Checker started at: ' + time_string]
-		message_text_string = '\n'.join(message_text_list)
+		message_text_string = '\n'.join(message_text_list) + '\n\n'
 		send_email(message_recipients, 'HeartBeat_Checker has started.', message_text_string, message_attachment_path)
 	
 	# If a timestamp stops updating, we wan't the first line of the emailed error message always to contain the commandline and PID of the LoudnessCorrection script.
@@ -370,21 +372,21 @@ while True:
 			if loudness_correction_program_info_and_timestamps[item][0] == False:
 				continue
 			
-			# If timestamps do not differ the thread in question has stopped, compile an error message describing the situation.
+			# If previous and new timestamp does not differ the thread in question has stopped, compile an error message describing the situation.
 			if loudness_correction_program_info_and_timestamps[item][1] == previous_values_of_loudness_correction_program_info_and_timestamps[item][1]:
 				
 				stopped_timestamps_counter = stopped_timestamps_counter + 1 # Count how many stopped threads we have.
-				time_string = parse_time(loudness_correction_program_info_and_timestamps[item][1]) # Parse HeartBeat time to a nicely formatted string.
+				heartbeat_time_string = parse_time(loudness_correction_program_info_and_timestamps[item][1]) # Parse time read from LoudnessCorrection timestamp to a nicely formatted string.
 				
 				# Set the error message according to the situation. There are a couple of different possible error cases. If timestamp = 0, then it was never updated, if it is bigger then it was updated at least once.
 				if (loudness_correction_program_info_and_timestamps[item][1] == 0) and (item == 'write_html_progress_report'):
-					message_text_list.append('LoudnessCorrection has not started updating html-thread timestamps, the thread has probably crashed and a restart of the script is needed.')
+					message_text_list.append("LoudnessCorrection has not started updating 'html-thread' timestamps, the thread has probably crashed and a restart of the script is needed.")
 					message_text_list.append('\n')
 				if (loudness_correction_program_info_and_timestamps[item][1] == 0) and (item != 'write_html_progress_report'):
-					message_text_list.append('LoudnessCorrection has not started updating  \'' + item +  '\' timestamps, the thread has probably crashed and a restart of the script is needed.')
+					message_text_list.append('LoudnessCorrection has not started updating \'' + item +  '\' timestamps, the thread has probably crashed and a restart of the script is needed.')
 					message_text_list.append('\n')
 				if loudness_correction_program_info_and_timestamps[item][1] > 0:
-					message_text_list.append('LoudnessCorrection has stopped updating \'' + item +  '\' timestamps, the thread has probably crashed and a restart of the script is needed.' + ' Last thread timestamp update happened at: ' + time_string)
+					message_text_list.append('LoudnessCorrection has stopped updating \'' + item +  '\' timestamps, the thread has probably crashed and a restart of the script is needed.' + ' Last thread timestamp update happened at: ' + heartbeat_time_string)
 					message_text_list.append('\n')
 					
 		# Test how many stopped timestamps there was and set the variable 'heartbeat_has_stopped' accordingly.
@@ -396,7 +398,7 @@ while True:
 		# If there were stopped timestamps / threads print and email error messages to admin.
 		if (heartbeat_has_stopped == True) and (alert_email_has_been_sent == False):
 			
-			# HeartBeat has stopped, send email.
+			# Print message on screen.
 			if silent == False:
 				for line in message_text_list:
 					print(line)
@@ -409,8 +411,7 @@ while True:
 			# If all HeartBeat timestamps start again after being stopped, reset settings and start monitoring HeartBeat again. Also print / send message to the admin.
 			if (heartbeat_has_stopped == False) and (alert_email_has_been_sent == True):
 				alert_email_has_been_sent = False
-				time_string = parse_time(time.time()) # Parse current time to a nicely formatted string.
-				message_text_list.append('All Heartbeat timestamps started updating again at: ' + time_string + '\n')
+				message_text_list.append('All Heartbeat timestamps started updating again at: ' + time_string + '\n\n')
 				message_text_string = '\n'.join(message_text_list)
 				send_email(message_recipients, message_title, message_text_string, message_attachment_path)
 				

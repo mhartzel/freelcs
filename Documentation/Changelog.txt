@@ -1,9 +1,19 @@
+HeartBeat_Checker version 018
+-------------------------------
+- Bugfix: HeartBeat Checker adds the time when an error happened to the email it sends to admin. The time was not always correct.
+- HeartBeat Checker now adds Heartbeat Checker and LoudnessCorrection program version numbers and other additional program info to emails it sends to the admin.
+
+LoudnessCorrection Version 162
+-------------------------------
+- LoudnessCOrrection now adds its version number to the timestamp-file that HeartBeat_Checker monitors.
+
 LoudnessCorrection Version 161
 -------------------------------
 - All FFmpeg output parsing is now in its own subroutine and easier to change when new needs arise.
 - Bugfix: it seems that transport streams can have audio streams with a channel count of 0 which is quite surprising. These dummy streams are now skipped.
 - Bugfix: corrected another instance of a bug corrected in 159, when FFmpeg output contained characters that could not be translated to UTF-8 and caused a crash. Now ISO-8859-15 is used in these cases.
 - Corrected variable name: 'peak_measuring_method' to 'peak_measurement_method'.
+- LoudnessCOrrection now writes its version number to the timestamps file that HeartBeat_Checker monitors.
 
 installer 039
 --------------

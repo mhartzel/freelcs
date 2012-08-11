@@ -34,7 +34,7 @@ import email.mime.multipart
 import pickle
 import math
 
-version = '161'
+version = '162'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -1029,8 +1029,7 @@ def get_realtime(english, finnish):
 	return (realtime)
 
 def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversion, event_2_for_ffmpeg_audiostream_conversion, filename, file_format_support_information, hotfolder_path, directory_for_temporary_files, english, finnish):
-	# decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversion, event_2_for_ffmpeg_audiostream_conversion, filename, file_format_support_information, hotfolder_path, directory_for_temporary_files, adjust_line_printout, english, finnish, ffmpeg_output_format)
-	'''This subprocess decompresses the first 8 audiostreams from a file with ffmpeg'''
+	'''This subprocess decompresses all valid audiostreams from a file with ffmpeg'''
 
 	# This subprocess works like this:
 	# ---------------------------------
@@ -2111,7 +2110,7 @@ all_ip_addresses_of_the_machine = get_ip_addresses_of_the_host_machine()
 # LoudnessCorrection to write a html - page to disk, he set the variable 'write_html_progress_report' to False and this value is also sent to HeartBeat_Checker so that it knows the
 # Html - thread won't be updating it's timestamp.
 
-loudness_correction_program_info_and_timestamps = {'loudnesscorrection_program_info' : [sys.argv, loudness_correction_pid, all_ip_addresses_of_the_machine], 'main_thread' : [True, 0], 'write_html_progress_report' : [write_html_progress_report, 0]}
+loudness_correction_program_info_and_timestamps = {'loudnesscorrection_program_info' : [sys.argv, loudness_correction_pid, all_ip_addresses_of_the_machine, version], 'main_thread' : [True, 0], 'write_html_progress_report' : [write_html_progress_report, 0]}
 
 # Start in its own thread the subroutine that sends error messages by email.
 if email_sending_details['send_error_messages_by_email'] == True:
@@ -2153,7 +2152,7 @@ if silent == False:
 while True:
 	
 	loudness_correction_program_info_and_timestamps['main_thread'] = [True, int(time.time())] # Update the heartbeat timestamp for the main thread. This is used to keep track if the main thread has crashed.
-	loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'] = [sys.argv, loudness_correction_pid, all_ip_addresses_of_the_machine]
+	loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'] = [sys.argv, loudness_correction_pid, all_ip_addresses_of_the_machine, version]
 	
 	try:
 		# Get directory listing for HotFolder. The 'break' statement stops the for - statement from recursing into subdirectories.
