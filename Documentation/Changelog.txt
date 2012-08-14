@@ -1,3 +1,8 @@
+LoudnessCorrection Version 163
+-------------------------------
+- Bugfix: By mistake used a wrong Python method to find channel count and other numeric audio information from FFmpeg output. Corrected.
+- Started initial work on a problem when processing very large files would cause output file size to exceed wav-format max size of 4 GB.
+
 Documentation
 --------------
 - Added info about how to download unreleased development versions of the software.

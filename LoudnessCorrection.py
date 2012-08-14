@@ -34,7 +34,7 @@ import email.mime.multipart
 import pickle
 import math
 
-version = '162'
+version = '163'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -557,7 +557,7 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 		run_gnuplot(filename, directory_for_temporary_files, directory_for_results, english, finnish)
 
 		# Call a subprocess to create the loudness corrected audio file.
-		create_loudness_adjusted_wav_with_sox(timeslice_calculation_error, difference_from_target_loudness, filename, english, finnish, hotfolder_path, directory_for_results, directory_for_temporary_files, highest_peak_db)
+		create_loudness_adjusted_file_with_sox(timeslice_calculation_error, difference_from_target_loudness, filename, english, finnish, hotfolder_path, directory_for_results, directory_for_temporary_files, highest_peak_db)
 
 
 def create_gnuplot_commands_for_error_message(error_message, filename, directory_for_temporary_files, directory_for_results, english, finnish):
@@ -699,7 +699,7 @@ def run_gnuplot(filename, directory_for_temporary_files, directory_for_results, 
 		error_message = 'Error moving gnuplot graphics file ' * english + 'Gnuplotin grafiikkatiedoston siirtäminen epäonnistui ' * finnish + str(reason_for_error)
 		send_error_messages_to_screen_logfile_email(error_message)
 
-def create_loudness_adjusted_wav_with_sox(timeslice_calculation_error, difference_from_target_loudness, filename, english, finnish, hotfolder_path, directory_for_results, directory_for_temporary_files, highest_peak_db):
+def create_loudness_adjusted_file_with_sox(timeslice_calculation_error, difference_from_target_loudness, filename, english, finnish, hotfolder_path, directory_for_results, directory_for_temporary_files, highest_peak_db):
 
 	'''This subroutine creates a loudness corrected wav using sox'''
 
@@ -732,9 +732,13 @@ def create_loudness_adjusted_wav_with_sox(timeslice_calculation_error, differenc
 		
 		# Calculate the level where absolute peaks must be limited to before gain correction, to get the resulting max peak level we want.
 		hard_limiter_level = difference_from_target_loudness + audio_peaks_absolute_ceiling
-
-		# Start sox and create loudness corrected file to temporary files directory.
+		
+		
 		if difference_from_target_loudness >= 0:
+			
+			##############################################################################################################################################
+			# Create loudness corrected file. In this case volume is not adjusted (already at - 23 LUFS) or it is adjusted down so no limiting is needed #
+			##############################################################################################################################################
 			
 			# Create the file to use for writing stdout output from the external command we are about to run.
 			try:
@@ -785,19 +789,26 @@ def create_loudness_adjusted_wav_with_sox(timeslice_calculation_error, differenc
 			if not len(results_from_sox_run_list) == 0:
 				error_message = 'ERROR !!!' * english + 'VIRHE !!!' * finnish + ' ' + filename + ': ' + results_from_sox_run_list 
 				send_error_messages_to_screen_logfile_email(error_message)
+		
+		
 		if difference_from_target_loudness < 0:
 			
-			# Loudness correction requires increasing the volume, and peaks after correction might exceed our upper sample peak limit defined in 'audio_peaks_absolute_ceiling'. Run sox with a limiter if limiting is needed.
+			##################################################################################################
+			# Create loudness corrected file. In this case volume is adjusted up so limiting might be needed #
+			##################################################################################################
 			
 			if highest_peak_db + difference_from_target_loudness_sign_inverted > audio_peaks_absolute_ceiling:
-				# Peaks after loudness correction will exceed our upper sample peak limit defined in 'audio_peaks_absolute_ceiling'. Run sox with a limiter.
-				# Peaks will be limited below -3 dBFS because fast peaks higher than this might cause clipping in the DA-Converter when the sound is played.
+				
+				#########################################################################################################################
+				# Peaks will exceed our upper peak limit defined in 'audio_peaks_absolute_ceiling'. Create a peak limited file with sox #
+				# After this the loudness of the file needs to be recalculated                                                          #
+				#########################################################################################################################
+				
+				# Create sox commands for all four limiter stages.
 				# The limiter tries to introduce as little distortion as possible while being very effective in hard-limiting the peaks.
 				# There are three limiting - stages each 1 dB above previous and with 'tighter' attack and release values than the previous one.
-				# These stages limit the peaks while rounding the resulting peak waveforms.
+				# These stages limit the peaks while rounding the peaks.
 				# Still some very fast peaks escape these three stages and the final hard-limiter stage deals with those.
-
-				# Create sox commands for all four limiter stages.
 				compander_1 = ['compand', '0.005,0.3', '1:' + str(hard_limiter_level + -3) + ',' + str(hard_limiter_level + -3) + ',0,' + str(hard_limiter_level +  -2)]
 				compander_2 = ['compand', '0.002,0.15', '1:' + str(hard_limiter_level + -2) + ',' + str(hard_limiter_level + -2) + ',0,' + str(hard_limiter_level +  -1)]
 				compander_3 = ['compand', '0.001,0.075', '1:' + str(hard_limiter_level + -1) + ',' + str(hard_limiter_level + -1) + ',0,' + str(hard_limiter_level +  -0)]
@@ -860,10 +871,17 @@ def create_loudness_adjusted_wav_with_sox(timeslice_calculation_error, differenc
 					error_message = 'ERROR !!!' * english + 'VIRHE !!!' * finnish + ' ' + filename + ': ' + results_from_sox_run_list 
 					send_error_messages_to_screen_logfile_email(error_message)
 				
-				# Peak limiting probably changed integrated loudness of the file. We need to calculate loudness again before creating the loudness corrected file.
+				########################################################################################
+				# Loudness of the peak limited file needs to be calculated again, measure the loudness #
+				########################################################################################
+				
 				event_for_integrated_loudness_calculation = threading.Event() # Create a dummy event for loudness calculation subroutine. This is needed by the subroutine, but not used anywhere else, since we do not start loudness calculation as a thread.
 				libebur128_commands_for_integrated_loudness_calculation=[libebur128_path, 'scan', '-l', peak_measurement_method] # Put libebur128 commands in a list.
 				calculate_integrated_loudness(event_for_integrated_loudness_calculation, temporary_peak_limited_targetfile, directory_for_temporary_files, libebur128_commands_for_integrated_loudness_calculation, english, finnish)
+				
+				##################################################################################################
+				# After calculating loudness of the peak limited file, adjust the volume of the file to -23 LUFS #
+				##################################################################################################
 				
 				# Get loudness calculation results from the integrated loudness calculation process. Results are in list format in dictionary 'integrated_loudness_calculation_results', assing results to variables.
 				integrated_loudness_calculation_results_list = integrated_loudness_calculation_results.pop(temporary_peak_limited_targetfile)# Get loudness results for the file and remove this information from dictionary.
@@ -923,6 +941,10 @@ def create_loudness_adjusted_wav_with_sox(timeslice_calculation_error, differenc
 					send_error_messages_to_screen_logfile_email(error_message)
 			else:
 				
+				#######################################################################################################################
+				# Volume of the file needs to be adjusted up, but peaks will not exceed our upper limit so no peak limiting is needed #
+				# Create loudness corrected file                                                                                      #
+				#######################################################################################################################
 				
 				# Create the file to use for writing stdout output from the external command we are about to run.
 				try:
@@ -1684,6 +1706,9 @@ def get_audio_stream_information_with_ffmpeg(filename, hotfolder_path, directory
 	target_filenames = []
 	ffmpeg_stream_mapping_commands = []
 	ffmpeg_commandline = []
+	bit_depth = 0
+	sample_rate = 0
+	bit_depth_and_sample_rate_of_all_streams = []
 	
 	# Create the file to use for writing stdout output from the external command we are about to run.
 	try:
@@ -1802,27 +1827,57 @@ def get_audio_stream_information_with_ffmpeg(filename, hotfolder_path, directory
 			number_of_audio_channels = '6'
 		
 		if number_of_audio_channels == '0':
-			error_message = 'ERROR !!! I could not parse FFmpeg channel count string: ' * english + 'VIRHE !!! En osannut tulkita ffmpeg:in antamaa kanavien lukumäärää: ' * finnish + '\'' + str(number_of_audio_channels_as_text_split_to_a_list[0]) + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
+			error_message = 'ERROR !!! I could not parse FFmpeg channel count string: ' * english + 'VIRHE !!! En osannut tulkita ffmpeg:in antamaa tietoa kanavien lukumäärästä: ' * finnish + '\'' + str(number_of_audio_channels_as_text_split_to_a_list[0]) + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
 			send_error_messages_to_screen_logfile_email(error_message)
 		
 		# Compile the name of the audiostream to an list of all audio stream filenames.
-		target_filenames.append(filename_and_extension[0] + '-AudioStream-' + str(counter + 1) + '-AudioChannels-' * english + '-AaniKanavia-' * finnish  + number_of_audio_channels + '.' + ffmpeg_output_format)
+		target_filenames.append(filename_and_extension[0] + '-AudioStream-' + str(counter + 1) + '-ChannelCount-' * english + '-AaniKanavia-' * finnish  + number_of_audio_channels + '.' + ffmpeg_output_format)
 		
 		# Generate FFmpeg extract options for audio stream.
 		ffmpeg_commandline.append('-f')
 		ffmpeg_commandline.append(ffmpeg_output_format)
 		ffmpeg_commandline.append(directory_for_temporary_files + os.sep + target_filenames[counter])
-	
+		
+		# Find audio sample rate from FFmpeg stream info.
+		sample_rate_as_text = str(ffmpeg_stream_info.split(',')[1].strip().split(' ')[0].strip())
+		if sample_rate_as_text.isnumeric() == True:
+			sample_rate = int(sample_rate_as_text)
+		else:
+			error_message = 'ERROR !!! I could not parse FFmpeg sample rate string: ' * english + 'VIRHE !!! En osannut tulkita ffmpeg:in antamaa tietoa näyteenottotaajuuudesta: ' * finnish + '\'' + sample_rate_as_text + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
+			send_error_messages_to_screen_logfile_email(error_message)
+		
+		# Find audio bit depth from FFmpeg stream info output.
+		bit_depth_info_field = str(ffmpeg_stream_info.split(',')[3].strip())
+		for start_character in range(0, len(bit_depth_info_field)):
+			if bit_depth_info_field[start_character].isnumeric() == True:
+				break
+		
+		end_character = start_character + 1 # In case 'start_character' already points to the last character of 'bit_depth_info_field', then 'end_character' must be manually assigned because the following for loop won't run.
+		
+		for end_character in range(start_character + 1, len(bit_depth_info_field)):
+			if bit_depth_info_field[end_character].isnumeric() == False:
+				break
+		
+		bit_depth_as_text = bit_depth_info_field[start_character:end_character + 1]		
+		
+		if bit_depth_as_text.isnumeric() == True:
+			bit_depth = int(bit_depth_as_text)
+		else:
+			error_message = 'ERROR !!! I could not parse FFmpeg bit depth string: ' * english + 'VIRHE !!! En osannut tulkita ffmpeg:in antamaa tietoa bittisyvyydestä: ' * finnish + '\'' + bit_depth_as_text + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
+			send_error_messages_to_screen_logfile_email(error_message)
+		
+		bit_depth_and_sample_rate_of_all_streams.append([bit_depth, sample_rate])
+		
 		# Find out what is FFmpegs map number for the audio stream.	
 		for map_number_counter in range(ffmpeg_stream_info.find('#') + 1, len(ffmpeg_stream_info)):
 			if ffmpeg_stream_info[map_number_counter] == '.':
 				continue
-			if ffmpeg_stream_info[map_number_counter].isalnum() == False:
+			if ffmpeg_stream_info[map_number_counter].isnumeric() == False:
 				break
 
 		map_number = ffmpeg_stream_info[ffmpeg_stream_info.find('#') + 1:map_number_counter]
 		
-		# Test if we really have found the stream number.
+		# Test if we really have found the stream map number.
 		mapnumber_digit_1 = ''
 		mapnumber_digit_2 = ''
 		map_number_test_list = map_number.split('.')
@@ -1831,7 +1886,7 @@ def get_audio_stream_information_with_ffmpeg(filename, hotfolder_path, directory
 			mapnumber_digit_1 = map_number_test_list[0]
 			mapnumber_digit_2 = map_number_test_list[1]
 			
-			if (mapnumber_digit_1.isalnum() == False) or (mapnumber_digit_2.isalnum() == False):
+			if (mapnumber_digit_1.isnumeric() == False) or (mapnumber_digit_2.isnumeric() == False):
 				error_message = 'Error: stream map number found in FFmpeg output is not a number: ' * english + 'Virhe: FFmpegin tulosteesta löydetty streamin numero ei ole numero: ' * finnish + map_number
 				send_error_messages_to_screen_logfile_email(error_message)
 		except IndexError:
