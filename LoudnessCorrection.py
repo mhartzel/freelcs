@@ -34,7 +34,7 @@ import email.mime.multipart
 import pickle
 import math
 
-version = '165'
+version = '167'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -724,7 +724,7 @@ def create_loudness_adjusted_file(integrated_loudness_calculation_error, differe
 		sample_count = 0
 		estimated_uncompressed_size_for_single_mono_file = 0
 		estimated_uncompressed_size_for_combined_channels = 0
-		wav_format_maximum_file_size = 4294967296 - (1024*1024) # Define wav max file size subtract and 1 MB to be on the safe side (header + some marginal). Theoretical max size is 2 ^ 32 = 4294967296.
+		wav_format_maximum_file_size = 4294967296 # Define wav max file size. Theoretical max size is 2 ^ 32 = 4294967296.
 		flac_compression_level = ['-C', '0']
 		output_format_for_intermediate_files = 'wav'
 		output_format_for_final_file = 'wav'
@@ -785,26 +785,6 @@ def create_loudness_adjusted_file(integrated_loudness_calculation_error, differe
 			if 'Duration' in text_line:
 				sample_count_string = text_line.split('=')[1].strip().split(' ')[0]
 		
-		
-		
-		
-		
-		print()
-		print(file_to_process)
-		print('--------------------------------------------------')
-		print('channel_count_string =', channel_count_string)
-		print('sample_rate_string =', sample_rate_string)
-		print('bit_depth_string =', bit_depth_string)
-		print('sample_count_string =', sample_count_string)
-		print()
-		
-		
-		
-		
-		
-		
-		
-		
 		# Convert audio technical information from string to integer and assign to variables.
 		if channel_count_string.isnumeric() == True:
 			channel_count = int(channel_count_string)
@@ -830,8 +810,8 @@ def create_loudness_adjusted_file(integrated_loudness_calculation_error, differe
 			error_message = 'ERROR !!! I could not parse sox sample count string: ' * english + 'VIRHE !!! En osannut tulkita sox:in antamaa tietoa näytteiden lukumäärästä: ' * finnish + '\'' + sample_count_string + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
 			send_error_messages_to_screen_logfile_email(error_message)
 		
-		# Calculate estimated uncompressed file size. Add 1024 bytes and one second of data (sample_rate = 1 second) for file header to be on the safe side.
-		estimated_uncompressed_size_for_single_mono_file = int((sample_count * int(bit_depth / 8)) + 1024 + sample_rate)
+		# Calculate estimated uncompressed file size. Add one second of data to the file size (sample_rate = 1 second) to be on the safe side.
+		estimated_uncompressed_size_for_single_mono_file = int((sample_count * int(bit_depth / 8)) + sample_rate)
 		estimated_uncompressed_size_for_combined_channels = estimated_uncompressed_size_for_single_mono_file * channel_count
 		
 		# Test if output file will exceed the max size of wav format and assign sox commands and output formats accordingly.
@@ -856,6 +836,29 @@ def create_loudness_adjusted_file(integrated_loudness_calculation_error, differe
 		temporary_peak_limited_targetfile = filename_and_extension[0] + '-Peak_Limited.' + output_format_for_intermediate_files
 		targetfile = directory_for_results + os.sep + filename_and_extension[0] + '_-23_LUFS.' + output_format_for_final_file
 		difference_from_target_loudness_sign_inverted = difference_from_target_loudness * -1 # The sign (+/-) of the difference from target loudness needs to be flipped for sox. Plus becomes minus and vice versa.
+		
+		# Print technical data for each file when in debug mode.
+		if debug == True:
+		
+			print()
+			print(filename)
+			print((len(filename) + 1) * '-')
+			print('channel_count_string =', channel_count_string)
+			print('sample_rate_string =', sample_rate_string)
+			print('bit_depth_string =', bit_depth_string)
+			print('sample_count_string =', sample_count_string)
+			print('wav_format_maximum_file_size =', wav_format_maximum_file_size)
+			print('estimated_uncompressed_size_for_combined_channels =', estimated_uncompressed_size_for_combined_channels)
+			print('difference to max size', wav_format_maximum_file_size - estimated_uncompressed_size_for_combined_channels)
+			print('estimated_uncompressed_size_for_single_mono_file =', estimated_uncompressed_size_for_single_mono_file)
+			print('difference to max size', wav_format_maximum_file_size - estimated_uncompressed_size_for_single_mono_file)
+			print('output_format_for_intermediate_files =', output_format_for_intermediate_files)
+			print('output_format_for_final_file =', output_format_for_final_file)
+			file_will_be_split_to_separate_mono_files = False
+			if (estimated_uncompressed_size_for_combined_channels >= wav_format_maximum_file_size) and (estimated_uncompressed_size_for_single_mono_file < wav_format_maximum_file_size):
+				file_will_be_split_to_separate_mono_files = True
+			print('estimated_uncompressed_size_for_combined_channels =', estimated_uncompressed_size_for_combined_channels)
+			print()
 		
 		# Set the absolute peak level for the resulting corrected audio file.
 		# If sample peak is used for the highest value, then set the absolute peak to be -4 dBFS (resulting peaks will be about 1 dB higher than this).
@@ -1189,7 +1192,7 @@ def create_loudness_adjusted_file(integrated_loudness_calculation_error, differe
 		if output_format_for_intermediate_files != output_format_for_final_file:
 			
 			# The combined channels in final output file exceeds the max file size and the file needs to be split to separate mono files.
-			for counter in range(1, channel_count):
+			for counter in range(1, channel_count + 1):
 				
 				separate_mono_targetfile = directory_for_temporary_files + os.sep + filename_and_extension[0] + '-Channel-' + str(counter) + '_-23_LUFS.' + output_format_for_final_file
 				
@@ -1245,9 +1248,9 @@ def create_loudness_adjusted_file(integrated_loudness_calculation_error, differe
 					send_error_messages_to_screen_logfile_email(error_message)
 			
 			# Delete source file after writing audio channels to separate files.
-			if os.path.exists(directory_for_temporary_files + os.sep + temporary_targetfile):
+			if os.path.exists(temporary_targetfile):
 				try:
-					os.remove(directory_for_temporary_files + os.sep + temporary_targetfile)
+					os.remove(temporary_targetfile)
 				except KeyboardInterrupt:
 					print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
 					sys.exit(0)
@@ -1259,7 +1262,7 @@ def create_loudness_adjusted_file(integrated_loudness_calculation_error, differe
 					send_error_messages_to_screen_logfile_email(error_message)	
 		
 			# Move separate mono files to the results directory.
-			for counter in range(1, channel_count):
+			for counter in range(1, channel_count + 1):
 				
 				mono_sourcefile = directory_for_temporary_files + os.sep + filename_and_extension[0] + '-Channel-' + str(counter) + '_-23_LUFS.' + output_format_for_final_file
 				mono_targetfile = directory_for_results + os.sep + filename_and_extension[0] + '-Channel-' + str(counter) + '_-23_LUFS.' + output_format_for_final_file
@@ -2365,6 +2368,9 @@ else:
 	if (not os.access(libebur128_path, os.X_OK)):
 		print('\n!!!!!!! libebur128 loudness-executable does not have \'executable\' permissions on !!!!!!!\n' * english + '\n!!!!!!! libebur128:n loudness-ohjelmalla ei ole käynnistyksen mahdollistava \'executable\' oikeudet päällä !!!!!!!\n' * finnish)
 		sys.exit(1)
+
+# If you wan't to enable debug mode to see debug messages printed on the terminal window, then uncomment the line below.
+# debug = True
 
 # Define the name of the error logfile.
 error_logfile_path = directory_for_error_logs + os.sep + 'error_log-' + str(get_realtime(english, finnish)) + '.txt' # Error log filename is 'error_log' + current date + time
