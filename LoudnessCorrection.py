@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (C) Mikael Hartzell 2012 and contributors:
-# Gnuplot commands Timo Kaleva.
+# Original idea for the program and Gnuplot commands by Timo Kaleva.
 #
 # This program is distributed under the GNU General Public License, version 3 (GPLv3)
 #
@@ -34,7 +34,7 @@ import email.mime.multipart
 import pickle
 import math
 
-version = '164'
+version = '165'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -177,7 +177,6 @@ def calculate_integrated_loudness(event_for_integrated_loudness_calculation, fil
 		# Append the name of the file we are going to process at the end of libebur128 commands.
 		libebur128_commands_for_integrated_loudness_calculation.append(file_to_process)
 		
-		# Create files to use for writing stdout and stderr output from the external command we are about to run.
 		try:
 			# Define filenames for temporary files that we are going to use as stdout and stderr for the external command.
 			stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_integrated_loudness_calculation_stdout.txt'
@@ -290,7 +289,6 @@ def calculate_loudness_timeslices(filename, hotfolder_path, libebur128_commands_
 		time_slice_duration_string = libebur128_commands_for_time_slice_calculation[3] # Timeslice for files <10 seconds is 0.5 sec, and 3 sec for files >= 10 sec. Get the timeslice duration.
 		libebur128_commands_for_time_slice_calculation.append(file_to_process) # Append the name of the file we are going to process at the end of libebur128 commands.
 		
-		# Create files to use for writing stdout and stderr output from the external command we are about to run.
 		try:
 			# Define filenames for temporary files that we are going to use as stdout and stderr for the external command.
 			stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_timeslice_loudness_calculation_stdout.txt'
@@ -486,7 +484,7 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 		plotfile_x_axis_time_information.append(')')
 		plotfile_x_axis_time_information = ''.join(plotfile_x_axis_time_information)
 	
-	# Generate gnuplot commands needed for plotting the graphicsfile and store them in a list.
+	# Generate gnuplot commands needed for plotting the graphicsfile and store commands in a list.
 	if (integrated_loudness_calculation_error == True) or (timeslice_calculation_error == True):
 		# Loudness calculation encountered an error, generate gnuplot commands for plotting default graphics with the error message.
 		error_message_to_print_with_gnuplot = ''
@@ -557,7 +555,7 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 		run_gnuplot(filename, directory_for_temporary_files, directory_for_results, english, finnish)
 
 		# Call a subprocess to create the loudness corrected audio file.
-		create_loudness_adjusted_file(timeslice_calculation_error, difference_from_target_loudness, filename, english, finnish, hotfolder_path, directory_for_results, directory_for_temporary_files, highest_peak_db)
+		create_loudness_adjusted_file(integrated_loudness_calculation_error, difference_from_target_loudness, filename, english, finnish, hotfolder_path, directory_for_results, directory_for_temporary_files, highest_peak_db)
 
 
 def create_gnuplot_commands_for_error_message(error_message, filename, directory_for_temporary_files, directory_for_results, english, finnish):
@@ -623,7 +621,6 @@ def run_gnuplot(filename, directory_for_temporary_files, directory_for_results, 
 	gnuplot_temporary_output_graphicsfile = directory_for_temporary_files + os.sep + filename + '-Loudness_Results_Graphics.jpg' * english + '-Aanekkyyslaskennan_Tulokset.jpg' * finnish
 	gnuplot_output_graphicsfile = directory_for_results + os.sep + filename + '-Loudness_Results_Graphics.jpg' * english + '-Aanekkyyslaskennan_Tulokset.jpg' * finnish
 
-	# Create the file to use for writing stdout output from the external command we are about to run.
 	try:
 		# Define filename for the temporary file that we are going to use as stdout for the external command.
 		stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_gnuplot_stdout.txt'
@@ -699,7 +696,7 @@ def run_gnuplot(filename, directory_for_temporary_files, directory_for_results, 
 		error_message = 'Error moving gnuplot graphics file ' * english + 'Gnuplotin grafiikkatiedoston siirtäminen epäonnistui ' * finnish + str(reason_for_error)
 		send_error_messages_to_screen_logfile_email(error_message)
 
-def create_loudness_adjusted_file(timeslice_calculation_error, difference_from_target_loudness, filename, english, finnish, hotfolder_path, directory_for_results, directory_for_temporary_files, highest_peak_db):
+def create_loudness_adjusted_file(integrated_loudness_calculation_error, difference_from_target_loudness, filename, english, finnish, hotfolder_path, directory_for_results, directory_for_temporary_files, highest_peak_db):
 
 	'''This subroutine creates a loudness corrected file'''
 
@@ -709,13 +706,16 @@ def create_loudness_adjusted_file(timeslice_calculation_error, difference_from_t
 	# The process starts sox using the difference as gain parameter and creates a loudness corrected wav.
 	# The corrected file is written to temporary directory and when ready moved to the target directory for the user to see. This prevents user from using an incomplete file by accident.
 	# If ouput files uncompressed size would exceed wav 4 GB limit, then the file is split into individual mono files. If individual size of these mono channels would still exceed 4 GB then flac or a lossy codec is used store the file.
-
+	
+	# Assing some values to variables.
 	integrated_loudness_calculation_results_list = []
+	file_to_process = hotfolder_path + os.sep + filename
+	filename_and_extension = os.path.splitext(filename)
 	global integrated_loudness_calculation_results
 	global libebur128_path
 
 	# Create loudness corrected file if there were no errors in loudness calculation.
-	if (timeslice_calculation_error == False):
+	if (integrated_loudness_calculation_error == False):
 		
 		# Read audio file technical info with sox
 		channel_count = 0
@@ -725,18 +725,17 @@ def create_loudness_adjusted_file(timeslice_calculation_error, difference_from_t
 		estimated_uncompressed_size_for_single_mono_file = 0
 		estimated_uncompressed_size_for_combined_channels = 0
 		wav_format_maximum_file_size = 4294967296 - (1024*1024) # Define wav max file size subtract and 1 MB to be on the safe side (header + some marginal). Theoretical max size is 2 ^ 32 = 4294967296.
-		split_final_file_to_separate_mono_files = False
-		mono_files_still_exceed_max_file_size = False
 		flac_compression_level = ['-C', '0']
+		output_format_for_intermediate_files = 'wav'
+		output_format_for_final_file = 'wav'
 		
-		# Create the file to use for writing stdout output from the external command we are about to run.
 		try:
 			# Define filename for the temporary file that we are going to use as stdout for the external command.
 			stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_sox_read_audio_info_stdout.txt'
 			# Open the stdout temporary file in binary write mode.
 			with open(stdout_for_external_command, 'wb') as stdout_commandfile_handler:
 				
-				# Loudness correction requires decreasing volume, no peak limiting is needed. Run sox without limiter.
+				# Get technical info from audio file using sox.
 				subprocess.Popen(['sox', '--i', file_to_process], stdout=stdout_commandfile_handler, stderr=stdout_commandfile_handler, stdin=None, close_fds=True).communicate()[0]
 			
 				# Make sure all data written to temporary stdout and stderr - files is flushed from the os cache and written to disk.
@@ -762,7 +761,8 @@ def create_loudness_adjusted_file(timeslice_calculation_error, difference_from_t
 			send_error_messages_to_screen_logfile_email(error_message)	
 
 		# Convert sox output from binary to UTF-8 text and split text lines to a list.
-		audio_file_technical_info_list = results_from_sox_run.decode('UTF-8').strip().split('\n').strip
+		
+		audio_file_technical_info_list = results_from_sox_run.decode('UTF-8').split('\n')
 		
 		# Delete the temporary stdout - file.
 		try:
@@ -777,13 +777,33 @@ def create_loudness_adjusted_file(timeslice_calculation_error, difference_from_t
 		# Assign audio file technical data to variables
 		for text_line in audio_file_technical_info_list:
 			if 'Channels' in text_line:
-				channel_count_string = text_line.split(':').strip()[1]
+				channel_count_string = text_line.split(':')[1].strip()
 			if 'Sample Rate' in text_line:
-				sample_rate_string = text_line.split(':').strip()[1]
+				sample_rate_string = text_line.split(':')[1].strip()
 			if 'Precision' in text_line:
-				bit_depth_string = text_line.split(':').strip()[1].split('-')[0]
+				bit_depth_string = text_line.split(':')[1].strip().split('-')[0]
 			if 'Duration' in text_line:
-				sample_count_string = text_line.split('=').strip()[1].split(' ').strip[0]
+				sample_count_string = text_line.split('=')[1].strip().split(' ')[0]
+		
+		
+		
+		
+		
+		print()
+		print(file_to_process)
+		print('--------------------------------------------------')
+		print('channel_count_string =', channel_count_string)
+		print('sample_rate_string =', sample_rate_string)
+		print('bit_depth_string =', bit_depth_string)
+		print('sample_count_string =', sample_count_string)
+		print()
+		
+		
+		
+		
+		
+		
+		
 		
 		# Convert audio technical information from string to integer and assign to variables.
 		if channel_count_string.isnumeric() == True:
@@ -815,23 +835,23 @@ def create_loudness_adjusted_file(timeslice_calculation_error, difference_from_t
 		estimated_uncompressed_size_for_combined_channels = estimated_uncompressed_size_for_single_mono_file * channel_count
 		
 		# Test if output file will exceed the max size of wav format and assign sox commands and output formats accordingly.
-		if estimated_uncompressed_size_for_combined_channels >= wav_format_maximum_file_size:
-			split_final_file_to_separate_mono_files = True
+		if (estimated_uncompressed_size_for_combined_channels >= wav_format_maximum_file_size) and (estimated_uncompressed_size_for_single_mono_file >= wav_format_maximum_file_size):
+			# In this case both the combined channels in one file and separate mono files will exceed the maximum size. Use lossless compression.
 			output_format_for_intermediate_files = 'flac'
-			
-			if estimated_uncompressed_size_for_single_mono_file >= wav_format_maximum_file_size:
-				split_final_file_to_separate_mono_files = False
-				mono_files_still_exceed_max_file_size = True
-				output_format_for_final_file = 'flac'
+			output_format_for_final_file = 'flac'
 				
-		else:
-			split_final_file_to_separate_mono_files = False
+		if (estimated_uncompressed_size_for_combined_channels >= wav_format_maximum_file_size) and (estimated_uncompressed_size_for_single_mono_file < wav_format_maximum_file_size):
+			# In this case the combined channels in one file exceeds the maximum size but separate mono files do not.
+			# Use lossless compression for intermediate files and split final file to separate mono files.
+			output_format_for_intermediate_files = 'flac'
+			output_format_for_final_file = 'wav'
+			
+		if estimated_uncompressed_size_for_combined_channels < wav_format_maximum_file_size:
+			# In this case the combined channels in one file does not exceed the maximum size, so we can use wav for all processing.
 			output_format_for_intermediate_files = 'wav'
 			output_format_for_final_file = 'wav'
 		
 		# Assing some values to variables.
-		file_to_process = hotfolder_path + os.sep + filename
-		filename_and_extension = os.path.splitext(filename)
 		temporary_targetfile = directory_for_temporary_files + os.sep + filename_and_extension[0] + '_-23_LUFS.' + output_format_for_intermediate_files
 		temporary_peak_limited_targetfile = filename_and_extension[0] + '-Peak_Limited.' + output_format_for_intermediate_files
 		targetfile = directory_for_results + os.sep + filename_and_extension[0] + '_-23_LUFS.' + output_format_for_final_file
@@ -847,14 +867,12 @@ def create_loudness_adjusted_file(timeslice_calculation_error, difference_from_t
 		# Calculate the level where absolute peaks must be limited to before gain correction, to get the resulting max peak level we want.
 		hard_limiter_level = difference_from_target_loudness + audio_peaks_absolute_ceiling
 		
-		
 		if difference_from_target_loudness >= 0:
 			
 			##############################################################################################################################################
 			# Create loudness corrected file. In this case volume is not adjusted (already at - 23 LUFS) or it is adjusted down so no limiting is needed #
 			##############################################################################################################################################
 			
-			# Create the file to use for writing stdout output from the external command we are about to run.
 			try:
 				# Define filename for the temporary file that we are going to use as stdout for the external command.
 				stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_sox_stdout.txt'
@@ -910,7 +928,6 @@ def create_loudness_adjusted_file(timeslice_calculation_error, difference_from_t
 				error_message = 'ERROR !!!' * english + 'VIRHE !!!' * finnish + ' ' + filename + ': ' + results_from_sox_run_list 
 				send_error_messages_to_screen_logfile_email(error_message)
 		
-		
 		if difference_from_target_loudness < 0:
 			
 			##################################################################################################
@@ -945,7 +962,6 @@ def create_loudness_adjusted_file(timeslice_calculation_error, difference_from_t
 				sox_commandline.extend(compander_3)
 				sox_commandline.extend(hard_limiter)
 				
-				# Create the file to use for writing stdout output from the external command we are about to run.
 				try:
 					# Define filename for the temporary file that we are going to use as stdout for the external command.
 					stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_sox_peak_limited_stdout.txt'
@@ -1013,7 +1029,6 @@ def create_loudness_adjusted_file(timeslice_calculation_error, difference_from_t
 				difference_from_target_loudness_sign_inverted = difference_from_target_loudness * -1 # The sign (+/-) of the difference from target loudness needs to be flipped for sox. Plus becomes minus and vice versa.
 				highest_peak_db = integrated_loudness_calculation_results_list[5]
 				
-				# Create the file to use for writing stdout output from the external command we are about to run.
 				try:
 					# Define filename for the temporary file that we are going to use as stdout for the external command.
 					stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_sox_gain_correction_after_limiter_stdout.txt'
@@ -1060,10 +1075,10 @@ def create_loudness_adjusted_file(timeslice_calculation_error, difference_from_t
 				try:
 					os.remove(stdout_for_external_command)
 				except IOError as reason_for_error:
-					error_message = 'Error deleting sox stdout - file ' * english + 'Soxin stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+					error_message = 'Error deleting sox (gain correction after peak limiting) stdout - file ' * english + 'Soxin (tason säätö huippujen limitoinnin jälkeen) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
 					send_error_messages_to_screen_logfile_email(error_message)
 				except OSError as reason_for_error:
-					error_message = 'Error deleting sox stdout - file ' * english + 'Soxin stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+					error_message = 'Error deleting sox (gain correction after peak limiting) stdout - file ' * english + 'Soxin (tason säätö huippujen limitoinnin jälkeen) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
 					send_error_messages_to_screen_logfile_email(error_message)
 				
 				# If sox did output something, there was and error. Print message to user.
@@ -1077,7 +1092,6 @@ def create_loudness_adjusted_file(timeslice_calculation_error, difference_from_t
 				# Create loudness corrected file                                                                                      #
 				#######################################################################################################################
 				
-				# Create the file to use for writing stdout output from the external command we are about to run.
 				try:
 					# Define filename for the temporary file that we are going to use as stdout for the external command.
 					stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_sox_gain_correction_when_no_limiting_needed_stdout.txt'
@@ -1122,17 +1136,17 @@ def create_loudness_adjusted_file(timeslice_calculation_error, difference_from_t
 				try:
 					os.remove(stdout_for_external_command)
 				except IOError as reason_for_error:
-					error_message = 'Error deleting sox stdout - file ' * english + 'Soxin stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+					error_message = 'Error deleting sox (gain correction when no peak limiting needed) stdout - file ' * english + 'Soxin (tason säätö huippujen kun limitointia ei tarvita) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
 					send_error_messages_to_screen_logfile_email(error_message)
 				except OSError as reason_for_error:
-					error_message = 'Error deleting sox stdout - file ' * english + 'Soxin stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+					error_message = 'Error deleting sox (gain correction when no peak limiting needed) stdout - file ' * english + 'Soxin (tason säätö huippujen kun limitointia ei tarvita) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
 					send_error_messages_to_screen_logfile_email(error_message)
 				
 				# If sox did output something, there was and error. Print message to user.
 				if not len(results_from_sox_run_list) == 0:
 					error_message = 'ERROR !!!' * english + 'VIRHE !!!' * finnish + ' ' + filename + ': ' + results_from_sox_run_list 
 					send_error_messages_to_screen_logfile_email(error_message)
-			
+		
 		# If the temporary peak limited file is there, delete it.
 		if os.path.exists(directory_for_temporary_files + os.sep + temporary_peak_limited_targetfile):
 			try:
@@ -1146,21 +1160,123 @@ def create_loudness_adjusted_file(timeslice_calculation_error, difference_from_t
 			except OSError as reason_for_error:
 				error_message = 'Error deleting temporary peak limited file ' * english + 'Väliaikaisen limitoidun tiedoston poistaminen epäonnistui ' * finnish + str(reason_for_error)
 				send_error_messages_to_screen_logfile_email(error_message)
+		
+		#####################################################################################################################
+		# Determine if we need to split the output file to separate mono channels or not and create the output file /files. #
+		#####################################################################################################################
+		
+		if output_format_for_intermediate_files == output_format_for_final_file:
+			
+			# The final output file does not need to be split to separate mono files, and the file is already in the format we want,
+			# so just move the processed file to results folder.
+
+			# Even if sox reported errors, check if sox created the loudness corrected file and move it to results folder.
+			if os.path.exists(temporary_targetfile):
+				# There were no errors, and loudness corrected file is ready, move it from temporary directory to results directory.
+				try:
+					shutil.move(temporary_targetfile, targetfile)
+				except KeyboardInterrupt:
+					print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
+					sys.exit(0)
+				except IOError as reason_for_error:
+					error_message = 'Error moving loudness adjusted file ' * english + 'Äänekkyyskorjatun tiedoston siirtäminen epäonnistui ' * finnish + str(reason_for_error)
+					send_error_messages_to_screen_logfile_email(error_message)
+				except OSError as reason_for_error:
+					error_message = 'Error moving loudness adjusted file ' * english + 'Äänekkyyskorjatun tiedoston siirtäminen epäonnistui ' * finnish + str(reason_for_error)
+					send_error_messages_to_screen_logfile_email(error_message)
+			return
+		
+		if output_format_for_intermediate_files != output_format_for_final_file:
+			
+			# The combined channels in final output file exceeds the max file size and the file needs to be split to separate mono files.
+			for counter in range(1, channel_count):
 				
-		# Even if sox reported errors, check if sox created the loudness corrected wav and move it to results folder.
-		if os.path.exists(temporary_targetfile):
-			# There were no errors, and loudness corrected file is ready, move it from temporary directory to results directory.
-			try:
-				shutil.move(temporary_targetfile, targetfile)
-			except KeyboardInterrupt:
-				print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
-				sys.exit(0)
-			except IOError as reason_for_error:
-				error_message = 'Error moving loudness adjusted file ' * english + 'Äänekkyyskorjatun tiedoston siirtäminen epäonnistui ' * finnish + str(reason_for_error)
-				send_error_messages_to_screen_logfile_email(error_message)
-			except OSError as reason_for_error:
-				error_message = 'Error moving loudness adjusted file ' * english + 'Äänekkyyskorjatun tiedoston siirtäminen epäonnistui ' * finnish + str(reason_for_error)
-				send_error_messages_to_screen_logfile_email(error_message)
+				separate_mono_targetfile = directory_for_temporary_files + os.sep + filename_and_extension[0] + '-Channel-' + str(counter) + '_-23_LUFS.' + output_format_for_final_file
+				
+				try:
+					# Define filename for the temporary file that we are going to use as stdout for the external command.
+					stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_sox_split_to_mono_files_stdout.txt'
+					# Open the stdout temporary file in binary write mode.
+					with open(stdout_for_external_command, 'wb') as stdout_commandfile_handler:
+						
+						sox_commandline = ['sox', temporary_targetfile, separate_mono_targetfile, 'remix', str(counter)]
+						
+						# Run sox and write one of the channels in the input file to a separate target file.
+						subprocess.Popen(sox_commandline, stdout=stdout_commandfile_handler, stderr=stdout_commandfile_handler, stdin=None, close_fds=True).communicate()[0]
+						
+						# Make sure all data written to temporary stdout - file is flushed from the os cache and written to disk.
+						stdout_commandfile_handler.flush() # Flushes written data to os cache
+						os.fsync(stdout_commandfile_handler.fileno()) # Flushes os cache to disk
+						
+				except IOError as reason_for_error:
+					error_message = 'Error writing to sox (split output to mono files) stdout - file ' * english + 'Soxin (kohdetiedoston jakaminen monotiedostoiksi) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+					send_error_messages_to_screen_logfile_email(error_message)
+				except OSError as reason_for_error:
+					error_message = 'Error writing to (split output to mono files) sox stdout - file ' * english + 'Soxin (kohdetiedoston jakaminen monotiedostoiksi) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+					send_error_messages_to_screen_logfile_email(error_message)
+					
+				# Open the file we used as stdout for the external program and read in what the external program wrote to it.
+				try:
+					with open(stdout_for_external_command, 'rb') as stdout_commandfile_handler:
+						results_from_sox_run = stdout_commandfile_handler.read(None)
+				except IOError as reason_for_error:
+					error_message = 'Error reading from sox (split output to mono files) stdout - file ' * english + 'Soxin (kohdetiedoston jakaminen monotiedostoiksi) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+					send_error_messages_to_screen_logfile_email(error_message)
+				except OSError as reason_for_error:
+					error_message = 'Error reading from sox (split output to mono files) stdout - file ' * english + 'Soxin (kohdetiedoston jakaminen monotiedostoiksi) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+					send_error_messages_to_screen_logfile_email(error_message)
+	
+				# Convert sox output from binary to UTF-8 text.
+				results_from_sox_run_list = results_from_sox_run.decode('UTF-8').strip()
+				
+				# Delete the temporary stdout - file.
+				try:
+					os.remove(stdout_for_external_command)
+				except IOError as reason_for_error:
+					error_message = 'Error deleting sox (split output to mono files) stdout - file ' * english + 'Soxin (kohdetiedoston jakaminen monotiedostoiksi) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+					send_error_messages_to_screen_logfile_email(error_message)
+				except OSError as reason_for_error:
+					error_message = 'Error deleting sox (split output to mono files) stdout - file ' * english + 'Soxin (kohdetiedoston jakaminen monotiedostoiksi) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+					send_error_messages_to_screen_logfile_email(error_message)
+				
+				# If sox did output something, there was and error. Print message to user.
+				if not len(results_from_sox_run_list) == 0:
+					error_message = 'ERROR !!!' * english + 'VIRHE !!!' * finnish + ' ' + filename + ': ' + results_from_sox_run_list 
+					send_error_messages_to_screen_logfile_email(error_message)
+			
+			# Delete source file after writing audio channels to separate files.
+			if os.path.exists(directory_for_temporary_files + os.sep + temporary_targetfile):
+				try:
+					os.remove(directory_for_temporary_files + os.sep + temporary_targetfile)
+				except KeyboardInterrupt:
+					print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
+					sys.exit(0)
+				except IOError as reason_for_error:
+					error_message = 'Error deleting source file after splitting it to separate mono files ' * english + 'Monotiedostoiksi splitatun lähdetiedoston poistaminen epäonnistui ' * finnish + str(reason_for_error)
+					send_error_messages_to_screen_logfile_email(error_message)
+				except OSError as reason_for_error:
+					error_message = 'Error deleting source file after splitting it to separate mono files ' * english + 'Monotiedostoiksi splitatun lähdetiedoston poistaminen epäonnistui ' * finnish + str(reason_for_error)
+					send_error_messages_to_screen_logfile_email(error_message)	
+		
+			# Move separate mono files to the results directory.
+			for counter in range(1, channel_count):
+				
+				mono_sourcefile = directory_for_temporary_files + os.sep + filename_and_extension[0] + '-Channel-' + str(counter) + '_-23_LUFS.' + output_format_for_final_file
+				mono_targetfile = directory_for_results + os.sep + filename_and_extension[0] + '-Channel-' + str(counter) + '_-23_LUFS.' + output_format_for_final_file
+				
+				if os.path.exists(mono_sourcefile):
+					# There were no errors, and loudness corrected file is ready, move it from temporary directory to results directory.
+					try:
+						shutil.move(mono_sourcefile, mono_targetfile)
+					except KeyboardInterrupt:
+						print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
+						sys.exit(0)
+					except IOError as reason_for_error:
+						error_message = 'Error moving loudness adjusted, split to mono file ' * english + 'Äänekkyyskorjatun ja monoksi splitatun tiedoston siirtäminen epäonnistui ' * finnish + str(reason_for_error)
+						send_error_messages_to_screen_logfile_email(error_message)
+					except OSError as reason_for_error:
+						error_message = 'Error moving loudness adjusted, split to mono file ' * english + 'Äänekkyyskorjatun ja monoksi splitatun tiedoston siirtäminen epäonnistui ' * finnish + str(reason_for_error)
+						send_error_messages_to_screen_logfile_email(error_message)
 
 def get_realtime(english, finnish):
 
@@ -1202,7 +1318,6 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 	# In list 'file_format_support_information' we already have all the information FFmpeg was able to find about the valid audio streams in the file, assign all info to variables.
 	natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames = file_format_support_information
 	
-	# Create the file to use for writing stdout output from the external command we are about to run.
 	try:
 		# Define filename for the temporary file that we are going to use as stdout for the external command.
 		stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_ffmpeg_audio_stream_demux_stdout.txt'
@@ -1760,7 +1875,6 @@ def get_ip_addresses_of_the_host_machine():
 		print()
 		print('Running commands:', commands_to_run)
 	
-	# Create files to use for writing stdout and stderr output from the external command we are about to run.
 	try:
 		# Define filenames for temporary files that we are going to use as stdout and stderr for the external command.
 		stdout_for_external_command = directory_for_temporary_files + os.sep + 'Hostname_command_stdout.txt'
@@ -1844,7 +1958,6 @@ def get_audio_stream_information_with_ffmpeg(filename, hotfolder_path, directory
 	ffmpeg_stream_mapping_commands = []
 	ffmpeg_commandline = []
 	
-	# Create the file to use for writing stdout output from the external command we are about to run.
 	try:
 		# Define filename for the temporary file that we are going to use as stdout for the external command.
 		stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_ffmpeg_find_audio_streams_stdout.txt'
