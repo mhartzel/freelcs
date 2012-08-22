@@ -1,3 +1,16 @@
+LoudnessCorrection Version 167
+-------------------------------
+- Bugfix: Corrected some bugs in 4 GB limit workaround. 
+
+LoudnessCorrection Version 165
+-------------------------------
+- Workaround for wav 4 GB size limit is ready but untested. If outputfile will be bigger than 4 GB (for example a long 5.1 file), the channels in the file will be split to separate mono files. If individual mono files would still exeed the 4 GB wav limit, then all channels of the file are written to a single flac file.
+
+LoudnessCorrection Version 164
+-------------------------------
+- Took another approach to the 4 GB wav file size limit problem and undid some work done in version 163.
+- Latest version of Sox (14.4.2) seems to have implemented wav size support over 4 GB limit, but it's still buggy. Wav header gets messed up when 4 GB limit is exceeded. I filed a bugreport here: http://sourceforge.net/tracker/?func=detail&aid=3558019&group_id=10706&atid=110706
+
 LoudnessCorrection Version 163
 -------------------------------
 - Bugfix: By mistake used a wrong Python method to find channel count and other numeric audio information from FFmpeg output. Corrected.
