@@ -34,7 +34,7 @@ import email.mime.multipart
 import pickle
 import math
 
-version = '167'
+version = '168'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -484,6 +484,19 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 		plotfile_x_axis_time_information.append(')')
 		plotfile_x_axis_time_information = ''.join(plotfile_x_axis_time_information)
 	
+	# Get technical info from audio file and determine what the ouput format will be
+	channel_count, sample_rate, bit_depth, sample_count, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file = get_audiofile_info_with_sox_and_determine_ouput_format(directory_for_temporary_files, hotfolder_path, filename)
+	warning_message = ''
+	
+	# If file size exceeds 4 GB, a warning message must be displayed informing the user that the
+	# outputfile will either be split to separate mono channels or stored in flac - format.
+	if output_format_for_intermediate_files != output_format_for_final_file:
+		# The combined channels in final output file exceeds the max file size and the file needs to be split to separate mono files.
+		warning_message = '\\nWarning: file size exceeds wav format max limit 4 GB, audio channels will be split to separate mono files'
+	if output_format_for_final_file == 'flac':
+		# File is so big that even separate mono channels would exceed 4GB each, so flac format must be used for the output file.
+		warning_message = '\\nWarning: file size exceeds wav format max limit 4 GB, file will be stored in flac - format'
+	
 	# Generate gnuplot commands needed for plotting the graphicsfile and store commands in a list.
 	if (integrated_loudness_calculation_error == True) or (timeslice_calculation_error == True):
 		# Loudness calculation encountered an error, generate gnuplot commands for plotting default graphics with the error message.
@@ -511,7 +524,7 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 		'set output ' + '\"' + gnuplot_temporary_output_graphicsfile.replace('"','\\"') + '\"', \
 		'set yrange [ 0 : -60 ] noreverse nowriteback', \
 		'set grid', \
-		'set title ' + '\"\'' + filename.replace('_', ' ').replace('"','\\"') + '\'\\n' + 'Integrated Loudness ' * english + 'Äänekkyystaso ' * finnish + str(integrated_loudness) + ' LUFS\\n ' + difference_from_target_loudness_string + ' dB from target loudness (-23 LUFS)\\nLoudness Range (LRA) ' * english + ' dB:tä tavoitetasosta (-23 LUFS)\\nÄänekkyyden vaihteluväli (LRA) '  * finnish + str(loudness_range) + ' LU' + peak_measurement_string_english * english + peak_measurement_string_finnish * finnish + highest_peak_db_string + ' dBFS' + '\"', \
+		'set title ' + '\"\'' + filename.replace('_', ' ').replace('"','\\"') + '\'\\n' + 'Integrated Loudness ' * english + 'Äänekkyystaso ' * finnish + str(integrated_loudness) + ' LUFS\\n ' + difference_from_target_loudness_string + ' dB from target loudness (-23 LUFS)\\nLoudness Range (LRA) ' * english + ' dB:tä tavoitetasosta (-23 LUFS)\\nÄänekkyyden vaihteluväli (LRA) '  * finnish + str(loudness_range) + ' LU' + peak_measurement_string_english * english + peak_measurement_string_finnish * finnish + highest_peak_db_string + ' dBFS' + warning_message + '\"', \
 		'set ylabel ' + '\"Loudness (LUFS)\"' * english + '\"Äänekkyystaso (LUFS)\"' *finnish, \
 		plotfile_x_axis_time_information, \
 		'set xlabel \"' + plotfile_x_axis_name + '\"', \
@@ -555,7 +568,7 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 		run_gnuplot(filename, directory_for_temporary_files, directory_for_results, english, finnish)
 
 		# Call a subprocess to create the loudness corrected audio file.
-		create_loudness_adjusted_file(integrated_loudness_calculation_error, difference_from_target_loudness, filename, english, finnish, hotfolder_path, directory_for_results, directory_for_temporary_files, highest_peak_db)
+		create_loudness_adjusted_file(integrated_loudness_calculation_error, difference_from_target_loudness, filename, english, finnish, hotfolder_path, directory_for_results, directory_for_temporary_files, highest_peak_db, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, channel_count)
 
 
 def create_gnuplot_commands_for_error_message(error_message, filename, directory_for_temporary_files, directory_for_results, english, finnish):
@@ -696,7 +709,7 @@ def run_gnuplot(filename, directory_for_temporary_files, directory_for_results, 
 		error_message = 'Error moving gnuplot graphics file ' * english + 'Gnuplotin grafiikkatiedoston siirtäminen epäonnistui ' * finnish + str(reason_for_error)
 		send_error_messages_to_screen_logfile_email(error_message)
 
-def create_loudness_adjusted_file(integrated_loudness_calculation_error, difference_from_target_loudness, filename, english, finnish, hotfolder_path, directory_for_results, directory_for_temporary_files, highest_peak_db):
+def create_loudness_adjusted_file(integrated_loudness_calculation_error, difference_from_target_loudness, filename, english, finnish, hotfolder_path, directory_for_results, directory_for_temporary_files, highest_peak_db, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, channel_count):
 
 	'''This subroutine creates a loudness corrected file'''
 
@@ -717,148 +730,11 @@ def create_loudness_adjusted_file(integrated_loudness_calculation_error, differe
 	# Create loudness corrected file if there were no errors in loudness calculation.
 	if (integrated_loudness_calculation_error == False):
 		
-		# Read audio file technical info with sox
-		channel_count = 0
-		sample_rate = 0
-		bit_depth = 8
-		sample_count = 0
-		estimated_uncompressed_size_for_single_mono_file = 0
-		estimated_uncompressed_size_for_combined_channels = 0
-		wav_format_maximum_file_size = 4294967296 # Define wav max file size. Theoretical max size is 2 ^ 32 = 4294967296.
-		flac_compression_level = ['-C', '0']
-		output_format_for_intermediate_files = 'wav'
-		output_format_for_final_file = 'wav'
-		
-		try:
-			# Define filename for the temporary file that we are going to use as stdout for the external command.
-			stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_sox_read_audio_info_stdout.txt'
-			# Open the stdout temporary file in binary write mode.
-			with open(stdout_for_external_command, 'wb') as stdout_commandfile_handler:
-				
-				# Get technical info from audio file using sox.
-				subprocess.Popen(['sox', '--i', file_to_process], stdout=stdout_commandfile_handler, stderr=stdout_commandfile_handler, stdin=None, close_fds=True).communicate()[0]
-			
-				# Make sure all data written to temporary stdout and stderr - files is flushed from the os cache and written to disk.
-				stdout_commandfile_handler.flush() # Flushes written data to os cache
-				os.fsync(stdout_commandfile_handler.fileno()) # Flushes os cache to disk
-				
-		except IOError as reason_for_error:
-			error_message = 'Error writing to (audio file info reading) sox stdout - file ' * english + 'Soxin (audio tiedoston teknisten tietojen luku) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
-			send_error_messages_to_screen_logfile_email(error_message)
-		except OSError as reason_for_error:
-			error_message = 'Error writing to (audio file info reading) sox stdout - file ' * english + 'Soxin (audio tiedoston teknisten tietojen luku) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
-			send_error_messages_to_screen_logfile_email(error_message)
-
-		# Open the file we used as stdout for the external program and read in what the external program wrote to it.
-		try:
-			with open(stdout_for_external_command, 'rb') as stdout_commandfile_handler:
-				results_from_sox_run = stdout_commandfile_handler.read(None)
-		except IOError as reason_for_error:
-			error_message = 'Error reading from  (audio file info reading)sox stdout - file ' * english + 'Soxin (audio tiedoston teknisten tietojen luku) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
-			send_error_messages_to_screen_logfile_email(error_message)
-		except OSError as reason_for_error:
-			error_message = 'Error reading from  (audio file info reading)sox stdout - file ' * english + 'Soxin (audio tiedoston teknisten tietojen luku) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
-			send_error_messages_to_screen_logfile_email(error_message)	
-
-		# Convert sox output from binary to UTF-8 text and split text lines to a list.
-		
-		audio_file_technical_info_list = results_from_sox_run.decode('UTF-8').split('\n')
-		
-		# Delete the temporary stdout - file.
-		try:
-			os.remove(stdout_for_external_command)
-		except IOError as reason_for_error:
-			error_message = 'Error deleting (audio file info reading) sox stdout - file ' * english + 'Soxin (audio tiedoston teknisten tietojen luku) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
-			send_error_messages_to_screen_logfile_email(error_message)
-		except OSError as reason_for_error:
-			error_message = 'Error deleting (audio file info reading) sox stdout - file ' * english + 'Soxin (audio tiedoston teknisten tietojen luku) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
-			send_error_messages_to_screen_logfile_email(error_message)
-		
-		# Assign audio file technical data to variables
-		for text_line in audio_file_technical_info_list:
-			if 'Channels' in text_line:
-				channel_count_string = text_line.split(':')[1].strip()
-			if 'Sample Rate' in text_line:
-				sample_rate_string = text_line.split(':')[1].strip()
-			if 'Precision' in text_line:
-				bit_depth_string = text_line.split(':')[1].strip().split('-')[0]
-			if 'Duration' in text_line:
-				sample_count_string = text_line.split('=')[1].strip().split(' ')[0]
-		
-		# Convert audio technical information from string to integer and assign to variables.
-		if channel_count_string.isnumeric() == True:
-			channel_count = int(channel_count_string)
-		else:
-			error_message = 'ERROR !!! I could not parse sox channel count string: ' * english + 'VIRHE !!! En osannut tulkita sox:in antamaa tietoa kanavamäärästä: ' * finnish + '\'' + channel_count_string + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
-			send_error_messages_to_screen_logfile_email(error_message)
-		
-		if sample_rate_string.isnumeric() == True:
-			sample_rate = int(sample_rate_string)
-		else:
-			error_message = 'ERROR !!! I could not parse sox sample rate string: ' * english + 'VIRHE !!! En osannut tulkita sox:in antamaa tietoa näyteenottotaajuudesta: ' * finnish + '\'' + sample_rate_string + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
-			send_error_messages_to_screen_logfile_email(error_message)
-		
-		if bit_depth_string.isnumeric() == True:
-			bit_depth = int(bit_depth_string)
-		else:
-			error_message = 'ERROR !!! I could not parse sox bit depth string: ' * english + 'VIRHE !!! En osannut tulkita sox:in antamaa tietoa bittisyvyydestä: ' * finnish + '\'' + bit_depth_string + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
-			send_error_messages_to_screen_logfile_email(error_message)
-		
-		if sample_count_string.isnumeric() == True:
-			sample_count = int(sample_count_string)
-		else:
-			error_message = 'ERROR !!! I could not parse sox sample count string: ' * english + 'VIRHE !!! En osannut tulkita sox:in antamaa tietoa näytteiden lukumäärästä: ' * finnish + '\'' + sample_count_string + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
-			send_error_messages_to_screen_logfile_email(error_message)
-		
-		# Calculate estimated uncompressed file size. Add one second of data to the file size (sample_rate = 1 second) to be on the safe side.
-		estimated_uncompressed_size_for_single_mono_file = int((sample_count * int(bit_depth / 8)) + sample_rate)
-		estimated_uncompressed_size_for_combined_channels = estimated_uncompressed_size_for_single_mono_file * channel_count
-		
-		# Test if output file will exceed the max size of wav format and assign sox commands and output formats accordingly.
-		if (estimated_uncompressed_size_for_combined_channels >= wav_format_maximum_file_size) and (estimated_uncompressed_size_for_single_mono_file >= wav_format_maximum_file_size):
-			# In this case both the combined channels in one file and separate mono files will exceed the maximum size. Use lossless compression.
-			output_format_for_intermediate_files = 'flac'
-			output_format_for_final_file = 'flac'
-				
-		if (estimated_uncompressed_size_for_combined_channels >= wav_format_maximum_file_size) and (estimated_uncompressed_size_for_single_mono_file < wav_format_maximum_file_size):
-			# In this case the combined channels in one file exceeds the maximum size but separate mono files do not.
-			# Use lossless compression for intermediate files and split final file to separate mono files.
-			output_format_for_intermediate_files = 'flac'
-			output_format_for_final_file = 'wav'
-			
-		if estimated_uncompressed_size_for_combined_channels < wav_format_maximum_file_size:
-			# In this case the combined channels in one file does not exceed the maximum size, so we can use wav for all processing.
-			output_format_for_intermediate_files = 'wav'
-			output_format_for_final_file = 'wav'
-		
 		# Assing some values to variables.
 		temporary_targetfile = directory_for_temporary_files + os.sep + filename_and_extension[0] + '_-23_LUFS.' + output_format_for_intermediate_files
 		temporary_peak_limited_targetfile = filename_and_extension[0] + '-Peak_Limited.' + output_format_for_intermediate_files
 		targetfile = directory_for_results + os.sep + filename_and_extension[0] + '_-23_LUFS.' + output_format_for_final_file
 		difference_from_target_loudness_sign_inverted = difference_from_target_loudness * -1 # The sign (+/-) of the difference from target loudness needs to be flipped for sox. Plus becomes minus and vice versa.
-		
-		# Print technical data for each file when in debug mode.
-		if debug == True:
-		
-			print()
-			print(filename)
-			print((len(filename) + 1) * '-')
-			print('channel_count_string =', channel_count_string)
-			print('sample_rate_string =', sample_rate_string)
-			print('bit_depth_string =', bit_depth_string)
-			print('sample_count_string =', sample_count_string)
-			print('wav_format_maximum_file_size =', wav_format_maximum_file_size)
-			print('estimated_uncompressed_size_for_combined_channels =', estimated_uncompressed_size_for_combined_channels)
-			print('difference to max size', wav_format_maximum_file_size - estimated_uncompressed_size_for_combined_channels)
-			print('estimated_uncompressed_size_for_single_mono_file =', estimated_uncompressed_size_for_single_mono_file)
-			print('difference to max size', wav_format_maximum_file_size - estimated_uncompressed_size_for_single_mono_file)
-			print('output_format_for_intermediate_files =', output_format_for_intermediate_files)
-			print('output_format_for_final_file =', output_format_for_final_file)
-			file_will_be_split_to_separate_mono_files = False
-			if (estimated_uncompressed_size_for_combined_channels >= wav_format_maximum_file_size) and (estimated_uncompressed_size_for_single_mono_file < wav_format_maximum_file_size):
-				file_will_be_split_to_separate_mono_files = True
-			print('estimated_uncompressed_size_for_combined_channels =', estimated_uncompressed_size_for_combined_channels)
-			print()
 		
 		# Set the absolute peak level for the resulting corrected audio file.
 		# If sample peak is used for the highest value, then set the absolute peak to be -4 dBFS (resulting peaks will be about 1 dB higher than this).
@@ -1280,6 +1156,155 @@ def create_loudness_adjusted_file(integrated_loudness_calculation_error, differe
 					except OSError as reason_for_error:
 						error_message = 'Error moving loudness adjusted, split to mono file ' * english + 'Äänekkyyskorjatun ja monoksi splitatun tiedoston siirtäminen epäonnistui ' * finnish + str(reason_for_error)
 						send_error_messages_to_screen_logfile_email(error_message)
+
+def get_audiofile_info_with_sox_and_determine_ouput_format(directory_for_temporary_files, hotfolder_path, filename):
+	
+	# This subroutine gets audio file information with sox and determines based on estimated uncompressed file size what the output file format is.
+	# There is only one audio stream in files that this subroutine processes.
+	
+	# Read audio file technical info with sox
+	channel_count_string = ''
+	sample_rate_string = ''
+	bit_depth_string = ''
+	sample_count_string = ''
+	channel_count = 0
+	sample_rate = 0
+	bit_depth = 8
+	sample_count = 0
+	file_to_process = hotfolder_path + os.sep + filename
+	estimated_uncompressed_size_for_single_mono_file = 0
+	estimated_uncompressed_size_for_combined_channels = 0
+	wav_format_maximum_file_size = 4294967296 # Define wav max file size. Theoretical max size is 2 ^ 32 = 4294967296.
+	flac_compression_level = ['-C', '0']
+	output_format_for_intermediate_files = 'wav'
+	output_format_for_final_file = 'wav'
+
+	try:
+		# Define filename for the temporary file that we are going to use as stdout for the external command.
+		stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_sox_read_audio_info_stdout.txt'
+		# Open the stdout temporary file in binary write mode.
+		with open(stdout_for_external_command, 'wb') as stdout_commandfile_handler:
+			
+			# Get technical info from audio file using sox.
+			subprocess.Popen(['sox', '--i', file_to_process], stdout=stdout_commandfile_handler, stderr=stdout_commandfile_handler, stdin=None, close_fds=True).communicate()[0]
+		
+			# Make sure all data written to temporary stdout and stderr - files is flushed from the os cache and written to disk.
+			stdout_commandfile_handler.flush() # Flushes written data to os cache
+			os.fsync(stdout_commandfile_handler.fileno()) # Flushes os cache to disk
+			
+	except IOError as reason_for_error:
+		error_message = 'Error writing to (audio file info reading) sox stdout - file ' * english + 'Soxin (audiotiedoston teknisten tietojen luku) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message)
+	except OSError as reason_for_error:
+		error_message = 'Error writing to (audio file info reading) sox stdout - file ' * english + 'Soxin (audiotiedoston teknisten tietojen luku) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message)
+
+	# Open the file we used as stdout for the external program and read in what the external program wrote to it.
+	try:
+		with open(stdout_for_external_command, 'rb') as stdout_commandfile_handler:
+			results_from_sox_run = stdout_commandfile_handler.read(None)
+	except IOError as reason_for_error:
+		error_message = 'Error reading from  (audio file info reading)sox stdout - file ' * english + 'Soxin (audiotiedoston teknisten tietojen luku) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message)
+	except OSError as reason_for_error:
+		error_message = 'Error reading from  (audio file info reading)sox stdout - file ' * english + 'Soxin (audiotiedoston teknisten tietojen luku) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message)	
+
+	# Convert sox output from binary to UTF-8 text and split text lines to a list.
+
+	audio_file_technical_info_list = results_from_sox_run.decode('UTF-8').split('\n')
+
+	# Delete the temporary stdout - file.
+	try:
+		os.remove(stdout_for_external_command)
+	except IOError as reason_for_error:
+		error_message = 'Error deleting (audio file info reading) sox stdout - file ' * english + 'Soxin (audiotiedoston teknisten tietojen luku) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message)
+	except OSError as reason_for_error:
+		error_message = 'Error deleting (audio file info reading) sox stdout - file ' * english + 'Soxin (audiotiedoston teknisten tietojen luku) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message)
+
+	# Assign audio file technical data to variables
+	for text_line in audio_file_technical_info_list:
+		if 'Channels' in text_line:
+			channel_count_string = text_line.split(':')[1].strip()
+		if 'Sample Rate' in text_line:
+			sample_rate_string = text_line.split(':')[1].strip()
+		if 'Precision' in text_line:
+			bit_depth_string = text_line.split(':')[1].strip().split('-')[0]
+		if 'Duration' in text_line:
+			sample_count_string = text_line.split('=')[1].strip().split(' ')[0]
+
+	# Convert audio technical information from string to integer and assign to variables.
+	if channel_count_string.isnumeric() == True:
+		channel_count = int(channel_count_string)
+	else:
+		error_message = 'ERROR !!! I could not parse sox channel count string: ' * english + 'VIRHE !!! En osannut tulkita sox:in antamaa tietoa kanavamäärästä: ' * finnish + '\'' + channel_count_string + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
+		send_error_messages_to_screen_logfile_email(error_message)
+
+	if sample_rate_string.isnumeric() == True:
+		sample_rate = int(sample_rate_string)
+	else:
+		error_message = 'ERROR !!! I could not parse sox sample rate string: ' * english + 'VIRHE !!! En osannut tulkita sox:in antamaa tietoa näyteenottotaajuudesta: ' * finnish + '\'' + sample_rate_string + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
+		send_error_messages_to_screen_logfile_email(error_message)
+
+	if bit_depth_string.isnumeric() == True:
+		bit_depth = int(bit_depth_string)
+	else:
+		error_message = 'ERROR !!! I could not parse sox bit depth string: ' * english + 'VIRHE !!! En osannut tulkita sox:in antamaa tietoa bittisyvyydestä: ' * finnish + '\'' + bit_depth_string + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
+		send_error_messages_to_screen_logfile_email(error_message)
+
+	if sample_count_string.isnumeric() == True:
+		sample_count = int(sample_count_string)
+	else:
+		error_message = 'ERROR !!! I could not parse sox sample count string: ' * english + 'VIRHE !!! En osannut tulkita sox:in antamaa tietoa näytteiden lukumäärästä: ' * finnish + '\'' + sample_count_string + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
+		send_error_messages_to_screen_logfile_email(error_message)
+	
+	# Calculate estimated uncompressed file size. Add one second of data to the file size (sample_rate = 1 second) to be on the safe side.
+	estimated_uncompressed_size_for_single_mono_file = int((sample_count * int(bit_depth / 8)) + sample_rate)
+	estimated_uncompressed_size_for_combined_channels = estimated_uncompressed_size_for_single_mono_file * channel_count
+	
+	# Test if output file will exceed the max size of wav format and assign sox commands and output formats accordingly.
+	if (estimated_uncompressed_size_for_combined_channels >= wav_format_maximum_file_size) and (estimated_uncompressed_size_for_single_mono_file >= wav_format_maximum_file_size):
+		# In this case both the combined channels in one file and separate mono files will exceed the maximum size. Use lossless compression.
+		output_format_for_intermediate_files = 'flac'
+		output_format_for_final_file = 'flac'
+			
+	if (estimated_uncompressed_size_for_combined_channels >= wav_format_maximum_file_size) and (estimated_uncompressed_size_for_single_mono_file < wav_format_maximum_file_size):
+		# In this case the combined channels in one file exceeds the maximum size but separate mono files do not.
+		# Use lossless compression for intermediate files and split final file to separate mono files.
+		output_format_for_intermediate_files = 'flac'
+		output_format_for_final_file = 'wav'
+		
+	if estimated_uncompressed_size_for_combined_channels < wav_format_maximum_file_size:
+		# In this case the combined channels in one file does not exceed the maximum size, so we can use wav for all processing.
+		output_format_for_intermediate_files = 'wav'
+		output_format_for_final_file = 'wav'
+	
+	# Print technical data for each file when in debug mode.
+	if debug == True:
+	
+		print()
+		print(filename)
+		print((len(filename) + 1) * '-')
+		print('channel_count_string =', channel_count_string)
+		print('sample_rate_string =', sample_rate_string)
+		print('bit_depth_string =', bit_depth_string)
+		print('sample_count_string =', sample_count_string)
+		print('wav_format_maximum_file_size =', wav_format_maximum_file_size)
+		print('estimated_uncompressed_size_for_combined_channels =', estimated_uncompressed_size_for_combined_channels)
+		print('difference to max size', wav_format_maximum_file_size - estimated_uncompressed_size_for_combined_channels)
+		print('estimated_uncompressed_size_for_single_mono_file =', estimated_uncompressed_size_for_single_mono_file)
+		print('difference to max size', wav_format_maximum_file_size - estimated_uncompressed_size_for_single_mono_file)
+		print('output_format_for_intermediate_files =', output_format_for_intermediate_files)
+		print('output_format_for_final_file =', output_format_for_final_file)
+		file_will_be_split_to_separate_mono_files = False
+		if (estimated_uncompressed_size_for_combined_channels >= wav_format_maximum_file_size) and (estimated_uncompressed_size_for_single_mono_file < wav_format_maximum_file_size):
+			file_will_be_split_to_separate_mono_files = True
+		print('estimated_uncompressed_size_for_combined_channels =', estimated_uncompressed_size_for_combined_channels)
+		print()
+	
+	return(channel_count, sample_rate, bit_depth, sample_count, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file)
 
 def get_realtime(english, finnish):
 

@@ -1,3 +1,8 @@
+LoudnessCorrection Version 168
+-------------------------------
+- Moved a functionality to it's own subroutine: get_audiofile_info_with_sox_and_determine_ouput_format
+- If output file size would exeed wav format max size of 4 GB, and the file is split to separate mono files or stored as a flac file then print a warning message about this in the loudness history graphics file.
+
 LoudnessCorrection Version 167
 -------------------------------
 - Bugfix: Corrected some bugs in 4 GB limit workaround. 
