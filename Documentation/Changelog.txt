@@ -1,3 +1,9 @@
+LoudnessCorrection Version 169
+-------------------------------
+- Found a way to skip creating an intermediate file when the output file size is over 4 GB and needs to be split to separate channels. Speeds things up a bit in these cases.
+- Cleaned up sox routines by splitting repeating sections to separate subroutines.
+- Bugfix: integrated loudness calculation routine mixed english and finnish in error messages.
+
 LoudnessCorrection Version 168
 -------------------------------
 - Moved a functionality to it's own subroutine: get_audiofile_info_with_sox_and_determine_ouput_format
