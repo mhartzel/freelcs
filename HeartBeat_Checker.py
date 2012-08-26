@@ -1,7 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) Mikael Hartzell 2012 Distributed under the Gnu General Public Licence GPL 3.
+# Copyright (C) Mikael Hartzell 2012
+#
+# This program is distributed under the GNU General Public License, version 3 (GPLv3)
+#
+# Check the license here: http://www.gnu.org/licenses/gpl.html
+# Basically this license gives you full freedom to do what ever you wan't with this program. You are free to use, modify, distribute it any way you like.
+# The only restriction is that if you make derivate works of this program AND distribute those, the derivate works must also be licensed under GPL 3.
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
 
 import os
 import sys
@@ -14,7 +22,7 @@ import email.mime.multipart
 import pickle
 import subprocess
 
-version = '018'
+version = '019'
 
 # User can set some defaults here that are used if the program is started without giving it the path to a configfile.
 silent = False # Use True if you don't want this program to output anything to screen.

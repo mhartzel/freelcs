@@ -34,7 +34,7 @@ import email.mime.multipart
 import pickle
 import math
 
-version = '169'
+version = '170'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -766,9 +766,11 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 					sox_commandline.extend(flac_compression_level)
 				sox_commandline.extend([directory_for_temporary_files + os.sep + temporary_targetfile, 'gain', str(difference_from_target_loudness_sign_inverted)])
 				
-				#Gather all commands needed to process a file to a list of sox commandlines.
-				list_of_sox_commandlines.append(sox_commandline)
+				#Gather all names of processed files to a list.
 				list_of_filenames = [temporary_targetfile]
+				
+				# Run sox with the commandline compiled in the lines above.
+				run_sox(directory_for_temporary_files, filename, sox_commandline, english, finnish, 0)
 			
 			else:
 			
@@ -782,9 +784,9 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 					#Gather all commands needed to process a file to a list of sox commandlines.
 					list_of_sox_commandlines.append(sox_commandline)
 					list_of_filenames.append(mono_targetfile)
-
-			# Run sox with the commandline compiled in the lines above.
-			run_sox(directory_for_temporary_files, filename, list_of_sox_commandlines, english, finnish)
+				
+				# Run several sox commands in parallel threads, this speeds up splitting the file to separate mono files.	
+				run_sox_commands_in_parallel_threads(directory_for_temporary_files, filename, list_of_sox_commandlines, english, finnish)
 			
 			# Processing is ready move audio files to target directory.
 			move_processed_audio_files_to_target_directory(directory_for_temporary_files, directory_for_results, list_of_filenames, english, finnish)
@@ -860,9 +862,11 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 						sox_commandline.extend(flac_compression_level)
 					sox_commandline.extend([directory_for_temporary_files + os.sep + temporary_targetfile, 'gain', str(difference_from_target_loudness_sign_inverted)])
 					
-					#Gather all commands needed to process a file to a list of sox commandlines.
-					list_of_sox_commandlines.append(sox_commandline)
+					#Gather all names of processed files to a list.
 					list_of_filenames = [temporary_targetfile]
+					
+					# Run sox with the commandline compiled in the lines above.
+					run_sox(directory_for_temporary_files, filename, sox_commandline, english, finnish, 0)
 				
 				else:
 			
@@ -877,8 +881,8 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 						list_of_sox_commandlines.append(sox_commandline)
 						list_of_filenames.append(mono_targetfile)
 
-				# Run sox with the commandline compiled in the lines above.
-				run_sox(directory_for_temporary_files, filename, list_of_sox_commandlines, english, finnish)
+					# Run several sox commands in parallel threads, this speeds up splitting the file to separate mono files.	
+					run_sox_commands_in_parallel_threads(directory_for_temporary_files, filename, list_of_sox_commandlines, english, finnish)
 				
 				# Processing is ready move audio files to target directory.
 				move_processed_audio_files_to_target_directory(directory_for_temporary_files, directory_for_results, list_of_filenames, english, finnish)
@@ -902,9 +906,11 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 						sox_commandline.extend(flac_compression_level)
 					sox_commandline.extend([directory_for_temporary_files + os.sep + temporary_targetfile, 'gain', str(difference_from_target_loudness_sign_inverted)])
 					
-					#Gather all commands needed to process a file to a list of sox commandlines.
-					list_of_sox_commandlines.append(sox_commandline)
+					#Gather all names of processed files to a list.
 					list_of_filenames = [temporary_targetfile]
+					
+					# Run sox with the commandline compiled in the lines above.
+					run_sox(directory_for_temporary_files, filename, sox_commandline, english, finnish, 0)
 					
 				else:
 			
@@ -918,9 +924,9 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 						#Gather all commands needed to process a file to a list of sox commandlines.
 						list_of_sox_commandlines.append(sox_commandline)
 						list_of_filenames.append(mono_targetfile)
-				
-				# Run sox with the commandline compiled in the lines above.
-				run_sox(directory_for_temporary_files, filename, list_of_sox_commandlines, english, finnish)
+					
+					# Run several sox commands in parallel threads, this speeds up splitting the file to separate mono files.	
+					run_sox_commands_in_parallel_threads(directory_for_temporary_files, filename, list_of_sox_commandlines, english, finnish)
 				
 				# Processing is ready move audio files to target directory.
 				move_processed_audio_files_to_target_directory(directory_for_temporary_files, directory_for_results, list_of_filenames, english, finnish)
@@ -939,20 +945,85 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 				error_message = 'Error deleting temporary peak limited file ' * english + 'Väliaikaisen limitoidun tiedoston poistaminen epäonnistui ' * finnish + str(reason_for_error)
 				send_error_messages_to_screen_logfile_email(error_message)
 
-def run_sox(directory_for_temporary_files, filename, list_of_sox_commandlines, english, finnish):
+def run_sox_commands_in_parallel_threads(directory_for_temporary_files, filename, list_of_sox_commandlines, english, finnish):
+	
+	list_of_sox_commandlines.reverse()
+	number_of_allowed_simultaneous_sox_processes = 10
+	events_for_sox_commands_currently_running = []
+	list_of_finished_processes = []
+	
+	while True:
+		
+		# If processing of all sox commands is ready then exit the loop.
+		if (len(list_of_sox_commandlines) == 0) and (len(events_for_sox_commands_currently_running) == 0):
+			break
+	
+		# Check if there are less processing threads going on than allowed, if true start some more.
+		while len(events_for_sox_commands_currently_running) < number_of_allowed_simultaneous_sox_processes:
+			
+			if len(list_of_sox_commandlines) > 0: # Check if there are files queued for processing waiting in the queue.
+		
+				# Get one commandline from list of commandlines.
+				sox_commandline = list_of_sox_commandlines.pop()
+		
+				# Create event for the process. When the process is ready it sets event = set, so that we know that we can start more processes.
+				event_for_sox_command = threading.Event() # Create a unique event for the process. This event is used to signal that this process has finished.
+				
+				# Add the event to the list of running sox processes.
+				events_for_sox_commands_currently_running.append(event_for_sox_command)
+				
+				# Create a thread for the sox proces.
+				sox_process = threading.Thread(target=run_sox, args=(directory_for_temporary_files, filename, sox_commandline, english, finnish, event_for_sox_command)) # Create a process instance.
+				
+				# Start sox thread.
+				thread_object = sox_process.start() # Start the calculation process in it's own thread.
+			
+			# If all sox commandlines has been used, then break out of the loop.
+			if len(list_of_sox_commandlines) == 0:
+				break
+			
+		###################################
+		# Find threads that have finished #
+		###################################
+		
+		list_of_finished_processes=[]
+		
+		for counter in range(0, len(events_for_sox_commands_currently_running)):
+			if events_for_sox_commands_currently_running[counter].is_set(): # Check if event is set.
+				list_of_finished_processes.append(events_for_sox_commands_currently_running[counter])
+
+		# If a thread has finished, remove it's event from the list of files being processed.
+		for item in list_of_finished_processes: # Get events who's processing threads have completed.
+			events_for_sox_commands_currently_running.remove(item) # Remove the event from the list of files currently being calculated upon.
+		
+		# Wait 1 second before running the loop again
+		time.sleep(1)
+
+
+def run_sox(directory_for_temporary_files, filename, sox_commandline, english, finnish, event_for_sox_command):
+	
+	we_are_part_of_a_multithread_sox_command = False
+	
+	# Test if the value in variable is an event or not. If it is an event, then there are other sox threads processing the same file.
+	variable_type_string = str(type(event_for_sox_command))
+	if 'Event' in variable_type_string:
+		we_are_part_of_a_multithread_sox_command = True
 	
 	# Define filename for the temporary file that we are going to use as stdout for the external command.
+	results_from_sox_run = b''
 	stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_sox_stdout.txt'
-	results_from_sox_run = ''
+	
+	# If there are other sox threads processing this same file, then our stdout filename must be unique.
+	if we_are_part_of_a_multithread_sox_command == True:
+		stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '-event-' + str(event_for_sox_command).split(' ')[3].strip('>') + '_sox_stdout.txt'
 		
 	# Open the stdout temporary file in binary write mode.
 	try:
 		
 		with open(stdout_for_external_command, 'wb') as stdout_commandfile_handler:
 			
-			# Run the sox commands we got as argument. The list 'list_of_sox_commandlines' is a list of list, holding all sequential commands needed to process a inputfile.
-			for sox_commandline in list_of_sox_commandlines:
-				subprocess.Popen(sox_commandline, stdout=stdout_commandfile_handler, stderr=stdout_commandfile_handler, stdin=None, close_fds=True).communicate()[0]
+			# Run a sox command.
+			subprocess.Popen(sox_commandline, stdout=stdout_commandfile_handler, stderr=stdout_commandfile_handler, stdin=None, close_fds=True).communicate()[0]
 			
 			# Make sure all data written to temporary stdout and stderr - files is flushed from the os cache and written to disk.
 			stdout_commandfile_handler.flush() # Flushes written data to os cache
@@ -999,8 +1070,16 @@ def run_sox(directory_for_temporary_files, filename, list_of_sox_commandlines, e
 	# If sox did output something, there was and error. Print message to user.
 	if not len(results_from_sox_run_list) == 0:
 		for item in results_from_sox_run_list:
-			error_message = 'ERROR !!!' * english + 'VIRHE !!!' * finnish + ' ' + filename + ': ' + item 
+			error_message = 'ERROR !!!' * english + 'VIRHE !!!' * finnish + ' ' + filename + ': ' + item
 			send_error_messages_to_screen_logfile_email(error_message)
+			
+	# If we recieved an event from the calling routine, then we need to set that event.
+	# We recieved an event if the calling process runs several sox commands in parallel threads.
+	# The variable holding the event, might have an event or the value 0. In the latter case there are no parallel threads and we don't need to change the value in the variable.
+	
+	# Set our event so that the calling process knows we are ready.
+	if we_are_part_of_a_multithread_sox_command == True:
+		event_for_sox_command.set()
 
 def move_processed_audio_files_to_target_directory(source_directory, target_directory, list_of_filenames, english, finnish):
 	
@@ -2554,8 +2633,10 @@ while True:
 	##########################################################################
 	# One round of the following while - loop takes approximately 1 second to complete, the number stored in 'delay_between_directory_reads' determines how many times this loop is performed before exiting the while - loop and polling the HotFolder again.
 	while loop_counter < delay_between_directory_reads:
+		
 		# Check if there are less processing threads going on than allowed, if true start some more.
 		if (len(loudness_calculation_queue) * 2) < number_of_processor_cores:
+			
 			if len(files_queued_to_loudness_calculation) > 0: # Check if there are files queued for processing waiting in the queue.
 				filename = files_queued_to_loudness_calculation.pop(0) # Remove the first file from the queue and put it in a variable.
 				file_format_support_information = old_hotfolder_filelist_dict[filename][2] # The information about the file format is stored in a list in the dictionary, get it and store in a list.
@@ -2572,25 +2653,32 @@ while True:
 					# Create commands for both loudness calculation processes.
 					libebur128_commands_for_time_slice_calculation=[libebur128_path, 'dump', '-s', time_slice_duration_string] # Put libebur128 commands in a list.
 					libebur128_commands_for_integrated_loudness_calculation=[libebur128_path, 'scan', '-l', peak_measurement_method] # Put libebur128 commands in a list.
-					# Create events for both processes. When the process is ready it sets event = set, so that we now in the main thread that we can start more processes.
+					
+					# Create events for both processes. When the process is ready it sets event = set, so that we know in the main thread that we can start more processes.
 					event_for_timeslice_loudness_calculation = threading.Event() # Create a unique event for the process. This event is used to signal other threads that this process has finished.
 					event_for_integrated_loudness_calculation = threading.Event() # Create a unique event for the process. This event is used to signal other threads that this process has finished.
+					
 					# Add file name and both the calculation process events to the dictionary of files that are currently being calculated upon.
 					loudness_calculation_queue[filename] = [event_for_timeslice_loudness_calculation, event_for_integrated_loudness_calculation]
 					# Create threads for both processes, the threads are not started yet.
 					process_1 = threading.Thread(target=calculate_loudness_timeslices, args=(filename, hotfolder_path, libebur128_commands_for_time_slice_calculation, directory_for_temporary_files, directory_for_results, english, finnish)) # Create a process instance.
 					process_2 = threading.Thread(target=calculate_integrated_loudness, args=(event_for_integrated_loudness_calculation, filename, hotfolder_path, libebur128_commands_for_integrated_loudness_calculation, english, finnish)) # Create a process instance.
+					
 					# Start both calculation threads.
 					thread_object = process_2.start() # Start the calculation process in it's own thread.
 					thread_object = process_1.start() # Start the calculation process in it's own thread.
+					
 				else:
+					
 					# Fileformat is not natively supported by libebur128 and sox, or it has more than one audio streams.
 					# Start a process that extracts all audio streams from the file to flac and moves resulting files back to the HotFolder for loudness calculation.
 					if silent == False:
 						print ('\r' + 'File' * english + 'Tiedoston' * finnish, '"' + filename + '"' + ' conversion started ' * english + '  muunnos    alkoi  ' * finnish, realtime)
 						print('\r' + adjust_line_printout, ' Extracting' * english + ' Puran' * finnish, str(number_of_ffmpeg_supported_audiostreams), 'audio streams from file' * english + 'miksausta tiedostosta' * finnish, filename)
+						
 						for counter in range(0, number_of_ffmpeg_supported_audiostreams): # Print information about all the audio streams we are going to extract.
 							print('\r' + adjust_line_printout, ' ' + details_of_ffmpeg_supported_audiostreams[counter])
+					
 					event_1_for_ffmpeg_audiostream_conversion = threading.Event() # Create two unique events for the process. The events are being used to signal other threads that this process has finished. This thread does not really need two events, only one, but as other calculation processes are started in pairs resulting two events per file, two events must be created here also for this process..
 					event_2_for_ffmpeg_audiostream_conversion = threading.Event()
 					process_3 = threading.Thread(target = decompress_audio_streams_with_ffmpeg, args=(event_1_for_ffmpeg_audiostream_conversion, event_2_for_ffmpeg_audiostream_conversion, filename, file_format_support_information, hotfolder_path, directory_for_temporary_files, english, finnish)) # Create a process instance.
@@ -2602,6 +2690,7 @@ while True:
 		######################################################################################
 		# Only print message if there has been a change in the number of files in the queue or files in the calculation process.
 		if (previous_value_of_files_queued_to_loudness_calculation != len(files_queued_to_loudness_calculation)) or (previous_value_of_loudness_calculation_queue != len(loudness_calculation_queue)):
+			
 			if silent == False:
 				print('\r' + adjust_line_printout, ' Processing ' * english + ' Käsittelyssä ' * finnish + str(len(loudness_calculation_queue)) + ' files, ' * english + ' tiedostoa, ' * finnish +  str(len(files_queued_to_loudness_calculation)) + ' jobs in the queue' * english + ' työtä jonossa.' * finnish)
 			previous_value_of_files_queued_to_loudness_calculation = len(files_queued_to_loudness_calculation)
@@ -2613,6 +2702,7 @@ while True:
 		finished_processes=[]
 		for filename in loudness_calculation_queue:
 			event_for_process_1, event_for_process_2 = loudness_calculation_queue[filename] # Take both events for the file from the dictionary.
+			
 			if (event_for_process_1.is_set()) and (event_for_process_2.is_set()): # Check if both events are set (= both threads have finished), if true add the file name to the list of finished processes.
 				finished_processes.append(filename)
 
@@ -2624,8 +2714,10 @@ while True:
 			completed_files_dict[filename] = realtime # This dictionary stores the time processing each file was completed.
 			if silent == False:
 				print('\r' + 'File' * english + 'Tiedoston' * finnish, '"' + filename + '"', 'processing finished' * english + 'käsittely valmistui' * finnish, realtime)
+			
 			# Keep the list of completed files to only 100 items long, if longer then remove last item from the list.
 			if len(completed_files_list) > 100:
+				
 				# Remove oldest filename from list and dictionary
 				filename_to_remove = completed_files_list.pop()
 				del completed_files_dict[filename_to_remove]

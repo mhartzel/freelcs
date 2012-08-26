@@ -1,3 +1,11 @@
+LoudnessCorrection Version 170
+-------------------------------
+- Splitting a big (bigger than 4 GB) multichannel file to separate mono files turned out to be very slow since sox is able to output just one file at a time. Now max 10 sox commands are run in parallel in separate threads. This cuts prosessing time when splitting up a 5.1 file to about a third (speed depends on raw processor power).
+
+HeartBeat_Checker version 019
+-------------------------------
+- The copyright disclaimer at the beginning of the code was missing some information, added it. No changes to the program code.
+
 LoudnessCorrection Version 169
 -------------------------------
 - Found a way to skip creating an intermediate file when the output file size is over 4 GB and needs to be split to separate channels. Speeds things up a bit in these cases.
