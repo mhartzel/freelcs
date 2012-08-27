@@ -34,7 +34,7 @@ import email.mime.multipart
 import pickle
 import math
 
-version = '170'
+version = '171'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -778,7 +778,7 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 				# Create commandlines for extracting each channel to its own file.
 				
 				for counter in range(1, channel_count + 1):
-					mono_targetfile = filename_and_extension[0] + '-Channel-' + str(counter) + '_-23_LUFS.' + output_format_for_final_file
+					mono_targetfile = filename_and_extension[0] + '-Channel-' * english + '-Kanava-' * finnish + str(counter) + '_-23_LUFS.' + output_format_for_final_file
 					sox_commandline = ['sox', file_to_process, directory_for_temporary_files + os.sep + mono_targetfile, 'remix', str(counter), 'gain', str(difference_from_target_loudness_sign_inverted)]
 			
 					#Gather all commands needed to process a file to a list of sox commandlines.
@@ -874,7 +874,7 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 					# Create commandlines for extracting each channel to its own file.
 					
 					for counter in range(1, channel_count + 1):
-						mono_targetfile = filename_and_extension[0] + '-Channel-' + str(counter) + '_-23_LUFS.' + output_format_for_final_file
+						mono_targetfile = filename_and_extension[0] + '-Channel-' * english + '-Kanava-' * finnish + str(counter) + '_-23_LUFS.' + output_format_for_final_file
 						sox_commandline = ['sox', directory_for_temporary_files + os.sep + temporary_peak_limited_targetfile, directory_for_temporary_files + os.sep + mono_targetfile, 'remix', str(counter), 'gain', str(difference_from_target_loudness_sign_inverted)]
 				
 						#Gather all commands needed to process a file to a list of sox commandlines.
@@ -918,7 +918,7 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 					# Create commandlines for extracting each channel to its own file.
 					
 					for counter in range(1, channel_count + 1):
-						mono_targetfile = filename_and_extension[0] + '-Channel-' + str(counter) + '_-23_LUFS.' + output_format_for_final_file
+						mono_targetfile = filename_and_extension[0] + '-Channel-' * english + '-Kanava-' * finnish + str(counter) + '_-23_LUFS.' + output_format_for_final_file
 						sox_commandline = ['sox', file_to_process, directory_for_temporary_files + os.sep + mono_targetfile, 'remix', str(counter), 'gain', str(difference_from_target_loudness_sign_inverted)]
 				
 						#Gather all commands needed to process a file to a list of sox commandlines.
@@ -1905,7 +1905,7 @@ def get_ip_addresses_of_the_host_machine():
 		print('stderr:', stderr)
 		print('all_ip_addresses_of_the_machine =', all_ip_addresses_of_the_machine)
 		
-def get_audio_stream_information_with_ffmpeg(filename, hotfolder_path, directory_for_temporary_files, ffmpeg_output_format):
+def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(filename, hotfolder_path, directory_for_temporary_files, ffmpeg_output_format):
 	
 	# This subprocess works like this:
 	# ---------------------------------
@@ -1913,7 +1913,7 @@ def get_audio_stream_information_with_ffmpeg(filename, hotfolder_path, directory
 	# FFmpeg output is then parsed and a FFmpeg commandline created that will later be used to extract all valid audio streams from the file.
 
 	natively_supported_file_format = False # This variable tells if the file format is natively supported by libebur128 and sox. We do not yet know the format of the file, we just set the default here. If format is not natively supported by libebur128 and sox, file will be first extracted to flac with ffmpeg.
-	ffmpeg_supported_fileformat = False # This variable tells if the file format is natively supported by ffmpeg. We do not yet know the format of the file, we just set the default here. If format is not supported by ffmpeg, we have no way of processing the file and will be queued for deletion.
+	ffmpeg_supported_fileformat = False # This variable tells if the file format is natively supported by ffmpeg. We do not yet know the format of the file, we just set the default here. If format is not supported by ffmpeg, we have no way of processing the file and it will be queued for deletion.
 	number_of_ffmpeg_supported_audiostreams = 0 # This variable holds the number of audio streams ffmpeg finds in the file.
 	details_of_ffmpeg_supported_audiostreams = [] # Holds ffmpeg produced information about audio streams found in file (example: 'Stream #0.1[0x82]: Audio: ac3, 48000 Hz, 5.1, s16, 384 kb/s' )
 	
@@ -2048,7 +2048,7 @@ def get_audio_stream_information_with_ffmpeg(filename, hotfolder_path, directory
 			send_error_messages_to_screen_logfile_email(error_message)
 		
 		# Compile the name of the audiostream to an list of all audio stream filenames.
-		target_filenames.append(filename_and_extension[0] + '-AudioStream-' + str(counter + 1) + '-ChannelCount-' * english + '-AaniKanavia-' * finnish  + number_of_audio_channels + '.' + ffmpeg_output_format)
+		target_filenames.append(filename_and_extension[0] + '-AudioStream-' * english + 'AaniPaketti' * finnish + str(counter + 1) + '-ChannelCount-' * english + '-AaniKanavia-' * finnish  + number_of_audio_channels + '.' + ffmpeg_output_format)
 		
 		# Generate FFmpeg extract options for audio stream.
 		ffmpeg_commandline.append('-f')
@@ -2086,18 +2086,15 @@ def get_audio_stream_information_with_ffmpeg(filename, hotfolder_path, directory
 	# Complete the FFmpeg commandline by adding stream mapping commands at the end of it. The commandline is later used to extract all valid audio streams from the file.
 	ffmpeg_commandline.extend(ffmpeg_stream_mapping_commands)
 	
-	# In case the file has only 1 audio stream and the format is wav or ogg do an additional check.
-	# libebur128 only supports wav and ogg files that have max 2 channels. If there are more then the audio must be converted to flac before loudness calculation.
+	# In case the file has only 1 audio stream and the format is ogg then do an additional check.
+	# Sox only supports ogg files that have max 2 channels. If there are more then the audio must be converted to another format before processing.
 	# 'natively_supported_file_format = False'  means audio must be converted to flac before prosessing.
-	if number_of_ffmpeg_supported_audiostreams > 0: # If ffmpeg found audio streams check if the file extension is one of the libebur128 and sox supported ones (wav, flac, ogg).
+	if number_of_ffmpeg_supported_audiostreams > 0: # If ffmpeg found audio streams check if the file extension is one that sox supported (wav, flac, ogg).
 		ffmpeg_supported_fileformat = True
 		if str(os.path.splitext(filename)[1]).lower() in natively_supported_file_formats:
 			natively_supported_file_format = True
-	if (number_of_ffmpeg_supported_audiostreams == 1) and (str(os.path.splitext(filename)[1]).lower() == '.wav'): # Test if wav - file has more than two channels, since libebur128 only supports mono and stereo wav - files.  If there are more channels, audio extraction and flac compression will be done with with ffmpeg.
-		if  (number_of_audio_channels != '1') and (number_of_audio_channels != '2'): # If there are more than 2 channels in wav, audio extraction and flac compression will be done with with ffmpeg.
-			natively_supported_file_format = False
-	if (number_of_ffmpeg_supported_audiostreams == 1) and (str(os.path.splitext(filename)[1]).lower() == '.ogg'): # Test if ogg - file has more than two channels, since sox only supports mono and stereo - files. If there are more channels, audio extraction and flac compression will be done with with ffmpeg.
-		if  (number_of_audio_channels != '1') and (number_of_audio_channels != '2'): # If there are more than 2 channels in ogg, audio extraction and flac compression will be done with with ffmpeg.
+	if (number_of_ffmpeg_supported_audiostreams == 1) and (str(os.path.splitext(filename)[1]).lower() == '.ogg'): # Test if ogg - file has more than two channels, since sox only supports mono and stereo ogg - files. If there are more channels, audio must be converted before processing.
+		if  (number_of_audio_channels != '1') and (number_of_audio_channels != '2'):
 			natively_supported_file_format = False
 	
 	file_format_support_information = [natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames]
@@ -2581,7 +2578,7 @@ while True:
 					if we_have_true_read_access_to_the_file == True:
 						
 						# Call a subroutine to inspect file with FFmpeg to get audio stream information.
-						ffmpeg_parsed_audio_stream_information, ffmpeg_error_message = get_audio_stream_information_with_ffmpeg(filename, hotfolder_path, directory_for_temporary_files, ffmpeg_output_format)
+						ffmpeg_parsed_audio_stream_information, ffmpeg_error_message = get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(filename, hotfolder_path, directory_for_temporary_files, ffmpeg_output_format)
 						# Assing audio stream information to variables.
 						natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames = ffmpeg_parsed_audio_stream_information
 
