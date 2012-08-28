@@ -34,7 +34,7 @@ import email.mime.multipart
 import pickle
 import math
 
-version = '171'
+version = '172'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -711,7 +711,7 @@ def run_gnuplot(filename, directory_for_temporary_files, directory_for_results, 
 
 def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calculation_error, difference_from_target_loudness, filename, english, finnish, hotfolder_path, directory_for_results, directory_for_temporary_files, highest_peak_db, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, channel_count, audio_channels_will_be_split_to_separate_mono_files):
 
-	'''This subroutine creates a loudness corrected file'''
+	'''This subroutine creates sox commands that are used to create a loudness corrected file'''
 
 	# This subroutine works like this:
 	# ---------------------------------
@@ -831,7 +831,7 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 				list_of_sox_commandlines.append(sox_commandline)
 				
 				# Run sox with the commandline compiled in the lines above.
-				run_sox(directory_for_temporary_files, filename, list_of_sox_commandlines, english, finnish)
+				run_sox(directory_for_temporary_files, filename, sox_commandline, english, finnish, 0)
 				
 				########################################################################################
 				# Loudness of the peak limited file needs to be calculated again, measure the loudness #
@@ -961,7 +961,7 @@ def run_sox_commands_in_parallel_threads(directory_for_temporary_files, filename
 		# Check if there are less processing threads going on than allowed, if true start some more.
 		while len(events_for_sox_commands_currently_running) < number_of_allowed_simultaneous_sox_processes:
 			
-			if len(list_of_sox_commandlines) > 0: # Check if there are files queued for processing waiting in the queue.
+			if len(list_of_sox_commandlines) > 0: # Check if there still is unprocessed sox commands waiting in the list of sox commandlines.
 		
 				# Get one commandline from list of commandlines.
 				sox_commandline = list_of_sox_commandlines.pop()
@@ -990,7 +990,7 @@ def run_sox_commands_in_parallel_threads(directory_for_temporary_files, filename
 		
 		for counter in range(0, len(events_for_sox_commands_currently_running)):
 			if events_for_sox_commands_currently_running[counter].is_set(): # Check if event is set.
-				list_of_finished_processes.append(events_for_sox_commands_currently_running[counter])
+				list_of_finished_processes.append(events_for_sox_commands_currently_running[counter]) # Add event of finished thread to a list.
 
 		# If a thread has finished, remove it's event from the list of files being processed.
 		for item in list_of_finished_processes: # Get events who's processing threads have completed.
@@ -2048,7 +2048,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			send_error_messages_to_screen_logfile_email(error_message)
 		
 		# Compile the name of the audiostream to an list of all audio stream filenames.
-		target_filenames.append(filename_and_extension[0] + '-AudioStream-' * english + 'AaniPaketti' * finnish + str(counter + 1) + '-ChannelCount-' * english + '-AaniKanavia-' * finnish  + number_of_audio_channels + '.' + ffmpeg_output_format)
+		target_filenames.append(filename_and_extension[0] + '-AudioStream-' * english + '-Miksaus-' * finnish + str(counter + 1) + '-ChannelCount-' * english + '-AaniKanavia-' * finnish  + number_of_audio_channels + '.' + ffmpeg_output_format)
 		
 		# Generate FFmpeg extract options for audio stream.
 		ffmpeg_commandline.append('-f')

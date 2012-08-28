@@ -1,3 +1,7 @@
+LoudnessCorrection Version 172
+-------------------------------
+- Bugfix: Creation of loudness corrected file failed due to a typo in cases where volume needed to be adjusted up. The bug was introduced in version 170.
+
 LoudnessCorrection Version 171
 -------------------------------
 - Bugfix: When language was 'Finnish' then strings added to filenames mixed English and Finnish words in some cases.
