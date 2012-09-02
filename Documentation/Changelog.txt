@@ -1,3 +1,13 @@
+LoudnessCorrection Version 173
+-------------------------------
+- Changed default output format to wav in cases where audio streams need to be extracted from a file with FFmpeg and input file bit depth is 24 bits. Previous format was flac, but I learned that FFmpeg forces bit depth to 16 bits always when writing flac files.
+- Bugfix: If file format is mpeg transportstream (mpegts) then FFmpeg is not always able to tell the correct file duration. In these cases read file duration with external command: mediainfo.
+- New requirement: mediainfo needs to be installed.
+
+installer 040
+--------------
+- There is a variabkle (ffmpeg_output_format) defined in installer.py that used to tell LoudnessCorrection.py what output format to use when extracting audio streams with FFmpeg. The output format is now defined in LoudnessCorrection.py based on the estimated uncompressed file size. The variable in installer.py might be used in the future if user is allowed to define the ouput format, so I changed the variable default to ffmpeg_output_format = '' in installer.
+
 LoudnessCorrection Version 172
 -------------------------------
 - Bugfix: Creation of loudness corrected file failed due to a typo in cases where volume needed to be adjusted up. The bug was introduced in version 170.

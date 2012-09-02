@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '039'
+version = '040'
 
 ###################################
 # Function definitions start here #
@@ -2638,7 +2638,7 @@ loudness_correction_init_script_content = []
 ram_disk_mount_commands = []
 delay_between_directory_reads = 5
 natively_supported_file_formats = ['.wav', '.flac', '.ogg']
-ffmpeg_output_format = 'flac'
+ffmpeg_output_format = ''
 silent = True
 html_progress_report_write_interval = 5
 send_error_messages_to_logfile = True
