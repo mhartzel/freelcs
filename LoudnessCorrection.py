@@ -33,8 +33,9 @@ import email.mime.text
 import email.mime.multipart
 import pickle
 import math
+import copy
 
-version = '173'
+version = '174'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -169,6 +170,7 @@ def calculate_integrated_loudness(event_for_integrated_loudness_calculation, fil
 	integrated_loudness_calculation_stderr = ''
 	file_to_process = hotfolder_path + os.sep + filename
 	highest_peak_db = float('-120') # Set default value for sample peak.
+	dont_send_error_message_by_email = False
 
 	if os.path.exists(file_to_process): # Check if the audio file still exists, user may have deleted it. If True start loudness calculation.
 	
@@ -195,10 +197,10 @@ def calculate_integrated_loudness(event_for_integrated_loudness_calculation, fil
 			
 		except IOError as reason_for_error:
 			error_message = 'Error writing to stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon kirjoittaminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(libebur128_commands_for_integrated_loudness_calculation) + '. ' + str(reason_for_error)
-			send_error_messages_to_screen_logfile_email(error_message)
+			send_error_messages_to_screen_logfile_email(error_message, [])
 		except OSError as reason_for_error:
 			error_message = 'Error writing to stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon kirjoittaminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(libebur128_commands_for_integrated_loudness_calculation) + '. ' + str(reason_for_error)
-			send_error_messages_to_screen_logfile_email(error_message)
+			send_error_messages_to_screen_logfile_email(error_message, [])
 		
 		# Open files we used as stdout and stderr for the external program and read in what the program did output to those files.
 		try:
@@ -207,10 +209,10 @@ def calculate_integrated_loudness(event_for_integrated_loudness_calculation, fil
 				integrated_loudness_calculation_stderr = stderr_commandfile_handler.read(None)
 		except IOError as reason_for_error:
 			error_message = 'Error reading from stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston lukeminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(libebur128_commands_for_integrated_loudness_calculation) + '. ' + str(reason_for_error)
-			send_error_messages_to_screen_logfile_email(error_message)
+			send_error_messages_to_screen_logfile_email(error_message, [])
 		except OSError as reason_for_error:
 			error_message = 'Error reading from stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon lukeminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(libebur128_commands_for_integrated_loudness_calculation) + '. ' + str(reason_for_error)
-			send_error_messages_to_screen_logfile_email(error_message)
+			send_error_messages_to_screen_logfile_email(error_message, [])
 		
 		# Convert libebur128 output from binary to UTF-8 text.
 		integrated_loudness_calculation_stdout_string = str(integrated_loudness_calculation_stdout.decode('UTF-8')) 
@@ -222,10 +224,10 @@ def calculate_integrated_loudness(event_for_integrated_loudness_calculation, fil
 			os.remove(stderr_for_external_command)
 		except IOError as reason_for_error:
 			error_message = 'Error deleting stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston deletoiminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(libebur128_commands_for_integrated_loudness_calculation) + '. ' + str(reason_for_error)
-			send_error_messages_to_screen_logfile_email(error_message)
+			send_error_messages_to_screen_logfile_email(error_message, [])
 		except OSError as reason_for_error:
 			error_message = 'Error deleting stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston deletoiminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(libebur128_commands_for_integrated_loudness_calculation) + '. ' + str(reason_for_error)
-			send_error_messages_to_screen_logfile_email(error_message)
+			send_error_messages_to_screen_logfile_email(error_message, [])
 
 		# Test if libebur128 was successful in processing the file or not.
 		# If libebur128 can successfully process the file it prints the results to its stdout and the progress printout to stderr.
@@ -256,13 +258,14 @@ def calculate_integrated_loudness(event_for_integrated_loudness_calculation, fil
 			# If integrated loudness measurement is below -70 LUFS, then libebur128 says the measurement is '-inf', which means roughly 'not possible to measure'. Generate error since '-inf' can not be used in calculations.
 			if integrated_loudness == float('-inf'):
 				integrated_loudness_calculation_error = True
-				integrated_loudness_calculation_error_message = 'Loudness is below measurement threshold (-70 LUFS).' * english + 'Äänekkyys on alle mittauksen alarajan (-70 LUFS)' * finnish
-		integrated_loudness_calculation_results_list = [integrated_loudness, difference_from_target_loudness, loudness_range, integrated_loudness_calculation_error, integrated_loudness_calculation_error_message, highest_peak_db] # Assign result variables to the list that is going to be read in the other loudness calculation process.
+				integrated_loudness_calculation_error_message = 'Loudness is below measurement threshold (-70 LUFS)' * english + 'Äänekkyys on alle mittauksen alarajan (-70 LUFS)' * finnish
+				dont_send_error_message_by_email = True
+		integrated_loudness_calculation_results_list = [integrated_loudness, difference_from_target_loudness, loudness_range, integrated_loudness_calculation_error, integrated_loudness_calculation_error_message, highest_peak_db, dont_send_error_message_by_email] # Assign result variables to the list that is going to be read in the other loudness calculation process.
 		integrated_loudness_calculation_results[filename] = integrated_loudness_calculation_results_list # Put loudness calculation results in a dictionary along with the filename.		
 	else:
 		# If we get here the file we were supposed to process vanished from disk after the main program started this thread. Print a message to the user.
 		error_message ='ERROR !!!!!!! FILE' * english + 'VIRHE !!!!!!! Tiedosto' * finnish + ' ' + filename + ' ' + 'dissapeared from disk before processing started.' * english + 'hävisi kovalevyltä ennen käsittelyn alkua.' * finnish
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 
 	# Set the event for this calculation thread. The main program checks the events and sees that this calculation thread is ready.
 	event_for_integrated_loudness_calculation.set()
@@ -307,10 +310,10 @@ def calculate_loudness_timeslices(filename, hotfolder_path, libebur128_commands_
 		
 		except IOError as reason_for_error:
 			error_message = 'Error writing to stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon kirjoittaminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(libebur128_commands_for_time_slice_calculation) + '. ' + str(reason_for_error)
-			send_error_messages_to_screen_logfile_email(error_message)
+			send_error_messages_to_screen_logfile_email(error_message, [])
 		except OSError as reason_for_error:
 			error_message = 'Error writing to stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon kirjoittaminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(libebur128_commands_for_time_slice_calculation) + '. ' + str(reason_for_error)
-			send_error_messages_to_screen_logfile_email(error_message)
+			send_error_messages_to_screen_logfile_email(error_message, [])
 		
 		# Open files we used as stdout and stderr for the external program and read in what the program did output to those files.
 		try:
@@ -319,10 +322,10 @@ def calculate_loudness_timeslices(filename, hotfolder_path, libebur128_commands_
 				timeslice_loudness_calculation_stderr = stderr_commandfile_handler.read(None)
 		except IOError as reason_for_error:
 			error_message = 'Error reading from stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston lukeminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(libebur128_commands_for_time_slice_calculation) + '. ' + str(reason_for_error)
-			send_error_messages_to_screen_logfile_email(error_message)
+			send_error_messages_to_screen_logfile_email(error_message, [])
 		except OSError as reason_for_error:
 			error_message = 'Error reading from stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon lukeminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(libebur128_commands_for_time_slice_calculation) + '. ' + str(reason_for_error)
-			send_error_messages_to_screen_logfile_email(error_message)
+			send_error_messages_to_screen_logfile_email(error_message, [])
 		
 		# Convert libebur128 output from binary to UTF-8 text.
 		timeslice_loudness_calculation_result_list = str(timeslice_loudness_calculation_stdout.decode('UTF-8')).split('\n') # Convert libebur128 output from binary to UTF-8 text, split values in the text by line feeds and insert these individual values in to a list.
@@ -334,10 +337,10 @@ def calculate_loudness_timeslices(filename, hotfolder_path, libebur128_commands_
 			os.remove(stderr_for_external_command)
 		except IOError as reason_for_error:
 			error_message = 'Error deleting stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston deletoiminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(libebur128_commands_for_time_slice_calculation) + '. ' + str(reason_for_error)
-			send_error_messages_to_screen_logfile_email(error_message)
+			send_error_messages_to_screen_logfile_email(error_message, [])
 		except OSError as reason_for_error:
 			error_message = 'Error deleting stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston deletoiminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(libebur128_commands_for_time_slice_calculation) + '. ' + str(reason_for_error)
-			send_error_messages_to_screen_logfile_email(error_message)
+			send_error_messages_to_screen_logfile_email(error_message, [])
 		
 		if '' in timeslice_loudness_calculation_result_list: # There usually is an empty item [''] at the end of the list, remove it.
 			timeslice_loudness_calculation_result_list.remove('')
@@ -369,7 +372,7 @@ def calculate_loudness_timeslices(filename, hotfolder_path, libebur128_commands_
 	else:
 		# If we get here the file we were supposed to process vanished from disk after the main program started this thread. Print a message to the user.
 		error_message = 'VIRHE !!!!!!! Tiedosto' * finnish + 'ERROR !!!!!!! FILE' * english + ' ' + filename + ' ' + 'hävisi kovalevyltä ennen käsittelyn alkua.' * finnish + 'dissapeared from disk before processing started.' * english
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 
 	# We now have all loudness calculation results needed for graphics generation, start the subprocess that plots graphics and calls another subprocess that creates loudness corrected audio with sox.
 	create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_string, timeslice_calculation_error, timeslice_calculation_error_message, timeslice_loudness_calculation_stdout, hotfolder_path, directory_for_temporary_files, directory_for_results, english, finnish)
@@ -396,7 +399,8 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 	loudness_calculation_table = directory_for_temporary_files + os.sep + filename + '-loudness_calculation_table'
 	gnuplot_temporary_output_graphicsfile = directory_for_temporary_files + os.sep + filename + '-Loudness_Results_Graphics.jpg' * english + '-Aanekkyyslaskennan_Tulokset.jpg' * finnish
 	gnuplot_output_graphicsfile = directory_for_results + os.sep + filename + '-Loudness_Results_Graphics.jpg' * english + '-Aanekkyyslaskennan_Tulokset.jpg' * finnish
-
+	warning_message = ''
+	
 	# Get loudness calculation results from the integrated loudness calculation process. Results are in list format in dictionary 'integrated_loudness_calculation_results', assing results to variables.
 	integrated_loudness_calculation_results_list = integrated_loudness_calculation_results.pop(filename)# Get loudness results for the file and remove this information from dictionary.
 	integrated_loudness = integrated_loudness_calculation_results_list[0]
@@ -405,6 +409,7 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 	integrated_loudness_calculation_error = integrated_loudness_calculation_results_list[3]
 	integrated_loudness_calculation_error_message = integrated_loudness_calculation_results_list[4]
 	highest_peak_db = integrated_loudness_calculation_results_list[5]
+	dont_send_error_message_by_email = integrated_loudness_calculation_results_list[6]
 	# If TruePeak method was used to determine the highest peak, then it can be above 0 dBFS, add a plus sign if this is the case.
 	if highest_peak_db > 0:
 		highest_peak_db_string = '+' + str(highest_peak_db)
@@ -485,29 +490,38 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 		plotfile_x_axis_time_information = ''.join(plotfile_x_axis_time_information)
 	
 	# Get technical info from audio file and determine what the ouput format will be
-	channel_count, sample_rate, bit_depth, sample_count, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, audio_channels_will_be_split_to_separate_mono_files = get_audiofile_info_with_sox_and_determine_ouput_format(directory_for_temporary_files, hotfolder_path, filename)
-	warning_message = ''
+	channel_count, sample_rate, bit_depth, sample_count, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, audio_channels_will_be_split_to_separate_mono_files = get_audiofile_info_with_sox_and_determine_output_format(directory_for_temporary_files, hotfolder_path, filename)
 	
 	# If file size exceeds 4 GB, a warning message must be displayed informing the user that the
 	# outputfile will either be split to separate mono channels or stored in flac - format.
 	if output_format_for_intermediate_files != output_format_for_final_file:
 		# The combined channels in final output file exceeds the max file size and the file needs to be split to separate mono files.
-		warning_message = '\\nWarning: file size exceeds wav format max limit 4 GB, audio channels will be split to separate mono files'
+		warning_message = warning_message + '\\nWarning: file size exceeds wav format max limit 4 GB, audio channels will be split to separate mono files' * english + '\\nVaroitus: tiedoston koko ylittää wav - formaatin maksimin (4 GB), kanavat jaetaan erillisiin tiedostoihin' * finnish
 	if output_format_for_final_file == 'flac':
 		# File is so big that even separate mono channels would exceed 4GB each, so flac format must be used for the output file.
-		warning_message = '\\nWarning: file size exceeds wav format max limit 4 GB, file will be stored in flac - format'
+		warning_message = warning_message + '\\nWarning: file size exceeds wav format max limit 4 GB, file will be stored in flac - format' * english + '\\nVaroitus: tiedoston koko ylittää wav - formaatin maksimin (4 GB), tiedosto tallennetaan flac - formaattiin' * finnish
 	
 	# Generate gnuplot commands needed for plotting the graphicsfile and store commands in a list.
 	if (integrated_loudness_calculation_error == True) or (timeslice_calculation_error == True):
 		# Loudness calculation encountered an error, generate gnuplot commands for plotting default graphics with the error message.
 		error_message_to_print_with_gnuplot = ''
+		
 		if integrated_loudness_calculation_error == True:
 			error_message = 'ERROR !!! in libebur128 integrated loudness calculation: ' * english + 'VIRHE !!! libebur128:n lra laskennassa: ' * finnish + integrated_loudness_calculation_error_message + ': ' + filename
-			send_error_messages_to_screen_logfile_email(error_message)
+			error_message_destinations = []
+			
+			if dont_send_error_message_by_email == True:
+				# This error message is not very important so don't send it by email, only send it to other possible destinations (screen, logfile).
+				error_message_destinations = copy.deepcopy(where_to_send_error_messages)
+				if 'email' in error_message_destinations:
+					error_message_destinations.remove('email')
+					
+			send_error_messages_to_screen_logfile_email(error_message, error_message_destinations)
 			error_message_to_print_with_gnuplot = integrated_loudness_calculation_error_message + '\\n'
+			
 		if timeslice_calculation_error == True:
 			error_message = 'ERROR !!! in libebur128 timeslice calculation: ' * english + 'VIRHE !!! libebur128:n aanekkyystaulukon laskennassa: ' * finnish +  timeslice_calculation_error_message + ': ' + filename
-			send_error_messages_to_screen_logfile_email(error_message)
+			send_error_messages_to_screen_logfile_email(error_message, [])
 			error_message_to_print_with_gnuplot = error_message_to_print_with_gnuplot + timeslice_calculation_error_message + '\\n'
 		create_gnuplot_commands_for_error_message(error_message_to_print_with_gnuplot, filename, directory_for_temporary_files, directory_for_results, english, finnish)		
 	else:
@@ -542,10 +556,10 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 			sys.exit(0)
 		except IOError as reason_for_error:
 			error_message = 'Error opening timeslice tablefile for writing ' * english + 'Aikaviipaleiden taulukkotiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
-			send_error_messages_to_screen_logfile_email(error_message)
+			send_error_messages_to_screen_logfile_email(error_message, [])
 		except OSError as reason_for_error:
 			error_message = 'Error opening timeslice tablefile for writing ' * english + 'Aikaviipaleiden taulukkotiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
-			send_error_messages_to_screen_logfile_email(error_message)
+			send_error_messages_to_screen_logfile_email(error_message, [])
 
 		# Write gnuplot commands to a file.
 		try:
@@ -559,10 +573,10 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 			sys.exit(0)
 		except IOError as reason_for_error:
 			error_message = 'Error opening Gnuplot commandfile for writing ' * english + 'Gnuplotin komentotiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
-			send_error_messages_to_screen_logfile_email(error_message)
+			send_error_messages_to_screen_logfile_email(error_message, [])
 		except OSError as reason_for_error:
 			error_message = 'Error opening Gnuplot commandfile for writing ' * english + 'Gnuplotin komentotiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
-			send_error_messages_to_screen_logfile_email(error_message)
+			send_error_messages_to_screen_logfile_email(error_message, [])
 
 		# Call a subprocess to run gnuplot
 		run_gnuplot(filename, directory_for_temporary_files, directory_for_results, english, finnish)
@@ -592,10 +606,10 @@ def create_gnuplot_commands_for_error_message(error_message, filename, directory
 		sys.exit(0)
 	except IOError as reason_for_error:
 		error_message = 'Error opening gnuplot datafile for writing error graphics data ' * english + 'Gnuplotin datatiedoston avaaminen virhegrafiikan datan kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	except OSError as reason_for_error:
 		error_message = 'Error opening gnuplot datafile for writing error graphics data ' * english + 'Gnuplotin datatiedoston avaaminen virhegrafiikan datan kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 
 	# Create gnuplot commands and put then in  a list.
 	gnuplot_commands=['set terminal jpeg size 1280,960 medium font \'arial\'', \
@@ -616,10 +630,10 @@ def create_gnuplot_commands_for_error_message(error_message, filename, directory
 		sys.exit(0)
 	except IOError as reason_for_error:
 		error_message = 'Error opening Gnuplot commandfile for writing ' * english + 'Gnuplotin komentotiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	except OSError as reason_for_error:
 		error_message = 'Error opening Gnuplot commandfile for writing ' * english + 'Gnuplotin komentotiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 
 	# Call a subprocess to run gnuplot
 	run_gnuplot(filename, directory_for_temporary_files, directory_for_results, english, finnish)
@@ -649,10 +663,10 @@ def run_gnuplot(filename, directory_for_temporary_files, directory_for_results, 
 		
 	except IOError as reason_for_error:
 		error_message = 'Error writing to gnuplot stdout- file ' * english + 'Gnuplotin Stdout- tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	except OSError as reason_for_error:
 		error_message = 'Error writing to gnuplot stdout- file ' * english + 'Gnuplotin Stdout- tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 		
 	# Open the file we used as stdout for the external program and read in what the external program wrote to it.
 	try:
@@ -660,10 +674,10 @@ def run_gnuplot(filename, directory_for_temporary_files, directory_for_results, 
 			results_from_gnuplot_run = stdout_commandfile_handler.read(None)
 	except IOError as reason_for_error:
 		error_message = 'Error reading from gnuplot stdout- file ' * english + 'Gnuplotin Stdout- tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	except OSError as reason_for_error:
 		error_message = 'Error reading from gnuplot stdout- file ' * english + 'Gnuplotin Stdout- tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	
 	# Convert gnuplot output from binary to UTF-8 text.
 	results_of_gnuplot_run_list = results_from_gnuplot_run.decode('UTF-8').strip()
@@ -673,15 +687,15 @@ def run_gnuplot(filename, directory_for_temporary_files, directory_for_results, 
 		os.remove(stdout_for_external_command)
 	except IOError as reason_for_error:
 		error_message = 'Error deleting gnuplot stdout - file ' * english + 'Gnuplotin stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	except OSError as reason_for_error:
 		error_message = 'Error deleting gnuplot stdout - file ' * english + 'Gnuplotin stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 		
 	# If gnuplot outputs something, there was an error. Print message to user.
 	if not len(results_of_gnuplot_run_list) == 0:
 		error_message = 'ERROR !!! Plotting graphics with Gnuplot, ' * english + 'VIRHE !!! Grafiikan piirtämisessä Gnuplotilla, ' * finnish + ' ' + filename + ' : ' + results_of_gnuplot_run_list
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 
 	# Remove time slice and gnuplot command files and move graphics file to results directory.
 	try:
@@ -692,10 +706,10 @@ def run_gnuplot(filename, directory_for_temporary_files, directory_for_results, 
 		sys.exit(0)
 	except IOError as reason_for_error:
 		error_message = 'Error deleting gnuplot command- or time slice file ' * english + 'Gnuplotin komento- tai aikaviipale-tiedoston poistaminen epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	except OSError as reason_for_error:
 		error_message = 'Error deleting gnuplot command- or time slice file ' * english + 'Gnuplotin komento- tai aikaviipale-tiedoston poistaminen epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 
 	try:
 		shutil.move(gnuplot_temporary_output_graphicsfile, gnuplot_output_graphicsfile)
@@ -704,10 +718,10 @@ def run_gnuplot(filename, directory_for_temporary_files, directory_for_results, 
 		sys.exit(0)
 	except IOError as reason_for_error:
 		error_message = 'Error moving gnuplot graphics file ' * english + 'Gnuplotin grafiikkatiedoston siirtäminen epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	except OSError as reason_for_error:
 		error_message = 'Error moving gnuplot graphics file ' * english + 'Gnuplotin grafiikkatiedoston siirtäminen epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 
 def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calculation_error, difference_from_target_loudness, filename, english, finnish, hotfolder_path, directory_for_results, directory_for_temporary_files, highest_peak_db, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, channel_count, audio_channels_will_be_split_to_separate_mono_files):
 
@@ -731,7 +745,7 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 	if (integrated_loudness_calculation_error == False):
 		
 		# Assing some values to variables.
-		# Output format for files has been already been decided in subroutine: get_audiofile_info_with_sox_and_determine_ouput_format
+		# Output format for files has been already been decided in subroutine: get_audiofile_info_with_sox_and_determine_output_format
 		temporary_targetfile = filename_and_extension[0] + '_-23_LUFS.' + output_format_for_intermediate_files
 		temporary_peak_limited_targetfile = filename_and_extension[0] + '-Peak_Limited.' + output_format_for_intermediate_files
 		difference_from_target_loudness_sign_inverted = difference_from_target_loudness * -1 # The sign (+/-) of the difference from target loudness needs to be flipped for sox. Plus becomes minus and vice versa.
@@ -940,10 +954,10 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 				sys.exit(0)
 			except IOError as reason_for_error:
 				error_message = 'Error deleting temporary peak limited file ' * english + 'Väliaikaisen limitoidun tiedoston poistaminen epäonnistui ' * finnish + str(reason_for_error)
-				send_error_messages_to_screen_logfile_email(error_message)
+				send_error_messages_to_screen_logfile_email(error_message, [])
 			except OSError as reason_for_error:
 				error_message = 'Error deleting temporary peak limited file ' * english + 'Väliaikaisen limitoidun tiedoston poistaminen epäonnistui ' * finnish + str(reason_for_error)
-				send_error_messages_to_screen_logfile_email(error_message)
+				send_error_messages_to_screen_logfile_email(error_message, [])
 
 def run_sox_commands_in_parallel_threads(directory_for_temporary_files, filename, list_of_sox_commandlines, english, finnish):
 	
@@ -1031,10 +1045,10 @@ def run_sox(directory_for_temporary_files, filename, sox_commandline, english, f
 	
 	except IOError as reason_for_error:
 		error_message = 'Error writing to sox stdout - file ' * english + 'Soxin stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	except OSError as reason_for_error:
 		error_message = 'Error writing to sox stdout - file ' * english + 'Soxin stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 		
 	# Open the file we used as stdout for sox and read in what it wrote to it.
 	try:
@@ -1042,10 +1056,10 @@ def run_sox(directory_for_temporary_files, filename, sox_commandline, english, f
 			results_from_sox_run = stdout_commandfile_handler.read(None)
 	except IOError as reason_for_error:
 		error_message = 'Error reading from sox stdout - file ' * english + 'Soxin stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	except OSError as reason_for_error:
 		error_message = 'Error reading from sox stdout - file ' * english + 'Soxin stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)	
+		send_error_messages_to_screen_logfile_email(error_message, [])	
 
 	# Convert sox output from binary to UTF-8 text.
 	results_from_sox_run_string = results_from_sox_run.decode('UTF-8').strip()
@@ -1062,16 +1076,16 @@ def run_sox(directory_for_temporary_files, filename, sox_commandline, english, f
 			os.remove(stdout_for_external_command)
 	except IOError as reason_for_error:
 		error_message = 'Error deleting sox stdout - file ' * english + 'Soxin stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	except OSError as reason_for_error:
 		error_message = 'Error deleting sox stdout - file ' * english + 'Soxin stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	
 	# If sox did output something, there was and error. Print message to user.
 	if not len(results_from_sox_run_list) == 0:
 		for item in results_from_sox_run_list:
 			error_message = 'ERROR !!!' * english + 'VIRHE !!!' * finnish + ' ' + filename + ': ' + item
-			send_error_messages_to_screen_logfile_email(error_message)
+			send_error_messages_to_screen_logfile_email(error_message, [])
 			
 	# If we recieved an event from the calling routine, then we need to set that event.
 	# We recieved an event if the calling process runs several sox commands in parallel threads.
@@ -1094,12 +1108,12 @@ def move_processed_audio_files_to_target_directory(source_directory, target_dire
 				sys.exit(0)
 			except IOError as reason_for_error:
 				error_message = 'Error moving loudness adjusted file ' * english + 'Äänekkyyskorjatun tiedoston siirtäminen epäonnistui ' * finnish + str(reason_for_error)
-				send_error_messages_to_screen_logfile_email(error_message)
+				send_error_messages_to_screen_logfile_email(error_message, [])
 			except OSError as reason_for_error:
 				error_message = 'Error moving loudness adjusted file ' * english + 'Äänekkyyskorjatun tiedoston siirtäminen epäonnistui ' * finnish + str(reason_for_error)
-				send_error_messages_to_screen_logfile_email(error_message)
+				send_error_messages_to_screen_logfile_email(error_message, [])
 
-def get_audiofile_info_with_sox_and_determine_ouput_format(directory_for_temporary_files, hotfolder_path, filename):
+def get_audiofile_info_with_sox_and_determine_output_format(directory_for_temporary_files, hotfolder_path, filename):
 	
 	# This subroutine gets audio file information with sox and determines based on estimated uncompressed file size what the output file format is.
 	# There is only one audio stream in files that this subroutine processes.
@@ -1136,10 +1150,10 @@ def get_audiofile_info_with_sox_and_determine_ouput_format(directory_for_tempora
 			
 	except IOError as reason_for_error:
 		error_message = 'Error writing to (audio file info reading) sox stdout - file ' * english + 'Soxin (audiotiedoston teknisten tietojen luku) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	except OSError as reason_for_error:
 		error_message = 'Error writing to (audio file info reading) sox stdout - file ' * english + 'Soxin (audiotiedoston teknisten tietojen luku) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 
 	# Open the file we used as stdout for the external program and read in what the external program wrote to it.
 	try:
@@ -1147,10 +1161,10 @@ def get_audiofile_info_with_sox_and_determine_ouput_format(directory_for_tempora
 			results_from_sox_run = stdout_commandfile_handler.read(None)
 	except IOError as reason_for_error:
 		error_message = 'Error reading from  (audio file info reading)sox stdout - file ' * english + 'Soxin (audiotiedoston teknisten tietojen luku) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	except OSError as reason_for_error:
 		error_message = 'Error reading from  (audio file info reading)sox stdout - file ' * english + 'Soxin (audiotiedoston teknisten tietojen luku) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)	
+		send_error_messages_to_screen_logfile_email(error_message, [])	
 
 	# Convert sox output from binary to UTF-8 text and split text lines to a list.
 
@@ -1161,10 +1175,10 @@ def get_audiofile_info_with_sox_and_determine_ouput_format(directory_for_tempora
 		os.remove(stdout_for_external_command)
 	except IOError as reason_for_error:
 		error_message = 'Error deleting (audio file info reading) sox stdout - file ' * english + 'Soxin (audiotiedoston teknisten tietojen luku) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	except OSError as reason_for_error:
 		error_message = 'Error deleting (audio file info reading) sox stdout - file ' * english + 'Soxin (audiotiedoston teknisten tietojen luku) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 
 	# Assign audio file technical data to variables
 	for text_line in audio_file_technical_info_list:
@@ -1182,25 +1196,25 @@ def get_audiofile_info_with_sox_and_determine_ouput_format(directory_for_tempora
 		channel_count = int(channel_count_string)
 	else:
 		error_message = 'ERROR !!! I could not parse sox channel count string: ' * english + 'VIRHE !!! En osannut tulkita sox:in antamaa tietoa kanavamäärästä: ' * finnish + '\'' + channel_count_string + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 
 	if sample_rate_string.isnumeric() == True:
 		sample_rate = int(sample_rate_string)
 	else:
 		error_message = 'ERROR !!! I could not parse sox sample rate string: ' * english + 'VIRHE !!! En osannut tulkita sox:in antamaa tietoa näyteenottotaajuudesta: ' * finnish + '\'' + sample_rate_string + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 
 	if bit_depth_string.isnumeric() == True:
 		bit_depth = int(bit_depth_string)
 	else:
 		error_message = 'ERROR !!! I could not parse sox bit depth string: ' * english + 'VIRHE !!! En osannut tulkita sox:in antamaa tietoa bittisyvyydestä: ' * finnish + '\'' + bit_depth_string + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 
 	if sample_count_string.isnumeric() == True:
 		sample_count = int(sample_count_string)
 	else:
 		error_message = 'ERROR !!! I could not parse sox sample count string: ' * english + 'VIRHE !!! En osannut tulkita sox:in antamaa tietoa näytteiden lukumäärästä: ' * finnish + '\'' + sample_count_string + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	
 	# Calculate estimated uncompressed file size. Add one second of data to the file size (sample_rate = 1 second) to be on the safe side.
 	estimated_uncompressed_size_for_single_mono_file = int((sample_count * int(bit_depth / 8)) + sample_rate)
@@ -1303,10 +1317,10 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 	
 	except IOError as reason_for_error:
 		error_message = 'Error writing to ffmpeg (audio stream demux) stdout - file ' * english + 'FFmpeg (audio streamien demux) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	except OSError as reason_for_error:
 		error_message = 'Error writing to ffmpeg (audio stream demux) stdout - file ' * english + 'FFmpeg (audio streamien demux) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	
 	# Open the file we used as stdout for the external program and read in what the external program wrote to it.
 	try:
@@ -1314,10 +1328,10 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 			ffmpeg_run_output = stdout_commandfile_handler.read(None)
 	except IOError as reason_for_error:
 		error_message = 'Error reading from ffmpeg (audio stream demux) stdout - file ' * english + 'FFmpeg (audio streamien demux) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	except OSError as reason_for_error:
 		error_message = 'Error reading from ffmpeg (audio stream demux) stdout - file ' * english + 'FFmpeg (audio streamien demux) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	
 	# Convert ffmpeg output from binary to UTF-8 text.
 	try:
@@ -1330,17 +1344,17 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 	for item in ffmpeg_run_output_result_list:
 		if 'error:' in item.lower(): # If there is the string 'error' in ffmpeg's output, there has been an error.
 			error_message = 'ERROR !!! Extracting audio streams with ffmpeg, ' * english + 'VIRHE !!! Audio streamien purkamisessa ffmpeg:illä, ' * finnish + ' ' + filename + ' : ' + item
-			send_error_messages_to_screen_logfile_email(error_message)
+			send_error_messages_to_screen_logfile_email(error_message, [])
 	
 	# Delete the temporary stdout - file.
 	try:
 		os.remove(stdout_for_external_command)
 	except IOError as reason_for_error:
 		error_message = 'Error deleting ffmpeg (audio stream demux) stdout - file ' * english + 'FFmpeg (audio streamien demux) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	except OSError as reason_for_error:
 		error_message = 'Error deleting ffmpeg (audio stream demux) stdout - file ' * english + 'FFmpeg (audio streamien demux) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 
 	# Move each audio file we created from temporary directory to results directory.
 	for item in target_filenames:
@@ -1351,10 +1365,10 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 			sys.exit(0)
 		except IOError as reason_for_error:
 			error_message = 'Error moving ffmpeg decompressed file ' * english + 'FFmpeg:illä puretun tiedoston siirtäminen epäonnistui ' * finnish + str(reason_for_error)
-			send_error_messages_to_screen_logfile_email(error_message)
+			send_error_messages_to_screen_logfile_email(error_message, [])
 		except OSError as reason_for_error:
 			error_message = 'Error moving ffmpeg decompressed file ' * english + 'FFmpeg:illä puretun tiedoston siirtäminen epäonnistui ' * finnish + str(reason_for_error)
-			send_error_messages_to_screen_logfile_email(error_message)
+			send_error_messages_to_screen_logfile_email(error_message, [])
 	
 	# Queue the original file for deletion. It is no longer needed since we have extracted all audio streams from it.		
 	files_queued_for_deletion.append(filename)
@@ -1363,7 +1377,7 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 	event_1_for_ffmpeg_audiostream_conversion.set()
 	event_2_for_ffmpeg_audiostream_conversion.set()
 
-def send_error_messages_to_screen_logfile_email(error_message):
+def send_error_messages_to_screen_logfile_email(error_message, send_error_messages_to_these_destinations):
 	
 	# This subroutine prints error messages to the screen or logfile or sends them by email.
 	# The variable 'error_message' holds the actual message and the list 'where_to_send_error_messages' tells where to print / send them. The list can have any or all of these values: 'screen', 'logfile', 'email'.
@@ -1373,12 +1387,16 @@ def send_error_messages_to_screen_logfile_email(error_message):
 	global error_logfile_path
 	error_message_with_timestamp = str(get_realtime(english, finnish)) + '   ' + error_message # Add the current date and time at the beginning of the error message.
 	
+	# If the calling subroutine did not define where it wan'ts us to send error messages then use global defaults.
+	if send_error_messages_to_these_destinations == []:
+		send_error_messages_to_these_destinations = where_to_send_error_messages
+	
 	# Print error messages to screen
-	if 'screen' in where_to_send_error_messages:
+	if 'screen' in send_error_messages_to_these_destinations:
 		print('\033[7m' + '\r-------->  ' + error_message_with_timestamp + '\033[0m')
 
 	# Print error messages to a logfile
-	if 'logfile' in where_to_send_error_messages:
+	if 'logfile' in send_error_messages_to_these_destinations:
 		try:
 			with open(error_logfile_path, 'at') as error_file_handler:
 				error_file_handler.write(error_message_with_timestamp + '\n')
@@ -1397,7 +1415,7 @@ def send_error_messages_to_screen_logfile_email(error_message):
 			error_messages_to_email_later_list.append(exception_error_message)
 			
 	# If user wants us to send error messages by email, write error message to a list that is watched by the thread that sends the emails.
-	if 'email' in where_to_send_error_messages:
+	if 'email' in send_error_messages_to_these_destinations:
 		error_messages_to_email_later_list.append(error_message_with_timestamp)
 		
 def send_error_messages_by_email_thread(email_sending_details, english, finnish):
@@ -1640,10 +1658,10 @@ def write_html_progress_report_thread(english, finnish):
 			sys.exit(0)
 		except IOError as reason_for_error:
 			error_message = 'Error opening loudness calculation queue html-file for writing ' * english + 'Laskentajonon html-tiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
-			send_error_messages_to_screen_logfile_email(error_message)
+			send_error_messages_to_screen_logfile_email(error_message, [])
 		except OSError as reason_for_error:
 			error_message = 'Error opening loudness calculation queue html-file for writing ' * english + 'Laskentajonon html-tiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
-			send_error_messages_to_screen_logfile_email(error_message)
+			send_error_messages_to_screen_logfile_email(error_message, [])
 			
 def write_to_heartbeat_file_thread():
 	
@@ -1673,10 +1691,10 @@ def write_to_heartbeat_file_thread():
 			sys.exit(0)
 		except IOError as reason_for_error:
 			error_message = 'Error opening HeartBeat commandfile for writing ' * english + 'HeartBeat - tiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
-			send_error_messages_to_screen_logfile_email(error_message)
+			send_error_messages_to_screen_logfile_email(error_message, [])
 		except OSError as reason_for_error:
 			error_message = 'Error opening HeartBeat commandfile for writing ' * english + 'HeartBeat - tiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
-			send_error_messages_to_screen_logfile_email(error_message)
+			send_error_messages_to_screen_logfile_email(error_message, [])
 			
 def debug_lists_and_dictionaries():
 	
@@ -1752,10 +1770,10 @@ def debug_lists_and_dictionaries():
 			sys.exit(0)
 		except IOError as reason_for_error:
 			error_message = 'Error opening debug-messages file for writing ' * english + 'Debug-tiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
-			send_error_messages_to_screen_logfile_email(error_message)
+			send_error_messages_to_screen_logfile_email(error_message, [])
 		except OSError as reason_for_error:
 			error_message = 'Error opening debug-messages file for writing ' * english + 'Debug--tiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
-			send_error_messages_to_screen_logfile_email(error_message)
+			send_error_messages_to_screen_logfile_email(error_message, [])
 
 		# Sleep between writing output
 		time.sleep(60)
@@ -1864,10 +1882,10 @@ def get_ip_addresses_of_the_host_machine():
 			
 	except IOError as reason_for_error:
 		error_message = 'Error writing to stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon kirjoittaminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(commands_to_run) + '. ' + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	except OSError as reason_for_error:
 		error_message = 'Error writing to stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon kirjoittaminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(commands_to_run) + '. ' + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 
 	# Open files we used as stdout and stderr for the external program and read in what the program did output to those files.
 	try:
@@ -1876,10 +1894,10 @@ def get_ip_addresses_of_the_host_machine():
 			stderr = stderr_commandfile_handler.read(None)
 	except IOError as reason_for_error:
 		error_message = 'Error reading from stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston lukeminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(commands_to_run) + '. ' + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	except OSError as reason_for_error:
 		error_message = 'Error reading from stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon lukeminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(commands_to_run) + '. ' + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	
 	stdout = str(stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
 	stderr = str(stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
@@ -1890,10 +1908,10 @@ def get_ip_addresses_of_the_host_machine():
 		os.remove(stderr_for_external_command)
 	except IOError as reason_for_error:
 		error_message = 'Error deleting stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston deletoiminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(commands_to_run) + '. ' + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	except OSError as reason_for_error:
 		error_message = 'Error deleting stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston deletoiminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(commands_to_run) + '. ' + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	
 	all_ip_addresses_of_the_machine = stdout.split()
 	
@@ -1955,10 +1973,10 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			
 	except IOError as reason_for_error:
 		error_message = 'Error writing to ffmpeg stdout - file ' * english + 'FFmpegin stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	except OSError as reason_for_error:
 		error_message = 'Error writing to ffmpeg stdout - file ' * english + 'FFmpegin stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 		
 	# Open the file we used as stdout for the external program and read in what the external program wrote to it.
 	try:
@@ -1966,10 +1984,10 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			ffmpeg_run_output = stdout_commandfile_handler.read(None)
 	except IOError as reason_for_error:
 		error_message = 'Error reading from ffmpeg stdout - file ' * english + 'FFmpegin stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	except OSError as reason_for_error:
 		error_message = 'Error reading from ffmpeg stdout - file ' * english + 'FFmpegin stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	
 	# Convert ffmpeg output from binary to UTF-8 text.
 	try:
@@ -1985,10 +2003,10 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		os.remove(stdout_for_external_command)
 	except IOError as reason_for_error:
 		error_message = 'Error deleting ffmpeg stdout - file ' * english + 'FFmpegin stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	except OSError as reason_for_error:
 		error_message = 'Error deleting ffmpeg stdout - file ' * english + 'FFmpegin stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 		
 	#############################################################################################
 	# Find lines from FFmpeg output that have information about audio streams and file duration #
@@ -2016,7 +2034,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				# The FFmpeg reported audio duration as 'N/A' then this means ffmpeg could not determine the audio duration. Set audio duration to 0 seconds and inform user about the error.
 				audio_duration_rounded_to_seconds = 0
 				error_message = 'FFmpeg Error : Audio Duration = N/A' * english + 'FFmpeg Virhe: Äänen Kesto = N/A' * finnish + ': ' + filename
-				send_error_messages_to_screen_logfile_email(error_message)
+				send_error_messages_to_screen_logfile_email(error_message, [])
 		if 'Input #0' in item:
 			# Get the type of the file, if it is 'mpegts' then we later need to do some tricks to get the correct duration from the file.
 			file_type = str(item).split('from')[0].split(',')[1].strip()
@@ -2063,7 +2081,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		
 		if number_of_audio_channels == '0':
 			error_message = 'ERROR !!! I could not parse FFmpeg channel count string: ' * english + 'VIRHE !!! En osannut tulkita ffmpeg:in antamaa tietoa kanavien lukumäärästä: ' * finnish + '\'' + str(number_of_audio_channels_as_text_split_to_a_list[0]) + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
-			send_error_messages_to_screen_logfile_email(error_message)
+			send_error_messages_to_screen_logfile_email(error_message, [])
 		
 		# Find audio sample rate from FFmpeg stream info.
 		sample_rate_as_text = str(ffmpeg_stream_info.split(',')[1].strip().split(' ')[0].strip())
@@ -2072,7 +2090,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			sample_rate = int(sample_rate_as_text)
 		else:
 			error_message = 'ERROR !!! I could not parse FFmpeg sample rate string: ' * english + 'VIRHE !!! En osannut tulkita ffmpeg:in antamaa tietoa näyteenottotaajuuudesta: ' * finnish + '\'' + sample_rate_as_text + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
-			send_error_messages_to_screen_logfile_email(error_message)
+			send_error_messages_to_screen_logfile_email(error_message, [])
 		
 		# Find audio bit depth from FFmpeg stream info output.
 		bit_depth_info_field = str(ffmpeg_stream_info.split(',')[3].strip())
@@ -2093,7 +2111,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			bit_depth = int(bit_depth_as_text)
 		else:
 			error_message = 'ERROR !!! I could not parse FFmpeg bit depth string: ' * english + 'VIRHE !!! En osannut tulkita ffmpeg:in antamaa tietoa bittisyvyydestä: ' * finnish + '\'' + bit_depth_as_text + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
-			send_error_messages_to_screen_logfile_email(error_message)
+			send_error_messages_to_screen_logfile_email(error_message, [])
 		
 		# FFmpeg displays bit depths 24 bits and 32 bits both as 32 bits. Force bit depth to 24 if it is 32.
 		if bit_depth == 32:
@@ -2174,10 +2192,10 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			
 			if (mapnumber_digit_1.isnumeric() == False) or (mapnumber_digit_2.isnumeric() == False):
 				error_message = 'Error: stream map number found in FFmpeg output is not a number: ' * english + 'Virhe: FFmpegin tulosteesta löydetty streamin numero ei ole numero: ' * finnish + map_number
-				send_error_messages_to_screen_logfile_email(error_message)
+				send_error_messages_to_screen_logfile_email(error_message, [])
 		except IndexError:
 			error_message = 'Error: stream map number found in FFmpeg output is not in correct format: ' * english + 'Virhe: FFmpegin tulosteesta löydetty streamin numero ei ole oikeassa formaatissa: ' * finnish + map_number
-			send_error_messages_to_screen_logfile_email(error_message)
+			send_error_messages_to_screen_logfile_email(error_message, [])
 	
 		# Create a audio stream mapping command list that will be appended at the end of ffmpeg commandline. Without this the streams would be extracted in random order and our stream numbers wouldn't match the streams.
 		ffmpeg_stream_mapping_commands.extend(['-map',  str(map_number) + ':0.' + str(counter)])
@@ -2232,10 +2250,10 @@ def get_audiofile_duration_with_mediainfo(directory_for_temporary_files, filenam
 			
 	except IOError as reason_for_error:
 		error_message = 'Error writing to mediainfo stdout - file ' * english + 'Mediainfon stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	except OSError as reason_for_error:
 		error_message = 'Error writing to mediainfo stdout - file ' * english + 'Mediainfon stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 		
 	# Open the file we used as stdout for the external program and read in what the external program wrote to it.
 	try:
@@ -2243,10 +2261,10 @@ def get_audiofile_duration_with_mediainfo(directory_for_temporary_files, filenam
 			mediainfo_output = stdout_commandfile_handler.read(None)
 	except IOError as reason_for_error:
 		error_message = 'Error reading from mediainfo stdout - file ' * english + 'Mediainfon stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	except OSError as reason_for_error:
 		error_message = 'Error reading from mediainfo stdout - file ' * english + 'Mediainfon stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	
 	# Convert ffmpeg output from binary to UTF-8 text.
 	try:
@@ -2272,10 +2290,10 @@ def get_audiofile_duration_with_mediainfo(directory_for_temporary_files, filenam
 		os.remove(stdout_for_external_command)
 	except IOError as reason_for_error:
 		error_message = 'Error deleting mediainfo stdout - file ' * english + 'Mediainfon stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	except OSError as reason_for_error:
 		error_message = 'Error deleting mediainfo stdout - file ' * english + 'Mediainfon stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	
 	return(audio_duration)
 		
@@ -2366,15 +2384,15 @@ if configfile_path != '':
 		sys.exit(0)
 	except IOError as reason_for_error:
 		error_message = 'Error reading configfile: ' * english + 'Asetustiedoston lukemisessa tapahtui virhe: ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 		sys.exit(1)
 	except OSError as reason_for_error:
 		error_message = 'Error reading configfile: ' * english + 'Asetustiedoston lukemisessa tapahtui virhe: ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 		sys.exit(1)
 	except EOFError as reason_for_error:
 		error_message = 'Error reading configfile: ' * english + 'Asetustiedoston lukemisessa tapahtui virhe: ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 		sys.exit(1)
 
 	# Configfile was read successfully, assign values from it to our variables overriding script defaults defined in the start of this script.
@@ -2408,7 +2426,7 @@ if configfile_path != '':
 	if 'natively_supported_file_formats' in all_settings_dict:
 		natively_supported_file_formats = all_settings_dict['natively_supported_file_formats']
 	if 'ffmpeg_output_format' in all_settings_dict:
-		if ffmpeg_output_format != '': # If installer.py did not define a value for the variable, then don't assing anything to it here. The variable has a default value defined elsewhere in LoudnessCorrection.py, the default gets used if not defined here.
+		if all_settings_dict['ffmpeg_output_format'] != '': # If installer.py did not define a value for the variable, then don't assing anything to it here. The variable has a default value defined elsewhere in LoudnessCorrection.py, the default gets used if not defined here.
 			ffmpeg_output_format = all_settings_dict['ffmpeg_output_format']
 		
 	if 'silent' in all_settings_dict:
@@ -2603,10 +2621,10 @@ while True:
 		sys.exit(0)
 	except IOError as reason_for_error:
 		error_message = 'Error reading HotFolder directory listing ' * english + 'Lähdehakemistopuun lukeminen epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	except OSError as reason_for_error:
 		error_message = 'Error reading HotFolder directory listing ' * english + 'Lähdehakemistopuun lukeminen epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 		
 	# The files in 'unsupported_ignored_files_dict' are files that ffmpeg was not able to find any audiostreams from, or streams were found but the duration is less than 1 second.
 	# Check if files in the unsupported files dictionary have vanished from the HotFolder. If a name has disappeared from HotFolder, remove it also from the list of unsupported files.
@@ -2658,10 +2676,10 @@ while True:
 		sys.exit(0)
 	except IOError as reason_for_error:
 		error_message = 'Error reading HotFolder file metadata ' * english + 'Lähdehakemistopussa olevan tiedoston tietojen lukeminen epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	except OSError as reason_for_error:
 		error_message = 'Error reading HotFolder file metadata ' * english + 'Lähdehakemistopussa olevan tiedoston tietojen lukeminen epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 		
 	################################################################################
 	# Find expired files in results - directory and add them to the deletion queue #
@@ -2690,10 +2708,10 @@ while True:
 		sys.exit(0)
 	except IOError as reason_for_error:
 		error_message = 'Error reading ResultsFolder directory listing ' * english + 'Tuloshakemiston hakemistopuun lukeminen epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	except OSError as reason_for_error:
 		error_message = 'Error reading ResultsFolder directory listing ' * english + 'Tuloshakemiston hakemistopuun lukeminen epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 
 	# Save latest directory poll information for the next poll.
 	old_results_directory_filelist_dict = new_results_directory_filelist_dict
@@ -2716,10 +2734,10 @@ while True:
 		sys.exit(0)
 	except IOError as reason_for_error:
 		error_message = 'Error deleting files queued for deletion ' * english + 'Poistettavien luettelossa olevan tiedoston poistaminen epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 	except OSError as reason_for_error:
 		error_message = 'Error deleting files queued for deletion ' * english + 'Poistettavien luettelossa olevan tiedoston poistaminen epäonnistui ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message)
+		send_error_messages_to_screen_logfile_email(error_message, [])
 			
 	files_to_delete = []
 
@@ -2788,7 +2806,7 @@ while True:
 							else:
 								# FFmpeg error message was found tell the user about it.
 								error_message = 'FFmpeg Error : ' * english + 'FFmpeg Virhe: ' * finnish + filename + ': ' + ffmpeg_error_message
-							send_error_messages_to_screen_logfile_email(error_message)
+							send_error_messages_to_screen_logfile_email(error_message, [])
 							create_gnuplot_commands_for_error_message(error_message, filename, directory_for_temporary_files, directory_for_results, english, finnish)
 							unsupported_ignored_files_dict[filename] = int(time.time())
 						
@@ -2796,7 +2814,13 @@ while True:
 						# Don't process file, inform user by plotting an error graphics file and add the filename to the list of files we will ignore.
 						if (ffmpeg_supported_fileformat == True) and (not audio_duration_rounded_to_seconds > 0) and (filename not in unsupported_ignored_files_dict):
 							error_message = 'Audio duration less than 1 second: ' * english + 'Tiedoston: ' * finnish + filename + ' ääniraidan pituus on alle 1 sekunti.' * finnish
-							send_error_messages_to_screen_logfile_email(error_message)
+							
+							# This error message is not very important so don't send it by email, only send it to other possible destinations (screen, logfile).
+							error_message_destinations = copy.deepcopy(where_to_send_error_messages)
+							if 'email' in error_message_destinations:
+								error_message_destinations.remove('email')
+							send_error_messages_to_screen_logfile_email(error_message, error_message_destinations)
+							
 							create_gnuplot_commands_for_error_message(error_message, filename, directory_for_temporary_files, directory_for_results, english, finnish)
 							unsupported_ignored_files_dict[filename] = int(time.time())
 						# The time slice value used in loudness calculation is normally 3 seconds. When we calculate short files <12 seconds, it's more convenient to use a smaller value of 0.5 seconds to get more detailed loudness graphics.
