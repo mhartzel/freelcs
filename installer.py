@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '040'
+version = '041'
 
 ###################################
 # Function definitions start here #
@@ -1722,6 +1722,7 @@ def set_seventh_window_label_texts_and_colors():
 	seventh_window_label_8['foreground'] = 'black'
 	seventh_window_label_9['foreground'] = 'dark green'
 	seventh_window_label_11['foreground'] = 'dark green'
+	seventh_window_label_20['foreground'] = 'dark green'
 
 	if ffmpeg_is_installed.get() == 'Not Installed':
 		seventh_window_label_3['foreground'] = 'red'
@@ -1733,6 +1734,8 @@ def set_seventh_window_label_texts_and_colors():
 		samba_is_installed.set('Not Needed')
 		seventh_window_label_8['foreground'] = 'dark gray'
 		seventh_window_label_9['foreground'] = 'dark gray'
+	if mediainfo_is_installed.get() == 'Not Installed':
+		seventh_window_label_20['foreground'] = 'red'	
 	if samba_is_installed.get() == 'Not Installed':
 		seventh_window_label_9['foreground'] = 'red'
 	if libebur128_is_installed.get() == 'Not Installed':
@@ -1747,6 +1750,7 @@ def find_paths_to_all_external_programs_we_need():
 	global sox_path
 	global gnuplot_path
 	global samba_path
+	global mediainfo_path
 	global loudness_path
 	global all_needed_external_programs_are_installed
 
@@ -1782,7 +1786,14 @@ def find_paths_to_all_external_programs_we_need():
 			all_needed_external_programs_are_installed = False
 	else:
 		samba_is_installed.set('Installed')
-
+	
+	mediainfo_path = find_program_in_os_path('mediainfo')
+	if mediainfo_path == '':
+		mediainfo_is_installed.set('Not Installed')
+		all_needed_external_programs_are_installed = False
+	else:
+		mediainfo_is_installed.set('Installed')
+	
 	loudness_path = find_program_in_os_path('loudness')
 	if loudness_path == '':
 		libebur128_is_installed.set('Not Installed')
@@ -2589,6 +2600,7 @@ ffmpeg_is_installed = tkinter.StringVar()
 sox_is_installed = tkinter.StringVar()
 gnuplot_is_installed = tkinter.StringVar()	
 samba_is_installed = tkinter.StringVar()
+mediainfo_is_installed = tkinter.StringVar()
 libebur128_is_installed = tkinter.StringVar()
 loudnesscorrection_scripts_are_installed = tkinter.StringVar()
 seventh_window_message_1 = tkinter.StringVar()
@@ -2668,6 +2680,7 @@ sox_path = ''
 gnuplot_path = ''
 samba_path = ''
 loudness_path = ''
+mediainfo_path = ''
 
 # Find paths to all critical programs we need to run LoudnessCorrection
 find_paths_to_all_external_programs_we_need()
@@ -2686,6 +2699,8 @@ if gnuplot_path == '':
 	needed_packages_install_commands.append('gnuplot')
 if samba_path == '':
 	needed_packages_install_commands.append('samba')
+if mediainfo_path == '':
+	needed_packages_install_commands.append('mediainfo')
 if loudness_path == '':
 	libebur128_dependencies_install_commands = ['build-essential', 'git', 'cmake', 'libsndfile-dev', 'libmpg123-dev', 'libmpcdec-dev', \
 	'libglib2.0-dev', 'libfreetype6-dev', 'librsvg2-dev', 'libspeexdsp-dev', 'libavcodec-dev', 'libavformat-dev', 'libtag1-dev', \
@@ -3344,49 +3359,55 @@ seventh_window_label_8.grid(column=0, row=5, columnspan=1, padx=10, sticky=(tkin
 seventh_window_label_9 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, textvariable=samba_is_installed)
 seventh_window_label_9.grid(column=3, row=5, columnspan=1, padx=10, sticky=(tkinter.N))
 
+# mediainfo
+seventh_window_label_19 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='Mediainfo')
+seventh_window_label_19.grid(column=0, row=6, columnspan=1, padx=10, sticky=(tkinter.W, tkinter.N))
+seventh_window_label_20 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, textvariable=mediainfo_is_installed)
+seventh_window_label_20.grid(column=3, row=6, columnspan=1, padx=10, sticky=(tkinter.N))
+
 # libebur128
 seventh_window_label_10 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='Libebur128')
-seventh_window_label_10.grid(column=0, row=6, columnspan=1, padx=10, sticky=(tkinter.W, tkinter.N))
+seventh_window_label_10.grid(column=0, row=7, columnspan=1, padx=10, sticky=(tkinter.W, tkinter.N))
 seventh_window_label_11 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, textvariable=libebur128_is_installed)
-seventh_window_label_11.grid(column=3, row=6, columnspan=1, padx=10, sticky=(tkinter.N))
+seventh_window_label_11.grid(column=3, row=7, columnspan=1, padx=10, sticky=(tkinter.N))
 
 # LoudnessCorrection
 seventh_window_label_12 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='LoudnessCorrection Scripts')
-seventh_window_label_12.grid(column=0, row=7, columnspan=1, padx=10, sticky=(tkinter.W, tkinter.N))
+seventh_window_label_12.grid(column=0, row=8, columnspan=1, padx=10, sticky=(tkinter.W, tkinter.N))
 loudnesscorrection_scripts_are_installed.set('Not Installed')
 seventh_window_loudnesscorrection_label = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, textvariable=loudnesscorrection_scripts_are_installed)
 seventh_window_loudnesscorrection_label['foreground'] = 'red'
-seventh_window_loudnesscorrection_label.grid(column=3, row=7, columnspan=1, padx=10, sticky=(tkinter.N))
+seventh_window_loudnesscorrection_label.grid(column=3, row=8, columnspan=1, padx=10, sticky=(tkinter.N))
 
 # Define a horizontal line to space out groups of rows.
 seventh_window_separator_2 = tkinter.ttk.Separator(seventh_frame_child_frame_1, orient=tkinter.HORIZONTAL)
-seventh_window_separator_2.grid(column=0, row=8, padx=10, pady=10, columnspan=5, sticky=(tkinter.W, tkinter.E))
+seventh_window_separator_2.grid(column=0, row=9, padx=10, pady=10, columnspan=5, sticky=(tkinter.W, tkinter.E))
 
 seventh_window_label_14 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='Install all missing programs:')
-seventh_window_label_14.grid(column=0, row=9, columnspan=2, padx=10, pady=2, sticky=(tkinter.W))
+seventh_window_label_14.grid(column=0, row=10, columnspan=2, padx=10, pady=2, sticky=(tkinter.W))
 seventh_window_install_button = tkinter.Button(seventh_frame_child_frame_1, text = "Install", command = install_missing_programs)
-seventh_window_install_button.grid(column=3, row=9, padx=30, pady=2, sticky=(tkinter.N))
+seventh_window_install_button.grid(column=3, row=10, padx=30, pady=2, sticky=(tkinter.N))
 
 seventh_window_label_15 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='Show me the shell commands to install external programs:')
-seventh_window_label_15.grid(column=0, row=10, columnspan=2, padx=10, pady=2, sticky=(tkinter.W))
+seventh_window_label_15.grid(column=0, row=11, columnspan=2, padx=10, pady=2, sticky=(tkinter.W))
 seventh_window_show_button_1 = tkinter.Button(seventh_frame_child_frame_1, text = "Show", command = show_installation_shell_commands)
-seventh_window_show_button_1.grid(column=3, row=10, padx=30, pady=2, sticky=(tkinter.N))
+seventh_window_show_button_1.grid(column=3, row=11, padx=30, pady=2, sticky=(tkinter.N))
 
 # Define a horizontal line to space out groups of rows.
 seventh_window_separator_3 = tkinter.ttk.Separator(seventh_frame_child_frame_1, orient=tkinter.HORIZONTAL)
-seventh_window_separator_3.grid(column=0, row=11, padx=10, pady=10, columnspan=5, sticky=(tkinter.W, tkinter.E))
+seventh_window_separator_3.grid(column=0, row=12, padx=10, pady=10, columnspan=5, sticky=(tkinter.W, tkinter.E))
 
 # Define labels that are used to display error or success messages.
 seventh_window_label_16 = tkinter.ttk.Label(seventh_frame_child_frame_1, textvariable=seventh_window_message_1, wraplength=text_wrap_length_in_pixels)
-seventh_window_label_16.grid(column=0, row=12, padx=10, pady=5, columnspan=3, sticky=(tkinter.W, tkinter.N))
+seventh_window_label_16.grid(column=0, row=13, padx=10, pady=5, columnspan=3, sticky=(tkinter.W, tkinter.N))
 
 seventh_window_label_17 = tkinter.ttk.Label(seventh_frame_child_frame_1, textvariable=seventh_window_message_2, wraplength=text_wrap_length_in_pixels)
-seventh_window_label_17.grid(column=0, row=13, padx=10, pady=5, columnspan=3, sticky=(tkinter.W, tkinter.N))
+seventh_window_label_17.grid(column=0, row=14, padx=10, pady=5, columnspan=3, sticky=(tkinter.W, tkinter.N))
 
 seventh_window_label_18 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='Show me the messages that the installation produced:')
-seventh_window_label_18.grid(column=0, row=14, columnspan=2, padx=10, pady=2, sticky=(tkinter.W))
+seventh_window_label_18.grid(column=0, row=15, columnspan=2, padx=10, pady=2, sticky=(tkinter.W))
 seventh_window_show_button_2 = tkinter.Button(seventh_frame_child_frame_1, text = "Show", command = show_installation_output_messages)
-seventh_window_show_button_2.grid(column=3, row=14, padx=30, pady=2, sticky=(tkinter.N))
+seventh_window_show_button_2.grid(column=3, row=15, padx=30, pady=2, sticky=(tkinter.N))
 
 # Create the buttons for the frame
 seventh_window_back_button = tkinter.Button(seventh_frame, text = "Back", command = call_sixth_frame_on_top)

@@ -1,3 +1,7 @@
+installer 041
+--------------
+- Installs now the program 'mediainfo' that is required beginning from LoudnessCorrection version 173.
+
 LoudnessCorrection Version 175
 -------------------------------
 Bugfix: Compressed audio in wav - container was not handled at all, now it is uncompressed with FFmpeg and processed.
