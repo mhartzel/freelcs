@@ -1,8 +1,14 @@
+LoudnessCorrection Version 175
+-------------------------------
+Bugfix: Compressed audio in wav - container was not handled at all, now it is uncompressed with FFmpeg and processed.
+Bugfix: If there are more than 1 streams in ogg then extract streams with FFmpeg.
+Bugfix: When LoudnessCorrection.py was run by starting it manually from the commandline, it crashed if given gibberish commandline arguments.
+
 LoudnessCorrection Version 174
 -------------------------------
-- Made a change to how the destinations for error messages are defined. Previously there was only a global default, now destinations can be defined when calling the subroutine that prints / sends error messages.
-- If file duration is less than 1 second the script no longer prints / sends an error message, the message is only printed on the loudness history graphics file.
-- Bugfix: error message warning about exceeding 4 GB wav format max was not printed in Finnish.
+- Made a change to how the destinations for error messages are defined (where error messages are sent (log, screen, email)). Previously there was only a global default, now destinations can be defined when calling the subroutine that prints / sends error messages.
+- If file duration is less than 1 second the script no longer sends an error message by email.
+- Bugfix: error message about exceeding 4 GB wav format max size was not printed in Finnish.
 - Bugfix: The variable 'ffmpeg_output_format' was not transferred correctly from installer.py to LoudnessCorrection.py due to a typo in LoudnessCorrection.py
 
 LoudnessCorrection Version 173

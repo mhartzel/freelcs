@@ -35,7 +35,7 @@ import pickle
 import math
 import copy
 
-version = '174'
+version = '175'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -83,8 +83,17 @@ if len(sys.argv) == 2:
 if len(sys.argv) == 3:
 	argument = sys.argv[1]
 	configfile_path = sys.argv[2]
-	if not (argument.lower() == '-configfile') and not (os.path.exists(configfile_path)) and not (os.access(configfile_path, os.R_OK)):
-		print('\n!!!!!!! Target configfile does not exist or exists but is not readable !!!!!!!' * english + '\n!!!!!!! Asetustiedostoa ei ole olemassa tai siihen ei ole lukuoikeuksia !!!!!!!' * finnish)
+	if not argument.lower() == '-configfile':
+		print('\n!!!!!!! Unknown option:' * english + '\n!!!!!!! Tuntematon optio:' * finnish, argument)
+		print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)	
+		sys.exit(1)
+	if argument.lower() == '-configfile':
+		if (os.path.exists(configfile_path) == False) or (os.access(configfile_path, os.R_OK) == False):
+			print('\n!!!!!!! Configfile does not exist or exists but is not readable !!!!!!!' * english + '\n!!!!!!! Asetustiedostoa ei ole olemassa tai siihen ei ole lukuoikeuksia !!!!!!!' * finnish)
+			print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)	
+			sys.exit(1)
+	if os.path.isfile(configfile_path) == False:
+		print('\n!!!!!!! Configfile is not a regular file !!!!!!!' * english + '\n!!!!!!! Asetustiedosto ei ole tiedosto !!!!!!!' * finnish)
 		print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)	
 		sys.exit(1)
 
@@ -101,6 +110,7 @@ number_of_processor_cores = 6 # The number of processor cores to use for simulta
 if number_of_processor_cores / 2 != int(number_of_processor_cores / 2): # If the number for processor cores is not an even number, force it to the next bigger even number.
 	 number_of_processor_cores = number_of_processor_cores + 1 
 file_expiry_time = 60*60*8 # This number (in seconds) defines how long the files are allowed to exist in HotFolder and results - directory. File creation time is not taken into account only the time this program first saw the file in the directory. Files are automatically deleted when they are 'expired'.
+
 natively_supported_file_formats = ['.wav', '.flac', '.ogg'] # Natively supported formats may be processed without first decoding to flac with ffmpeg, since libebur128 and sox both support these formats.
 ffmpeg_output_format = 'wav' # Possible values are 'flac' and 'wav'. This only affects formats that are first decodec with ffmpeg (all others but wav, flac, ogg).
 if not ffmpeg_output_format == 'wav':
@@ -114,9 +124,10 @@ html_progress_report_write_interval = 5 # How many seconds between writing web p
 web_page_name = '00-Calculation_Queue_Information.html' * english + '00-Laskentajonon_Tiedot.html' * finnish # Define the name of the web-page we write to disk.
 web_page_path = hotfolder_path + os.sep + '00-Calculation_Queue_Information' * english + '00-Laskentajonon_Tiedot' * finnish # Where to write the web-page.
 
-# Error Log printing options.
+# Define the path for the error logfile.
 directory_for_error_logs = target_path + os.sep + '00-Error_Logs' # Define the path for error log files. The file is automatically named ('error_log- ' + date + current time).
 send_error_messages_to_logfile = True
+
 # Heartbeat writes timestamp periodically to a file so that a outside program can monitor if this program has stopped.
 heartbeat = True # This variable controls if this program periodically writes the current time in to a file. This file can be externally monitored to see if this program is still alive or if it has stopped due to an unexpected error.
 heartbeat_file_name = '00-HeartBeat.pickle' # This variable defines the name of the file where the heartbeat timestamp will be written. The files 'modification date' reflects the last heartbeat. The time strings produced by python3 function int(time.time()) is written in to the file. 
@@ -1957,6 +1968,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 	estimated_uncompressed_size_for_combined_channels = 0
 	wav_format_maximum_file_size = 4294967296 # Define wav max file size. Theoretical max size is 2 ^ 32 = 4294967296.
 	file_type = ''
+	audio_coding_format = ''
 	
 	try:
 		# Define filename for the temporary file that we are going to use as stdout for the external command.
@@ -2151,6 +2163,9 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 					
 				if bit_depth == 8:
 					ffmpeg_commandline = ['ffmpeg', '-y', '-i', file_to_process, '-vn', '-acodec', 'pcm_u8']
+					
+		# Find audio coding format from FFmpeg output.
+		audio_coding_format = str(ffmpeg_stream_info.split('Audio:')[1].split(',')[0].strip())	
 		
 		if debug == True:
 			print()
@@ -2162,6 +2177,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			print('estimated_uncompressed_size_for_single_mono_file =', estimated_uncompressed_size_for_single_mono_file)
 			print('estimated_uncompressed_size_for_combined_channels =', estimated_uncompressed_size_for_combined_channels)
 			print('audio_duration =', audio_duration)
+			print('audio_coding_format =', audio_coding_format)
 			print()
 		
 		# Compile the name of the audiostream to an list of all audio stream filenames.
@@ -2205,14 +2221,23 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 	
 	# In case the file has only 1 audio stream and the format is ogg then do an additional check.
 	# Sox only supports ogg files that have max 2 channels. If there are more then the audio must be converted to another format before processing.
-	# 'natively_supported_file_format = False'  means audio must be converted to flac before prosessing.
+	# 'natively_supported_file_format = False'  means audio must be converted with FFmpeg before prosessing.
 	if number_of_ffmpeg_supported_audiostreams > 0: # If ffmpeg found audio streams check if the file extension is one that sox supported (wav, flac, ogg).
 		ffmpeg_supported_fileformat = True
 		if str(os.path.splitext(filename)[1]).lower() in natively_supported_file_formats:
 			natively_supported_file_format = True
+			
 	if (number_of_ffmpeg_supported_audiostreams == 1) and (str(os.path.splitext(filename)[1]).lower() == '.ogg'): # Test if ogg - file has more than two channels, since sox only supports mono and stereo ogg - files. If there are more channels, audio must be converted before processing.
 		if  (number_of_audio_channels != '1') and (number_of_audio_channels != '2'):
 			natively_supported_file_format = False
+	
+	if (number_of_ffmpeg_supported_audiostreams > 1) and (str(os.path.splitext(filename)[1]).lower() == '.ogg'):
+		# If there are more than 1 streams in ogg then extract streams with FFmpeg.
+		natively_supported_file_format = False
+	
+	if (str(os.path.splitext(filename)[1]).lower() == '.wav') and (audio_coding_format not in ['pcm_u8', 'pcm_s16le', 'pcm_s24le', 'pcm_s32le']):
+		# Wav container might contain other data than uncompressed pcm, if this is the case then first decompress audio / convert streams with FFmpeg.
+		natively_supported_file_format = False
 	
 	file_format_support_information = [natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames]
 	
@@ -2763,7 +2788,6 @@ while True:
 			file_format_support_information = old_hotfolder_filelist_dict[filename][2] # Get other file information that was gathered during the last poll.
 
 			# If filesize is still zero and it has not changed in 1,5 hours (5400 seconds), stop waiting and remove filename from list_of_growing_files.
-			# (int(time.time()) - old_hotfolder_filelist_dict[filename][1] > file_expiry_time)
 			if (filename in list_of_growing_files) and (new_filesize == 0) and (int(time.time()) >= (time_file_was_first_seen + 5400)):
 				list_of_growing_files.remove(filename)
 			if (filename in list_of_growing_files) and (new_filesize > 0): # If file is in the list of growing files, check if growing has stopped. If HotFolder is on a native windows network share and multiple files are transferred to the HotFolder at the same time, the files get a initial file size of zero, until the file actually gets transferred. Checking for zero file size prevents trying to process the file prematurely.
@@ -2890,7 +2914,7 @@ while True:
 				else:
 					
 					# Fileformat is not natively supported by libebur128 and sox, or it has more than one audio streams.
-					# Start a process that extracts all audio streams from the file to flac and moves resulting files back to the HotFolder for loudness calculation.
+					# Start a process that extracts all audio streams from the file and converts them to wav or flac and moves resulting files back to the HotFolder for loudness calculation.
 					if silent == False:
 						print ('\r' + 'File' * english + 'Tiedoston' * finnish, '"' + filename + '"' + ' conversion started ' * english + '  muunnos    alkoi  ' * finnish, realtime)
 						print('\r' + adjust_line_printout, ' Extracting' * english + ' Puran' * finnish, str(number_of_ffmpeg_supported_audiostreams), 'audio streams from file' * english + 'miksausta tiedostosta' * finnish, filename)
