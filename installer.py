@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '041'
+version = '042'
 
 ###################################
 # Function definitions start here #
@@ -1116,9 +1116,9 @@ def install_init_scripts_and_config_files(*args):
 	# -p = Use a custom string to prompt the user for the password (we use an empty string here).
 	# -S = Read password from stdin.
 	
-	#######################################
-	# Copy BackupParanoia.py to /usr/bin/ #
-	#######################################
+	###########################################
+	# Copy LoudnessCorrection.py to /usr/bin/ #
+	###########################################
 	
 	commands_to_run = ['sudo', '-k', '-p', '', '-S', 'cp', '-f', path_to_loudnesscorrection, '/usr/bin/' + os.path.basename(path_to_loudnesscorrection)] # Create the commandline we need to run as root.
 
@@ -1134,9 +1134,9 @@ def install_init_scripts_and_config_files(*args):
 	# Password was accepted and our command was successfully run as root.
 	root_password_was_not_accepted_message.set('') # Remove possible error message from the screen.
 
-	########################################
-	# Change BackupParanoia.py permissions #
-	########################################
+	############################################
+	# Change LoudnessCorrection.py permissions #
+	############################################
 	
 	commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chmod', '755', '/usr/bin/' + os.path.basename(path_to_loudnesscorrection)] # Create the commandline we need to run as root.
 
@@ -1152,9 +1152,9 @@ def install_init_scripts_and_config_files(*args):
 	# Password was accepted and our command was successfully run as root.
 	root_password_was_not_accepted_message.set('') # Remove possible error message from the screen.
 	
-	##################################
-	# Change BackupParanoia.py owner #
-	##################################
+	######################################
+	# Change LoudnessCorrection.py owner #
+	######################################
 	
 	commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chown', 'root:root', '/usr/bin/' + os.path.basename(path_to_loudnesscorrection)] # Create the commandline we need to run as root.
 
@@ -1575,9 +1575,9 @@ def test_if_root_password_is_valid(*args):
 	# -p = Use a custom string to prompt the user for the password (we use an empty string here).
 	# -S = Read password from stdin.
 	
-	#######################################
-	# Copy BackupParanoia.py to /usr/bin/ #
-	#######################################
+	###########################################
+	# Copy LoudnessCorrection.py to /usr/bin/ #
+	###########################################
 	
 	commands_to_run = ['sudo', '-k', '-p', '', '-S', 'cp', '-f', path_to_loudnesscorrection, '/usr/bin/' + os.path.basename(path_to_loudnesscorrection)] # Create the commandline we need to run as root.
 
@@ -1590,9 +1590,9 @@ def test_if_root_password_is_valid(*args):
 		root_password_was_accepted = False
 		show_error_message_on_root_password_window(sudo_stderr, sudo_stderr_string)
 
-	########################################
-	# Change BackupParanoia.py permissions #
-	########################################
+	############################################
+	# Change LoudnessCorrection.py permissions #
+	############################################
 	
 	if root_password_was_accepted == True:
 	
@@ -1607,9 +1607,9 @@ def test_if_root_password_is_valid(*args):
 			root_password_was_accepted = False
 			show_error_message_on_root_password_window(sudo_stderr, sudo_stderr_string)
 		
-	##################################
-	# Change BackupParanoia.py owner #
-	##################################
+	######################################
+	# Change LoudnessCorrection.py owner #
+	######################################
 	
 	if root_password_was_accepted == True:
 	
@@ -1624,9 +1624,9 @@ def test_if_root_password_is_valid(*args):
 			root_password_was_accepted = False
 			show_error_message_on_root_password_window(sudo_stderr, sudo_stderr_string)
 
-	##########################################
-	# Delete BackupParanoia.py from /usr/bin #
-	##########################################
+	##############################################
+	# Delete LoudnessCorrection.py from /usr/bin #
+	##############################################
 	
 	if root_password_was_accepted == True:
 	
@@ -1752,7 +1752,9 @@ def find_paths_to_all_external_programs_we_need():
 	global samba_path
 	global mediainfo_path
 	global loudness_path
+	global loudness_required_install_date_list
 	global all_needed_external_programs_are_installed
+	global force_reinstallation_of_all_programs
 
 	all_needed_external_programs_are_installed = True
 	python3_path = find_program_in_os_path('python3')
@@ -1799,7 +1801,40 @@ def find_paths_to_all_external_programs_we_need():
 		libebur128_is_installed.set('Not Installed')
 		all_needed_external_programs_are_installed = False
 	else:
-		libebur128_is_installed.set('Installed')
+		# Check if libebur128 'loudness' is recent enough version to be free of known bugs.
+		# Since loudness is installed by compiling it from source, the timestamp of the executable tells us if we have the version we want.
+		loudness_required_installation_timestamp = int(time.mktime(time.strptime(' '.join(loudness_required_install_date_list), "%d %m %Y"))) # Convert date to seconds from epoch.
+		
+		# Get last modification time from program 'loudness'.
+		loudness_installation_timestamp = int(os.lstat(loudness_path).st_mtime)
+		
+		if loudness_installation_timestamp < loudness_required_installation_timestamp: # 'loudness' compilation date must be at least the required date otherwise we have a known buggy version of the program.
+			loudness_path = '' # Empty value in the path-variable forces reinstallation of the 'loudness' program.
+			libebur128_is_installed.set('Not Installed')
+			all_needed_external_programs_are_installed = False
+		else:
+			libebur128_is_installed.set('Installed')
+	
+	# If user want's to reinstall all programs, then reset all path variables and force reinstallation.
+	if force_reinstallation_of_all_programs == True:
+		ffmpeg_path = ''
+		sox_path = ''
+		gnuplot_path = ''
+		samba_path = ''
+		mediainfo_path = ''
+		loudness_path = ''
+		ffmpeg_is_installed.set('Not Installed')
+		sox_is_installed.set('Not Installed')
+		gnuplot_is_installed.set('Not Installed')
+		
+		# Check if user wants us to use samba, if not we don't care if it's installed or not.
+		if use_samba.get() == True:
+			samba_is_installed.set('Not Installed')
+			
+		mediainfo_is_installed.set('Not Installed')
+		libebur128_is_installed.set('Not Installed')
+		
+		all_needed_external_programs_are_installed = False
 
 def set_button_and_label_states_on_window_seven():
 	
@@ -1861,7 +1896,6 @@ def show_installation_shell_commands(*args):
 
 	global loudness_path
 	global git_commands
-	global git_commands
 	global cmake_commands
 	global make_build_and_install_commands
 	
@@ -1904,7 +1938,9 @@ def install_missing_programs(*args):
 	global external_program_installation_has_been_already_run
 	global all_installation_messages
 	global directory_for_os_temporary_files
+	global force_reinstallation_of_all_programs
 	
+	force_reinstallation_of_all_programs = False
 	an_error_has_happened = False
 	all_installation_messages = ''
 	
@@ -2039,6 +2075,62 @@ def install_missing_programs(*args):
 			
 			libebur128_source_downloadfile = 'libebur128_download_commands.sh'
 			
+			# Remove files possibly left by a previous installation.
+			# If user has not rebooted the previous installation temp - files will still be there.
+			
+			if os.path.exists(directory_for_os_temporary_files + os.sep + libebur128_source_downloadfile):
+				
+				# Create the commandline we need to run as root.
+				commands_to_run = ['sudo', '-k', '-p', '', '-S', 'rm', '-f', directory_for_os_temporary_files + os.sep + libebur128_source_downloadfile]
+
+				if debug == True:
+					print()
+					print('Running commands:', commands_to_run)
+
+				# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
+				sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
+				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+				all_installation_messages = all_installation_messages + '-' * 80 + '\n' + sudo_stdout_string + sudo_stderr_string
+				
+				if debug == True:
+					print()
+					print('sudo_stdout:', sudo_stdout)
+					print('sudo_stderr:', sudo_stderr)
+				
+				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
+				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
+					show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+					an_error_has_happened = True
+			
+			if os.path.exists(directory_for_os_temporary_files + os.sep + 'libebur128'):
+				
+				# Remove libebur128 source code directory tree.
+				
+				# Create the commandline we need to run as root.
+				commands_to_run = ['sudo', '-k', '-p', '', '-S', 'rm', '-rf', directory_for_os_temporary_files + os.sep + 'libebur128']
+
+				if debug == True:
+					print()
+					print('Running commands:', commands_to_run)
+
+				# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
+				sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
+				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+				all_installation_messages = all_installation_messages + '-' * 80 + '\n' + sudo_stdout_string + sudo_stderr_string
+				
+				if debug == True:
+					print()
+					print('sudo_stdout:', sudo_stdout)
+					print('sudo_stderr:', sudo_stderr)
+				
+				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
+				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
+					show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+					an_error_has_happened = True
+			
+			# Write libebur128 source code download commands to '/tmp/libebur128_download_commands.sh'
 			try:
 				with open(directory_for_os_temporary_files + os.sep + libebur128_source_downloadfile, 'wt') as libebur128_source_downloadfile_handler:
 					libebur128_source_downloadfile_handler.write('#!/bin/bash\n' + '\n'.join(git_commands))
@@ -2046,12 +2138,22 @@ def install_missing_programs(*args):
 					os.fsync(libebur128_source_downloadfile_handler.fileno()) # Flushes os cache to disk
 			except IOError as reason_for_error:
 				error_in_string_format = 'Error opening file ' + directory_for_os_temporary_files + os.sep + libebur128_source_downloadfile + ' for writing ' + str(reason_for_error)
+				all_installation_messages = all_installation_messages + '-' * 80 + '\n' + error_in_string_format
 				show_error_message_on_seventh_window('', error_in_string_format)
 				an_error_has_happened = True
+				if debug == True:
+					print()
+					print('Error:', error_in_string_format)
+					print()
 			except OSError as reason_for_error:
 				error_in_string_format = 'Error opening file ' + directory_for_os_temporary_files + os.sep + libebur128_source_downloadfile + ' for writing ' + str(reason_for_error)
+				all_installation_messages = all_installation_messages + '-' * 80 + '\n' + error_in_string_format
 				show_error_message_on_seventh_window('', error_in_string_format)
 				an_error_has_happened = True
+				if debug == True:
+					print()
+					print('Error:', error_in_string_format)
+					print()
 						
 			if an_error_has_happened == False:
 					
@@ -2169,6 +2271,35 @@ def install_missing_programs(*args):
 				
 				cmake_commandfile = 'cmake_commands.sh'
 				
+				# Remove files possibly left by a previous installation.
+				# If user has not rebooted the previous installation temp - files will still be there.
+				
+				if os.path.exists(directory_for_os_temporary_files + os.sep + cmake_commandfile):
+					
+					# Create the commandline we need to run as root.
+					commands_to_run = ['sudo', '-k', '-p', '', '-S', 'rm', '-f', directory_for_os_temporary_files + os.sep + cmake_commandfile]
+
+					if debug == True:
+						print()
+						print('Running commands:', commands_to_run)
+
+					# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
+					sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
+					sudo_stdout_string = str(sudo_stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+					sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+					all_installation_messages = all_installation_messages + '-' * 80 + '\n' + sudo_stdout_string + sudo_stderr_string
+					
+					if debug == True:
+						print()
+						print('sudo_stdout:', sudo_stdout)
+						print('sudo_stderr:', sudo_stderr)
+					
+					# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
+					if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
+						show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+						an_error_has_happened = True
+				
+				# Write cmake commands to '/tmp/cmake_commands.sh'
 				try:
 					with open(directory_for_os_temporary_files + os.sep + cmake_commandfile, 'wt') as cmake_commandfile_handler:
 						cmake_commandfile_handler.write('#!/bin/bash\n' + '\n'.join(cmake_commands))
@@ -2176,12 +2307,22 @@ def install_missing_programs(*args):
 						os.fsync(cmake_commandfile_handler.fileno()) # Flushes os cache to disk
 				except IOError as reason_for_error:
 					error_in_string_format = 'Error opening file ' + directory_for_os_temporary_files + os.sep + cmake_commandfile + ' for writing ' + str(reason_for_error)
+					all_installation_messages = all_installation_messages + '-' * 80 + '\n' + error_in_string_format
 					show_error_message_on_seventh_window('', error_in_string_format)
 					an_error_has_happened = True
+					if debug == True:
+						print()
+						print('Error:', error_in_string_format)
+						print()
 				except OSError as reason_for_error:
 					error_in_string_format = 'Error opening file ' + directory_for_os_temporary_files + os.sep + cmake_commandfile + ' for writing ' + str(reason_for_error)
+					all_installation_messages = all_installation_messages + '-' * 80 + '\n' + error_in_string_format
 					show_error_message_on_seventh_window('', error_in_string_format)
 					an_error_has_happened = True
+					if debug == True:
+						print()
+						print('Error:', error_in_string_format)
+						print()
 						
 			if an_error_has_happened == False:
 					
@@ -2299,6 +2440,35 @@ def install_missing_programs(*args):
 				
 				make_and_build_commandfile = 'make_and_build_commands.sh'
 				
+				# Remove files possibly left by a previous installation.
+				# If user has not rebooted the previous installation temp - files will still be there.
+				
+				if os.path.exists(directory_for_os_temporary_files + os.sep + make_and_build_commandfile):
+					
+					# Create the commandline we need to run as root.
+					commands_to_run = ['sudo', '-k', '-p', '', '-S', 'rm', '-f', directory_for_os_temporary_files + os.sep + make_and_build_commandfile]
+
+					if debug == True:
+						print()
+						print('Running commands:', commands_to_run)
+
+					# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
+					sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
+					sudo_stdout_string = str(sudo_stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+					sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+					all_installation_messages = all_installation_messages + '-' * 80 + '\n' + sudo_stdout_string + sudo_stderr_string
+					
+					if debug == True:
+						print()
+						print('sudo_stdout:', sudo_stdout)
+						print('sudo_stderr:', sudo_stderr)
+					
+					# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
+					if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
+						show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+						an_error_has_happened = True
+				
+				# Write make commands to '/tmp/make_and_build_commands.sh'
 				try:
 					with open(directory_for_os_temporary_files + os.sep + make_and_build_commandfile, 'wt') as make_and_build_commandfile_handler:
 						make_and_build_commandfile_handler.write('#!/bin/bash\n' + '\n'.join(make_build_and_install_commands))
@@ -2306,12 +2476,22 @@ def install_missing_programs(*args):
 						os.fsync(make_and_build_commandfile_handler.fileno()) # Flushes os cache to disk
 				except IOError as reason_for_error:
 					error_in_string_format = 'Error opening file ' + directory_for_os_temporary_files + os.sep + make_and_build_commandfile + ' for writing ' + str(reason_for_error)
+					all_installation_messages = all_installation_messages + '-' * 80 + '\n' + error_in_string_format
 					show_error_message_on_seventh_window('', error_in_string_format)
 					an_error_has_happened = True
+					if debug == True:
+						print()
+						print('Error:', error_in_string_format)
+						print()
 				except OSError as reason_for_error:
 					error_in_string_format = 'Error opening file ' + directory_for_os_temporary_files + os.sep + make_and_build_commandfile + ' for writing ' + str(reason_for_error)
+					all_installation_messages = all_installation_messages + '-' * 80 + '\n' + error_in_string_format
 					show_error_message_on_seventh_window('', error_in_string_format)
 					an_error_has_happened = True
+					if debug == True:
+						print()
+						print('Error:', error_in_string_format)
+						print()
 						
 			if an_error_has_happened == False:
 					
@@ -2415,35 +2595,45 @@ def install_missing_programs(*args):
 				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
 				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
 					show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
-			
+	
 	external_program_installation_has_been_already_run = True
-	
-	# Install BackupParanoia.py, HeartBeat_Checker.py and init scripts.
-	seventh_window_label_16['foreground'] = 'dark green'
-	seventh_window_label_17['foreground'] = 'dark green'
-	seventh_window_message_1.set('Note: The GUI freezes while I run some external commands.\nPlease wait patiently :)')
-	seventh_window_message_2.set('Installing LoudnessCorrection and init scripts...')
-	
-	# The user might come to this window again after an error message, resize the window again.
-	seventh_frame.update() # Update the frame that has possibly changed, this triggers updating all child objects.
-	
-	# Get Frame dimensions and resize root_window to fit the whole frame.
-	root_window.geometry(str(seventh_frame.winfo_reqwidth()+40) +'x'+ str(seventh_frame.winfo_reqheight()))
-	
-	# Get root window geometry and center it on screen.
-	root_window.update()
-	x_position = (root_window.winfo_screenwidth() / 2) - (root_window.winfo_width() / 2) - 8
-	y_position = (root_window.winfo_screenheight() / 2) - (root_window.winfo_height() / 2) - 20
-	root_window.geometry(str(root_window.winfo_width()) + 'x' +str(root_window.winfo_height()) + '+' + str(int(x_position)) + '+' + str(int(y_position)))
-	
-	find_paths_to_all_external_programs_we_need()
 	set_button_and_label_states_on_window_seven()
-	
-	an_error_has_happened = install_init_scripts_and_config_files()
-	
-	find_paths_to_all_external_programs_we_need()
-	set_button_and_label_states_on_window_seven()
-	
+		
+	if an_error_has_happened == False:
+		
+		########################################
+		# Install init scripts and config file #
+		########################################
+		
+		# Install LoudnessCorrection.py, HeartBeat_Checker.py and init scripts.
+		seventh_window_label_16['foreground'] = 'dark green'
+		seventh_window_label_17['foreground'] = 'dark green'
+		seventh_window_message_1.set('Note: The GUI freezes while I run some external commands.\nPlease wait patiently :)')
+		seventh_window_message_2.set('Installing LoudnessCorrection and init scripts...')
+		
+		# The user might come to this window again after an error message, resize the window again.
+		seventh_frame.update() # Update the frame that has possibly changed, this triggers updating all child objects.
+		
+		# Get Frame dimensions and resize root_window to fit the whole frame.
+		root_window.geometry(str(seventh_frame.winfo_reqwidth()+40) +'x'+ str(seventh_frame.winfo_reqheight()))
+		
+		# Get root window geometry and center it on screen.
+		root_window.update()
+		x_position = (root_window.winfo_screenwidth() / 2) - (root_window.winfo_width() / 2) - 8
+		y_position = (root_window.winfo_screenheight() / 2) - (root_window.winfo_height() / 2) - 20
+		root_window.geometry(str(root_window.winfo_width()) + 'x' +str(root_window.winfo_height()) + '+' + str(int(x_position)) + '+' + str(int(y_position)))
+		
+		find_paths_to_all_external_programs_we_need()
+		set_button_and_label_states_on_window_seven()
+		
+		installing_init_scripts_and_config_files_succeeded = install_init_scripts_and_config_files()
+		
+		if installing_init_scripts_and_config_files_succeeded == True:
+			an_error_has_happened = True
+		
+		find_paths_to_all_external_programs_we_need()
+		set_button_and_label_states_on_window_seven()
+		
 	if (an_error_has_happened == False) and (all_needed_external_programs_are_installed == True) and (loudnesscorrection_scripts_are_installed.get() == 'Installed'):
 		seventh_window_label_16['foreground'] = 'dark green'
 		seventh_window_label_17['foreground'] = 'dark green'
@@ -2544,6 +2734,65 @@ def set_sample_peak_measurement_method(*args):
 		print()
 		print('sample_peak =', true_false_string[sample_peak.get()])
 		print('peak_measurement_method =', peak_measurement_method)
+		
+def toggle_installation_status():
+	
+	global force_reinstallation_of_all_programs
+	
+	if force_reinstallation_of_all_programs == False:
+		force_reinstallation_of_all_programs = True
+		seventh_window_toggle_button['text'] = 'Undo'
+	else:
+		force_reinstallation_of_all_programs = False
+		seventh_window_toggle_button['text'] = 'Reinstall'
+		
+	find_paths_to_all_external_programs_we_need()
+	define_program_installation_commands()
+	set_button_and_label_states_on_window_seven()
+	set_seventh_window_label_texts_and_colors()
+	
+	
+def define_program_installation_commands():
+	
+	global apt_get_commands
+	global needed_packages_install_commands
+	global libebur128_dependencies_install_commands
+	global git_commands
+	global libebur128_dependencies_install_commands
+	global directory_for_os_temporary_files
+	global cmake_commands
+	global make_build_and_install_commands
+	global simplified_build_and_install_commands_displayed_to_user
+	
+	# Check if we need to install some programs that LoudnessCorrection needs and add install commands to lists.
+	apt_get_commands = ['apt-get', '-q=2', '-y', '--reinstall', 'install']
+	needed_packages_install_commands = []
+	libebur128_dependencies_install_commands = []
+	git_commands = []
+
+	if sox_path == '':
+		needed_packages_install_commands.append('sox')
+	if ffmpeg_path == '':
+		needed_packages_install_commands.append('ffmpeg')
+	if gnuplot_path == '':
+		needed_packages_install_commands.append('gnuplot')
+	if samba_path == '':
+		needed_packages_install_commands.append('samba')
+	if mediainfo_path == '':
+		needed_packages_install_commands.append('mediainfo')
+	if loudness_path == '':
+		libebur128_dependencies_install_commands = ['build-essential', 'git', 'cmake', 'libsndfile-dev', 'libmpg123-dev', 'libmpcdec-dev', \
+		'libglib2.0-dev', 'libfreetype6-dev', 'librsvg2-dev', 'libspeexdsp-dev', 'libavcodec-dev', 'libavformat-dev', 'libtag1-dev', \
+		'libxml2-dev', 'libgstreamer0.10-dev', 'libgstreamer-plugins-base0.10-dev', 'libqt4-dev']
+	if loudness_path == '':
+		# Store commands of downloading and building libebur128 sourcecode to lists.
+		git_commands = ['cd ' + directory_for_os_temporary_files, 'git clone http://github.com/jiixyj/libebur128.git', 'cd libebur128', \
+		'mv .gitmodules .gitmodules.orig', "cat .gitmodules.orig | sed 's/git:\/\//http:\/\//g' > .gitmodules", \
+		'git submodule init', 'git submodule update']
+
+		cmake_commands = ['cd ' + directory_for_os_temporary_files + '/libebur128', 'mkdir build', 'cd build', 'cmake -Wno-dev -DCMAKE_INSTALL_PREFIX:PATH=/usr ..']
+		make_build_and_install_commands = ['cd ' + directory_for_os_temporary_files + '/libebur128/build', 'make -w', 'make install']
+		simplified_build_and_install_commands_displayed_to_user = ['mkdir build', 'cd build', 'cmake -Wno-dev -DCMAKE_INSTALL_PREFIX:PATH=/usr ..', 'make -w', 'make install']
 
 
 ###############################
@@ -2603,10 +2852,12 @@ samba_is_installed = tkinter.StringVar()
 mediainfo_is_installed = tkinter.StringVar()
 libebur128_is_installed = tkinter.StringVar()
 loudnesscorrection_scripts_are_installed = tkinter.StringVar()
+# More seventh window variables.
 seventh_window_message_1 = tkinter.StringVar()
 seventh_window_message_2 = tkinter.StringVar()
 seventh_window_error_message_1 = tkinter.StringVar()
 seventh_window_error_message_2 = tkinter.StringVar()
+
 
 # Define Email variables
 send_error_messages_by_email = tkinter.BooleanVar()
@@ -2633,7 +2884,7 @@ heartbeat.set(False)
 email_sending_message_1 = tkinter.StringVar()
 email_sending_message_2 = tkinter.StringVar()
 
-# We need to know when user inputs a new value in a combobox and call a subroutine that writes that value to our variable.
+# We need to know when user inputs a new value in smtp server combobox and call a subroutine that writes that value to our variable.
 # To achieve this we must trace when the combobox value changes.
 smtp_server_name.trace('w', define_smtp_server_name)
 smtp_server_port.trace('w', define_smtp_server_port)
@@ -2673,7 +2924,7 @@ peak_measurement_method = '--peak=sample'
 # Get the directory the os uses for storing temporary files.
 directory_for_os_temporary_files = tempfile.gettempdir()
 
-# Define global variables that later hold paths to external programs that LoudnessCorrection nedds to operate.
+# Define global variables that later hold paths to external programs that LoudnessCorrection needs to operate.
 python3_path = ''
 ffmpeg_path = ''
 sox_path = ''
@@ -2681,39 +2932,27 @@ gnuplot_path = ''
 samba_path = ''
 loudness_path = ''
 mediainfo_path = ''
+force_reinstallation_of_all_programs = False
+
+# Libebur128 program 'loudness' must be a version known to be free of bad bugs.
+# Since 'loudness' does not have a version number the only method to check for it's version is the compilation date of the 'loudness' executable.
+loudness_required_install_date_list = ['14', '8', '2012'] # Day, Month, Year. Timestamp of 'loudness' must be at least this or it is old version with known bugs.
 
 # Find paths to all critical programs we need to run LoudnessCorrection
 find_paths_to_all_external_programs_we_need()
 
-# Check if we need to install some programs that LoudnessCorrection needs and add install commands to list.
-apt_get_commands = ['apt-get', '-q=2', '-y', 'install']
+# Define global installation variables.
+apt_get_commands = []
 needed_packages_install_commands = []
 libebur128_dependencies_install_commands = []
 git_commands = []
+libebur128_dependencies_install_commands = []
+cmake_commands = []
+make_build_and_install_commands = []
+simplified_build_and_install_commands_displayed_to_user = []
 
-if sox_path == '':
-	needed_packages_install_commands.append('sox')
-if ffmpeg_path == '':
-	needed_packages_install_commands.append('ffmpeg')
-if gnuplot_path == '':
-	needed_packages_install_commands.append('gnuplot')
-if samba_path == '':
-	needed_packages_install_commands.append('samba')
-if mediainfo_path == '':
-	needed_packages_install_commands.append('mediainfo')
-if loudness_path == '':
-	libebur128_dependencies_install_commands = ['build-essential', 'git', 'cmake', 'libsndfile-dev', 'libmpg123-dev', 'libmpcdec-dev', \
-	'libglib2.0-dev', 'libfreetype6-dev', 'librsvg2-dev', 'libspeexdsp-dev', 'libavcodec-dev', 'libavformat-dev', 'libtag1-dev', \
-	'libxml2-dev', 'libgstreamer0.10-dev', 'libgstreamer-plugins-base0.10-dev', 'libqt4-dev']
-if loudness_path == '':
-	# Store commands of downloading and building libebur128 sourcecode to lists.
-	git_commands = ['cd ' + directory_for_os_temporary_files, 'git clone http://github.com/jiixyj/libebur128.git', 'cd libebur128', \
-	'mv .gitmodules .gitmodules.orig', "cat .gitmodules.orig | sed 's/git:\/\//http:\/\//g' > .gitmodules", \
-	'git submodule init', 'git submodule update']
-
-	cmake_commands = ['cd ' + directory_for_os_temporary_files + '/libebur128', 'mkdir build', 'cd build', 'cmake -Wno-dev -DCMAKE_INSTALL_PREFIX:PATH=/usr ..']
-	make_build_and_install_commands = ['cd ' + directory_for_os_temporary_files + '/libebur128/build', 'make -w', 'make install']
-	simplified_build_and_install_commands_displayed_to_user = ['mkdir build', 'cd build', 'cmake -Wno-dev -DCMAKE_INSTALL_PREFIX:PATH=/usr ..', 'make -w', 'make install']
+# Get installation commands to global installation variables.
+define_program_installation_commands()
 
 # Find the path to LoudnessCorrection.py and HeartBeat_Checker.py in the current directory.
 path_to_loudnesscorrection = find_program_in_current_dir('LoudnessCorrection.py')
@@ -3061,7 +3300,7 @@ third_window_label_8.grid(column=0, row=11, padx=10, columnspan=2, sticky=(tkint
 
 email_sending_interval_combobox = tkinter.ttk.Combobox(third_frame_child_frame_1, justify=tkinter.CENTER, width=5, textvariable=email_sending_interval_in_minutes)
 email_sending_interval_combobox['values'] = (1, 2, 3, 4, 5, 10, 12, 15, 18, 20, 25, 30, 40, 50, 60, 90, 120, 180, 240, 300)
-email_sending_interval_combobox.set(10)
+email_sending_interval_combobox.set(30)
 email_sending_interval_combobox.state(['disabled'])
 email_sending_interval_combobox.bind('<<ComboboxSelected>>', convert_email_sending_interval_to_seconds)
 email_sending_interval_combobox.grid(column=2, row=11, padx=10, sticky=(tkinter.N, tkinter.E))
@@ -3366,7 +3605,7 @@ seventh_window_label_20 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplen
 seventh_window_label_20.grid(column=3, row=6, columnspan=1, padx=10, sticky=(tkinter.N))
 
 # libebur128
-seventh_window_label_10 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='Libebur128')
+seventh_window_label_10 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='Libebur128 (required version: ' + str(loudness_required_install_date_list[2]) + '.' + str(loudness_required_install_date_list[1]) + '.' + str(loudness_required_install_date_list[0]) + ')')
 seventh_window_label_10.grid(column=0, row=7, columnspan=1, padx=10, sticky=(tkinter.W, tkinter.N))
 seventh_window_label_11 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, textvariable=libebur128_is_installed)
 seventh_window_label_11.grid(column=3, row=7, columnspan=1, padx=10, sticky=(tkinter.N))
@@ -3379,35 +3618,41 @@ seventh_window_loudnesscorrection_label = tkinter.ttk.Label(seventh_frame_child_
 seventh_window_loudnesscorrection_label['foreground'] = 'red'
 seventh_window_loudnesscorrection_label.grid(column=3, row=8, columnspan=1, padx=10, sticky=(tkinter.N))
 
+# Toggle installation status
+seventh_window_toggle_label = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='Force reinstallation of all programs:')
+seventh_window_toggle_label.grid(column=0, row=9, columnspan=2, padx=10, pady=2, sticky=(tkinter.W))
+seventh_window_toggle_button = tkinter.Button(seventh_frame_child_frame_1, text = "Reinstall", command = toggle_installation_status)
+seventh_window_toggle_button.grid(column=3, row=9, padx=30, pady=2, sticky=(tkinter.N))
+
 # Define a horizontal line to space out groups of rows.
 seventh_window_separator_2 = tkinter.ttk.Separator(seventh_frame_child_frame_1, orient=tkinter.HORIZONTAL)
-seventh_window_separator_2.grid(column=0, row=9, padx=10, pady=10, columnspan=5, sticky=(tkinter.W, tkinter.E))
+seventh_window_separator_2.grid(column=0, row=10, padx=10, pady=10, columnspan=5, sticky=(tkinter.W, tkinter.E))
 
 seventh_window_label_14 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='Install all missing programs:')
-seventh_window_label_14.grid(column=0, row=10, columnspan=2, padx=10, pady=2, sticky=(tkinter.W))
+seventh_window_label_14.grid(column=0, row=11, columnspan=2, padx=10, pady=2, sticky=(tkinter.W))
 seventh_window_install_button = tkinter.Button(seventh_frame_child_frame_1, text = "Install", command = install_missing_programs)
-seventh_window_install_button.grid(column=3, row=10, padx=30, pady=2, sticky=(tkinter.N))
+seventh_window_install_button.grid(column=3, row=11, padx=30, pady=2, sticky=(tkinter.N))
 
 seventh_window_label_15 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='Show me the shell commands to install external programs:')
-seventh_window_label_15.grid(column=0, row=11, columnspan=2, padx=10, pady=2, sticky=(tkinter.W))
+seventh_window_label_15.grid(column=0, row=12, columnspan=2, padx=10, pady=2, sticky=(tkinter.W))
 seventh_window_show_button_1 = tkinter.Button(seventh_frame_child_frame_1, text = "Show", command = show_installation_shell_commands)
-seventh_window_show_button_1.grid(column=3, row=11, padx=30, pady=2, sticky=(tkinter.N))
+seventh_window_show_button_1.grid(column=3, row=12, padx=30, pady=2, sticky=(tkinter.N))
 
 # Define a horizontal line to space out groups of rows.
 seventh_window_separator_3 = tkinter.ttk.Separator(seventh_frame_child_frame_1, orient=tkinter.HORIZONTAL)
-seventh_window_separator_3.grid(column=0, row=12, padx=10, pady=10, columnspan=5, sticky=(tkinter.W, tkinter.E))
+seventh_window_separator_3.grid(column=0, row=13, padx=10, pady=10, columnspan=5, sticky=(tkinter.W, tkinter.E))
 
 # Define labels that are used to display error or success messages.
 seventh_window_label_16 = tkinter.ttk.Label(seventh_frame_child_frame_1, textvariable=seventh_window_message_1, wraplength=text_wrap_length_in_pixels)
-seventh_window_label_16.grid(column=0, row=13, padx=10, pady=5, columnspan=3, sticky=(tkinter.W, tkinter.N))
+seventh_window_label_16.grid(column=0, row=14, padx=10, pady=5, columnspan=3, sticky=(tkinter.W, tkinter.N))
 
 seventh_window_label_17 = tkinter.ttk.Label(seventh_frame_child_frame_1, textvariable=seventh_window_message_2, wraplength=text_wrap_length_in_pixels)
-seventh_window_label_17.grid(column=0, row=14, padx=10, pady=5, columnspan=3, sticky=(tkinter.W, tkinter.N))
+seventh_window_label_17.grid(column=0, row=15, padx=10, pady=5, columnspan=3, sticky=(tkinter.W, tkinter.N))
 
 seventh_window_label_18 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='Show me the messages that the installation produced:')
-seventh_window_label_18.grid(column=0, row=15, columnspan=2, padx=10, pady=2, sticky=(tkinter.W))
+seventh_window_label_18.grid(column=0, row=16, columnspan=2, padx=10, pady=2, sticky=(tkinter.W))
 seventh_window_show_button_2 = tkinter.Button(seventh_frame_child_frame_1, text = "Show", command = show_installation_output_messages)
-seventh_window_show_button_2.grid(column=3, row=15, padx=30, pady=2, sticky=(tkinter.N))
+seventh_window_show_button_2.grid(column=3, row=16, padx=30, pady=2, sticky=(tkinter.N))
 
 # Create the buttons for the frame
 seventh_window_back_button = tkinter.Button(seventh_frame, text = "Back", command = call_sixth_frame_on_top)

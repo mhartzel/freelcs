@@ -1,4 +1,10 @@
-installer 041
+Installer 042
+--------------
+- Changed the default email sending interval for LoudnessCorrection.py from 10 minutes to 30 minutes.
+- Added a new button to force reinstallation of all programs. This is needed when libebur128 gets bugfixes and needs to be updated.
+- Bugfix: errors that happened during installation were not shown on the program window.
+
+Installer 041
 --------------
 - Installs now the program 'mediainfo' that is required beginning from LoudnessCorrection version 173.
 
@@ -21,7 +27,7 @@ LoudnessCorrection Version 173
 - Bugfix: If file format is mpeg transportstream (mpegts) then FFmpeg is not always able to tell the correct file duration. In these cases read file duration with external command: mediainfo.
 - New requirement: mediainfo needs to be installed.
 
-installer 040
+Installer 040
 --------------
 - There is a variable (ffmpeg_output_format) defined in installer.py that used to tell LoudnessCorrection.py what output format to use when extracting audio streams with FFmpeg. The output format is now defined in LoudnessCorrection.py based on the estimated uncompressed file size. The variable in installer.py might be used in the future if user is allowed to define the ouput format, so I changed the variable default to ffmpeg_output_format = '' in installer.
 
@@ -92,7 +98,7 @@ LoudnessCorrection Version 161
 - Corrected variable name: 'peak_measuring_method' to 'peak_measurement_method'.
 - LoudnessCOrrection now writes its version number to the timestamps file that HeartBeat_Checker monitors.
 
-installer 039
+Installer 039
 --------------
 - Corrected variable name: 'peak_measuring_method' to 'peak_measurement_method'.
 
@@ -148,7 +154,7 @@ LoudnessCorrection Version 154
 -------------------------------
 - Bugfix: Added printing of peak_measurement method In debug - mode. I forgot to do that in the last version :)
 
-installer 038
+Installer 038
 --------------
 - Bugfix: LoudnessCorrection.py was not installed to /usr/bin/ if user after installation navigated back through windows.
 - Added the possibility to select between sample peak and TruePeak measurement.
@@ -187,11 +193,11 @@ HeartBeat_Checker version 017
 -------------------------------
 The first email (HeartBeat_Checker has started) was sent too early, before the timestamps and other info of LoudnessCorrection was read.
 
-installer 037
+Installer 037
 --------------
 - Bugfix: Some directory permissions were not set correctly if HeartBeat Checker was deselected in installer.
 
-installer 035
+Installer 035
 --------------
 - Bugfix: Installer let the user go to the next window even though loudnesscorrection_init_script was not installed yet.
 - Bigfix: Some directory ownership and permissions were not set correctly if the user selected not to create a ram disk.
@@ -209,6 +215,6 @@ LoudnessCorrection Version 151
 - The script now writes the machines IP-Addresses to the pickle HeartBeat_Checker monitors.
 - Made some small modifications to error email formatting.
 
-installer 034
+Installer 034
 --------------
 - Bugfix: Samba mount path was always 'LoudnessCorrection', changed this to follow the selected language. The mount path when finnish is selected is now 'AanekkyysKorjaus'.
