@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '043'
+version = '044'
 
 ###################################
 # Function definitions start here #
@@ -1553,9 +1553,6 @@ def install_init_scripts_and_config_files(*args):
 	# Our scripts were installed successfully, update the label the to tell it to the user.
 	loudnesscorrection_scripts_are_installed.set('Installed')
 	
-	# Disable Back - button since navigating back to the previous window and back here would delete /usr/bin/LoudnessCorrection.py. The previous window copies this file to test our root - password and then deletes it.
-	seventh_window_back_button['state'] = 'disabled'
-	
 	return(False) # False means 'No errors happened everything was installed successfully :)'.
 	
 def test_if_root_password_is_valid(*args):
@@ -1896,6 +1893,8 @@ def set_button_and_label_states_on_window_seven():
 		
 		seventh_window_label_15['foreground'] = 'dark gray'
 		seventh_window_show_button_1['state'] = 'disabled'
+		
+		seventh_window_back_button['state'] = 'disabled'
 
 def show_installation_shell_commands(*args):
 	
@@ -1961,7 +1960,8 @@ def install_missing_programs(*args):
 	force_reinstallation_of_all_programs = False
 	an_error_has_happened = False
 	all_installation_messages = ''
-	
+	possible_apt_get_error_messages = ['could not get lock', 'error', 'fail', 'try again']
+		
 	# Disable active buttons on window seven so that user can't accidentally click them.
 	installation_is_running = True
 	set_button_and_label_states_on_window_seven()
@@ -2024,10 +2024,11 @@ def install_missing_programs(*args):
 			print('sudo_stdout:', sudo_stdout)
 			print('sudo_stderr:', sudo_stderr)
 		
-		# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
-		if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
-			show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
-			an_error_has_happened = True
+		# Check if some error keywords can be found in apt-get output.
+		for apt_error_string in possible_apt_get_error_messages:
+			if apt_error_string in sudo_stderr_string.lower():
+				show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+				an_error_has_happened = True
 	
 	if an_error_has_happened == False:
 		
@@ -2078,10 +2079,11 @@ def install_missing_programs(*args):
 				print('sudo_stdout:', sudo_stdout)
 				print('sudo_stderr:', sudo_stderr)
 			
-			# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
-			if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
-				show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
-				an_error_has_happened = True
+			# Check if some error keywords can be found in apt-get output.
+			for apt_error_string in possible_apt_get_error_messages:
+				if apt_error_string in sudo_stderr_string.lower():
+					show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+					an_error_has_happened = True
 		
 	if an_error_has_happened == False:
 		
