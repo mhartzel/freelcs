@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '042'
+version = '043'
 
 ###################################
 # Function definitions start here #
@@ -1566,6 +1566,7 @@ def test_if_root_password_is_valid(*args):
 	#######################################################################################################################################
 
 	global path_to_loudnesscorrection
+	target_testfile_name = '00-this_file_was_copied_here_when_FreeLCS_installer_tested_root_password_validity'
 	root_password_was_accepted = True
 
 	password = root_password.get()  + '\n' # Add a carriage return after the root password
@@ -1579,7 +1580,7 @@ def test_if_root_password_is_valid(*args):
 	# Copy LoudnessCorrection.py to /usr/bin/ #
 	###########################################
 	
-	commands_to_run = ['sudo', '-k', '-p', '', '-S', 'cp', '-f', path_to_loudnesscorrection, '/usr/bin/' + os.path.basename(path_to_loudnesscorrection)] # Create the commandline we need to run as root.
+	commands_to_run = ['sudo', '-k', '-p', '', '-S', 'cp', '-f', path_to_loudnesscorrection, '/usr/bin/' + target_testfile_name] # Create the commandline we need to run as root.
 
 	# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 	sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
@@ -1596,7 +1597,7 @@ def test_if_root_password_is_valid(*args):
 	
 	if root_password_was_accepted == True:
 	
-		commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chmod', '755', '/usr/bin/' + os.path.basename(path_to_loudnesscorrection)] # Create the commandline we need to run as root.
+		commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chmod', '755', '/usr/bin/' + target_testfile_name] # Create the commandline we need to run as root.
 
 		# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 		sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
@@ -1613,7 +1614,7 @@ def test_if_root_password_is_valid(*args):
 	
 	if root_password_was_accepted == True:
 	
-		commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chown', 'root:root', '/usr/bin/' + os.path.basename(path_to_loudnesscorrection)] # Create the commandline we need to run as root.
+		commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chown', 'root:root', '/usr/bin/' + target_testfile_name] # Create the commandline we need to run as root.
 
 		# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 		sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
@@ -1630,7 +1631,7 @@ def test_if_root_password_is_valid(*args):
 	
 	if root_password_was_accepted == True:
 	
-		commands_to_run = ['sudo', '-k', '-p', '', '-S', 'rm', '-f', '/usr/bin/' + os.path.basename(path_to_loudnesscorrection)] # Create the commandline we need to run as root.
+		commands_to_run = ['sudo', '-k', '-p', '', '-S', 'rm', '-f', '/usr/bin/' + target_testfile_name] # Create the commandline we need to run as root.
 
 		# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 		sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
@@ -1705,6 +1706,10 @@ def find_program_in_current_dir(program_name_to_find):
 	true_or_false = os.path.exists(current_directory + os.sep + program_name_to_find) # True if program can be found in the path.
 	if true_or_false == True:
 			program_path = current_directory + os.sep + program_name_to_find
+	if debug == True:
+			print()
+			print('program_path =', program_path)
+			print()
 	return(program_path)
 
 def set_seventh_window_label_texts_and_colors():
@@ -1842,6 +1847,7 @@ def set_button_and_label_states_on_window_seven():
 	
 	global all_needed_external_programs_are_installed
 	global external_program_installation_has_been_already_run
+	global installation_is_running
 	
 	if all_needed_external_programs_are_installed == False:
 		# Some needed external programs are not installed.
@@ -1879,6 +1885,17 @@ def set_button_and_label_states_on_window_seven():
 		# Button and text label for: Show me the messages output during the installation
 		seventh_window_label_18['foreground'] = 'black'
 		seventh_window_show_button_2['state'] = 'normal'
+	
+	if installation_is_running == True:
+		# When installation has started disable active buttons so that the user can not accidentally start more processes.
+		seventh_window_toggle_label['foreground'] = 'dark gray'
+		seventh_window_toggle_button['state'] = 'disabled'
+		
+		seventh_window_label_14['foreground'] = 'dark gray'
+		seventh_window_install_button['state'] = 'disabled'
+		
+		seventh_window_label_15['foreground'] = 'dark gray'
+		seventh_window_show_button_1['state'] = 'disabled'
 
 def show_installation_shell_commands(*args):
 	
@@ -1939,10 +1956,15 @@ def install_missing_programs(*args):
 	global all_installation_messages
 	global directory_for_os_temporary_files
 	global force_reinstallation_of_all_programs
+	global installation_is_running
 	
 	force_reinstallation_of_all_programs = False
 	an_error_has_happened = False
 	all_installation_messages = ''
+	
+	# Disable active buttons on window seven so that user can't accidentally click them.
+	installation_is_running = True
+	set_button_and_label_states_on_window_seven()
 	
 	password = root_password.get()  + '\n' # Add a carriage return after the root password	
 	password = password.encode('utf-8') # Convert password from string to binary format.
@@ -2744,12 +2766,23 @@ def toggle_installation_status():
 		seventh_window_toggle_button['text'] = 'Undo'
 	else:
 		force_reinstallation_of_all_programs = False
-		seventh_window_toggle_button['text'] = 'Reinstall'
+		seventh_window_toggle_button['text'] = 'Force Reinstall'
 		
 	find_paths_to_all_external_programs_we_need()
 	define_program_installation_commands()
 	set_button_and_label_states_on_window_seven()
 	set_seventh_window_label_texts_and_colors()
+	
+	seventh_frame.update() # Update the frame that has possibly changed, this triggers updating all child objects.
+	
+	# Get Frame dimensions and resize root_window to fit the whole frame.
+	root_window.geometry(str(seventh_frame.winfo_reqwidth()+40) +'x'+ str(seventh_frame.winfo_reqheight()))
+	
+	# Get root window geometry and center it on screen.
+	root_window.update()
+	x_position = (root_window.winfo_screenwidth() / 2) - (root_window.winfo_width() / 2) - 8
+	y_position = (root_window.winfo_screenheight() / 2) - (root_window.winfo_height() / 2) - 20
+	root_window.geometry(str(root_window.winfo_width()) + 'x' +str(root_window.winfo_height()) + '+' + str(int(x_position)) + '+' + str(int(y_position)))
 	
 	
 def define_program_installation_commands():
@@ -2920,6 +2953,7 @@ all_installation_messages = ''
 all_ip_addresses_of_the_machine = []
 all_ip_addresses_of_the_machine = get_ip_addresses_of_the_host_machine()
 peak_measurement_method = '--peak=sample'
+installation_is_running = False
 
 # Get the directory the os uses for storing temporary files.
 directory_for_os_temporary_files = tempfile.gettempdir()
@@ -3621,7 +3655,7 @@ seventh_window_loudnesscorrection_label.grid(column=3, row=8, columnspan=1, padx
 # Toggle installation status
 seventh_window_toggle_label = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='Force reinstallation of all programs:')
 seventh_window_toggle_label.grid(column=0, row=9, columnspan=2, padx=10, pady=2, sticky=(tkinter.W))
-seventh_window_toggle_button = tkinter.Button(seventh_frame_child_frame_1, text = "Reinstall", command = toggle_installation_status)
+seventh_window_toggle_button = tkinter.Button(seventh_frame_child_frame_1, text = "Force Reinstall", command = toggle_installation_status)
 seventh_window_toggle_button.grid(column=3, row=9, padx=30, pady=2, sticky=(tkinter.N))
 
 # Define a horizontal line to space out groups of rows.

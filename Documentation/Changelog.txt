@@ -1,3 +1,8 @@
+Installer 043
+--------------
+- Bugfix: If FreeLCS was previously installed and a new installation / update failed then LoudnessCorrection.py was deleted in some cases.
+- Bugfix: Some active buttons remained active and clickable after installation had started. Buttons go to 'disabled' state now when installation starts.
+
 Installer 042
 --------------
 - Changed the default email sending interval for LoudnessCorrection.py from 10 minutes to 30 minutes.
