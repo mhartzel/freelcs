@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '045'
+version = '047'
 
 ###################################
 # Function definitions start here #
@@ -583,7 +583,7 @@ def test_if_email_settings_are_complete():
 		error_message = 'ERROR !!!!!!! Password has not been defined.'
 	if email_sending_details['message_recipients'] == []:
 		email_settings_are_complete = False
-		error_message = 'ERROR !!!!!!! Email recipients have not been defined. (Remember to press ENTER)'
+		error_message = 'ERROR !!!!!!! No email recipients. (Remember to press ENTER to insert name)'
 	return(email_settings_are_complete, error_message)
 
 def connect_to_smtp_server():
@@ -3028,6 +3028,58 @@ samba_configuration_file_content = ['# Samba Configuration File', \
 'browseable = yes']
 samba_configuration_file_content_as_a_string = '\n'.join(samba_configuration_file_content)
 
+# If there is a previously saved settings-file then read in settings from that and assign values to variables.
+previously_saved_settings_dict = {}
+previously_saved_email_sending_details = {}
+
+if (os.path.exists(configfile_path) == True) or (os.access(configfile_path, os.R_OK) == True):
+	try:
+		with open(configfile_path, 'rb') as configfile_handler:
+			previously_saved_settings_dict = pickle.load(configfile_handler)
+	except KeyboardInterrupt:
+		print('\n\nUser cancelled operation.\n')
+		sys.exit(0)
+	except IOError as reason_for_error:
+		error_message = 'Error reading configfile: ' * english + 'Asetustiedoston lukemisessa tapahtui virhe: ' * finnish + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message, [])
+		sys.exit(1)
+	except OSError as reason_for_error:
+		error_message = 'Error reading configfile: ' * english + 'Asetustiedoston lukemisessa tapahtui virhe: ' * finnish + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message, [])
+		sys.exit(1)
+	except EOFError as reason_for_error:
+		error_message = 'Error reading configfile: ' * english + 'Asetustiedoston lukemisessa tapahtui virhe: ' * finnish + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message, [])
+		sys.exit(1)
+
+if 'target_path' in previously_saved_settings_dict:
+		target_path.set(previously_saved_settings_dict['target_path'])
+if 'language' in previously_saved_settings_dict:
+		language.set(previously_saved_settings_dict['language'])
+if 'number_of_processor_cores' in previously_saved_settings_dict:
+		number_of_processor_cores.set(previously_saved_settings_dict['number_of_processor_cores'])
+if 'file_expiry_time' in previously_saved_settings_dict:
+		file_expiry_time = previously_saved_settings_dict['file_expiry_time']
+if 'send_error_messages_by_email' in previously_saved_settings_dict:
+		send_error_messages_by_email.set(previously_saved_settings_dict['send_error_messages_by_email'])
+if 'email_sending_details' in previously_saved_settings_dict:
+		previously_saved_email_sending_details = previously_saved_settings_dict['email_sending_details']
+		use_tls.set(previously_saved_email_sending_details['use_tls'])
+		smtp_server_requires_authentication.set(previously_saved_email_sending_details['smtp_server_requires_authentication'])
+		smtp_username.set(previously_saved_email_sending_details['smtp_username'])
+		smtp_password.set(previously_saved_email_sending_details['smtp_password'])
+		email_sending_interval = previously_saved_email_sending_details['email_sending_interval']
+		if previously_saved_email_sending_details['message_recipients'] != {}:
+			email_addresses_string.set(previously_saved_email_sending_details['message_recipients'][0])
+if 'write_html_progress_report' in previously_saved_settings_dict:
+	write_html_progress_report.set(previously_saved_settings_dict['write_html_progress_report'])
+if 'peak_measurement_method' in previously_saved_settings_dict:
+	if previously_saved_settings_dict['peak_measurement_method'] == '--peak=sample':
+		sample_peak.set(True)
+	if previously_saved_settings_dict['peak_measurement_method'] == '--peak=true':
+		sample_peak.set(False)
+	set_sample_peak_measurement_method()
+
 # Create frames inside the root window to hold other GUI elements. All frames and widgets must be created in the main program, otherwise they are not accessible in subroutines. 
 first_frame=tkinter.ttk.Frame(root_window)
 first_frame.grid(column=0, row=0, padx=20, pady=5, columnspan=4, sticky=(tkinter.W, tkinter.N, tkinter.E, tkinter.S))
@@ -3237,7 +3289,13 @@ second_window_label_4 = tkinter.ttk.Label(second_frame_child_frame_3, text='Numb
 second_window_label_4.grid(column=0, row=0, columnspan=2, pady=10, padx=10, sticky=(tkinter.W, tkinter.N))
 number_of_processor_cores_combobox = tkinter.ttk.Combobox(second_frame_child_frame_3, justify=tkinter.CENTER, width=4, textvariable=number_of_processor_cores)
 number_of_processor_cores_combobox['values'] = (2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64)
-number_of_processor_cores_combobox.set(4)
+
+# If a previously saved setting can be found then use it.
+if number_of_processor_cores.get() != '':
+	number_of_processor_cores_combobox.set(number_of_processor_cores.get())
+else:
+	number_of_processor_cores_combobox.set(4)
+	
 number_of_processor_cores_combobox.bind('<<ComboboxSelected>>', print_number_of_processors_cores_to_use)
 number_of_processor_cores_combobox.grid(column=3, row=0, pady=10, padx=10, sticky=(tkinter.E))
 second_window_label_5 = tkinter.ttk.Label(second_frame_child_frame_3, wraplength=text_wrap_length_in_pixels, text='If your HotFolder is on a fast RAID, then selecting more processor cores here than you actually have speeds up processing (For Example select 6 cores, when you only have 2 real ones). Each file that is processed ties up two processor cores. Selecting more cores here results in more files being processed in parallel. It is adviced that you test different settings to find the sweet spot of your machine.')
@@ -3252,7 +3310,14 @@ second_window_label_6 = tkinter.ttk.Label(second_frame_child_frame_4, text='File
 second_window_label_6.grid(column=0, row=0, columnspan=4, pady=10, padx=10, sticky=(tkinter.W, tkinter.N))
 file_expiry_time_in_minutes_combobox = tkinter.ttk.Combobox(second_frame_child_frame_4, justify=tkinter.CENTER, width=5, textvariable=file_expiry_time_in_minutes)
 file_expiry_time_in_minutes_combobox['values'] = (60, 90, 120, 180, 240, 300, 360, 420, 480, 540, 600, 660, 720, 780, 840, 900, 960)
-file_expiry_time_in_minutes_combobox.set(480)
+
+# If a previously saved setting can be found then use it.
+if file_expiry_time != 0:
+	file_expiry_time_in_minutes.set(int(file_expiry_time / 60))
+	file_expiry_time_in_minutes_combobox.set(file_expiry_time_in_minutes.get())
+else:
+	file_expiry_time_in_minutes_combobox.set(480)
+	
 file_expiry_time_in_minutes_combobox.bind('<<ComboboxSelected>>', convert_file_expiry_time_to_seconds)
 file_expiry_time_in_minutes_combobox.grid(column=3, row=0, pady=10, padx=10, sticky=(tkinter.N))
 
@@ -3309,6 +3374,13 @@ third_window_label_4.grid(column=0, row=5, padx=10, columnspan=2, sticky=(tkinte
 
 smtp_server_name_combobox = tkinter.ttk.Combobox(third_frame_child_frame_1, textvariable=smtp_server_name)
 smtp_server_name_combobox['values'] = ('smtp.gmail.com')
+
+# If a previously saved setting can be found then use it.
+if 'smtp_server_name' in previously_saved_email_sending_details:
+	smtp_server_name.set(previously_saved_email_sending_details['smtp_server_name'])
+	if smtp_server_name.get() not in smtp_server_name_combobox['values']:
+		smtp_server_name_combobox['values'] = ('smtp.gmail.com', smtp_server_name.get())
+	smtp_server_name_combobox.set(smtp_server_name.get())
 smtp_server_name_combobox.state(['disabled'])
 smtp_server_name_combobox.grid(column=2, row=5, padx=10, sticky=(tkinter.N, tkinter.E))
 
@@ -3318,6 +3390,14 @@ third_window_label_5.grid(column=0, row=6, padx=10, columnspan=2, sticky=(tkinte
 
 smtp_server_port_combobox = tkinter.ttk.Combobox(third_frame_child_frame_1, textvariable=smtp_server_port)
 smtp_server_port_combobox['values'] = (25, 465, 587)
+
+# If a previously saved setting can be found then use it.
+if 'smtp_server_port' in previously_saved_email_sending_details:
+	smtp_server_port.set(previously_saved_email_sending_details['smtp_server_port'])
+	if smtp_server_port.get() not in smtp_server_port_combobox['values']:
+		smtp_server_port_combobox['values'] = ('smtp.gmail.com', smtp_server_port.get())
+	smtp_server_port_combobox.set(smtp_server_port.get())
+
 smtp_server_port_combobox.state(['disabled'])
 smtp_server_port_combobox.grid(column=2, row=6, padx=10, sticky=(tkinter.N, tkinter.E))
 
@@ -3353,7 +3433,14 @@ third_window_label_8.grid(column=0, row=11, padx=10, columnspan=2, sticky=(tkint
 
 email_sending_interval_combobox = tkinter.ttk.Combobox(third_frame_child_frame_1, justify=tkinter.CENTER, width=5, textvariable=email_sending_interval_in_minutes)
 email_sending_interval_combobox['values'] = (1, 2, 3, 4, 5, 10, 12, 15, 18, 20, 25, 30, 40, 50, 60, 90, 120, 180, 240, 300)
-email_sending_interval_combobox.set(30)
+
+# If a previously saved setting can be found then use it.
+if email_sending_interval != 0:
+	email_sending_interval_in_minutes.set(int(email_sending_interval / 60))
+	email_sending_interval_combobox.set(email_sending_interval_in_minutes.get())
+else:
+	email_sending_interval_combobox.set(30)
+	
 email_sending_interval_combobox.state(['disabled'])
 email_sending_interval_combobox.bind('<<ComboboxSelected>>', convert_email_sending_interval_to_seconds)
 email_sending_interval_combobox.grid(column=2, row=11, padx=10, sticky=(tkinter.N, tkinter.E))
@@ -3443,6 +3530,8 @@ third_window_back_button.grid(column=1, row=1, padx=30, pady=10, sticky=(tkinter
 third_window_next_button = tkinter.Button(third_frame, text = "Next", command = call_fourth_frame_on_top)
 third_window_next_button.grid(column=2, row=1, padx=30, pady=10, sticky=(tkinter.W, tkinter.N))
 
+enable_email_settings()
+
 ###########################################################################################################
 # Window number 4                                                                                         #
 ###########################################################################################################
@@ -3502,12 +3591,16 @@ fourth_window_label_5.grid(column=0, row=8, columnspan=4, pady=10, padx=10, stic
 username_combobox = tkinter.ttk.Combobox(fourth_frame_child_frame_1, justify=tkinter.CENTER, textvariable=user_account)
 # Get user account names from the os.
 error_happened, error_message, list_of_normal_useraccounts = get_list_of_normal_user_accounts_from_os()
+
 if error_happened == True:
 	fourth_window_error_label_2 = tkinter.ttk.Label(fourth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, foreground='red', text=error_message)
 	fourth_window_error_label_2.grid(column=0, row=11, columnspan=4, padx=10, pady=10, sticky=(tkinter.W, tkinter.N))
+	
 username_combobox['values'] = list_of_normal_useraccounts
+
 if len(list_of_normal_useraccounts) > 0:
 	username_combobox.set(list_of_normal_useraccounts[0])
+	
 username_combobox.bind('<<ComboboxSelected>>', print_user_account)
 username_combobox.grid(column=3, row=8, columnspan=2, pady=10, padx=10, sticky=(tkinter.N))
 

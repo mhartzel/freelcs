@@ -1,3 +1,7 @@
+Installer 047
+--------------
+- When installer starts it now checks for previously saved configfile and if found reads in some values from it and uses them as defaults.
+
 Installer 045
 --------------
 - Changed the text of the 'Force reinstallation' button.
