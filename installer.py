@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '044'
+version = '045'
 
 ###################################
 # Function definitions start here #
@@ -205,6 +205,29 @@ def call_ninth_frame_on_top():
 	
 	# Get Frame dimensions and resize root_window to fit the whole frame.
 	root_window.geometry(str(ninth_frame.winfo_reqwidth()+40) +'x'+ str(ninth_frame.winfo_reqheight()))
+	
+	# Get root window geometry and center it on screen.
+	root_window.update()
+	x_position = (root_window.winfo_screenwidth() / 2) - (root_window.winfo_width() / 2) - 8
+	y_position = (root_window.winfo_screenheight() / 2) - (root_window.winfo_height() / 2) - 20
+	root_window.geometry(str(root_window.winfo_width()) + 'x' +str(root_window.winfo_height()) + '+' + str(int(x_position)) + '+' + str(int(y_position)))
+	
+def call_showstopper_frame_on_top():
+	# This funtions displays the showstopper window, telling user that the error we encountered stops us from continuing the program.
+	first_frame.grid_forget()
+	second_frame.grid_forget()
+	third_frame.grid_forget()
+	fourth_frame.grid_forget()
+	fifth_frame.grid_forget()
+	sixth_frame.grid_forget()
+	seventh_frame.grid_forget()
+	eigth_frame.grid_forget()
+	ninth_frame.grid_forget()
+	showstopper_frame.update()
+	showstopper_frame.grid(column=0, row=0, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E, tkinter.S))
+	
+	# Get Frame dimensions and resize root_window to fit the whole frame.
+	root_window.geometry(str(showstopper_frame.winfo_reqwidth()+40) +'x'+ str(showstopper_frame.winfo_reqheight()))
 	
 	# Get root window geometry and center it on screen.
 	root_window.update()
@@ -2765,27 +2788,13 @@ def toggle_installation_status():
 	
 	if force_reinstallation_of_all_programs == False:
 		force_reinstallation_of_all_programs = True
-		seventh_window_toggle_button['text'] = 'Undo'
 	else:
 		force_reinstallation_of_all_programs = False
-		seventh_window_toggle_button['text'] = 'Force Reinstall'
 		
 	find_paths_to_all_external_programs_we_need()
 	define_program_installation_commands()
 	set_button_and_label_states_on_window_seven()
 	set_seventh_window_label_texts_and_colors()
-	
-	seventh_frame.update() # Update the frame that has possibly changed, this triggers updating all child objects.
-	
-	# Get Frame dimensions and resize root_window to fit the whole frame.
-	root_window.geometry(str(seventh_frame.winfo_reqwidth()+40) +'x'+ str(seventh_frame.winfo_reqheight()))
-	
-	# Get root window geometry and center it on screen.
-	root_window.update()
-	x_position = (root_window.winfo_screenwidth() / 2) - (root_window.winfo_width() / 2) - 8
-	y_position = (root_window.winfo_screenheight() / 2) - (root_window.winfo_height() / 2) - 20
-	root_window.geometry(str(root_window.winfo_width()) + 'x' +str(root_window.winfo_height()) + '+' + str(int(x_position)) + '+' + str(int(y_position)))
-	
 	
 def define_program_installation_commands():
 	
@@ -2918,6 +2927,7 @@ heartbeat = tkinter.BooleanVar()
 heartbeat.set(False)
 email_sending_message_1 = tkinter.StringVar()
 email_sending_message_2 = tkinter.StringVar()
+showstopper_error_message = tkinter.StringVar()
 
 # We need to know when user inputs a new value in smtp server combobox and call a subroutine that writes that value to our variable.
 # To achieve this we must trace when the combobox value changes.
@@ -3124,13 +3134,20 @@ ninth_frame_child_frame_1['borderwidth'] = 2
 ninth_frame_child_frame_1['relief'] = 'sunken'
 ninth_frame_child_frame_1.grid(column=0, row=0, columnspan=4, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E))
 
+showstopper_frame=tkinter.ttk.Frame(root_window)
+showstopper_frame.grid(column=0, row=0, columnspan=4, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E))
+
+showstopper_frame_child_frame_1=tkinter.ttk.Frame(showstopper_frame)
+showstopper_frame_child_frame_1['borderwidth'] = 2
+showstopper_frame_child_frame_1['relief'] = 'sunken'
+showstopper_frame_child_frame_1.grid(column=0, row=0, columnspan=4, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E, tkinter.S))
+
 ###########################################################################################################
 # Window number 1                                                                                         #
 ###########################################################################################################
 
 # Define the text message to display on the first window.
 # This is the introcution window, with nothing but text on it.
-text_wrap_length_in_pixels
 first_window_label_text.set('This program lets you configure LoudnessCorrection settings and install all needed Linux init scripts.\n\nAfter configuration LoudnessCorrection starts automatically every time the computer starts up. There will be a 1 - 2 minute delay after boot before LoudnessCorrection is started. This makes sure all needed Linux services are up when we start up.')
 first_window_label = tkinter.ttk.Label(first_frame_child_frame_1, textvariable=first_window_label_text, wraplength=text_wrap_length_in_pixels)
 first_window_label.grid(column=0, row=0, columnspan=4, pady=10, padx=20, sticky=(tkinter.E, tkinter.N))
@@ -3654,15 +3671,15 @@ seventh_window_loudnesscorrection_label = tkinter.ttk.Label(seventh_frame_child_
 seventh_window_loudnesscorrection_label['foreground'] = 'red'
 seventh_window_loudnesscorrection_label.grid(column=3, row=8, columnspan=1, padx=10, sticky=(tkinter.N))
 
-# Toggle installation status
-seventh_window_toggle_label = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='Force reinstallation of all programs:')
-seventh_window_toggle_label.grid(column=0, row=9, columnspan=2, padx=10, pady=2, sticky=(tkinter.W))
-seventh_window_toggle_button = tkinter.Button(seventh_frame_child_frame_1, text = "Force Reinstall", command = toggle_installation_status)
-seventh_window_toggle_button.grid(column=3, row=9, padx=30, pady=2, sticky=(tkinter.N))
-
 # Define a horizontal line to space out groups of rows.
 seventh_window_separator_2 = tkinter.ttk.Separator(seventh_frame_child_frame_1, orient=tkinter.HORIZONTAL)
-seventh_window_separator_2.grid(column=0, row=10, padx=10, pady=10, columnspan=5, sticky=(tkinter.W, tkinter.E))
+seventh_window_separator_2.grid(column=0, row=9, padx=10, pady=10, columnspan=5, sticky=(tkinter.W, tkinter.E))
+
+# Toggle installation status
+seventh_window_toggle_label = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='Toggle reinstallation of all programs:')
+seventh_window_toggle_label.grid(column=0, row=10, columnspan=2, padx=10, pady=2, sticky=(tkinter.W))
+seventh_window_toggle_button = tkinter.Button(seventh_frame_child_frame_1, text = "Toggle", command = toggle_installation_status)
+seventh_window_toggle_button.grid(column=3, row=10, padx=30, pady=2, sticky=(tkinter.N))
 
 seventh_window_label_14 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='Install all missing programs:')
 seventh_window_label_14.grid(column=0, row=11, columnspan=2, padx=10, pady=2, sticky=(tkinter.W))
@@ -3747,6 +3764,20 @@ ninth_window_back_button.grid(column=1, row=1, padx=30, pady=10, sticky=(tkinter
 ninth_window_finish_button = tkinter.Button(ninth_frame_child_frame_1, text = "Finish", command = quit_program)
 ninth_window_finish_button.grid(column=2, row=1, padx=30, pady=10, sticky=(tkinter.W, tkinter.N))
 
+
+###########################################################################################################
+# 'Showstopper error encountered' window                                                                  #
+###########################################################################################################
+
+# Create the label for the frame
+showstopper_error_window_label = tkinter.ttk.Label(showstopper_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, textvariable=showstopper_error_message)
+showstopper_error_window_label['foreground'] = 'red'
+showstopper_error_window_label.grid(column=0, row=0, columnspan=4, pady=10, padx=20, sticky=(tkinter.E, tkinter.N, tkinter.S, tkinter.W))
+
+# Create the buttons for the frame
+showstopper_error_window_finish_button = tkinter.Button(showstopper_frame, text = "Quit", command = quit_program)
+showstopper_error_window_finish_button.grid(column=2, row=1, padx=30, pady=10, sticky=(tkinter.W, tkinter.S))
+
 ##################################
 # Window definitions end here :) #
 ##################################
@@ -3755,6 +3786,7 @@ ninth_window_finish_button.grid(column=2, row=1, padx=30, pady=10, sticky=(tkint
 set_directory_names_according_to_language()
 
 # Hide all frames in reverse order, but leave first frame visible (unhidden).
+showstopper_frame.grid_forget()
 ninth_frame.grid_forget()
 eigth_frame.grid_forget()
 seventh_frame.grid_forget()
@@ -3779,6 +3811,14 @@ root_window.update()
 x_position = (root_window.winfo_screenwidth() / 2) - (root_window.winfo_width() / 2) - 8
 y_position = (root_window.winfo_screenheight() / 2) - (root_window.winfo_height() / 2) - 20
 root_window.geometry(str(root_window.winfo_width()) + 'x' +str(root_window.winfo_height()) + '+' + str(int(x_position)) + '+' + str(int(y_position)))
+
+# If LoudessCorrection.py or HeartBeat_Checker.py can not be found, stop and inform the user.
+if path_to_loudnesscorrection == '':
+	showstopper_error_message.set('Error, can not find LoudnessCorrection.py.\n\nLoudnessCorrection.py and HeartBeat_Checker.py must be in the same directory as the installer. Can not continue.')
+	call_showstopper_frame_on_top()
+if path_to_heartbeat_checker == '':
+	showstopper_error_message.set('Error, can not find HeartBeat_Checker.py.\n\nLoudnessCorrection.py and HeartBeat_Checker.py must be in the same directory as the installer. Can not continue.')
+	call_showstopper_frame_on_top()
 
 # Start tkinter event - loop
 root_window.mainloop()

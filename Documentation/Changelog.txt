@@ -1,6 +1,12 @@
+Installer 045
+--------------
+- Changed the text of the 'Force reinstallation' button.
+- Moved the 'Reinstallation toggle' button to another part of the window.
+- Bugfix: If LoudnessCorrection.py or HeartBeat_Checker.py was not in the same directory as the installer the install failed silently, now an error message is displayed.
+
 Installer 044
 --------------
-- Installer did not check if the apt-get database was already in use by another program. This caused the installation to silently fail in these cases.
+- Bugfix: Installer did not check if the apt-get database was already in use by another program. This caused the installation to silently fail in these cases.
 
 Installer 043
 --------------
