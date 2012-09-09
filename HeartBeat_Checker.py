@@ -22,7 +22,7 @@ import email.mime.multipart
 import pickle
 import subprocess
 
-version = '019'
+version = '020'
 
 # User can set some defaults here that are used if the program is started without giving it the path to a configfile.
 silent = False # Use True if you don't want this program to output anything to screen.
@@ -352,7 +352,7 @@ while True:
 	# Send an email telling HeartBeat_Checker has started.
 	if startup_message_has_been_sent == False:
 		startup_message_has_been_sent = True
-		message_text_list = ['HeartBeat_Checker started at: ' + time_string]
+		message_text_list = ['HeartBeat_Checker started: ' + time_string]
 		message_text_string = '\n'.join(message_text_list) + '\n\n'
 		send_email(message_recipients, 'HeartBeat_Checker has started.', message_text_string, message_attachment_path)
 	
