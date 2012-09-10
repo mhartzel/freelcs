@@ -35,7 +35,7 @@ import pickle
 import math
 import copy
 
-version = '175'
+version = '177'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -512,6 +512,10 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 		# File is so big that even separate mono channels would exceed 4GB each, so flac format must be used for the output file.
 		warning_message = warning_message + '\\nWarning: file size exceeds wav format max limit 4 GB, file will be stored in flac - format' * english + '\\nVaroitus: tiedoston koko ylittää wav - formaatin maksimin (4 GB), tiedosto tallennetaan flac - formaattiin' * finnish
 	
+	# Warn the user that if more than 6 channels, channels beyong 6 will be ignored.
+	if channel_count > 6:
+		warning_message = warning_message + '\\nWarning: File has more than 6 channels, the last ' * english + str(channel_count - 6) * english + ' channels will be ignored' * english + '\\nVaroitus: Tiedostossa on enemmän kuin 6 kanavaa, viimeiset ' * finnish  + str(channel_count - 6) * finnish + ' kanavaa jätetään huomioimatta' * finnish
+
 	# Generate gnuplot commands needed for plotting the graphicsfile and store commands in a list.
 	if (integrated_loudness_calculation_error == True) or (timeslice_calculation_error == True):
 		# Loudness calculation encountered an error, generate gnuplot commands for plotting default graphics with the error message.

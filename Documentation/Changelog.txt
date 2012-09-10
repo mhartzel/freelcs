@@ -1,3 +1,7 @@
+LoudnessCorrection Version 177
+-------------------------------
+- If there are more than 8 audio channels in a single stream then a warning message on the results graphics now tells the user that channels beyond 6 will be ignored.
+
 HeartBeat_Checker version 020
 -------------------------------
 - Cosmetic change, removed one word ('at') from the HeartBeat_Checker startup email.
