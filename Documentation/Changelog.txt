@@ -1,6 +1,10 @@
+LoudnessCorrection Version 178
+-------------------------------
+- Bugfix: If inputfile format is mpegts, then file duration is found out using 'mediainfo'. If mediainfo did not find time info, LoudnessCorrection crashed.
+
 LoudnessCorrection Version 177
 -------------------------------
-- If there are more than 8 audio channels in a single stream then a warning message on the results graphics now tells the user that channels beyond 6 will be ignored.
+- If there are more than 6 audio channels in a single stream then a warning message on the results graphics now tells the user that channels beyond 6 will be ignored.
 
 HeartBeat_Checker version 020
 -------------------------------

@@ -35,7 +35,7 @@ import pickle
 import math
 import copy
 
-version = '177'
+version = '178'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -2305,14 +2305,15 @@ def get_audiofile_duration_with_mediainfo(directory_for_temporary_files, filenam
 	if debug == True:
 		print()
 		print("Mediainfo says '" + filename + "' duration is:", mediainfo_output)
-		print()
-	
+		print()		
+		
 	# Get the file duration as a string and also calculate it in seconds.
-	audio_duration_string, audio_duration_fractions_string = mediainfo_output_decoded.split('.') # Split the time string to two variables, the last will hold the fractions part (0 - 999 hundreds of a second).
-	audio_duration_fractions = int(audio_duration_fractions_string) / 1000
-	audio_duration_list = audio_duration_string.split(':') # Separate each element in the time string (hours, minutes, seconds) and put them in a list.
-	audio_duration_rounded_to_seconds = (int(audio_duration_list[0]) * 60 * 60) + (int(audio_duration_list[1]) * 60) + int(audio_duration_list[2]) # Calculate audio duration in seconds.
-	audio_duration = audio_duration_rounded_to_seconds + audio_duration_fractions
+	if (mediainfo_output_decoded.strip() != '') and ('-' not in mediainfo_output_decoded):
+		audio_duration_string, audio_duration_fractions_string = mediainfo_output_decoded.split('.') # Split the time string to two variables, the last will hold the fractions part (0 - 999 hundreds of a second).
+		audio_duration_fractions = int(audio_duration_fractions_string) / 1000
+		audio_duration_list = audio_duration_string.split(':') # Separate each element in the time string (hours, minutes, seconds) and put them in a list.
+		audio_duration_rounded_to_seconds = (int(audio_duration_list[0]) * 60 * 60) + (int(audio_duration_list[1]) * 60) + int(audio_duration_list[2]) # Calculate audio duration in seconds.
+		audio_duration = audio_duration_rounded_to_seconds + audio_duration_fractions
 		
 	# Delete the temporary stdout - file.
 	try:
