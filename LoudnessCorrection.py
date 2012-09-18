@@ -35,7 +35,7 @@ import pickle
 import math
 import copy
 
-version = '178'
+version = '179'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -431,6 +431,10 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 		difference_from_target_loudness_string = '+' + str(difference_from_target_loudness)
 	else:
 		difference_from_target_loudness_string = str(difference_from_target_loudness) # The loudness difference from target loudness is negative, just create a string with the negative result number in it.
+
+
+	if debug == True:
+		debug_write_loudness_calculation_info_to_a_logfile(filename, integrated_loudness, loudness_range, highest_peak_db)
 
 	# Scale loudness graphics x-axis time information according to file duration.
 	# Loudness calculation is done in 3 second slices when audio duration is 12 seconds or longer.
@@ -2326,7 +2330,34 @@ def get_audiofile_duration_with_mediainfo(directory_for_temporary_files, filenam
 		send_error_messages_to_screen_logfile_email(error_message, [])
 	
 	return(audio_duration)
-		
+	
+	
+def debug_write_loudness_calculation_info_to_a_logfile(filename, integrated_loudness, loudness_range, highest_peak_db):
+	
+	# This subroutine can be used to write loudness calculation data to a text file in error_log - directory.
+	# The developer can process a bunch of test files and save the logfile.
+	# When changes are made to critical parts of the program or external helper programs then it can be
+	# confirmed that the results from the new version are the same as in the earlier saved file.
+	
+	global loudness_calculation_logfile_path
+	loudness_calculation_data = filename + ',EndOFFileName,' + str(integrated_loudness) + ',' + str(loudness_range) + ',' + str(highest_peak_db) + '\n'
+	
+	try:
+		with open(loudness_calculation_logfile_path, 'at') as loudness_calculation_logfile_handler:
+			loudness_calculation_logfile_handler.write(loudness_calculation_data)
+			loudness_calculation_logfile_handler.flush() # Flushes written data to os cache
+			os.fsync(loudness_calculation_logfile_handler.fileno()) # Flushes os cache to disk
+	except KeyboardInterrupt:
+		print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
+		sys.exit(0)
+	except IOError as reason_for_error:
+		error_message = 'Error opening loudness calculation logfile for writing ' * english + 'Äänekkyyslogitiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message, [])
+	except OSError as reason_for_error:
+		error_message = 'Error opening loudness calculation logfile for writing ' * english + 'Äänekkyyslogitiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message, [])
+			
+			
 
 ##############################################################################################
 #                                The main program starts here:)                              #
@@ -2584,6 +2615,10 @@ else:
 
 # Define the name of the error logfile.
 error_logfile_path = directory_for_error_logs + os.sep + 'error_log-' + str(get_realtime(english, finnish)) + '.txt' # Error log filename is 'error_log' + current date + time
+
+# Define the name of the loudness calculation logfile.
+if debug == True:
+	loudness_calculation_logfile_path = directory_for_error_logs + os.sep + 'loudness_calculation_log-' + str(get_realtime(english, finnish)) + '.txt'
 
 # Get IP-Addresses of the machine.
 all_ip_addresses_of_the_machine = get_ip_addresses_of_the_host_machine()

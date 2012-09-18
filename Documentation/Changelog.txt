@@ -1,3 +1,7 @@
+LoudnessCorrection Version 179
+-------------------------------
+- Added a function 'debug_write_loudness_calculation_info_to_a_logfile' than can be used to write filenames and loudness calculation data to a text file. Saved logfiles can be compared to new ones when critical parts of LoudnessCorrection.py or for example libebur128 gets modified. In other words this debug function can be used to validate that loudness calculation gives the same results before and after a change in critical components.
+
 LoudnessCorrection Version 178
 -------------------------------
 - Bugfix: If inputfile format is mpegts, then file duration is found out using 'mediainfo'. If mediainfo did not find time info, LoudnessCorrection crashed.
