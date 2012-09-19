@@ -35,7 +35,7 @@ import pickle
 import math
 import copy
 
-version = '179'
+version = '180'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -1406,7 +1406,7 @@ def send_error_messages_to_screen_logfile_email(error_message, send_error_messag
 	global error_logfile_path
 	error_message_with_timestamp = str(get_realtime(english, finnish)) + '   ' + error_message # Add the current date and time at the beginning of the error message.
 	
-	# If the calling subroutine did not define where it wan'ts us to send error messages then use global defaults.
+	# If the calling subroutine did not define where it wants us to send error messages then use global defaults.
 	if send_error_messages_to_these_destinations == []:
 		send_error_messages_to_these_destinations = where_to_send_error_messages
 	
@@ -1510,25 +1510,25 @@ def send_error_messages_by_email_thread(email_sending_details, english, finnish)
 				mailServer.close()
 				
 			except smtplib.socket.timeout as reason_for_error:
-				reason_for_failed_send.append('Error, Timeout error:', reason_for_error)
+				reason_for_failed_send.append('Error, Timeout error: ' + str(reason_for_error))
 			except smtplib.socket.error as reason_for_error:
-				reason_for_failed_send.append('Error, Socket error:', reason_for_error)
+				reason_for_failed_send.append('Error, Socket error: ' + str(reason_for_error))
 			except smtplib.SMTPRecipientsRefused as reason_for_error:
-				reason_for_failed_send.append('Error, All recipients were refused:', reason_for_error)
+				reason_for_failed_send.append('Error, All recipients were refused: ' + str(reason_for_error))
 			except smtplib.SMTPHeloError as reason_for_error:
-				reason_for_failed_send.append('Error, The server didn’t reply properly to the HELO greeting:', reason_for_error)
+				reason_for_failed_send.append('Error, The server didn’t reply properly to the HELO greeting: ' + str(reason_for_error))
 			except smtplib.SMTPSenderRefused as reason_for_error:
-				reason_for_failed_send.append('Error, The server didn’t accept the sender address:', reason_for_error)
+				reason_for_failed_send.append('Error, The server didn’t accept the sender address: ' + str(reason_for_error))
 			except smtplib.SMTPDataError as reason_for_error:
-				reason_for_failed_send.append('Error, The server replied with an unexpected error code or The SMTP server refused to accept the message data:', reason_for_error)
+				reason_for_failed_send.append('Error, The server replied with an unexpected error code or The SMTP server refused to accept the message data: ' + str(reason_for_error))
 			except smtplib.SMTPException as reason_for_error:
-				reason_for_failed_send.append('Error, The server does not support the STARTTLS extension or No suitable authentication method was found:', reason_for_error)
+				reason_for_failed_send.append('Error, The server does not support the STARTTLS extension or No suitable authentication method was found: ' + str(reason_for_error))
 			except smtplib.SMTPAuthenticationError as reason_for_error:
-				reason_for_failed_send.append('Error, The server didn’t accept the username/password combination:', reason_for_error)
+				reason_for_failed_send.append('Error, The server didn’t accept the username/password combination: ' + str(reason_for_error))
 			except smtplib.SMTPConnectError as reason_for_error:
-				reason_for_failed_send.append('Error, Error occurred during establishment of a connection with the server:', reason_for_error)
+				reason_for_failed_send.append('Error, Error occurred during establishment of a connection with the server: ' + str(reason_for_error))
 			except RuntimeError as reason_for_error:
-				reason_for_failed_send.append('Error, SSL/TLS support is not available to your Python interpreter:', reason_for_error)
+				reason_for_failed_send.append('Error, SSL/TLS support is not available to your Python interpreter: ' + str(reason_for_error))
 			# If sending the email failed, print the reason for error to screen and logfile, but only if user has allowed printing to screen and logfile.
 			if len(reason_for_failed_send) > 0:
 				if silent == False:
@@ -2865,12 +2865,22 @@ while True:
 						if (ffmpeg_supported_fileformat == False) and (filename not in unsupported_ignored_files_dict):
 							# No audiostreams were found in the file, plot an error graphics file to tell the user about it and add the filename and the time it was first seen to the list of files we will ignore.
 							if ffmpeg_error_message == '': # Check if ffmpeg printed an error message.
+							
 								# If ffmpeg error message can not be found, use a default message.
 								error_message = 'No Audio Streams Found In File: ' * english + 'Tiedostosta: ' * finnish + filename + ' ei löytynyt ääniraitoja.' * finnish
+								
+								# This error message is not very important so don't send it by email, only send it to other possible destinations (screen, logfile).
+								error_message_destinations = copy.deepcopy(where_to_send_error_messages)
+								if 'email' in error_message_destinations:
+									error_message_destinations.remove('email')
+								send_error_messages_to_screen_logfile_email(error_message, error_message_destinations)
+								
 							else:
+								
 								# FFmpeg error message was found tell the user about it.
 								error_message = 'FFmpeg Error : ' * english + 'FFmpeg Virhe: ' * finnish + filename + ': ' + ffmpeg_error_message
-							send_error_messages_to_screen_logfile_email(error_message, [])
+								send_error_messages_to_screen_logfile_email(error_message, [])
+								
 							create_gnuplot_commands_for_error_message(error_message, filename, directory_for_temporary_files, directory_for_results, english, finnish)
 							unsupported_ignored_files_dict[filename] = int(time.time())
 						
