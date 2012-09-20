@@ -35,7 +35,7 @@ import pickle
 import math
 import copy
 
-version = '180'
+version = '181'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -2096,6 +2096,8 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			number_of_audio_channels = '1'
 		if number_of_audio_channels_as_text == 'stereo':
 			number_of_audio_channels = '2'
+		if number_of_audio_channels_as_text == 'quad':
+			number_of_audio_channels = '4'
 		if number_of_audio_channels_as_text == '5.1':
 			number_of_audio_channels = '6'
 		

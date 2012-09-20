@@ -1,7 +1,11 @@
+LoudnessCorrection Version 181
+-------------------------------
+- Bugfix: In some rare cases FFmpeg tells channel count is 'quad' when usually in these cases its says it is '4'. The 'quad' situation is handled now correctly.
+
 LoudnessCorrection Version 180
 -------------------------------
 - If user drops files that have no audio (for example text files) in the HotFolder then error message is no longer sent by email.
-- Bugfix: When I made some changes to the execption handling code early in the development, some typos were left in email sending execption handling causing a crash.
+- Bugfix: When I made some changes to the exeception handling code early in the development, some typos were left in email sending exeception handling causing a crash.
 
 LoudnessCorrection Version 179
 -------------------------------
