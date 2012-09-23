@@ -1,6 +1,11 @@
+LoudnessCorrection Version 183
+-------------------------------
+- Undid changes made in version 177. If there are more than 6 channels in an audio stream or file then the stream / file will not be processed because libebur128 only supports channel counts from 1 to 6. An error message is printed on result graphics file telling the user about this. If there are streams in file with channel counts over and under 6 then only streams with channel counts of 6 and lower are processed. 
+- Bugfix: When channel count is 8 FFmpeg says it is 7.1. This situation in now handled correctly.
+
 LoudnessCorrection Version 181
 -------------------------------
-- Bugfix: In some rare cases FFmpeg tells channel count is 'quad' when usually in these cases its says it is '4'. The 'quad' situation is handled now correctly.
+- Bugfix: In some rare cases FFmpeg tells channel count is 'quad' when usually in these cases it says it is '4'. The 'quad' situation is handled now correctly.
 
 LoudnessCorrection Version 180
 -------------------------------
