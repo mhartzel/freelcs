@@ -35,7 +35,7 @@ import pickle
 import math
 import copy
 
-version = '183'
+version = '184'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -522,7 +522,7 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 		error_message_to_print_with_gnuplot = ''
 		
 		if integrated_loudness_calculation_error == True:
-			error_message = 'ERROR !!! in libebur128 integrated loudness calculation: ' * english + 'VIRHE !!! libebur128:n lra laskennassa: ' * finnish + integrated_loudness_calculation_error_message + ': ' + filename
+			error_message = 'ERROR !!! in libebur128 integrated loudness calculation: ' * english + 'VIRHE !!! libebur128:n lra laskennassa: ' * finnish + integrated_loudness_calculation_error_message
 			error_message_destinations = []
 			
 			if integrated_loudness_is_below_measurement_threshold == True:
@@ -531,12 +531,12 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 				if 'email' in error_message_destinations:
 					error_message_destinations.remove('email')
 					
-			send_error_messages_to_screen_logfile_email(error_message, error_message_destinations)
+			send_error_messages_to_screen_logfile_email(error_message + ': ' + filename, error_message_destinations)
 			error_message_to_print_with_gnuplot = integrated_loudness_calculation_error_message + '\\n'
 			
 		if timeslice_calculation_error == True:
-			error_message = 'ERROR !!! in libebur128 timeslice calculation: ' * english + 'VIRHE !!! libebur128:n aanekkyystaulukon laskennassa: ' * finnish +  timeslice_calculation_error_message + ': ' + filename
-			send_error_messages_to_screen_logfile_email(error_message, [])
+			error_message = 'ERROR !!! in libebur128 timeslice calculation: ' * english + 'VIRHE !!! libebur128:n aanekkyystaulukon laskennassa: ' * finnish +  timeslice_calculation_error_message
+			send_error_messages_to_screen_logfile_email(error_message + ': ' + filename, [])
 			error_message_to_print_with_gnuplot = error_message_to_print_with_gnuplot + timeslice_calculation_error_message + '\\n'
 		create_gnuplot_commands_for_error_message(error_message_to_print_with_gnuplot, filename, directory_for_temporary_files, directory_for_results, english, finnish)		
 	else:
@@ -1787,7 +1787,7 @@ def debug_lists_and_dictionaries():
 			error_message = 'Error opening debug-messages file for writing ' * english + 'Debug-tiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
 			send_error_messages_to_screen_logfile_email(error_message, [])
 		except OSError as reason_for_error:
-			error_message = 'Error opening debug-messages file for writing ' * english + 'Debug--tiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
+			error_message = 'Error opening debug-messages file for writing ' * english + 'Debug-tiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
 			send_error_messages_to_screen_logfile_email(error_message, [])
 
 		# Sleep between writing output
@@ -2038,16 +2038,20 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		
 		if 'Audio:' in item: # There is the string 'Audio' for each audio stream that ffmpeg finds. Count how many 'Audio' strings is found and put the strings in a list. The string holds detailed information about the stream and we print it later.
 			
+			number_of_audio_channels = '0'
 			audio_stream_number = audio_stream_number + 1
 			
 			# Transportstreams can have streams that have 0 audio channels, skip these dummy streams.
-			if '0 channels' in item:
-				if ('10 channels' not in item) and ('20 channels' not in item) and ('30 channels' not in item) and ('40 channels' not in item) and ('50 channels' not in item) and ('60 channels' not in item):
+			if ('0 channels' in item):
+				if not item[item.index('0 channels')-1].isnumeric(): # Check if the character before the string '0 channels' is a number or not. Only skip stream if it has 0 audio channels, but not when it has 10 or 100 :)
+					# Create error message to the results graphics file and skip the stream.
+					unsupported_stream_name = filename_and_extension[0] + '-AudioStream-' * english + '-Miksaus-' * finnish + str(audio_stream_number) + '-ChannelCount-' * english + '-AaniKanavia-' * finnish  + '0'
+					error_message = 'There are ' * english + 'Miksauksessa numero ' * finnish + str(audio_stream_number) * finnish + 'zero' * english + ' audio channels in stream number ' * english + ' on nolla äänikanavaa' * finnish + str(audio_stream_number) * english
+					list_of_error_messages_for_unsupported_streams.append([unsupported_stream_name, error_message])
 					continue
 			
 			# Create names for audio streams found in the file.
 			# First parse the number of audio channels in each stream ffmpeg reported and put it in a variable.
-			number_of_audio_channels = '0'
 			ffmpeg_stream_info = str(item.strip())
 			number_of_audio_channels_as_text = str(ffmpeg_stream_info.split(',')[2].strip()) # FFmpeg reports audio channel count as a string.		
 			
@@ -2082,7 +2086,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			if int(number_of_audio_channels) > 6:
 				
 				unsupported_stream_name = filename_and_extension[0] + '-AudioStream-' * english + '-Miksaus-' * finnish + str(audio_stream_number) + '-ChannelCount-' * english + '-AaniKanavia-' * finnish  + number_of_audio_channels
-				error_message = 'There are ' * english + 'Miksauksessa on ' * finnish + str(number_of_audio_channels) + ' channels in the stream, only channel counts from 1 to 6 are supported:' * english + ' äänikanavaa, vain kanavamäärät yhdestä kuuteen ovat tuettuja:' * finnish
+				error_message = 'There are ' * english + 'Miksauksessa ' * finnish  + str(audio_stream_number) * finnish + ' on ' * finnish + str(number_of_audio_channels) + ' channels in stream ' * english + str(audio_stream_number) * english + ', only channel counts from one to six are supported' * english + ' äänikanavaa, vain kanavamäärät yhdestä kuuteen ovat tuettuja' * finnish
 				list_of_error_messages_for_unsupported_streams.append([unsupported_stream_name, error_message])			
 				continue
 			
@@ -2267,16 +2271,16 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			error_message_destinations = copy.deepcopy(where_to_send_error_messages)
 			if 'email' in error_message_destinations:
 				error_message_destinations.remove('email')
-			send_error_messages_to_screen_logfile_email(error_message, error_message_destinations)
+			send_error_messages_to_screen_logfile_email(error_message + ': ' + filename, error_message_destinations)
 			
 			# Create the result graphics file with an error message telling stream is not supported.
 			create_gnuplot_commands_for_error_message(error_message, unsupported_stream_name, directory_for_temporary_files, directory_for_results, english, finnish)
 			
 	# If there are only unsupported audio streams in the file then assign an error message that gets printed on the results graphics file.
-	# Currently the only known unsupported streams in a file are streams with channel counts bigger than 6 channels.
+	# Currently the only known unsupported streams in a file are streams with channel counts of zero and more than 6 channels.
 	if (ffmpeg_supported_fileformat == False) and (len(list_of_error_messages_for_unsupported_streams) > 0):
-		ffmpeg_error_message = 'All audio streams in file have more than 6 channels, only channel counts from 1 to 6 are supported' * english + 'Kaikissa tiedoston miksauksissa on enemmän kuin 6 kanavaa, vain kanavamäärät välillä 1 ja 6 ovat tuettuja' * finnish
-	
+		ffmpeg_error_message = 'Audio streams in file are unsupported, only channel counts from 1 to 6 are supported' * english + 'Tiedoston miksaukset eivät ole tuetussa formaatissa, vain kanavamäärät välillä 1 ja 6 ovat tuettuja' * finnish
+		
 	# In case the file has only 1 audio stream and the format is ogg then do an additional check.
 	# Sox only supports ogg files that have max 2 channels. If there are more then the audio must be converted to another format before processing.
 	# 'natively_supported_file_format = False'  means audio must be converted with FFmpeg before prosessing.
@@ -2922,13 +2926,13 @@ while True:
 								error_message_destinations = copy.deepcopy(where_to_send_error_messages)
 								if 'email' in error_message_destinations:
 									error_message_destinations.remove('email')
-								send_error_messages_to_screen_logfile_email(error_message, error_message_destinations)
+								send_error_messages_to_screen_logfile_email(error_message + ': ' + filename, error_message_destinations)
 								
 							else:
 								
 								# FFmpeg error message was found tell the user about it.
 								error_message = ffmpeg_error_message
-								send_error_messages_to_screen_logfile_email(error_message, [])
+								send_error_messages_to_screen_logfile_email(error_message + ': ' + filename, [])
 								
 							create_gnuplot_commands_for_error_message(error_message, filename, directory_for_temporary_files, directory_for_results, english, finnish)
 							unsupported_ignored_files_dict[filename] = int(time.time())
@@ -2942,7 +2946,7 @@ while True:
 							error_message_destinations = copy.deepcopy(where_to_send_error_messages)
 							if 'email' in error_message_destinations:
 								error_message_destinations.remove('email')
-							send_error_messages_to_screen_logfile_email(error_message, error_message_destinations)
+							send_error_messages_to_screen_logfile_email(error_message + ': ' + filename, error_message_destinations)
 							
 							create_gnuplot_commands_for_error_message(error_message, filename, directory_for_temporary_files, directory_for_results, english, finnish)
 							unsupported_ignored_files_dict[filename] = int(time.time())
@@ -3019,7 +3023,7 @@ while True:
 						print('\r' + adjust_line_printout, ' Extracting' * english + ' Puran' * finnish, str(number_of_ffmpeg_supported_audiostreams), 'audio streams from file' * english + 'miksausta tiedostosta' * finnish, filename)
 						
 						for counter in range(0, number_of_ffmpeg_supported_audiostreams): # Print information about all the audio streams we are going to extract.
-							print('\r' + adjust_line_printout, ' ' + details_of_ffmpeg_supported_audiostreams[counter])
+							print('\r' + adjust_line_printout, ' ' + details_of_ffmpeg_supported_audiostreams[counter][0])
 					
 					event_1_for_ffmpeg_audiostream_conversion = threading.Event() # Create two unique events for the process. The events are being used to signal other threads that this process has finished. This thread does not really need two events, only one, but as other calculation processes are started in pairs resulting two events per file, two events must be created here also for this process..
 					event_2_for_ffmpeg_audiostream_conversion = threading.Event()

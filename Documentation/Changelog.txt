@@ -1,3 +1,9 @@
+LoudnessCorrection Version 184
+-------------------------------
+- Bugfix: If there are audio streams in a file with channels count of zero (these are possible in mpegts), then create error message in result graphics file. Previously these streams were silently skipped.
+- Bugfix: The changes made in 183 caused a crash if LoudnessCorrection.py was started manually. The crash was caused because a list was modified from being a simple list to being a list of lists.
+- Made some cosmetic changes to error messages. There were filenames missing in some error messages sent to logfile and if the error message was printed on results graphics it sometimes included filename even though the title of result graphics always is the filename.
+
 LoudnessCorrection Version 183
 -------------------------------
 - Undid changes made in version 177. If there are more than 6 channels in an audio stream or file then the stream / file will not be processed because libebur128 only supports channel counts from 1 to 6. An error message is printed on result graphics file telling the user about this. If there are streams in file with channel counts over and under 6 then only streams with channel counts of 6 and lower are processed. 
