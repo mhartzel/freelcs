@@ -1,3 +1,10 @@
+Installer 048
+--------------
+- Installer now checks if libebur128 program 'loudness' has 4.0 and 5.0 channel compatibility patch applied and if not forces new installation with the patch. The patch makes libebur128 calculate correctly loudness of 4.0 (L, R, LS, RS) and 5.0 (L, R, C, LS, RS) files.
+- Bugfix: Reading of configfile written in previous installation caused a crash if email recipients list was empty.
+- Bugfix: Installer does read in values from configuration written during previous installation unless previous installer version number was 39 or higher. There were some changes in stuff saved in config file in version 39.
+- If debug mode is on then installer displays values read in from config file that was written during previous installation.
+
 LoudnessCorrection Version 184
 -------------------------------
 - Bugfix: If there are audio streams in a file with channels count of zero (these are possible in mpegts), then create error message in result graphics file. Previously these streams were silently skipped.
@@ -151,7 +158,7 @@ LoudnessCorrection Version 161
 - Bugfix: it seems that transport streams can have audio streams with a channel count of 0 which is quite surprising. These dummy streams are now skipped.
 - Bugfix: corrected another instance of a bug corrected in 159, when FFmpeg output contained characters that could not be translated to UTF-8 and caused a crash. Now ISO-8859-15 is used in these cases.
 - Corrected variable name: 'peak_measuring_method' to 'peak_measurement_method'.
-- LoudnessCOrrection now writes its version number to the timestamps file that HeartBeat_Checker monitors.
+- LoudnessCorrection now writes its version number to the timestamps file that HeartBeat_Checker monitors.
 
 Installer 039
 --------------

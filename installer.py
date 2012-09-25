@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '047'
+version = '048'
 
 ###################################
 # Function definitions start here #
@@ -1822,23 +1822,12 @@ def find_paths_to_all_external_programs_we_need():
 		mediainfo_is_installed.set('Installed')
 	
 	loudness_path = find_program_in_os_path('loudness')
+	check_libebur128_version()
 	if loudness_path == '':
 		libebur128_is_installed.set('Not Installed')
 		all_needed_external_programs_are_installed = False
 	else:
-		# Check if libebur128 'loudness' is recent enough version to be free of known bugs.
-		# Since loudness is installed by compiling it from source, the timestamp of the executable tells us if we have the version we want.
-		loudness_required_installation_timestamp = int(time.mktime(time.strptime(' '.join(loudness_required_install_date_list), "%d %m %Y"))) # Convert date to seconds from epoch.
-		
-		# Get last modification time from program 'loudness'.
-		loudness_installation_timestamp = int(os.lstat(loudness_path).st_mtime)
-		
-		if loudness_installation_timestamp < loudness_required_installation_timestamp: # 'loudness' compilation date must be at least the required date otherwise we have a known buggy version of the program.
-			loudness_path = '' # Empty value in the path-variable forces reinstallation of the 'loudness' program.
-			libebur128_is_installed.set('Not Installed')
-			all_needed_external_programs_are_installed = False
-		else:
-			libebur128_is_installed.set('Installed')
+		libebur128_is_installed.set('Installed')
 	
 	# If user want's to reinstall all programs, then reset all path variables and force reinstallation.
 	if force_reinstallation_of_all_programs == True:
@@ -2302,7 +2291,7 @@ def install_missing_programs(*args):
 					print('sudo_stderr:', sudo_stderr)
 				
 				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
-				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
+				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower() or ('cannot' in sudo_stderr_string.lower()) or ('fatal') in sudo_stderr_string.lower()):
 					show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
 					an_error_has_happened = True
 	
@@ -2833,10 +2822,188 @@ def define_program_installation_commands():
 		git_commands = ['cd ' + directory_for_os_temporary_files, 'git clone http://github.com/jiixyj/libebur128.git', 'cd libebur128', \
 		'mv .gitmodules .gitmodules.orig', "cat .gitmodules.orig | sed 's/git:\/\//http:\/\//g' > .gitmodules", \
 		'git submodule init', 'git submodule update']
+		
+		# Check if libebur128 is at version we need and add commands to get the version we want.
+		check_libebur128_version()
 
 		cmake_commands = ['cd ' + directory_for_os_temporary_files + '/libebur128', 'mkdir build', 'cd build', 'cmake -Wno-dev -DCMAKE_INSTALL_PREFIX:PATH=/usr ..']
 		make_build_and_install_commands = ['cd ' + directory_for_os_temporary_files + '/libebur128/build', 'make -w', 'make install']
 		simplified_build_and_install_commands_displayed_to_user = ['mkdir build', 'cd build', 'cmake -Wno-dev -DCMAKE_INSTALL_PREFIX:PATH=/usr ..', 'make -w', 'make install']
+
+def check_libebur128_version():
+	
+	global loudness_path
+	global git_commands
+	global loudness_path
+	global all_needed_external_programs_are_installed
+	
+	## Check if libebur128 'loudness' is recent enough version to be free of known bugs.
+	## Since loudness is installed by compiling it from source, the timestamp of the executable tells us if we have the version we want.
+	#loudness_required_installation_timestamp = int(time.mktime(time.strptime(' '.join(loudness_required_install_date_list), "%d %m %Y"))) # Convert date to seconds from epoch.
+	
+	## Get last modification time from program 'loudness'.
+	#loudness_installation_timestamp = int(os.lstat(loudness_path).st_mtime)
+	
+	#if loudness_installation_timestamp < loudness_required_installation_timestamp: # 'loudness' compilation date must be at least the required date otherwise we have a known buggy version of the program.
+		#loudness_path = '' # Empty value in the path-variable forces reinstallation of the 'loudness' program.
+		#libebur128_is_installed.set('Not Installed')
+		#all_needed_external_programs_are_installed = False
+	#else:
+		#libebur128_is_installed.set('Installed')
+	
+	# Get the path of the 'loudness' program.
+	function_local_loudness_executable_path = find_program_in_os_path('loudness')
+	loudness_command_output_string = ''
+	
+	if function_local_loudness_executable_path != '':
+		# Run libebur128 and check if it needs 4.0 (L, R, LS, RS) and 5.0 (L, R, C, LS, RS) compatibility patch
+		loudness_command_output, unused_stderr = subprocess.Popen(function_local_loudness_executable_path, stdout=subprocess.PIPE, stdin=None, close_fds=True).communicate()
+		
+		# Convert libebur128 output from binary to UTF-8 text.
+		loudness_command_output_string = loudness_command_output.decode('UTF-8')
+
+	if 'Patched to support 4.0 (L, R, LS, RS) and 5.0 (L, R, C, LS, RS) files.' in loudness_command_output_string:
+		libebur128_version_is_the_one_we_require = True
+		libebur128_is_installed.set('Installed')
+	else:
+		libebur128_version_is_the_one_we_require = False
+		libebur128_is_installed.set('Not Installed')
+		loudness_path = '' # Empty value in the path-variable forces reinstallation of the 'loudness' program.
+		all_needed_external_programs_are_installed = False
+	
+	if (libebur128_version_is_the_one_we_require == False) and git_commands != []:
+		
+		# Add 4.0 (L, R, LS, RS) and 5.0 (L, R, C, LS, RS) compatibility patching commands to git commands, but don't do it if it has already been done.
+		if 'LIBEBUR128_REQUIRED_GIT_COMMIT_VERSION="1c0e8dac8d1a2f1ce07bee469d26ccfbb2688247"' not in git_commands:
+			git_commands.extend(['', \
+			'# Get the git commit number of current version of libebur128', \
+			'echo', \
+			'LIBEBUR128_REQUIRED_GIT_COMMIT_VERSION="1c0e8dac8d1a2f1ce07bee469d26ccfbb2688247"', \
+			'LIBEBUR128_CURRENT_COMMIT=`git rev-parse HEAD`', \
+			'', \
+			'# If libebur128 commit number does not match, check out the correct version from git', \
+			'if [ "$LIBEBUR128_CURRENT_COMMIT" == "$LIBEBUR128_REQUIRED_GIT_COMMIT_VERSION" ] ; then', \
+			'	echo "libebur128 already at the required version $LIBEBUR128_REQUIRED_GIT_COMMIT_VERSION"', \
+			'else', \
+			'	echo "Checking out required version of libebur128 from git project"', \
+			'	echo', \
+			'	git checkout --force 1c0e8dac8d1a2f1ce07bee469d26ccfbb2688247', \
+			'	', \
+			'	# Check that we have the correct version after checkout', \
+			'	if [ "$LIBEBUR128_CURRENT_COMMIT" == "1c0e8dac8d1a2f1ce07bee469d26ccfbb2688247" ] ; then', \
+			'		echo "Checkout was successful"', \
+			'		echo', \
+			'	else', \
+			'		echo "There was an error when trying to check out the correct libebur128 version from the local git repository !!!!!!!"', \
+			'		echo', \
+			'		exit', \
+			'	fi', \
+			'fi', \
+			'', \
+			'# Write the patch data at the end of this script to libebur128 root directory', \
+			'FULL_PATH_TO_SELF="' + directory_for_os_temporary_files + os.sep + 'libebur128_download_commands.sh"', \
+			'FULL_PATH_TO_PATCH="' + directory_for_os_temporary_files + os.sep + 'libebur128' + os.sep + 'libebur128_scanner_4.0_and_5.0_channel_mapping_hack.diff"', \
+			'tail --lines 72 "$FULL_PATH_TO_SELF" > "$FULL_PATH_TO_PATCH"', \
+			'echo', \
+			'', \
+			'# Apply the 4.0 and 5.0 channel order patch to libebur128', \
+			'OUTPUT_FROM_PATCHING=`git apply --whitespace=nowarn "$FULL_PATH_TO_PATCH" 2>&1`', \
+			'', \
+			'# Check if applying patch produced an error', \
+			'', \
+			'case "$OUTPUT_FROM_PATCHING" in', \
+			'	*error*) echo "There was an error when applying patch to libebur128 !!!!!!!"  ; exit ;;', \
+			'	*cannot*) echo "There was an error when applying patch to libebur128 !!!!!!!"  ; exit ;;', \
+			'	*fatal*) echo "There was an error when applying patch to libebur128 !!!!!!!"  ; exit ;;', \
+			'	*) echo "libebur128 patched successfully :)" ;;', \
+			'esac', \
+			'echo', \
+			'', \
+			'# Stop script here, the rest of this is data for the libebur128 patch file', \
+			'exit', \
+			'', \
+			'# The libebur128 4.0 ( L, R, LS, RS) and 5.0 (L, R, C, LS, RS) patch starts here', \
+			'# This patch is written to its own file and applied to libebur128', \
+			'', \
+			'diff --git a/ebur128/ebur128.c b/ebur128/ebur128.c', \
+			'index 320a6b5..f194d83 100644', \
+			'--- a/ebur128/ebur128.c', \
+			'+++ b/ebur128/ebur128.c', \
+			'@@ -166,6 +166,17 @@ static int ebur128_init_channel_map(ebur128_state* st) {', \
+			'       default: st->d->channel_map[i] = EBUR128_UNUSED;         break;', \
+			'     }', \
+			'   }', \
+			'+  ', \
+			'+  if (st->channels == 4) {', \
+			'+	st->d->channel_map[2] = EBUR128_LEFT_SURROUND;', \
+			'+	st->d->channel_map[3] = EBUR128_RIGHT_SURROUND;', \
+			'+	}', \
+			'+', \
+			'+  if (st->channels == 5) {', \
+			'+	st->d->channel_map[3] = EBUR128_LEFT_SURROUND;', \
+			'+	st->d->channel_map[4] = EBUR128_RIGHT_SURROUND;', \
+			'+	}', \
+			'+', \
+			'   return EBUR128_SUCCESS;', \
+			' }', \
+			' ', \
+			'diff --git a/scanner/inputaudio/ffmpeg/input_ffmpeg.c b/scanner/inputaudio/ffmpeg/input_ffmpeg.c', \
+			'index f41d0c9..f3600f8 100644', \
+			'--- a/scanner/inputaudio/ffmpeg/input_ffmpeg.c', \
+			'+++ b/scanner/inputaudio/ffmpeg/input_ffmpeg.c', \
+			'@@ -177,6 +177,7 @@ close_file:', \
+			' }', \
+			' ', \
+			' static int ffmpeg_set_channel_map(struct input_handle* ih, int* st) {', \
+			'+  return 1;', \
+			'   if (ih->codec_context->channel_layout) {', \
+			'     unsigned int channel_map_index = 0;', \
+			'     int bit_counter = 0;', \
+			'diff --git a/scanner/inputaudio/gstreamer/input_gstreamer.c b/scanner/inputaudio/gstreamer/input_gstreamer.c', \
+			'index 6f28822..9f3663e 100644', \
+			'--- a/scanner/inputaudio/gstreamer/input_gstreamer.c', \
+			'+++ b/scanner/inputaudio/gstreamer/input_gstreamer.c', \
+			'@@ -256,6 +256,7 @@ static int gstreamer_open_file(struct input_handle* ih, const char* filename) {', \
+			' }', \
+			'', \
+			' static int gstreamer_set_channel_map(struct input_handle* ih, int* st) {', \
+			'+  return 0;', \
+			'   gint j;', \
+			'   for (j = 0; j < ih->n_channels; ++j) {', \
+			'     switch (ih->channel_positions[j]) {', \
+			'diff --git a/scanner/inputaudio/sndfile/input_sndfile.c b/scanner/inputaudio/sndfile/input_sndfile.c', \
+			'index aee098b..79e0f04 100644', \
+			'--- a/scanner/inputaudio/sndfile/input_sndfile.c', \
+			'+++ b/scanner/inputaudio/sndfile/input_sndfile.c', \
+			'@@ -60,6 +60,7 @@ static int sndfile_open_file(struct input_handle* ih, const char* filename) {', \
+			' }', \
+			'', \
+			' static int sndfile_set_channel_map(struct input_handle* ih, int* st) {', \
+			'+  return 1;', \
+			'   int result;', \
+			'   int* channel_map = (int*) calloc((size_t) ih->file_info.channels, sizeof(int));', \
+			'   if (!channel_map) return 1;', \
+			'diff --git a/scanner/scanner.c b/scanner/scanner.c', \
+			'index d952f80..fdceff0 100644', \
+			'--- a/scanner/scanner.c', \
+			'+++ b/scanner/scanner.c', \
+			'@@ -90,6 +90,9 @@ static void print_help(void) {', \
+			'     printf("  -m, --momentary=INTERVAL   print momentary loudness every INTERVAL seconds\\n");', \
+			'     printf("  -s, --shortterm=INTERVAL   print shortterm loudness every INTERVAL seconds\\n");', \
+			'     printf("  -i, --integrated=INTERVAL  print integrated loudness every INTERVAL seconds\\n");', \
+			'+    printf("\\n");', \
+			'+    printf("  Patched to support 4.0 (L, R, LS, RS) and 5.0 (L, R, C, LS, RS) files.\\n");', \
+			'+    printf("\\n");', \
+			' }', \
+			' ', \
+			' static gboolean recursive = FALSE;', \
+			''])
+	
+	if debug == True:
+		print()
+		print('libebur128_version_is_the_one_we_require =', libebur128_version_is_the_one_we_require)
+	
+	return()
 
 
 ###############################
@@ -2984,9 +3151,6 @@ force_reinstallation_of_all_programs = False
 # Since 'loudness' does not have a version number the only method to check for it's version is the compilation date of the 'loudness' executable.
 loudness_required_install_date_list = ['14', '8', '2012'] # Day, Month, Year. Timestamp of 'loudness' must be at least this or it is old version with known bugs.
 
-# Find paths to all critical programs we need to run LoudnessCorrection
-find_paths_to_all_external_programs_we_need()
-
 # Define global installation variables.
 apt_get_commands = []
 needed_packages_install_commands = []
@@ -2996,6 +3160,9 @@ libebur128_dependencies_install_commands = []
 cmake_commands = []
 make_build_and_install_commands = []
 simplified_build_and_install_commands_displayed_to_user = []
+
+# Find paths to all critical programs we need to run LoudnessCorrection
+find_paths_to_all_external_programs_we_need()
 
 # Get installation commands to global installation variables.
 define_program_installation_commands()
@@ -3052,33 +3219,67 @@ if (os.path.exists(configfile_path) == True) or (os.access(configfile_path, os.R
 		send_error_messages_to_screen_logfile_email(error_message, [])
 		sys.exit(1)
 
-if 'target_path' in previously_saved_settings_dict:
-		target_path.set(previously_saved_settings_dict['target_path'])
-if 'language' in previously_saved_settings_dict:
-		language.set(previously_saved_settings_dict['language'])
-if 'number_of_processor_cores' in previously_saved_settings_dict:
-		number_of_processor_cores.set(previously_saved_settings_dict['number_of_processor_cores'])
-if 'file_expiry_time' in previously_saved_settings_dict:
-		file_expiry_time = previously_saved_settings_dict['file_expiry_time']
-if 'send_error_messages_by_email' in previously_saved_settings_dict:
-		send_error_messages_by_email.set(previously_saved_settings_dict['send_error_messages_by_email'])
-if 'email_sending_details' in previously_saved_settings_dict:
-		previously_saved_email_sending_details = previously_saved_settings_dict['email_sending_details']
-		use_tls.set(previously_saved_email_sending_details['use_tls'])
-		smtp_server_requires_authentication.set(previously_saved_email_sending_details['smtp_server_requires_authentication'])
-		smtp_username.set(previously_saved_email_sending_details['smtp_username'])
-		smtp_password.set(previously_saved_email_sending_details['smtp_password'])
-		email_sending_interval = previously_saved_email_sending_details['email_sending_interval']
-		if previously_saved_email_sending_details['message_recipients'] != {}:
-			email_addresses_string.set(previously_saved_email_sending_details['message_recipients'][0])
-if 'write_html_progress_report' in previously_saved_settings_dict:
-	write_html_progress_report.set(previously_saved_settings_dict['write_html_progress_report'])
-if 'peak_measurement_method' in previously_saved_settings_dict:
-	if previously_saved_settings_dict['peak_measurement_method'] == '--peak=sample':
-		sample_peak.set(True)
-	if previously_saved_settings_dict['peak_measurement_method'] == '--peak=true':
-		sample_peak.set(False)
-	set_sample_peak_measurement_method()
+config_file_created_by_installer_version = 0
+
+if 'config_file_created_by_installer_version' in previously_saved_settings_dict:
+	config_file_created_by_installer_version = previously_saved_settings_dict['config_file_created_by_installer_version']
+
+# Configfile needs to be created at least wth version 039 of installer to be compatible with current version of installer.
+if int(config_file_created_by_installer_version) >= 39:
+	if debug == True:
+		print('Values read from old configfile')
+		print('-' * 75)
+	if 'target_path' in previously_saved_settings_dict:
+			target_path.set(previously_saved_settings_dict['target_path'])
+			if debug == True:
+				print('target_path =', previously_saved_settings_dict['target_path'])
+	if 'language' in previously_saved_settings_dict:
+			language.set(previously_saved_settings_dict['language'])
+			if debug == True:
+				print('language =', previously_saved_settings_dict['language'])
+	if 'number_of_processor_cores' in previously_saved_settings_dict:
+			number_of_processor_cores.set(previously_saved_settings_dict['number_of_processor_cores'])
+			if debug == True:
+				print('number_of_processor_cores =', previously_saved_settings_dict['number_of_processor_cores'])
+	if 'file_expiry_time' in previously_saved_settings_dict:
+			file_expiry_time = previously_saved_settings_dict['file_expiry_time']
+			if debug == True:
+				print('file_expiry_time =', previously_saved_settings_dict['file_expiry_time'])
+	if 'send_error_messages_by_email' in previously_saved_settings_dict:
+			send_error_messages_by_email.set(previously_saved_settings_dict['send_error_messages_by_email'])
+			if debug == True:
+				print('send_error_messages_by_email =', previously_saved_settings_dict['send_error_messages_by_email'])
+	if 'email_sending_details' in previously_saved_settings_dict:
+			previously_saved_email_sending_details = previously_saved_settings_dict['email_sending_details']
+			use_tls.set(previously_saved_email_sending_details['use_tls'])
+			smtp_server_requires_authentication.set(previously_saved_email_sending_details['smtp_server_requires_authentication'])
+			smtp_username.set(previously_saved_email_sending_details['smtp_username'])
+			smtp_password.set(previously_saved_email_sending_details['smtp_password'])
+			email_sending_interval = previously_saved_email_sending_details['email_sending_interval']
+			if debug == True:
+				print('use_tls =', previously_saved_email_sending_details['use_tls'])
+				print('smtp_server_requires_authentication =', previously_saved_email_sending_details['smtp_server_requires_authentication'])
+				print('smtp_username =', previously_saved_email_sending_details['smtp_username'])
+				print('smtp_password =', previously_saved_email_sending_details['smtp_password'])
+				print('email_sending_interval =', previously_saved_email_sending_details['email_sending_interval'])
+			if previously_saved_email_sending_details['message_recipients'] != []:
+				email_addresses_string.set(previously_saved_email_sending_details['message_recipients'][0])
+				if debug == True:
+					print('message_recipients =', previously_saved_settings_dict['message_recipients'][0])
+	if 'write_html_progress_report' in previously_saved_settings_dict:
+		write_html_progress_report.set(previously_saved_settings_dict['write_html_progress_report'])
+		if debug == True:
+				print('write_html_progress_report =', previously_saved_settings_dict['write_html_progress_report'])
+	if 'peak_measurement_method' in previously_saved_settings_dict:
+		if previously_saved_settings_dict['peak_measurement_method'] == '--peak=sample':
+			sample_peak.set(True)
+		if previously_saved_settings_dict['peak_measurement_method'] == '--peak=true':
+			sample_peak.set(False)
+		if debug == True:
+				print('peak_measurement_method =', previously_saved_settings_dict['peak_measurement_method'])
+		set_sample_peak_measurement_method()
+	if debug == True:
+		print('-' * 75)
 
 # Create frames inside the root window to hold other GUI elements. All frames and widgets must be created in the main program, otherwise they are not accessible in subroutines. 
 first_frame=tkinter.ttk.Frame(root_window)
@@ -3751,7 +3952,8 @@ seventh_window_label_20 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplen
 seventh_window_label_20.grid(column=3, row=6, columnspan=1, padx=10, sticky=(tkinter.N))
 
 # libebur128
-seventh_window_label_10 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='Libebur128 (required version: ' + str(loudness_required_install_date_list[2]) + '.' + str(loudness_required_install_date_list[1]) + '.' + str(loudness_required_install_date_list[0]) + ')')
+#seventh_window_label_10 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='Libebur128 (required version: ' + str(loudness_required_install_date_list[2]) + '.' + str(loudness_required_install_date_list[1]) + '.' + str(loudness_required_install_date_list[0]) + ')')
+seventh_window_label_10 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='Libebur128   (4.0 and 5.0 compatibility patch required)')
 seventh_window_label_10.grid(column=0, row=7, columnspan=1, padx=10, sticky=(tkinter.W, tkinter.N))
 seventh_window_label_11 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, textvariable=libebur128_is_installed)
 seventh_window_label_11.grid(column=3, row=7, columnspan=1, padx=10, sticky=(tkinter.N))
