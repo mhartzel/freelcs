@@ -1,8 +1,13 @@
+LoudnessCorrection Version 185
+-------------------------------
+- Bugfix: error messages about nonsupported channel counts (channel counts bigger that 6) are no longer sent by email.
+- Cosmetic change to how the machine info looks in emailed error messages.
+
 Installer 048
 --------------
 - Installer now checks if libebur128 program 'loudness' has 4.0 and 5.0 channel compatibility patch applied and if not forces new installation with the patch. The patch makes libebur128 calculate correctly loudness of 4.0 (L, R, LS, RS) and 5.0 (L, R, C, LS, RS) files.
 - Bugfix: Reading of configfile written in previous installation caused a crash if email recipients list was empty.
-- Bugfix: Installer does read in values from configuration written during previous installation unless previous installer version number was 39 or higher. There were some changes in stuff saved in config file in version 39.
+- Bugfix: Installer does not read in values from configuration written during previous installation unless previous installer version number was 39 or higher. There were some changes in stuff saved in config file in version 39.
 - If debug mode is on then installer displays values read in from config file that was written during previous installation.
 
 LoudnessCorrection Version 184

@@ -35,7 +35,7 @@ import pickle
 import math
 import copy
 
-version = '184'
+version = '185'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -1444,6 +1444,7 @@ def send_error_messages_by_email_thread(email_sending_details, english, finnish)
 	global error_messages_to_email_later_list # This global variable holds all the error messages we need to send.
 	global all_ip_addresses_of_the_machine
 	global loudness_correction_pid
+	global version
 	
 	error_messages_to_send = [] # Error messages are moved from the global list above to this local list.
 	reason_for_failed_send = [] # If sending fails we store the reason for error in this variable and print it to the logfile.
@@ -1459,7 +1460,7 @@ def send_error_messages_by_email_thread(email_sending_details, english, finnish)
 		
 		# Get IP-Addresses of the machine.
 		all_ip_addresses_of_the_machine = get_ip_addresses_of_the_host_machine()
-		machine_info = '\n\nMachine info:\n----------------------------\n' + 'Commandline: ' + ' '.join(sys.argv) + '\n' + 'IP-Addresses: ' + ','.join(all_ip_addresses_of_the_machine) + '\n' + 'PID: ' + str(loudness_correction_pid) + '\n\n'
+		machine_info = '\n\nLoudnessCorrection info:\n--------------------------------------\n' + 'Commandline: ' + ' '.join(sys.argv) + '\n' + 'IP-Addresses: ' + ','.join(all_ip_addresses_of_the_machine) + '\n' + 'PID: ' + str(loudness_correction_pid) + '\n' + 'LoudnessCorrection version: ' + version + '\n\n'
 		
 		if len(error_messages_to_email_later_list) > 0:
 			
@@ -2278,8 +2279,10 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			
 	# If there are only unsupported audio streams in the file then assign an error message that gets printed on the results graphics file.
 	# Currently the only known unsupported streams in a file are streams with channel counts of zero and more than 6 channels.
+	send_ffmpeg_error_message_by_email = True
 	if (ffmpeg_supported_fileformat == False) and (len(list_of_error_messages_for_unsupported_streams) > 0):
 		ffmpeg_error_message = 'Audio streams in file are unsupported, only channel counts from 1 to 6 are supported' * english + 'Tiedoston miksaukset eivät ole tuetussa formaatissa, vain kanavamäärät välillä 1 ja 6 ovat tuettuja' * finnish
+		send_ffmpeg_error_message_by_email = False
 		
 	# In case the file has only 1 audio stream and the format is ogg then do an additional check.
 	# Sox only supports ogg files that have max 2 channels. If there are more then the audio must be converted to another format before processing.
@@ -2305,7 +2308,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 	if debug == True:
 		print('ffmpeg_commandline =', ffmpeg_commandline) 
 	
-	return(file_format_support_information, ffmpeg_error_message)
+	return(file_format_support_information, ffmpeg_error_message, send_ffmpeg_error_message_by_email)
 	
 def get_audiofile_duration_with_mediainfo(directory_for_temporary_files, filename, file_to_process, english, finnish):
 	
@@ -2911,7 +2914,7 @@ while True:
 					if we_have_true_read_access_to_the_file == True:
 						
 						# Call a subroutine to inspect file with FFmpeg to get audio stream information.
-						ffmpeg_parsed_audio_stream_information, ffmpeg_error_message = get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(filename, hotfolder_path, directory_for_temporary_files, ffmpeg_output_format, english, finnish)
+						ffmpeg_parsed_audio_stream_information, ffmpeg_error_message, send_ffmpeg_error_message_by_email = get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(filename, hotfolder_path, directory_for_temporary_files, ffmpeg_output_format, english, finnish)
 						# Assign audio stream information to variables.
 						natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames = ffmpeg_parsed_audio_stream_information
 
@@ -2932,7 +2935,12 @@ while True:
 								
 								# FFmpeg error message was found tell the user about it.
 								error_message = ffmpeg_error_message
-								send_error_messages_to_screen_logfile_email(error_message + ': ' + filename, [])
+								
+								error_message_destinations = copy.deepcopy(where_to_send_error_messages)
+								if send_ffmpeg_error_message_by_email == False:
+									if 'email' in error_message_destinations:
+										error_message_destinations.remove('email')
+								send_error_messages_to_screen_logfile_email(error_message + ': ' + filename, error_message_destinations)
 								
 							create_gnuplot_commands_for_error_message(error_message, filename, directory_for_temporary_files, directory_for_results, english, finnish)
 							unsupported_ignored_files_dict[filename] = int(time.time())
