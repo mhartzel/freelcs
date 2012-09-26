@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '048'
+version = '049'
 
 ###################################
 # Function definitions start here #
@@ -2836,6 +2836,7 @@ def check_libebur128_version():
 	global git_commands
 	global loudness_path
 	global all_needed_external_programs_are_installed
+	global directory_for_os_temporary_files
 	
 	## Check if libebur128 'loudness' is recent enough version to be free of known bugs.
 	## Since loudness is installed by compiling it from source, the timestamp of the executable tells us if we have the version we want.
@@ -2852,12 +2853,12 @@ def check_libebur128_version():
 		#libebur128_is_installed.set('Installed')
 	
 	# Get the path of the 'loudness' program.
-	function_local_loudness_executable_path = find_program_in_os_path('loudness')
+	local_variable_pointing_to_loudness_executable = find_program_in_os_path('loudness')
 	loudness_command_output_string = ''
 	
-	if function_local_loudness_executable_path != '':
+	if local_variable_pointing_to_loudness_executable != '':
 		# Run libebur128 and check if it needs 4.0 (L, R, LS, RS) and 5.0 (L, R, C, LS, RS) compatibility patch
-		loudness_command_output, unused_stderr = subprocess.Popen(function_local_loudness_executable_path, stdout=subprocess.PIPE, stdin=None, close_fds=True).communicate()
+		loudness_command_output, unused_stderr = subprocess.Popen(local_variable_pointing_to_loudness_executable, stdout=subprocess.PIPE, stdin=None, close_fds=True).communicate()
 		
 		# Convert libebur128 output from binary to UTF-8 text.
 		loudness_command_output_string = loudness_command_output.decode('UTF-8')
@@ -2866,6 +2867,7 @@ def check_libebur128_version():
 		libebur128_version_is_the_one_we_require = True
 		libebur128_is_installed.set('Installed')
 	else:
+		# We get here if loudness is not installed or if it is installed but it's help text does not have the text that our 4.0 + 5.0 patch applies at the end of it.
 		libebur128_version_is_the_one_we_require = False
 		libebur128_is_installed.set('Not Installed')
 		loudness_path = '' # Empty value in the path-variable forces reinstallation of the 'loudness' program.
@@ -2890,7 +2892,8 @@ def check_libebur128_version():
 			'	git checkout --force 1c0e8dac8d1a2f1ce07bee469d26ccfbb2688247', \
 			'	', \
 			'	# Check that we have the correct version after checkout', \
-			'	if [ "$LIBEBUR128_CURRENT_COMMIT" == "1c0e8dac8d1a2f1ce07bee469d26ccfbb2688247" ] ; then', \
+			'	LIBEBUR128_CURRENT_COMMIT=`git rev-parse HEAD`', \
+			'	if [ "$LIBEBUR128_CURRENT_COMMIT" == "$LIBEBUR128_REQUIRED_GIT_COMMIT_VERSION" ] ; then', \
 			'		echo "Checkout was successful"', \
 			'		echo', \
 			'	else', \
@@ -2922,7 +2925,7 @@ def check_libebur128_version():
 			'# Stop script here, the rest of this is data for the libebur128 patch file', \
 			'exit', \
 			'', \
-			'# The libebur128 4.0 ( L, R, LS, RS) and 5.0 (L, R, C, LS, RS) patch starts here', \
+			'# The libebur128 4.0 (L, R, LS, RS) and 5.0 (L, R, C, LS, RS) patch starts here', \
 			'# This patch is written to its own file and applied to libebur128', \
 			'', \
 			'diff --git a/ebur128/ebur128.c b/ebur128/ebur128.c', \
@@ -3149,6 +3152,7 @@ force_reinstallation_of_all_programs = False
 
 # Libebur128 program 'loudness' must be a version known to be free of bad bugs.
 # Since 'loudness' does not have a version number the only method to check for it's version is the compilation date of the 'loudness' executable.
+# NOTE: This is variable is not used in installer version 48, 49, but it might be used in the future.
 loudness_required_install_date_list = ['14', '8', '2012'] # Day, Month, Year. Timestamp of 'loudness' must be at least this or it is old version with known bugs.
 
 # Define global installation variables.

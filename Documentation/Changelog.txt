@@ -1,3 +1,7 @@
+Installer 049
+--------------
+- Bugfix: Corrected a bug in libebur128 patch installer introduced in version 048 and changed the name of a variable to one that better describes what's stored in it.
+
 LoudnessCorrection Version 185
 -------------------------------
 - Bugfix: error messages about nonsupported channel counts (channel counts bigger that 6) are no longer sent by email.
