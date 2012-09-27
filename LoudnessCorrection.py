@@ -35,7 +35,7 @@ import pickle
 import math
 import copy
 
-version = '185'
+version = '187'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -1032,6 +1032,12 @@ def run_sox_commands_in_parallel_threads(directory_for_temporary_files, filename
 def run_sox(directory_for_temporary_files, filename, sox_commandline, english, finnish, event_for_sox_command):
 	
 	we_are_part_of_a_multithread_sox_command = False
+	global debug
+	
+	if debug == True:
+		print()
+		print('Sox commandline:', sox_commandline)
+		print()
 	
 	# Test if the value in variable is an event or not. If it is an event, then there are other sox threads processing the same file.
 	variable_type_string = str(type(event_for_sox_command))
@@ -1149,7 +1155,7 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 	flac_compression_level = ['-C', '0']
 	output_format_for_intermediate_files = 'wav'
 	output_format_for_final_file = 'wav'
-
+	
 	try:
 		# Define filename for the temporary file that we are going to use as stdout for the external command.
 		stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_sox_read_audio_info_stdout.txt'
@@ -1231,8 +1237,11 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 		error_message = 'ERROR !!! I could not parse sox sample count string: ' * english + 'VIRHE !!! En osannut tulkita sox:in antamaa tietoa näytteiden lukumäärästä: ' * finnish + '\'' + sample_count_string + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
 		send_error_messages_to_screen_logfile_email(error_message, [])
 	
+	# Sox can not get duration from long files correctly, get audio duration with mediainfo.
+	audio_duration = get_audiofile_duration_with_mediainfo(directory_for_temporary_files, filename, file_to_process, english, finnish)
+	
 	# Calculate estimated uncompressed file size. Add one second of data to the file size (sample_rate = 1 second) to be on the safe side.
-	estimated_uncompressed_size_for_single_mono_file = int((sample_count * int(bit_depth / 8)) + sample_rate)
+	estimated_uncompressed_size_for_single_mono_file = int((sample_rate * audio_duration * int(bit_depth / 8)) + sample_rate)
 	estimated_uncompressed_size_for_combined_channels = estimated_uncompressed_size_for_single_mono_file * channel_count
 	
 	audio_channels_will_be_split_to_separate_mono_files = False
@@ -1259,12 +1268,15 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 	if debug == True:
 	
 		print()
+		print('get_audiofile_info_with_sox_and_determine_output_format')
+		print('---------------------------------------------------------')
 		print(filename)
 		print((len(filename) + 1) * '-')
 		print('channel_count_string =', channel_count_string)
 		print('sample_rate_string =', sample_rate_string)
 		print('bit_depth_string =', bit_depth_string)
-		print('sample_count_string =', sample_count_string)
+		print('sox: sample_count_string (this is not used in calculations because it is incorrect for very long files) =', sample_count_string)
+		print('mediainfo: audio_duration (this is used in calculations instead of sox sample count) =', audio_duration)
 		print('wav_format_maximum_file_size =', wav_format_maximum_file_size)
 		print('estimated_uncompressed_size_for_combined_channels =', estimated_uncompressed_size_for_combined_channels)
 		print('difference to max size', wav_format_maximum_file_size - estimated_uncompressed_size_for_combined_channels)
@@ -2208,6 +2220,8 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		
 		if debug == True:
 			print()
+			print('get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters')
+			print('--------------------------------------------------------------------------')
 			print('filename =', filename)
 			print('file_type =', file_type)
 			print('bit_depth =', bit_depth)
@@ -2217,6 +2231,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			print('estimated_uncompressed_size_for_combined_channels =', estimated_uncompressed_size_for_combined_channels)
 			print('audio_duration =', audio_duration)
 			print('audio_coding_format =', audio_coding_format)
+			print('ffmpeg_output_format =', ffmpeg_output_format)
 			print()
 		
 		# Compile the name of the audiostream to an list of all audio stream filenames.
@@ -2770,7 +2785,7 @@ while True:
 				files_queued_for_deletion.append(filename)
 				continue
 			file_metadata=os.lstat(hotfolder_path + os.sep + filename) # Get file information (size, date, etc)
-			file_information_to_save=[file_metadata.st_size, int(time.time())] # Put file size and the time the file was first seen in HotFolder in a list.
+			file_information_to_save=[file_metadata.st_size, int(time.time()), file_metadata.st_mtime] # Put in a list: file size, time the file was first seen in HotFolder and file modification time.
 
 			##########################################################################################################################################
 			# Que expired files in HotFolder for deletion. Make sure no other thread is currently processing the files before queueing for deletion. #
@@ -2778,6 +2793,7 @@ while True:
 			# Test if the time between now and the time the file was first seen in HotFolder is longer that expiry time, if true queue file for deletion.
 			if (filename in old_hotfolder_filelist_dict) and (int(time.time()) - old_hotfolder_filelist_dict[filename][1] > file_expiry_time) and (filename not in list_of_growing_files) and (filename not in loudness_calculation_queue) and (filename not in files_queued_to_loudness_calculation):
 				files_queued_for_deletion.append(filename)
+				
 			#################################################################################
 			# Add files we need to study further to a dictionary with some file information #
 			#################################################################################
@@ -2789,6 +2805,7 @@ while True:
 					# When the file has just appeared to the HotFolder, it has not been analyzed yet.
 					# However some dummy data for the file needs to be filled, so we create that data here.
 					# This dummy data is replaced with real data when the file stops growing and gets analyzed.
+					# file_information_to_save = [ FileSize, TimeAppearedToHotFolder, ModificationTime, InformationFilledByFFmpeg ]
 					dummy_information = [False, False, 0, [], '3'] 
 					file_information_to_save.append(dummy_information)
 				new_hotfolder_filelist_dict[filename] = file_information_to_save
@@ -2879,15 +2896,17 @@ while True:
 		
 		if filename in old_hotfolder_filelist_dict:
 			new_filesize = new_hotfolder_filelist_dict[filename][0] # Get file size from the newest directory poll.
+			new_modification_time = new_hotfolder_filelist_dict[filename][2] # Get latest file modification time.
 			old_filesize = old_hotfolder_filelist_dict[filename][0] # Get file size from the previous directory poll.
-			time_file_was_first_seen = old_hotfolder_filelist_dict[filename][1] # Get the time the file was first seen from the previous directory poll dictionary.				
-			file_format_support_information = old_hotfolder_filelist_dict[filename][2] # Get other file information that was gathered during the last poll.
+			time_file_was_first_seen = old_hotfolder_filelist_dict[filename][1] # Get the time the file was first seen from the previous directory poll dictionary.
+			old_modification_time = old_hotfolder_filelist_dict[filename][2] # Get old file modification time.
+			file_format_support_information = old_hotfolder_filelist_dict[filename][3] # Get other file information that was gathered during the last poll.
 
 			# If filesize is still zero and it has not changed in 1,5 hours (5400 seconds), stop waiting and remove filename from list_of_growing_files.
 			if (filename in list_of_growing_files) and (new_filesize == 0) and (int(time.time()) >= (time_file_was_first_seen + 5400)):
 				list_of_growing_files.remove(filename)
 			if (filename in list_of_growing_files) and (new_filesize > 0): # If file is in the list of growing files, check if growing has stopped. If HotFolder is on a native windows network share and multiple files are transferred to the HotFolder at the same time, the files get a initial file size of zero, until the file actually gets transferred. Checking for zero file size prevents trying to process the file prematurely.
-				if new_filesize != old_filesize: # If file size has changed print message to user about waiting for file transfer to finish.
+				if (new_filesize != old_filesize) or (new_modification_time != old_modification_time): # If file size or modification time has changed print message to user about waiting for file transfer to finish.
 					if silent == False:
 						print('\r' + adjust_line_printout, ' Waiting for file transfer to end' * english + ' Odotan tiedostosiirron valmistumista' * finnish, end='')
 				else:
@@ -2972,8 +2991,8 @@ while True:
 								print('\r' + adjust_line_printout, '"' + str(filename) + '"', 'is in the job queue as number' * english + 'on laskentajonossa numerolla' * finnish, len(files_queued_to_loudness_calculation))
 						list_of_growing_files.remove(filename) # File has been queued for loudness calculation, or it is unsupported, in both cases we need to remove it from the list of growing files.
 			# Save information about the file in a dictionary:
-			# filename, file size, time file was first seen in HotFolder, file format wav / flac / ogg, if format is supported by ffmpeg (True/False), number of audio streams found, information ffmpeg printed about the audio streams.
-			new_hotfolder_filelist_dict[filename] = [new_filesize, time_file_was_first_seen, file_format_support_information]
+			# filename, file size, time file was first seen in HotFolder, latest modification time, file format wav / flac / ogg, if format is supported by ffmpeg (True/False), number of audio streams found, information ffmpeg printed about the audio streams.
+			new_hotfolder_filelist_dict[filename] = [new_filesize, time_file_was_first_seen, new_modification_time, file_format_support_information]
 		else:
 			# If we get here the file was not there in the directory poll before this one. We need to wait for another poll to see if the file is still growing. Add file name to the list of growing files.
 			list_of_growing_files.append(filename)
@@ -2993,7 +3012,7 @@ while True:
 			
 			if len(files_queued_to_loudness_calculation) > 0: # Check if there are files queued for processing waiting in the queue.
 				filename = files_queued_to_loudness_calculation.pop(0) # Remove the first file from the queue and put it in a variable.
-				file_format_support_information = old_hotfolder_filelist_dict[filename][2] # The information about the file format is stored in a list in the dictionary, get it and store in a list.
+				file_format_support_information = old_hotfolder_filelist_dict[filename][3] # The information about the file format is stored in a list in the dictionary, get it and store in a list.
 				natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames = file_format_support_information # Save file format information to separate variables.
 				realtime = get_realtime(english, finnish).replace('_', ' ')
 				

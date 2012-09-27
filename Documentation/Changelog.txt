@@ -1,3 +1,9 @@
+LoudnessCorrection Version 187
+-------------------------------
+- Bugfix: LoudnessCalculation started sometimes too early when files were still being transferred through network. This was due to the fact that in some cases the file size was immidiately reported as full when the tranfer started. This seemed to happen when the source computer was a windows computer.
+- Added some more text output when debug mode is on.
+- Bugfix: sox fails to report the duration of a long file correctly. This caused the output file size to be estimated incorrectly which in turn caused trying to write bigger than 4 GB files to wav format. Worked around the problem by getting file duration with mediainfo.
+
 Documentation
 --------------
 - Made some more updates, documentation is now up to date :)
