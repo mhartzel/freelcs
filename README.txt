@@ -8,7 +8,7 @@ If you want to download the latest version of this software please visit the mai
 
 FreeLCS stands for Free Loudness Correction Server. The software lets you easily set up a server that shares one of it's folders to the network where users can drop audio files to be loudness corrected according to the EBU R128 loudness standard. The server also creates a loudness history graphics file which gives visual feedback of the internal loudness variations in a file.
 
-The software is very fast even on modest hardware giving 20 times faster than realtime processing on a server with one Intel Core 2 Duo processor, 2 GB Ram, 3 internal Sata disks in software RAID 0.
+The software is very fast even on modest hardware giving 20 times faster than realtime processing (stereo files) on a server with one Intel Core 2 Duo processor, 2 GB Ram, 3 internal Sata disks in software RAID 0.
 
 FreeLCS uses other open source programs to get the job done (Linux, libebur128, gnuplot, FFmpeg, sox).
 

@@ -1,5 +1,9 @@
 Documentation
 --------------
+- Made some more updates, documentation is now up to date :)
+
+Documentation
+--------------
 - Started updating documentation to reflect the latest state of FreeLCS. Will release FreeLCS 2.0 soon :)
 
 Installer 049

@@ -50,7 +50,7 @@
     <a href="#Will%20FreeLCS%20remux%20loudness%20corrected%20audio%20back%20to%20the%20video%20it%20was%20extracted%20from%20?">Will
       FreeLCS remux loudness corrected audio back to the video it was extracted
       from ?</a><br>
-    <br>
+    <a href="#Is%20MXF%20supported%20?"></a><br>
     <a href="#Is%20MXF%20supported%20?">Is MXF supported ?</a><br>
     <br>
     <a href="#Any%20suggestion%20for%20free%20tools%20to%20manipulate%20the%20Flac%20format%20?">Any
@@ -68,12 +68,14 @@
       <li>The R128 standard is mainly designed for professional broadcasters to
         help eliminate loudness jumps between broadcasted programs.</li>
       <li>Files adjusted according to the standard will have the same loudness.</li>
-      <li>FreeLCS is a linux server where users can drop in files through the
+      <li>FreeLCS is a Linux server where users can drop in files through the
         network for loudness correction.</li>
       <li>FreeLCS corrects the loudness of each file dropped in. It also
         produces a loudness history graphics file that tells about loudness
-        variations across time in the file.<br>
-      </li>
+        variations across time in the file.</li>
+      <li>FreeLCS site is here:
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
+        <a href="http://freelcs.sourceforge.net/">http://freelcs.sourceforge.net/</a></li>
     </ul>
     <br>
     <h2> <a id="What programs are used to process audio files ?">What programs
@@ -85,7 +87,7 @@
       </li>
       <li>libebur128 measures integrated and momentary loudness.</li>
       <li>Sox adjusts file loudness to target level and also provides protective
-        limiting in cases where it might be needed.</li>
+        limiting in cases where it is needed.</li>
       <li>Gnuplot creates loudness results graphics from momentary loudness
         calculations provided by libebur128.<br>
       </li>
@@ -94,14 +96,14 @@
     <h2><a id="What formats are supported ?">What formats are supported ?</a></h2>
     <ul>
       <li><strong>Wav</strong> and <strong>flac</strong> are natively supported
-        by libebur128 that is responsible for loudness calculation. Other
+        by libebur128 that is responsible for loudness measurement. Other
         formats are converted with FFmpeg to supported formats before
         processing. FFmpeg supports a vast amount of formats: <strong>mp4</strong>,
         <strong>mp3</strong>, <strong>mp2</strong>, <strong>avi</strong>, <strong>mov</strong>,
         <strong>aac</strong>, <strong>h264</strong>, <strong>vob</strong>, <strong>mkv</strong>
-        to name a few. Just drop in your file to the HotFolder to see if audio
-        can be extracted from it. You can drop in video files also and let
-        FreeLCS extract all audio streams from them.</li>
+        to name a few. Just drop in your file to the HotFolder of FreeLCS to see
+        if audio can be extracted from it. You can drop in video files also and
+        let FreeLCS extract all audio streams from them.</li>
       <li>Note that all channels of one mix must be in the same file. If your
         5.1 mix consists of 6 files, then you must combine them before dropping
         the mix into loudness correction.<br>
@@ -122,11 +124,10 @@
     <h2> <a id="What is the maximum / minimum file duration supported ?">What
         is the maximum / minimum file duration supported ?</a></h2>
     <ul>
-      <li>The shortest supported file duration is exactly 1 seconds.</li>
+      <li>The shortest supported file duration is exactly 1 second.</li>
       <li>The longest supported file duration should in theory be unlimited, but
-        no tests have been made to find out the limit. The longest file in my
-        testfile set is 3 hours 14 minutes and it has 3 audio streams with
-        channels counts of 6, 2 and 2.<br>
+        no tests have been made to find out the limit. The longest file I have
+        tested was 18 hours (mp2 compressed stereo audio).<br>
       </li>
     </ul>
     <br>
@@ -145,8 +146,7 @@
         the file. One measures integrated loudness and the other momentary
         loudness. Momentary loudness is calculated in 3 second slices for files
         longer than 12 seconds and in 0.5 seconds slices for files shorter than
-        that.<br>
-      </li>
+        that. </li>
       <li>After loudness measurement Gnuplot creates a loudess result graphics
         file from momentary loudness measurements provided by libebur128.<br>
       </li>
@@ -158,7 +158,8 @@
     <h2><a id="Is peak limiting used when loudness correction adjusts volume up ?">Is
         peak limiting used when loudness correction adjusts volume up ?</a></h2>
     <ul>
-      <li>If file gain is adjusted down then no peak limiting is used.</li>
+      <li>If file gain is adjusted down then no peak limiting is needed as the
+        peaks also go down.</li>
       <li>If file gain must be adjusted up then a protective limiter is used but
         only if peaks in the file would go over a set limit after gain
         correction.<br>
@@ -173,9 +174,9 @@
     <ul>
       <li>The dynamics inside an audio file are not changed in any way, only the
         gain of the whole file is adjusted up or down so that the average
-        loudness of file hits -23 LUFS. For example if measured file loudness is
-        at -20.0 LUFS, then all samples in the file will be adjusted down by 3
-        dBs when the loudness corrected file is created.<br>
+        loudness of file hits -23.0 LUFS. For example if measured file loudness
+        is at -20.0 LUFS, then all samples of the file will be adjusted down by
+        3 dBs when loudness corrected file is created.<br>
       </li>
     </ul>
     <br>
@@ -184,21 +185,26 @@
     The following channel orders are supported:<br>
     <ul>
       <li>1.0 = Mono</li>
-      <li>2.0 = L, R.</li>
+      <li>2.0 = L, R.<br>
+      </li>
       <li>3.0 = Any channel order for front channels L, R, C.</li>
       <li>4.0 = L, R, LS, RS.</li>
       <li>5.0 = L, R, C, LS, RS.</li>
       <li>5.1 = L, R, C, LFE, LS, RS.</li>
     </ul>
-    Ebu R128 standard does not support any specific channel order, it only
-    defines how the loudness calculation of: <strong>Front</strong>, <strong>Surround</strong>
-    and <strong>LFE</strong> channels differs from each other. Surround
-    channels are weighted differently from front channels and LFE channel is
-    always discarded and not taken into account in loudness calculation. This
-    means that for example in the case of 3.0 any channel order is supported
-    since all of the channels L, R, C are front channels and weighted equally in
-    loudness calculation.<br>
-    <br>
+    Ebu R128 standard (or to be more precise ITU 1770 that R128 refers to) does
+    not support any specific channel order, it only defines how the loudness
+    calculation of: <strong>Front</strong>, <strong>Surround</strong> and <strong>LFE</strong>
+    channels differs from each other. Surround channels are weighted differently
+    from front channels and LFE channel is always discarded and not taken into
+    account in loudness calculation. This means that for example in the case of
+    3.0 any channel order is supported since all of the channels L, R, C are
+    front channels and weighted equally in loudness calculation.<br>
+    <p>All channels of one mix must be in the same file. If your 5.1 mix
+      consists of 6 files, then you must combine them before dropping the mix
+      into loudness correction.</p>
+    <p><strong>Important note:</strong> channel counts of more than six channels
+      are not supported and not processed !!!!!!!</p>
     As of 26th of September 2012 libebur128 does not natively support 4.0 (L, R,
     LS, RS) or 5.0 (L, R, C, LS, RS) but FreeLCS installer adds this support by
     patching libebur128 source code.<br>
@@ -206,26 +212,24 @@
     <h2><a id="What is the calculation precision ?">What is the calculation
         precision ?</a></h2>
     <ul>
-      <li>Audio gain adjustment is done with sox and it used 32 bits by default
-        for all calculations.<br>
-      </li>
-      <li>The loudness corrected file usually has the same bit depth as the
-        source file and when this is not 32 bits, then sox uses dithering when
-        saving the gain adjusted file.<br>
-      </li>
+      <li>Audio gain adjustment is done with sox and it uses 32 bits by default
+        for all calculations.</li>
+      <li>If output file bit depth is not 32 bits, then sox uses dithering by
+        default. The output file has the same bit depth as the source file in
+        most cases.</li>
     </ul>
     <br>
     <h2><a id="Is bit depth and sample rate preserved ?">Is bit depth and sample
         rate preserved ?</a></h2>
-    Sample rate should be preserved in all cases below.<br>
+    Sample rate should be preserved in all cases.<br>
     <br>
     (The following rules for bit depth conversion come from internal limitations
-    in FFmpeg and flac - format implementations in FFmpeg and sox).<br>
+    in FFmpeg and flac - format implementation in FFmpeg and sox).<br>
     <br>
     <br>
     <u><strong>When input file has many audio streams:</strong></u><br>
     <ul>
-      <li>Streams will be extracted with FFmpeg resulting 32 bit audio to be
+      <li>Streams will be extracted with FFmpeg resulting to 32 bit audio to be
         converted to 24 bits. Other bit depths will be preserved. <br>
       </li>
       <li>If audio has been compressed using a lossy codec then the audio has no
@@ -241,22 +245,21 @@
     (Wav can only have one audio stream in it).<br>
     <ul>
       <li>If file size is below 4 GB then bit depth will be preserved.</li>
-      <li>There are new versions of the wav format (BWF, RF64) that can store
-        files larger than 4 GB, but these are untested since I have no tools to
-        produce these formats.<br>
-      </li>
     </ul>
     <u><strong></strong></u><br>
     <h2><a id="What happens if output file size exceeds wav format 4 GB size limit ?">What
         happens if output file size exceeds wav format 4 GB size limit ?</a></h2>
     <ul>
-      <li>Audio production is usually mostly done in wav format since it is so
-        widely supported. The wav format has a max supported file size of 4 GB.</li>
+      <li>Audio production is usually done in wav format since it is so widely
+        supported. The wav format has a max supported file size of 4 GB.</li>
       <li>If the output file size would exceed this hard limit then FreeLCS
         splits the audio channels in the file to separate wav - files. If the
         size of a separate channel would also go over the 4 GB limit then
         FreeLCS saves all channels of the file in a single flac file. Flac -
         format supports very large files.</li>
+      <li>There are new revisions of the wav format (BWF, RF64) that can store
+        files larger than 4 GB, but these are untested since I have no tools to
+        produce these formats.</li>
     </ul>
     <br>
     <h2><a id="Will FreeLCS remux loudness corrected audio back to the video it was extracted from ?">Will
@@ -268,8 +271,7 @@
     </ul>
     <br>
     <br>
-    <h2><a href="#Is%20MXF%20supported%20?" id="Is MXF supported ?">Is MXF
-        supported ?</a></h2>
+    <h2><a id="Is MXF supported ?">Is MXF supported ?</a></h2>
     <ul>
       <li>FFmpeg seems to have some support for MXF and I've been able to
         extract audio from MXF with it. However as all channels of a mix must be
@@ -284,7 +286,7 @@
     <ul>
       <li>If your audio tools don't support flac then you can use Audacity to
         manipulate files in this format. Audacity is a free simple multitrack
-        audio tool and it supports Mac, Linux, windows.</li>
+        audio tool and it supports Mac, Linux and windows.</li>
       <li>Audacity site is here:
         <meta http-equiv="content-type" content="text/html; charset=utf-8">
         <a href="http://audacity.sourceforge.net/?lang=en">http://audacity.sourceforge.net/?lang=en</a></li>
