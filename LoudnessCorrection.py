@@ -35,7 +35,7 @@ import pickle
 import math
 import copy
 
-version = '188'
+version = '189'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -501,7 +501,7 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 		plotfile_x_axis_time_information = ''.join(plotfile_x_axis_time_information)
 	
 	# Get technical info from audio file and determine what the ouput format will be
-	channel_count, sample_rate, bit_depth, sample_count, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, audio_channels_will_be_split_to_separate_mono_files, audio_duration = get_audiofile_info_with_sox_and_determine_output_format(directory_for_temporary_files, hotfolder_path, filename)
+	channel_count, sample_rate, bit_depth, sample_count, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, audio_channels_will_be_split_to_separate_mono_files, audio_duration, output_file_too_big_to_split_to_separate_wav_channels = get_audiofile_info_with_sox_and_determine_output_format(directory_for_temporary_files, hotfolder_path, filename)
 	
 	# Write details of the file to a logfile.
 	if debug == True:
@@ -597,7 +597,7 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 		run_gnuplot(filename, directory_for_temporary_files, directory_for_results, english, finnish)
 
 		# Call a subprocess to create the loudness corrected audio file.
-		create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calculation_error, difference_from_target_loudness, filename, english, finnish, hotfolder_path, directory_for_results, directory_for_temporary_files, highest_peak_db, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, channel_count, audio_channels_will_be_split_to_separate_mono_files)
+		create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calculation_error, difference_from_target_loudness, filename, english, finnish, hotfolder_path, directory_for_results, directory_for_temporary_files, highest_peak_db, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, channel_count, audio_channels_will_be_split_to_separate_mono_files, output_file_too_big_to_split_to_separate_wav_channels)
 
 
 def create_gnuplot_commands_for_error_message(error_message, filename, directory_for_temporary_files, directory_for_results, english, finnish):
@@ -738,16 +738,16 @@ def run_gnuplot(filename, directory_for_temporary_files, directory_for_results, 
 		error_message = 'Error moving gnuplot graphics file ' * english + 'Gnuplotin grafiikkatiedoston siirtäminen epäonnistui ' * finnish + str(reason_for_error)
 		send_error_messages_to_screen_logfile_email(error_message, [])
 
-def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calculation_error, difference_from_target_loudness, filename, english, finnish, hotfolder_path, directory_for_results, directory_for_temporary_files, highest_peak_db, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, channel_count, audio_channels_will_be_split_to_separate_mono_files):
+def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calculation_error, difference_from_target_loudness, filename, english, finnish, hotfolder_path, directory_for_results, directory_for_temporary_files, highest_peak_db, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, channel_count, audio_channels_will_be_split_to_separate_mono_files, output_file_too_big_to_split_to_separate_wav_channels):
 
 	'''This subroutine creates sox commands that are used to create a loudness corrected file'''
 
 	# This subroutine works like this:
 	# ---------------------------------
 	# The process gets the difference from target loudness as it's argument.
-	# The process starts sox using the difference as gain parameter and creates a loudness corrected wav.
+	# The process creates sox commands and starts sox using the difference as gain parameter and creates a loudness corrected wav.
 	# The corrected file is written to temporary directory and when ready moved to the target directory for the user to see. This prevents user from using an incomplete file by accident.
-	# If ouput files uncompressed size would exceed wav 4 GB limit, then the file is split into individual mono files. If individual size of these mono channels would still exceed 4 GB then flac or a lossy codec is used store the file.
+	# If ouput files uncompressed size would exceed wav 4 GB limit, then the file is split into individual mono files. If individual size of these mono channels would still exceed 4 GB then flac or another suitable codec is used.
 	
 	# Assing some values to variables.
 	integrated_loudness_calculation_results_list = []
@@ -760,10 +760,15 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 	if (integrated_loudness_calculation_error == False):
 		
 		# Assing some values to variables.
-		# Output format for files has been already been decided in subroutine: get_audiofile_info_with_sox_and_determine_output_format
-		temporary_targetfile = filename_and_extension[0] + '_-23_LUFS.' + output_format_for_intermediate_files
+		# Output format for files has been already been decided in subroutine: get_audiofile_info_with_sox_and_determine_output_format. Output format is wav for files of 4 GB or less and flac for very large files that can't be split to separate wav files.
+		combined_channels_targetfile_name = filename_and_extension[0] + '_-23_LUFS.' + output_format_for_final_file
 		temporary_peak_limited_targetfile = filename_and_extension[0] + '-Peak_Limited.' + output_format_for_intermediate_files
 		difference_from_target_loudness_sign_inverted = difference_from_target_loudness * -1 # The sign (+/-) of the difference from target loudness needs to be flipped for sox. Plus becomes minus and vice versa.
+		
+		start_of_sox_commandline = ['sox']
+		# If output file exceeds 4 GB then sox can't read input file reliably (uncompressed size of it exceed 4 GB also), we need to read inputfile through libsndfile. Libsndfile reads bigger than 4 GB files only in 64 bit Ubuntu, 32 bit will not work correctly.
+		if (audio_channels_will_be_split_to_separate_mono_files == True) or (output_file_too_big_to_split_to_separate_wav_channels == True):
+			start_of_sox_commandline.extend(['-t', 'sndfile'])
 		
 		# Set the absolute peak level for the resulting corrected audio file.
 		# If sample peak is used for the highest value, then set the absolute peak to be -4 dBFS (resulting peaks will be about 1 dB higher than this).
@@ -788,15 +793,16 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 			
 			if audio_channels_will_be_split_to_separate_mono_files == False:
 				# Gather sox commandline to a list.
-				sox_commandline = ['sox', file_to_process]
+				sox_commandline = start_of_sox_commandline
+				sox_commandline.append(file_to_process)
 				
 				# If output format is flac add flac compression level commands right after the input file name.
-				if output_format_for_intermediate_files == 'flac':
+				if output_format_for_final_file == 'flac':
 					sox_commandline.extend(flac_compression_level)
-				sox_commandline.extend([directory_for_temporary_files + os.sep + temporary_targetfile, 'gain', str(difference_from_target_loudness_sign_inverted)])
+				sox_commandline.extend([directory_for_temporary_files + os.sep + combined_channels_targetfile_name, 'gain', str(difference_from_target_loudness_sign_inverted)])
 				
 				#Gather all names of processed files to a list.
-				list_of_filenames = [temporary_targetfile]
+				list_of_filenames = [combined_channels_targetfile_name]
 				
 				# Run sox with the commandline compiled in the lines above.
 				run_sox(directory_for_temporary_files, filename, sox_commandline, english, finnish, 0)
@@ -807,12 +813,12 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 				# Create commandlines for extracting each channel to its own file.
 				
 				for counter in range(1, channel_count + 1):
-					mono_targetfile = filename_and_extension[0] + '-Channel-' * english + '-Kanava-' * finnish + str(counter) + '_-23_LUFS.' + output_format_for_final_file
-					sox_commandline = ['sox', file_to_process, directory_for_temporary_files + os.sep + mono_targetfile, 'remix', str(counter), 'gain', str(difference_from_target_loudness_sign_inverted)]
+					split_channel_targetfile_name = filename_and_extension[0] + '-Channel-' * english + '-Kanava-' * finnish + str(counter) + '_-23_LUFS.' + output_format_for_final_file
+					sox_commandline = [start_of_sox_commandline, file_to_process, directory_for_temporary_files + os.sep + split_channel_targetfile_name, 'remix', str(counter), 'gain', str(difference_from_target_loudness_sign_inverted)]
 			
 					#Gather all commands needed to process a file to a list of sox commandlines.
 					list_of_sox_commandlines.append(sox_commandline)
-					list_of_filenames.append(mono_targetfile)
+					list_of_filenames.append(split_channel_targetfile_name)
 				
 				# Run several sox commands in parallel threads, this speeds up splitting the file to separate mono files.	
 				run_sox_commands_in_parallel_threads(directory_for_temporary_files, filename, list_of_sox_commandlines, english, finnish)
@@ -846,7 +852,8 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 				hard_limiter = ['compand', '0,0', '3:' + str(hard_limiter_level + -3) + ',' + str(hard_limiter_level + -3) + ',0,'+ str(hard_limiter_level + 0)]
 				
 				# Combine all sox commands into one list.
-				sox_commandline = ['sox', file_to_process]
+				sox_commandline = start_of_sox_commandline
+				sox_commandline.append(file_to_process)
 				# If output format is flac add flac compression level commands right after the input file name.
 				if output_format_for_intermediate_files == 'flac':
 					sox_commandline.extend(flac_compression_level)
@@ -885,14 +892,14 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 				
 				if audio_channels_will_be_split_to_separate_mono_files == False:
 					# Gather sox commandline to a list.
-					sox_commandline = ['sox', directory_for_temporary_files + os.sep + temporary_peak_limited_targetfile]
+					sox_commandline = [start_of_sox_commandline, directory_for_temporary_files + os.sep + temporary_peak_limited_targetfile]
 					# If output format is flac add flac compression level commands right after the input file name.
-					if output_format_for_intermediate_files == 'flac':
+					if output_format_for_final_file == 'flac':
 						sox_commandline.extend(flac_compression_level)
-					sox_commandline.extend([directory_for_temporary_files + os.sep + temporary_targetfile, 'gain', str(difference_from_target_loudness_sign_inverted)])
+					sox_commandline.extend([directory_for_temporary_files + os.sep + combined_channels_targetfile_name, 'gain', str(difference_from_target_loudness_sign_inverted)])
 					
 					#Gather all names of processed files to a list.
-					list_of_filenames = [temporary_targetfile]
+					list_of_filenames = [combined_channels_targetfile_name]
 					
 					# Run sox with the commandline compiled in the lines above.
 					run_sox(directory_for_temporary_files, filename, sox_commandline, english, finnish, 0)
@@ -903,12 +910,12 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 					# Create commandlines for extracting each channel to its own file.
 					
 					for counter in range(1, channel_count + 1):
-						mono_targetfile = filename_and_extension[0] + '-Channel-' * english + '-Kanava-' * finnish + str(counter) + '_-23_LUFS.' + output_format_for_final_file
-						sox_commandline = ['sox', directory_for_temporary_files + os.sep + temporary_peak_limited_targetfile, directory_for_temporary_files + os.sep + mono_targetfile, 'remix', str(counter), 'gain', str(difference_from_target_loudness_sign_inverted)]
+						split_channel_targetfile_name = filename_and_extension[0] + '-Channel-' * english + '-Kanava-' * finnish + str(counter) + '_-23_LUFS.' + output_format_for_final_file
+						sox_commandline = [start_of_sox_commandline, directory_for_temporary_files + os.sep + temporary_peak_limited_targetfile, directory_for_temporary_files + os.sep + split_channel_targetfile_name, 'remix', str(counter), 'gain', str(difference_from_target_loudness_sign_inverted)]
 				
 						#Gather all commands needed to process a file to a list of sox commandlines.
 						list_of_sox_commandlines.append(sox_commandline)
-						list_of_filenames.append(mono_targetfile)
+						list_of_filenames.append(split_channel_targetfile_name)
 
 					# Run several sox commands in parallel threads, this speeds up splitting the file to separate mono files.	
 					run_sox_commands_in_parallel_threads(directory_for_temporary_files, filename, list_of_sox_commandlines, english, finnish)
@@ -929,14 +936,15 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 				
 				if audio_channels_will_be_split_to_separate_mono_files == False:
 					# Gather sox commandline to a list.
-					sox_commandline = ['sox', file_to_process]
+					sox_commandline = start_of_sox_commandline
+					sox_commandline.append(file_to_process)
 					# If output format is flac add flac compression level commands right after the input file name.
-					if output_format_for_intermediate_files == 'flac':
+					if output_format_for_final_file == 'flac':
 						sox_commandline.extend(flac_compression_level)
-					sox_commandline.extend([directory_for_temporary_files + os.sep + temporary_targetfile, 'gain', str(difference_from_target_loudness_sign_inverted)])
+					sox_commandline.extend([directory_for_temporary_files + os.sep + combined_channels_targetfile_name, 'gain', str(difference_from_target_loudness_sign_inverted)])
 					
 					#Gather all names of processed files to a list.
-					list_of_filenames = [temporary_targetfile]
+					list_of_filenames = [combined_channels_targetfile_name]
 					
 					# Run sox with the commandline compiled in the lines above.
 					run_sox(directory_for_temporary_files, filename, sox_commandline, english, finnish, 0)
@@ -947,12 +955,12 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 					# Create commandlines for extracting each channel to its own file.
 					
 					for counter in range(1, channel_count + 1):
-						mono_targetfile = filename_and_extension[0] + '-Channel-' * english + '-Kanava-' * finnish + str(counter) + '_-23_LUFS.' + output_format_for_final_file
-						sox_commandline = ['sox', file_to_process, directory_for_temporary_files + os.sep + mono_targetfile, 'remix', str(counter), 'gain', str(difference_from_target_loudness_sign_inverted)]
+						split_channel_targetfile_name = filename_and_extension[0] + '-Channel-' * english + '-Kanava-' * finnish + str(counter) + '_-23_LUFS.' + output_format_for_final_file
+						sox_commandline = [start_of_sox_commandline, file_to_process, directory_for_temporary_files + os.sep + split_channel_targetfile_name, 'remix', str(counter), 'gain', str(difference_from_target_loudness_sign_inverted)]
 				
 						#Gather all commands needed to process a file to a list of sox commandlines.
 						list_of_sox_commandlines.append(sox_commandline)
-						list_of_filenames.append(mono_targetfile)
+						list_of_filenames.append(split_channel_targetfile_name)
 					
 					# Run several sox commands in parallel threads, this speeds up splitting the file to separate mono files.	
 					run_sox_commands_in_parallel_threads(directory_for_temporary_files, filename, list_of_sox_commandlines, english, finnish)
@@ -1152,7 +1160,7 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 	estimated_uncompressed_size_for_single_mono_file = 0
 	estimated_uncompressed_size_for_combined_channels = 0
 	wav_format_maximum_file_size = 4294967296 # Define wav max file size. Theoretical max size is 2 ^ 32 = 4294967296.
-	flac_compression_level = ['-C', '0']
+	flac_compression_level = ['-C', '1']
 	output_format_for_intermediate_files = 'wav'
 	output_format_for_final_file = 'wav'
 	
@@ -1244,11 +1252,13 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 	estimated_uncompressed_size_for_single_mono_file = int((sample_rate * audio_duration * int(bit_depth / 8)) + sample_rate)
 	estimated_uncompressed_size_for_combined_channels = estimated_uncompressed_size_for_single_mono_file * channel_count
 	
+	output_file_too_big_to_split_to_separate_wav_channels = False
 	audio_channels_will_be_split_to_separate_mono_files = False
 	
 	# Test if output file will exceed the max size of wav format and assign sox commands and output formats accordingly.
 	if (estimated_uncompressed_size_for_combined_channels >= wav_format_maximum_file_size) and (estimated_uncompressed_size_for_single_mono_file >= wav_format_maximum_file_size):
-		# In this case both the combined channels in one file and separate mono files will exceed the maximum size. Use lossless compression always.
+		# In this case both the combined channels in one file and separate mono files each will exceed wav format maximum size. Use lossless compression always.
+		output_file_too_big_to_split_to_separate_wav_channels = True
 		output_format_for_intermediate_files = 'flac'
 		output_format_for_final_file = 'flac'
 			
@@ -1287,7 +1297,7 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 		print('estimated_uncompressed_size_for_combined_channels =', estimated_uncompressed_size_for_combined_channels)
 		print()
 	
-	return(channel_count, sample_rate, bit_depth, sample_count, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, audio_channels_will_be_split_to_separate_mono_files, audio_duration)
+	return(channel_count, sample_rate, bit_depth, sample_count, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, audio_channels_will_be_split_to_separate_mono_files, audio_duration, output_file_too_big_to_split_to_separate_wav_channels)
 
 def get_realtime(english, finnish):
 
@@ -2682,7 +2692,7 @@ else:
 		sys.exit(1)
 
 # If you wan't to enable debug mode to see debug messages printed on the terminal window, then uncomment the line below.
-debug = True
+# debug = True
 
 # Define the name of the error logfile.
 error_logfile_path = directory_for_error_logs + os.sep + 'error_log-' + str(get_realtime(english, finnish)) + '.txt' # Error log filename is 'error_log' + current date + time

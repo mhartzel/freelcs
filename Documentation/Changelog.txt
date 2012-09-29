@@ -1,6 +1,13 @@
+LoudnessCorrection Version 189
+-------------------------------
+- Found out that large file support does not work correctly in sox unless operating system is 64 bit Ubuntu and sox reads files through libsndfile. All files that are bigger than 4 GB uncompressed are now read through libsndfile when processing with sox.
+- Renamed some variables in subroutine 'create_sox_commands_for_loudness_adjusting_a_file' to make more clear what values they store.
+- Changed flac compression level from 0 to 1 since this seems to give the best speed / compression ratio on 64 bit Ubuntu.
+- Bugfix: Forgot to turn debug off before commit 188 :)
+
 LoudnessCorrection Version 188
 -------------------------------
-- Dedug mode now adds some more information about an audio file to the logfile: filename, integrated_loudness, loudness_range, highest_peak_db, channel_count, sample_rate, bit_depth, audio_duration. This info can be used for debugging
+- Dedug mode now adds some more information about an audio file to the logfile: filename, integrated_loudness, loudness_range, highest_peak_db, channel_count, sample_rate, bit_depth, audio_duration. This info can be used for debugging.
 
 LoudnessCorrection Version 187
 -------------------------------
