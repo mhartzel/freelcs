@@ -35,7 +35,7 @@ import pickle
 import math
 import copy
 
-version = '189'
+version = '190'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -161,6 +161,8 @@ if send_error_messages_by_email == True:
 # Should we use absolute sample peak or TruePeak calculation to determine the highest peak in audio. Possible values are: '--peak=sample' and '--peak=true'
 peak_measurement_method = '--peak=sample'
 
+wav_format_maximum_file_size = 4294967296 # Define wav max file size. Theoretical max size is 2 ^ 32 = 4294967296.
+# wav_format_maximum_file_size = 31000000 # Use this when debugging with shrunken test files :)
 ###############################################################################################################################################################################
 # Default value definitions end here :)                                                                                                                                       #
 ###############################################################################################################################################################################
@@ -814,7 +816,9 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 				
 				for counter in range(1, channel_count + 1):
 					split_channel_targetfile_name = filename_and_extension[0] + '-Channel-' * english + '-Kanava-' * finnish + str(counter) + '_-23_LUFS.' + output_format_for_final_file
-					sox_commandline = [start_of_sox_commandline, file_to_process, directory_for_temporary_files + os.sep + split_channel_targetfile_name, 'remix', str(counter), 'gain', str(difference_from_target_loudness_sign_inverted)]
+					sox_commandline = []
+					sox_commandline.extend(start_of_sox_commandline)
+					sox_commandline.extend([file_to_process, directory_for_temporary_files + os.sep + split_channel_targetfile_name, 'remix', str(counter), 'gain', str(difference_from_target_loudness_sign_inverted)])
 			
 					#Gather all commands needed to process a file to a list of sox commandlines.
 					list_of_sox_commandlines.append(sox_commandline)
@@ -911,7 +915,9 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 					
 					for counter in range(1, channel_count + 1):
 						split_channel_targetfile_name = filename_and_extension[0] + '-Channel-' * english + '-Kanava-' * finnish + str(counter) + '_-23_LUFS.' + output_format_for_final_file
-						sox_commandline = [start_of_sox_commandline, directory_for_temporary_files + os.sep + temporary_peak_limited_targetfile, directory_for_temporary_files + os.sep + split_channel_targetfile_name, 'remix', str(counter), 'gain', str(difference_from_target_loudness_sign_inverted)]
+						sox_commandline = []
+						sox_commandline.extend(start_of_sox_commandline)
+						sox_commandline.extend([directory_for_temporary_files + os.sep + temporary_peak_limited_targetfile, directory_for_temporary_files + os.sep + split_channel_targetfile_name, 'remix', str(counter), 'gain', str(difference_from_target_loudness_sign_inverted)])
 				
 						#Gather all commands needed to process a file to a list of sox commandlines.
 						list_of_sox_commandlines.append(sox_commandline)
@@ -956,7 +962,9 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 					
 					for counter in range(1, channel_count + 1):
 						split_channel_targetfile_name = filename_and_extension[0] + '-Channel-' * english + '-Kanava-' * finnish + str(counter) + '_-23_LUFS.' + output_format_for_final_file
-						sox_commandline = [start_of_sox_commandline, file_to_process, directory_for_temporary_files + os.sep + split_channel_targetfile_name, 'remix', str(counter), 'gain', str(difference_from_target_loudness_sign_inverted)]
+						sox_commandline = []
+						sox_commandline.extend(start_of_sox_commandline)
+						sox_commandline.extend([file_to_process, directory_for_temporary_files + os.sep + split_channel_targetfile_name, 'remix', str(counter), 'gain', str(difference_from_target_loudness_sign_inverted)])
 				
 						#Gather all commands needed to process a file to a list of sox commandlines.
 						list_of_sox_commandlines.append(sox_commandline)
@@ -1159,7 +1167,7 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 	file_to_process = hotfolder_path + os.sep + filename
 	estimated_uncompressed_size_for_single_mono_file = 0
 	estimated_uncompressed_size_for_combined_channels = 0
-	wav_format_maximum_file_size = 4294967296 # Define wav max file size. Theoretical max size is 2 ^ 32 = 4294967296.
+	global wav_format_maximum_file_size
 	flac_compression_level = ['-C', '1']
 	output_format_for_intermediate_files = 'wav'
 	output_format_for_final_file = 'wav'
@@ -1295,6 +1303,8 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 		print('output_format_for_intermediate_files =', output_format_for_intermediate_files)
 		print('output_format_for_final_file =', output_format_for_final_file)
 		print('estimated_uncompressed_size_for_combined_channels =', estimated_uncompressed_size_for_combined_channels)
+		print('audio_channels_will_be_split_to_separate_mono_files =', audio_channels_will_be_split_to_separate_mono_files)
+		print('output_file_too_big_to_split_to_separate_wav_channels =', output_file_too_big_to_split_to_separate_wav_channels)
 		print()
 	
 	return(channel_count, sample_rate, bit_depth, sample_count, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, audio_channels_will_be_split_to_separate_mono_files, audio_duration, output_file_too_big_to_split_to_separate_wav_channels)
@@ -1995,7 +2005,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 	number_of_audio_channels = '0'
 	estimated_uncompressed_size_for_single_mono_file = 0
 	estimated_uncompressed_size_for_combined_channels = 0
-	wav_format_maximum_file_size = 4294967296 # Define wav max file size. Theoretical max size is 2 ^ 32 = 4294967296.
+	global wav_format_maximum_file_size
 	file_type = ''
 	audio_coding_format = ''
 	list_of_error_messages_for_unsupported_streams = []	

@@ -1,3 +1,7 @@
+LoudnessCorrection Version 190
+-------------------------------
+- Bugfix: Corrected some crashy typos and some other bugs made when editing 189 :)
+
 LoudnessCorrection Version 189
 -------------------------------
 - Found out that large file support does not work correctly in sox unless operating system is 64 bit Ubuntu and sox reads files through libsndfile. All files that are bigger than 4 GB uncompressed are now read through libsndfile when processing with sox.
