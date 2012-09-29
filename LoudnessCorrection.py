@@ -35,7 +35,7 @@ import pickle
 import math
 import copy
 
-version = '187'
+version = '188'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -432,10 +432,6 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 	else:
 		difference_from_target_loudness_string = str(difference_from_target_loudness) # The loudness difference from target loudness is negative, just create a string with the negative result number in it.
 
-
-	if debug == True:
-		debug_write_loudness_calculation_info_to_a_logfile(filename, integrated_loudness, loudness_range, highest_peak_db)
-
 	# Scale loudness graphics x-axis time information according to file duration.
 	# Loudness calculation is done in 3 second slices when audio duration is 12 seconds or longer.
 	# If file duration is shorter than 12 seconds then slices are 0.5 seconds each.
@@ -505,7 +501,11 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 		plotfile_x_axis_time_information = ''.join(plotfile_x_axis_time_information)
 	
 	# Get technical info from audio file and determine what the ouput format will be
-	channel_count, sample_rate, bit_depth, sample_count, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, audio_channels_will_be_split_to_separate_mono_files = get_audiofile_info_with_sox_and_determine_output_format(directory_for_temporary_files, hotfolder_path, filename)
+	channel_count, sample_rate, bit_depth, sample_count, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, audio_channels_will_be_split_to_separate_mono_files, audio_duration = get_audiofile_info_with_sox_and_determine_output_format(directory_for_temporary_files, hotfolder_path, filename)
+	
+	# Write details of the file to a logfile.
+	if debug == True:
+		debug_write_loudness_calculation_info_to_a_logfile(filename, integrated_loudness, loudness_range, highest_peak_db, channel_count, sample_rate, bit_depth, audio_duration)
 	
 	# If file size exceeds 4 GB, a warning message must be displayed informing the user that the
 	# outputfile will either be split to separate mono channels or stored in flac - format.
@@ -1287,7 +1287,7 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 		print('estimated_uncompressed_size_for_combined_channels =', estimated_uncompressed_size_for_combined_channels)
 		print()
 	
-	return(channel_count, sample_rate, bit_depth, sample_count, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, audio_channels_will_be_split_to_separate_mono_files)
+	return(channel_count, sample_rate, bit_depth, sample_count, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, audio_channels_will_be_split_to_separate_mono_files, audio_duration)
 
 def get_realtime(english, finnish):
 
@@ -2403,7 +2403,7 @@ def get_audiofile_duration_with_mediainfo(directory_for_temporary_files, filenam
 	return(audio_duration)
 	
 	
-def debug_write_loudness_calculation_info_to_a_logfile(filename, integrated_loudness, loudness_range, highest_peak_db):
+def debug_write_loudness_calculation_info_to_a_logfile(filename, integrated_loudness, loudness_range, highest_peak_db, channel_count, sample_rate, bit_depth, audio_duration):
 	
 	# This subroutine can be used to write loudness calculation data to a text file in error_log - directory.
 	# The developer can process a bunch of test files and save the logfile.
@@ -2411,7 +2411,7 @@ def debug_write_loudness_calculation_info_to_a_logfile(filename, integrated_loud
 	# confirmed that the results from the new version are the same as in the earlier saved file.
 	
 	global loudness_calculation_logfile_path
-	loudness_calculation_data = filename + ',EndOFFileName,' + str(integrated_loudness) + ',' + str(loudness_range) + ',' + str(highest_peak_db) + '\n'
+	loudness_calculation_data = filename + ',EndOFFileName,' + str(integrated_loudness) + ',' + str(loudness_range) + ',' + str(highest_peak_db) + ',' + str(channel_count) + ',' + str(sample_rate) + ',' + str(bit_depth) + ',' + str(int(audio_duration)) + '\n'
 	
 	try:
 		with open(loudness_calculation_logfile_path, 'at') as loudness_calculation_logfile_handler:
@@ -2682,7 +2682,7 @@ else:
 		sys.exit(1)
 
 # If you wan't to enable debug mode to see debug messages printed on the terminal window, then uncomment the line below.
-# debug = True
+debug = True
 
 # Define the name of the error logfile.
 error_logfile_path = directory_for_error_logs + os.sep + 'error_log-' + str(get_realtime(english, finnish)) + '.txt' # Error log filename is 'error_log' + current date + time

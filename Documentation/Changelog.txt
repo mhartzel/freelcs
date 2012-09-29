@@ -1,3 +1,7 @@
+LoudnessCorrection Version 188
+-------------------------------
+- Dedug mode now adds some more information about an audio file to the logfile: filename, integrated_loudness, loudness_range, highest_peak_db, channel_count, sample_rate, bit_depth, audio_duration. This info can be used for debugging
+
 LoudnessCorrection Version 187
 -------------------------------
 - Bugfix: LoudnessCalculation started sometimes too early when files were still being transferred through network. This was due to the fact that in some cases the file size was immidiately reported as full when the tranfer started. This seemed to happen when the source computer was a windows computer.
