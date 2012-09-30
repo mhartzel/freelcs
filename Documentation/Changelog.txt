@@ -1,3 +1,8 @@
+Installer 050
+--------------
+- Ubuntu ships with sox 14.3.2 which does not support large files correctly, so the installer now downloads sox source and builds and installs sox version 14.4.0.
+- libebur128 and sox compilation now uses 4 jobs to speed up installation.
+
 LoudnessCorrection Version 190
 -------------------------------
 - Bugfix: Corrected some crashy typos and some other bugs made when editing 189 :)
@@ -11,7 +16,7 @@ LoudnessCorrection Version 189
 
 LoudnessCorrection Version 188
 -------------------------------
-- Dedug mode now adds some more information about an audio file to the logfile: filename, integrated_loudness, loudness_range, highest_peak_db, channel_count, sample_rate, bit_depth, audio_duration. This info can be used for debugging.
+- Debug mode now adds some more information about an audio file to the logfile: filename, integrated_loudness, loudness_range, highest_peak_db, channel_count, sample_rate, bit_depth, audio_duration. This info can be used for debugging.
 
 LoudnessCorrection Version 187
 -------------------------------

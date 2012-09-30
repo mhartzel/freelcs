@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '049'
+version = '050'
 
 ###################################
 # Function definitions start here #
@@ -1792,6 +1792,7 @@ def find_paths_to_all_external_programs_we_need():
 		ffmpeg_is_installed.set('Installed')
 
 	sox_path = find_program_in_os_path('sox')
+	check_sox_version_and_add_git_commands_to_checkout_specific_commit()
 	if sox_path == '':
 		sox_is_installed.set('Not Installed')
 		all_needed_external_programs_are_installed = False
@@ -1822,7 +1823,7 @@ def find_paths_to_all_external_programs_we_need():
 		mediainfo_is_installed.set('Installed')
 	
 	loudness_path = find_program_in_os_path('loudness')
-	check_libebur128_version()
+	check_libebur128_version_and_add_git_commands_to_checkout_specific_commit()
 	if loudness_path == '':
 		libebur128_is_installed.set('Not Installed')
 		all_needed_external_programs_are_installed = False
@@ -1918,24 +1919,28 @@ def show_installation_shell_commands(*args):
 	global all_needed_external_programs_are_installed
 	global apt_get_commands
 	global needed_packages_install_commands
+	global sox_simplified_build_and_install_commands_displayed_to_user
 
 	global apt_get_commands
 	global libebur128_dependencies_install_commands
 
 	global loudness_path
-	global git_commands
-	global cmake_commands
-	global make_build_and_install_commands
+	global libebur128_git_commands
+	global libebur128_cmake_commands
+	global libebur128_make_build_and_install_commands
 	
 	if needed_packages_install_commands != []:
 		eight_window_textwidget_text_content = '# Install missing programs.\n' + ' '.join(apt_get_commands) + ' ' + ' '.join(needed_packages_install_commands) + '\n\n'
+		
+	if sox_simplified_build_and_install_commands_displayed_to_user != []:
+		eight_window_textwidget_text_content = eight_window_textwidget_text_content + '# Install sox from source.\n' + '\n'.join(sox_simplified_build_and_install_commands_displayed_to_user) + '\n\n'
 		
 	if libebur128_dependencies_install_commands != []:
 		eight_window_textwidget_text_content = eight_window_textwidget_text_content + '# Install compilation tools and developer packages needed to build libebur128.\n' + ' '.join(apt_get_commands) + ' ' + ' '.join(libebur128_dependencies_install_commands) + '\n\n'
 		
 	if loudness_path == '':
-		eight_window_textwidget_text_content = eight_window_textwidget_text_content + '# Download libebur128 source code, build it and install.\n' + '\n'.join(git_commands) + '\n'
-		eight_window_textwidget_text_content = eight_window_textwidget_text_content+ '\n'.join(simplified_build_and_install_commands_displayed_to_user) + '\n'
+		eight_window_textwidget_text_content = eight_window_textwidget_text_content + '# Download libebur128 source code, build it and install.\n' + '\n'.join(libebur128_git_commands) + '\n'
+		eight_window_textwidget_text_content = eight_window_textwidget_text_content+ '\n'.join(libebur128_simplified_build_and_install_commands_displayed_to_user) + '\n'
 		
 	install_commands_text_widget.delete('1.0', 'end')
 	install_commands_text_widget.insert('1.0', eight_window_textwidget_text_content)
@@ -1959,9 +1964,9 @@ def install_missing_programs(*args):
 	global apt_get_commands
 	global needed_packages_install_commands
 	global libebur128_dependencies_install_commands
-	global git_commands
-	global cmake_commands
-	global make_build_and_install_commands
+	global libebur128_git_commands
+	global libebur128_cmake_commands
+	global libebur128_make_build_and_install_commands
 	global debug
 	global external_program_installation_has_been_already_run
 	global all_installation_messages
@@ -2103,7 +2108,7 @@ def install_missing_programs(*args):
 		set_button_and_label_states_on_window_seven()
 		call_seventh_frame_on_top()
 		
-		if git_commands != []:
+		if libebur128_git_commands != []:
 
 			############################################################################################
 			# Write libebur128 source code download commands to '/tmp/libebur128_download_commands.sh' #
@@ -2169,7 +2174,7 @@ def install_missing_programs(*args):
 			# Write libebur128 source code download commands to '/tmp/libebur128_download_commands.sh'
 			try:
 				with open(directory_for_os_temporary_files + os.sep + libebur128_source_downloadfile, 'wt') as libebur128_source_downloadfile_handler:
-					libebur128_source_downloadfile_handler.write('#!/bin/bash\n' + '\n'.join(git_commands))
+					libebur128_source_downloadfile_handler.write('#!/bin/bash\n' + '\n'.join(libebur128_git_commands))
 					libebur128_source_downloadfile_handler.flush() # Flushes written data to os cache
 					os.fsync(libebur128_source_downloadfile_handler.fileno()) # Flushes os cache to disk
 			except IOError as reason_for_error:
@@ -2301,11 +2306,11 @@ def install_missing_programs(*args):
 				set_button_and_label_states_on_window_seven()
 				call_seventh_frame_on_top()
 
-				####################################################
-				# Write cmake commands to '/tmp/cmake_commands.sh' #
-				####################################################
+				###############################################################
+				# Write cmake commands to '/tmp/libebur128_cmake_commands.sh' #
+				###############################################################
 				
-				cmake_commandfile = 'cmake_commands.sh'
+				cmake_commandfile = 'libebur128_cmake_commands.sh'
 				
 				# Remove files possibly left by a previous installation.
 				# If user has not rebooted the previous installation temp - files will still be there.
@@ -2335,10 +2340,10 @@ def install_missing_programs(*args):
 						show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
 						an_error_has_happened = True
 				
-				# Write cmake commands to '/tmp/cmake_commands.sh'
+				# Write cmake commands to '/tmp/libebur128_cmake_commands.sh'
 				try:
 					with open(directory_for_os_temporary_files + os.sep + cmake_commandfile, 'wt') as cmake_commandfile_handler:
-						cmake_commandfile_handler.write('#!/bin/bash\n' + '\n'.join(cmake_commands))
+						cmake_commandfile_handler.write('#!/bin/bash\n' + '\n'.join(libebur128_cmake_commands))
 						cmake_commandfile_handler.flush() # Flushes written data to os cache
 						os.fsync(cmake_commandfile_handler.fileno()) # Flushes os cache to disk
 				except IOError as reason_for_error:
@@ -2362,9 +2367,9 @@ def install_missing_programs(*args):
 						
 			if an_error_has_happened == False:
 					
-				###############################################
-				# Change '/tmp/cmake_commands.sh' permissions #
-				###############################################
+				##########################################################
+				# Change '/tmp/libebur128_cmake_commands.sh' permissions #
+				##########################################################
 				
 				# Create the commandline we need to run as root.
 				commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chmod', '755', directory_for_os_temporary_files + os.sep + cmake_commandfile]
@@ -2391,9 +2396,9 @@ def install_missing_programs(*args):
 		
 			if an_error_has_happened == False:
 					
-				#########################################
-				# Change '/tmp/cmake_commands.sh' owner #
-				#########################################
+				####################################################
+				# Change '/tmp/libebur128_cmake_commands.sh' owner #
+				####################################################
 				
 				# Create the commandline we need to run as root.
 				commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chown', 'root:root', directory_for_os_temporary_files + os.sep + cmake_commandfile]
@@ -2420,9 +2425,9 @@ def install_missing_programs(*args):
 		
 			if an_error_has_happened == False:
 					
-				################################
-				# Run '/tmp/cmake_commands.sh' #
-				################################
+				###########################################
+				# Run '/tmp/libebur128_cmake_commands.sh' #
+				###########################################
 				
 				# Create the commandline we need to run as root.
 				commands_to_run = ['sudo', '-k', '-p', '', '-S', directory_for_os_temporary_files + os.sep + cmake_commandfile]
@@ -2507,7 +2512,7 @@ def install_missing_programs(*args):
 				# Write make commands to '/tmp/make_and_build_commands.sh'
 				try:
 					with open(directory_for_os_temporary_files + os.sep + make_and_build_commandfile, 'wt') as make_and_build_commandfile_handler:
-						make_and_build_commandfile_handler.write('#!/bin/bash\n' + '\n'.join(make_build_and_install_commands))
+						make_and_build_commandfile_handler.write('#!/bin/bash\n' + '\n'.join(libebur128_make_build_and_install_commands))
 						make_and_build_commandfile_handler.flush() # Flushes written data to os cache
 						os.fsync(make_and_build_commandfile_handler.fileno()) # Flushes os cache to disk
 				except IOError as reason_for_error:
@@ -2631,7 +2636,209 @@ def install_missing_programs(*args):
 				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
 				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
 					show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+		
+	if an_error_has_happened == False:
 	
+		find_paths_to_all_external_programs_we_need()
+		set_button_and_label_states_on_window_seven()
+		call_seventh_frame_on_top()
+		
+		if sox_download_make_build_and_install_commands != []:
+
+			##############################################################################
+			# Write sox source code download commands to '/tmp/sox_download_commands.sh' #
+			##############################################################################
+			
+			sox_source_downloadfile = 'sox_download_commands.sh'
+			
+			# Remove files possibly left by a previous installation.
+			# If user has not rebooted the previous installation temp - files will still be there.
+			
+			if os.path.exists(directory_for_os_temporary_files + os.sep + sox_source_downloadfile):
+				
+				# Create the commandline we need to run as root.
+				commands_to_run = ['sudo', '-k', '-p', '', '-S', 'rm', '-f', directory_for_os_temporary_files + os.sep + sox_source_downloadfile]
+
+				if debug == True:
+					print()
+					print('Running commands:', commands_to_run)
+
+				# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
+				sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
+				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+				all_installation_messages = all_installation_messages + '-' * 80 + '\n' + sudo_stdout_string + sudo_stderr_string
+				
+				if debug == True:
+					print()
+					print('sudo_stdout:', sudo_stdout)
+					print('sudo_stderr:', sudo_stderr)
+				
+				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
+				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
+					show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+					an_error_has_happened = True
+			
+			if os.path.exists(directory_for_os_temporary_files + os.sep + 'sox'):
+				
+				# Remove sox source code directory tree.
+				
+				# Create the commandline we need to run as root.
+				commands_to_run = ['sudo', '-k', '-p', '', '-S', 'rm', '-rf', directory_for_os_temporary_files + os.sep + 'sox']
+
+				if debug == True:
+					print()
+					print('Running commands:', commands_to_run)
+
+				# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
+				sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
+				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+				all_installation_messages = all_installation_messages + '-' * 80 + '\n' + sudo_stdout_string + sudo_stderr_string
+				
+				if debug == True:
+					print()
+					print('sudo_stdout:', sudo_stdout)
+					print('sudo_stderr:', sudo_stderr)
+				
+				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
+				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
+					show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+					an_error_has_happened = True
+			
+			# Write sox source code download commands to '/tmp/sox_download_commands.sh'
+			try:
+				with open(directory_for_os_temporary_files + os.sep + sox_source_downloadfile, 'wt') as sox_source_downloadfile_handler:
+					sox_source_downloadfile_handler.write('#!/bin/bash\n' + '\n'.join(sox_download_make_build_and_install_commands))
+					sox_source_downloadfile_handler.flush() # Flushes written data to os cache
+					os.fsync(sox_source_downloadfile_handler.fileno()) # Flushes os cache to disk
+			except IOError as reason_for_error:
+				error_in_string_format = 'Error opening file ' + directory_for_os_temporary_files + os.sep + sox_source_downloadfile + ' for writing ' + str(reason_for_error)
+				all_installation_messages = all_installation_messages + '-' * 80 + '\n' + error_in_string_format
+				show_error_message_on_seventh_window('', error_in_string_format)
+				an_error_has_happened = True
+				if debug == True:
+					print()
+					print('Error:', error_in_string_format)
+					print()
+			except OSError as reason_for_error:
+				error_in_string_format = 'Error opening file ' + directory_for_os_temporary_files + os.sep + sox_source_downloadfile + ' for writing ' + str(reason_for_error)
+				all_installation_messages = all_installation_messages + '-' * 80 + '\n' + error_in_string_format
+				show_error_message_on_seventh_window('', error_in_string_format)
+				an_error_has_happened = True
+				if debug == True:
+					print()
+					print('Error:', error_in_string_format)
+					print()
+						
+			if an_error_has_happened == False:
+					
+				######################################################
+				# Change '/tmp/sox_download_commands.sh' permissions #
+				######################################################
+				
+				# Create the commandline we need to run as root.
+				commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chmod', '755', directory_for_os_temporary_files + os.sep + sox_source_downloadfile]
+
+				if debug == True:
+					print()
+					print('Running commands:', commands_to_run)
+
+				# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
+				sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
+				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+				all_installation_messages = all_installation_messages + '-' * 80 + '\n' + sudo_stdout_string + sudo_stderr_string
+				
+				if debug == True:
+					print()
+					print('sudo_stdout:', sudo_stdout)
+					print('sudo_stderr:', sudo_stderr)
+				
+				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
+				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
+					show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+					an_error_has_happened = True
+		
+			if an_error_has_happened == False:
+					
+				#######################################################
+				# Change '/tmp/sox_download_commands.sh' owner #
+				#######################################################
+				
+				# Create the commandline we need to run as root.
+				commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chown', 'root:root', directory_for_os_temporary_files + os.sep + sox_source_downloadfile]
+
+				if debug == True:
+					print()
+					print('Running commands:', commands_to_run)
+
+				# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
+				sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
+				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+				all_installation_messages = all_installation_messages + '-' * 80 + '\n' + sudo_stdout_string + sudo_stderr_string
+				
+				if debug == True:
+					print()
+					print('sudo_stdout:', sudo_stdout)
+					print('sudo_stderr:', sudo_stderr)
+				
+				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
+				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
+					show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+					an_error_has_happened = True
+		
+			if an_error_has_happened == False:
+					
+				##############################################
+				# Run '/tmp/sox_download_commands.sh' #
+				##############################################
+				
+				# Create the commandline we need to run as root.
+				commands_to_run = ['sudo', '-k', '-p', '', '-S', directory_for_os_temporary_files + os.sep + sox_source_downloadfile]
+				
+				seventh_window_label_16['foreground'] = 'dark green'
+				seventh_window_label_17['foreground'] = 'dark green'
+				seventh_window_message_1.set('Note: The GUI freezes while I run some external commands.\nPlease wait patiently :)')
+				seventh_window_message_2.set('Downloading and installing sox from source...')
+				
+				# The user might come to this window again after an error message, resize the window again.
+				seventh_frame.update() # Update the frame that has possibly changed, this triggers updating all child objects.
+				
+				# Get Frame dimensions and resize root_window to fit the whole frame.
+				root_window.geometry(str(seventh_frame.winfo_reqwidth()+40) +'x'+ str(seventh_frame.winfo_reqheight()))
+				
+				# Get root window geometry and center it on screen.
+				root_window.update()
+				x_position = (root_window.winfo_screenwidth() / 2) - (root_window.winfo_width() / 2) - 8
+				y_position = (root_window.winfo_screenheight() / 2) - (root_window.winfo_height() / 2) - 20
+				root_window.geometry(str(root_window.winfo_width()) + 'x' +str(root_window.winfo_height()) + '+' + str(int(x_position)) + '+' + str(int(y_position)))
+
+				if debug == True:
+					print()
+					print('Running commands:', commands_to_run)
+
+				# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
+				sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
+				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+				all_installation_messages = all_installation_messages + '-' * 80 + '\n' + sudo_stdout_string + sudo_stderr_string
+				
+				if debug == True:
+					print()
+					print('sudo_stdout:', sudo_stdout)
+					print('sudo_stderr:', sudo_stderr)
+				
+				# Sox outputs various warnings when compiled and supressing these warnings with commandline options does not seem to work.
+				# Unfortunately even though these warnings are not fatal, there are certain keywords in the warnings (like 'error') that makes it
+				# impossible for us to detect if an error  has happened or not. That's why the following lines are commented.
+				
+				## If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
+				#if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower() or ('cannot' in sudo_stderr_string.lower()) or ('fatal') in sudo_stderr_string.lower()):
+					#show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+					#an_error_has_happened = True
+		
 	external_program_installation_has_been_already_run = True
 	set_button_and_label_states_on_window_seven()
 		
@@ -2790,21 +2997,22 @@ def define_program_installation_commands():
 	global apt_get_commands
 	global needed_packages_install_commands
 	global libebur128_dependencies_install_commands
-	global git_commands
+	global libebur128_git_commands
 	global libebur128_dependencies_install_commands
 	global directory_for_os_temporary_files
-	global cmake_commands
-	global make_build_and_install_commands
-	global simplified_build_and_install_commands_displayed_to_user
+	global libebur128_cmake_commands
+	global libebur128_make_build_and_install_commands
+	global libebur128_simplified_build_and_install_commands_displayed_to_user
 	
 	# Check if we need to install some programs that LoudnessCorrection needs and add install commands to lists.
 	apt_get_commands = ['apt-get', '-q=2', '-y', '--reinstall', 'install']
 	needed_packages_install_commands = []
 	libebur128_dependencies_install_commands = []
-	git_commands = []
+	libebur128_git_commands = []
 
 	if sox_path == '':
 		needed_packages_install_commands.append('sox')
+		check_sox_version_and_add_git_commands_to_checkout_specific_commit()
 	if ffmpeg_path == '':
 		needed_packages_install_commands.append('ffmpeg')
 	if gnuplot_path == '':
@@ -2819,24 +3027,25 @@ def define_program_installation_commands():
 		'libxml2-dev', 'libgstreamer0.10-dev', 'libgstreamer-plugins-base0.10-dev', 'libqt4-dev']
 	if loudness_path == '':
 		# Store commands of downloading and building libebur128 sourcecode to lists.
-		git_commands = ['cd ' + directory_for_os_temporary_files, 'git clone http://github.com/jiixyj/libebur128.git', 'cd libebur128', \
+		libebur128_git_commands = ['cd ' + directory_for_os_temporary_files, 'git clone http://github.com/jiixyj/libebur128.git', 'cd libebur128', \
 		'mv .gitmodules .gitmodules.orig', "cat .gitmodules.orig | sed 's/git:\/\//http:\/\//g' > .gitmodules", \
 		'git submodule init', 'git submodule update']
 		
 		# Check if libebur128 is at version we need and add commands to get the version we want.
-		check_libebur128_version()
+		libebur128_simplified_build_and_install_commands_displayed_to_user = ['mkdir build', 'cd build', 'cmake -Wno-dev -DCMAKE_INSTALL_PREFIX:PATH=/usr ..', 'make -w', 'make install']
+		check_libebur128_version_and_add_git_commands_to_checkout_specific_commit()
 
-		cmake_commands = ['cd ' + directory_for_os_temporary_files + '/libebur128', 'mkdir build', 'cd build', 'cmake -Wno-dev -DCMAKE_INSTALL_PREFIX:PATH=/usr ..']
-		make_build_and_install_commands = ['cd ' + directory_for_os_temporary_files + '/libebur128/build', 'make -w', 'make install']
-		simplified_build_and_install_commands_displayed_to_user = ['mkdir build', 'cd build', 'cmake -Wno-dev -DCMAKE_INSTALL_PREFIX:PATH=/usr ..', 'make -w', 'make install']
+		libebur128_cmake_commands = ['cd ' + directory_for_os_temporary_files + '/libebur128', 'mkdir build', 'cd build', 'cmake -Wno-dev -DCMAKE_INSTALL_PREFIX:PATH=/usr ..']
+		libebur128_make_build_and_install_commands = ['cd ' + directory_for_os_temporary_files + '/libebur128/build', 'make -s -j 4', 'make install']
 
-def check_libebur128_version():
+def check_libebur128_version_and_add_git_commands_to_checkout_specific_commit():
 	
 	global loudness_path
-	global git_commands
-	global loudness_path
+	global libebur128_git_commands
 	global all_needed_external_programs_are_installed
 	global directory_for_os_temporary_files
+	global libebur128_simplified_build_and_install_commands_displayed_to_user
+	global force_reinstallation_of_all_programs
 	
 	## Check if libebur128 'loudness' is recent enough version to be free of known bugs.
 	## Since loudness is installed by compiling it from source, the timestamp of the executable tells us if we have the version we want.
@@ -2863,7 +3072,7 @@ def check_libebur128_version():
 		# Convert libebur128 output from binary to UTF-8 text.
 		loudness_command_output_string = loudness_command_output.decode('UTF-8')
 
-	if 'Patched to support 4.0 (L, R, LS, RS) and 5.0 (L, R, C, LS, RS) files.' in loudness_command_output_string:
+	if ('Patched to support 4.0 (L, R, LS, RS) and 5.0 (L, R, C, LS, RS) files.' in loudness_command_output_string) and (force_reinstallation_of_all_programs == False):
 		libebur128_version_is_the_one_we_require = True
 		libebur128_is_installed.set('Installed')
 	else:
@@ -2872,12 +3081,13 @@ def check_libebur128_version():
 		libebur128_is_installed.set('Not Installed')
 		loudness_path = '' # Empty value in the path-variable forces reinstallation of the 'loudness' program.
 		all_needed_external_programs_are_installed = False
+		libebur128_simplified_build_and_install_commands_displayed_to_user = ['git checkout --force 1c0e8dac8d1a2f1ce07bee469d26ccfbb2688247', 'mkdir build', 'cd build', 'cmake -Wno-dev -DCMAKE_INSTALL_PREFIX:PATH=/usr ..', 'make -w', 'make install']
 	
-	if (libebur128_version_is_the_one_we_require == False) and git_commands != []:
+	if (libebur128_version_is_the_one_we_require == False) and (libebur128_git_commands != []):
 		
 		# Add 4.0 (L, R, LS, RS) and 5.0 (L, R, C, LS, RS) compatibility patching commands to git commands, but don't do it if it has already been done.
-		if 'LIBEBUR128_REQUIRED_GIT_COMMIT_VERSION="1c0e8dac8d1a2f1ce07bee469d26ccfbb2688247"' not in git_commands:
-			git_commands.extend(['', \
+		if 'LIBEBUR128_REQUIRED_GIT_COMMIT_VERSION="1c0e8dac8d1a2f1ce07bee469d26ccfbb2688247"' not in libebur128_git_commands:
+			libebur128_git_commands.extend(['', \
 			'# Get the git commit number of current version of libebur128', \
 			'echo', \
 			'LIBEBUR128_REQUIRED_GIT_COMMIT_VERSION="1c0e8dac8d1a2f1ce07bee469d26ccfbb2688247"', \
@@ -2889,7 +3099,7 @@ def check_libebur128_version():
 			'else', \
 			'	echo "Checking out required version of libebur128 from git project"', \
 			'	echo', \
-			'	git checkout --force 1c0e8dac8d1a2f1ce07bee469d26ccfbb2688247', \
+			'	git checkout --force $LIBEBUR128_REQUIRED_GIT_COMMIT_VERSION', \
 			'	', \
 			'	# Check that we have the correct version after checkout', \
 			'	LIBEBUR128_CURRENT_COMMIT=`git rev-parse HEAD`', \
@@ -3008,7 +3218,100 @@ def check_libebur128_version():
 	
 	return()
 
-
+def check_sox_version_and_add_git_commands_to_checkout_specific_commit():
+	
+	global sox_download_make_build_and_install_commands
+	global all_needed_external_programs_are_installed
+	global directory_for_os_temporary_files
+	global needed_packages_install_commands
+	global sox_simplified_build_and_install_commands_displayed_to_user
+	global force_reinstallation_of_all_programs
+	global sox_path
+	sox_version = []
+	sox_command_output_string = ''
+	sox_required_version = ['14', '4', '0']
+	
+	# Get the path of the 'sox' program.
+	local_variable_pointing_to_sox_executable = find_program_in_os_path('sox')
+	
+	# Get version_number_of_sox.
+	sox_version_is_the_one_we_require = True
+	
+	if local_variable_pointing_to_sox_executable != '':
+		sox_command_to_run = [local_variable_pointing_to_sox_executable, '--version']
+		sox_command_output, unused_stderr = subprocess.Popen(sox_command_to_run, stdout=subprocess.PIPE, stdin=None, close_fds=True).communicate()
+	
+		# Convert output from binary to UTF-8 text and split version number elements to a list.
+		sox_command_output_string = sox_command_output.decode('UTF-8').strip()
+		sox_version = sox_command_output_string.split('v')[1].split('.')
+		
+		# Check that we have the required version number or higher.
+		for counter in range(0, len(sox_required_version)):
+			if int(sox_version[counter]) < int(sox_required_version[counter]):
+				sox_version_is_the_one_we_require = False
+	else:
+		sox_version_is_the_one_we_require = False
+	
+	if (sox_version_is_the_one_we_require == False) or (force_reinstallation_of_all_programs == True):
+		sox_path = '' # Empty value in the path-variable forces reinstallation of the 'sox' program.
+		sox_is_installed.set('Not Installed')
+		all_needed_external_programs_are_installed = False
+		sox_simplified_build_and_install_commands_displayed_to_user = ['git clone http://github.com/mhartzel/sox_personal_fork.git', 'cd sox_personal_fork', 'git checkout --force 6dff9411961cc8686aa75337a78b7df334606820', 'autoreconf -i', './configure --prefix=/usr', 'make -s && make install']
+		
+		# Remove sox from apt-get install commands since the version in repository is too old, we build a newer one from source.
+		if 'sox' in needed_packages_install_commands:
+			needed_packages_install_commands.remove('sox')
+		
+		# Check if sox build dependencies are already in apt-get install list, if not add them.
+		for item in ['automake', 'autoconf', 'libtool']:
+			if item not in needed_packages_install_commands:
+				needed_packages_install_commands.append(item)
+	else:
+		# Sox is at the version we require.
+		sox_is_installed.set('Installed')
+	
+	# Add sox source download and install commands.
+	if (sox_version_is_the_one_we_require == False) and (sox_download_make_build_and_install_commands == []):
+		
+		sox_download_make_build_and_install_commands.extend(['', \
+		'# Remove sox if it was installed from repositories since that version is too old', \
+		'apt-get remove -y sox', \
+		'', \
+		'# Download sox source', \
+		'cd ' + directory_for_os_temporary_files, \
+		'git clone http://github.com/mhartzel/sox_personal_fork.git', \
+		'cd sox_personal_fork', \
+		'echo', \
+		'echo "Checking out required version of sox from git project"', \
+		'echo', \
+		'SOX_REQUIRED_GIT_COMMIT_VERSION="6dff9411961cc8686aa75337a78b7df334606820"', \
+		'git checkout --force $SOX_REQUIRED_GIT_COMMIT_VERSION', \
+		'', \
+		'# Check that we have the correct version after checkout', \
+		'SOX_CURRENT_COMMIT=`git rev-parse HEAD`', \
+		'', \
+		'if [ "$SOX_CURRENT_COMMIT" == "$SOX_REQUIRED_GIT_COMMIT_VERSION" ] ; then', \
+		'	echo "Checkout was successful"', \
+		'	echo', \
+		'else', \
+		'	echo "There was an error when trying to check out the correct sox version from the local git repository !!!!!!!"', \
+		'	echo', \
+		'	exit', \
+		'fi', \
+		'', \
+		'# Build and install sox from source', \
+		'autoreconf -i', \
+		'./configure --prefix=/usr', \
+		'make -s -j 4', \
+		'make install', \
+		''])
+	
+	if debug == True:
+		print()
+		print('sox_version_is_the_one_we_require =', sox_version_is_the_one_we_require)
+	
+	return()
+	
 ###############################
 # Main program starts here :) #
 ###############################
@@ -3159,11 +3462,12 @@ loudness_required_install_date_list = ['14', '8', '2012'] # Day, Month, Year. Ti
 apt_get_commands = []
 needed_packages_install_commands = []
 libebur128_dependencies_install_commands = []
-git_commands = []
-libebur128_dependencies_install_commands = []
-cmake_commands = []
-make_build_and_install_commands = []
-simplified_build_and_install_commands_displayed_to_user = []
+libebur128_git_commands = []
+libebur128_cmake_commands = []
+libebur128_make_build_and_install_commands = []
+libebur128_simplified_build_and_install_commands_displayed_to_user = []
+sox_download_make_build_and_install_commands = []
+sox_simplified_build_and_install_commands_displayed_to_user = []
 
 # Find paths to all critical programs we need to run LoudnessCorrection
 find_paths_to_all_external_programs_we_need()
@@ -3932,7 +4236,7 @@ seventh_window_label_3 = tkinter.ttk.Label(seventh_frame_child_frame_1, wrapleng
 seventh_window_label_3.grid(column=3, row=2, columnspan=1, padx=10, sticky=(tkinter.N))
 
 # sox
-seventh_window_label_4 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='Sox')
+seventh_window_label_4 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='Sox          (version 14.4.0 required)')
 seventh_window_label_4.grid(column=0, row=3, columnspan=1, padx=10, sticky=(tkinter.W, tkinter.N))
 seventh_window_label_5 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, textvariable=sox_is_installed)
 seventh_window_label_5.grid(column=3, row=3, columnspan=1, padx=10, sticky=(tkinter.N))
