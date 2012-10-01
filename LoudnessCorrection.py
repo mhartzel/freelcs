@@ -35,7 +35,7 @@ import pickle
 import math
 import copy
 
-version = '191'
+version = '192'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -894,7 +894,8 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 				
 				if audio_channels_will_be_split_to_separate_mono_files == False:
 					# Gather sox commandline to a list.
-					sox_commandline = [start_of_sox_commandline, directory_for_temporary_files + os.sep + temporary_peak_limited_targetfile]
+					sox_commandline.extend(start_of_sox_commandline)
+					sox_commandline.extend([directory_for_temporary_files + os.sep + temporary_peak_limited_targetfile])
 					# If output format is flac add flac compression level commands right after the input file name.
 					if output_format_for_final_file == 'flac':
 						sox_commandline.extend(flac_compression_level)
@@ -1291,7 +1292,7 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 		print('channel_count_string =', channel_count_string)
 		print('sample_rate_string =', sample_rate_string)
 		print('bit_depth_string =', bit_depth_string)
-		print('sox: sample_count_string (this is not used in calculations because it is incorrect for very long files) =', sample_count_string)
+		print('sox: sample_count_string (this is not used in calculations because it was buggy in sox 14.3.2 for very long files) =', sample_count_string)
 		print('mediainfo: audio_duration (this is used in calculations instead of sox sample count) =', audio_duration)
 		print('wav_format_maximum_file_size =', wav_format_maximum_file_size)
 		print('estimated_uncompressed_size_for_combined_channels =', estimated_uncompressed_size_for_combined_channels)

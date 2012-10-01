@@ -1,3 +1,12 @@
+
+LoudnessCorrection Version 192
+-------------------------------
+- Bugfix: Corrected a typo that caused a crash.
+
+Documentation
+--------------
+- Updated documentation, it is now completely up to date.
+
 LoudnessCorrection Version 191
 -------------------------------
 - Undid one change made in 189: libsndfile is no longer used to read long files when reading files with sox. This is because the installer now forces installation of sox 14.4.0 which solves the problem and large files work both on 32 bit and 64 bit Ubuntu.
@@ -16,7 +25,7 @@ LoudnessCorrection Version 189
 -------------------------------
 - Found out that large file support does not work correctly in sox unless operating system is 64 bit Ubuntu and sox reads files through libsndfile. All files that are bigger than 4 GB uncompressed are now read through libsndfile when processing with sox.
 - Renamed some variables in subroutine 'create_sox_commands_for_loudness_adjusting_a_file' to make more clear what values they store.
-- Changed flac compression level from 0 to 1 since this seems to give the best speed / compression ratio on 64 bit Ubuntu.
+- Changed flac compression level from 0 to 1 since this seems to give the best speed / compression ratio.
 - Bugfix: Forgot to turn debug off before commit 188 :)
 
 LoudnessCorrection Version 188
@@ -44,7 +53,7 @@ Installer 049
 LoudnessCorrection Version 185
 -------------------------------
 - Bugfix: error messages about nonsupported channel counts (channel counts bigger that 6) are no longer sent by email.
-- Cosmetic change to how the machine info looks in emailed error messages.
+- Cosmetic change to how the machine info looks in emailed error messages.
 
 Installer 048
 --------------

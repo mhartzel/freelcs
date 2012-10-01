@@ -25,6 +25,9 @@
     <a href="#What%20is%20the%20maximum%20/%20minimum%20file%20duration%20supported%20?">What
       is the maximum / minimum file duration supported ?</a><br>
     <br>
+    <a href="#What%20is%20the%20output%20format%20of%20FreeLCS%20?">What is the
+      output format of FreeLCS ?</a><br>
+    <br>
     <a href="#What%20happens%20to%20the%20files%20when%20they%20are%20processed%20?">What
       happens to the files when they are processed ?</a><br>
     <br>
@@ -56,6 +59,9 @@
     <a href="#Any%20suggestion%20for%20free%20tools%20to%20manipulate%20the%20Flac%20format%20?">Any
       suggestion for free tools to manipulate the Flac format ?</a><br>
     <br>
+    <a href="#How%20can%20I%20test%20multichannel%20behaviour%20of%20my%20loudness%20meter%20?">How
+      can I test multichannel behaviour of my loudness meter ?</a><br>
+    <br>
     <br>
     <br>
     <br>
@@ -64,7 +70,8 @@
     <h2><a id="What is FreeLCS  ?">What is FreeLCS&nbsp; ?</a></h2>
     <ul>
       <li>FreeLCS is a tool to automatically adjust loudness of files according
-        to the EBU R128 standard.</li>
+        to the EBU R128 standard.<br>
+      </li>
       <li>The R128 standard is mainly designed for professional broadcasters to
         help eliminate loudness jumps between broadcasted programs.</li>
       <li>Files adjusted according to the standard will have the same loudness.</li>
@@ -128,6 +135,16 @@
       <li>The longest supported file duration should in theory be unlimited, but
         no tests have been made to find out the limit. The longest file I have
         tested was 18 hours (mp2 compressed stereo audio).<br>
+      </li>
+    </ul>
+    <br>
+    <h2><a id="What is the output format of FreeLCS ?">What is the output format
+        of FreeLCS ?</a></h2>
+    <ul>
+      <li>FreeLCS output format is wav if output file size does not exceed wav
+        format max size 4 GB. In case of very large files the output format is
+        flac. See also question: <a href="#What%20happens%20if%20output%20file%20size%20exceeds%20wav%20format%204%20GB%20size%20limit%20?">What
+          happens if output file size exceeds wav format 4 GB size limit ?</a><br>
       </li>
     </ul>
     <br>
@@ -215,7 +232,7 @@
       <li>Audio gain adjustment is done with sox and it uses 32 bits by default
         for all calculations.</li>
       <li>If output file bit depth is not 32 bits, then sox uses dithering by
-        default. The output file has the same bit depth as the source file in
+        default. The output file has the same bit depth as the input file in
         most cases.</li>
     </ul>
     <br>
@@ -258,8 +275,9 @@
         FreeLCS saves all channels of the file in a single flac file. Flac -
         format supports very large files.</li>
       <li>There are new revisions of the wav format (BWF, RF64) that can store
-        files larger than 4 GB, but these are untested since I have no tools to
-        produce these formats.</li>
+        files larger than 4 GB, but I have not tested these formats. BWF and
+        RF64 are not yet very widely supported.<br>
+      </li>
     </ul>
     <br>
     <h2><a id="Will FreeLCS remux loudness corrected audio back to the video it was extracted from ?">Will
@@ -293,8 +311,16 @@
     </ul>
     <p><br>
     </p>
-    <p><br>
-    </p>
+    <h2><a id="How can I test multichannel behaviour of my loudness meter ?">How
+        can I test multichannel behavior of my loudness meter ?</a></h2>
+    <ul>
+      <li>You can download multichannel test files here:
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
+        <a href="http://sourceforge.net/projects/freelcs/files/">http://sourceforge.net/projects/freelcs/files/</a></li>
+      <li>The zip file comes with a text document with expected integrated
+        loudness results for all files.<br>
+      </li>
+    </ul>
     <p><br>
     </p>
   </body>
