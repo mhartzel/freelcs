@@ -1,3 +1,6 @@
+Installer 051
+--------------
+- Changed the default email sending interval for LoudnessCorrection.py from 10 minutes to 30 minutes. I already did this in version 042, but it seems the change got lost somehow :)
 
 LoudnessCorrection Version 192
 -------------------------------

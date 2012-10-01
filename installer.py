@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '050'
+version = '051'
 
 ###################################
 # Function definitions start here #
@@ -3411,7 +3411,7 @@ smtp_server_port.trace('w', define_smtp_server_port)
 english = 1
 finnish = 0
 file_expiry_time = 28800
-email_sending_interval = 600
+email_sending_interval = 1800
 message_text_string = ''
 list_of_ram_devices = []
 list_of_normal_users_accounts = []
