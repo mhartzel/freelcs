@@ -35,7 +35,7 @@ import pickle
 import math
 import copy
 
-version = '190'
+version = '191'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -768,9 +768,6 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 		difference_from_target_loudness_sign_inverted = difference_from_target_loudness * -1 # The sign (+/-) of the difference from target loudness needs to be flipped for sox. Plus becomes minus and vice versa.
 		
 		start_of_sox_commandline = ['sox']
-		# If output file exceeds 4 GB then sox can't read input file reliably (uncompressed size of it exceed 4 GB also), we need to read inputfile through libsndfile. Libsndfile reads bigger than 4 GB files only in 64 bit Ubuntu, 32 bit will not work correctly.
-		if (audio_channels_will_be_split_to_separate_mono_files == True) or (output_file_too_big_to_split_to_separate_wav_channels == True):
-			start_of_sox_commandline.extend(['-t', 'sndfile'])
 		
 		# Set the absolute peak level for the resulting corrected audio file.
 		# If sample peak is used for the highest value, then set the absolute peak to be -4 dBFS (resulting peaks will be about 1 dB higher than this).
@@ -795,7 +792,7 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 			
 			if audio_channels_will_be_split_to_separate_mono_files == False:
 				# Gather sox commandline to a list.
-				sox_commandline = start_of_sox_commandline
+				sox_commandline.extend(start_of_sox_commandline)
 				sox_commandline.append(file_to_process)
 				
 				# If output format is flac add flac compression level commands right after the input file name.
@@ -843,6 +840,7 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 				# After this the loudness of the file needs to be recalculated                                                          #
 				#########################################################################################################################
 				
+				sox_commandline = []
 				list_of_sox_commandlines = []
 				
 				# Create sox commands for all four limiter stages.
@@ -856,7 +854,7 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 				hard_limiter = ['compand', '0,0', '3:' + str(hard_limiter_level + -3) + ',' + str(hard_limiter_level + -3) + ',0,'+ str(hard_limiter_level + 0)]
 				
 				# Combine all sox commands into one list.
-				sox_commandline = start_of_sox_commandline
+				sox_commandline.extend(start_of_sox_commandline)
 				sox_commandline.append(file_to_process)
 				# If output format is flac add flac compression level commands right after the input file name.
 				if output_format_for_intermediate_files == 'flac':
@@ -942,7 +940,7 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 				
 				if audio_channels_will_be_split_to_separate_mono_files == False:
 					# Gather sox commandline to a list.
-					sox_commandline = start_of_sox_commandline
+					sox_commandline.extend(start_of_sox_commandline)
 					sox_commandline.append(file_to_process)
 					# If output format is flac add flac compression level commands right after the input file name.
 					if output_format_for_final_file == 'flac':

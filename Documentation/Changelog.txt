@@ -1,3 +1,8 @@
+LoudnessCorrection Version 191
+-------------------------------
+- Undid one change made in 189: libsndfile is no longer used to read long files when reading files with sox. This is because the installer now forces installation of sox 14.4.0 which solves the problem and large files work both on 32 bit and 64 bit Ubuntu.
+- Bugfix: minor fix for sox commandline list assignment.
+
 Installer 050
 --------------
 - Ubuntu ships with sox 14.3.2 which does not support large files correctly, so the installer now downloads sox source and builds and installs sox version 14.4.0.
