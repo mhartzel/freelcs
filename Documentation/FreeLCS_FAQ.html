@@ -238,32 +238,26 @@
     <br>
     <h2><a id="Is bit depth and sample rate preserved ?">Is bit depth and sample
         rate preserved ?</a></h2>
-    Sample rate should be preserved in all cases.<br>
+    Sample rate should be always preserved.<br>
     <br>
     (The following rules for bit depth conversion come from internal limitations
-    in FFmpeg and flac - format implementation in FFmpeg and sox).<br>
-    <br>
-    <br>
-    <u><strong>When input file has many audio streams:</strong></u><br>
+    in FFmpeg and sox).<br>
+    <u><strong></strong></u><br>
     <ul>
-      <li>Streams will be extracted with FFmpeg resulting to 32 bit audio to be
-        converted to 24 bits. Other bit depths will be preserved. <br>
-      </li>
+      <li>If audio is in uncopressed PCM - format, then bit depth will be
+        preserved except that 64 bit audio will be converted to 32 bits because
+        sox supports bit depths only up to 32 bits.</li>
       <li>If audio has been compressed using a lossy codec then the audio has no
-        real bit depth anymore and these streams will be extracted as 16 bit
-        audio.</li>
-      <li>If output file size will exceed 4 GB then flac format must be used to
-        save the stream and FFmpeg saves flac always in 16 bits resulting in bit
-        depth conversion in some cases.</li>
-    </ul>
-    <br>
-    <u><strong>When input file format is wav:</strong></u><br>
-    <br>
-    (Wav can only have one audio stream in it).<br>
-    <ul>
-      <li>If file size is below 4 GB then bit depth will be preserved.</li>
+        real bit depth anymore and audio will be extracted using bit depth of 16
+        bits.</li>
+      <li>If output file size would exceed 4 GBs then the audio must be stored
+        in flac format when processing it. This causes bit depth conversion if
+        input file bit depth is more than 16 bits. This is caused by FFmpeg that
+        always uses 16 bits when storing in flac format.<br>
+      </li>
     </ul>
     <u><strong></strong></u><br>
+    <br>
     <h2><a id="What happens if output file size exceeds wav format 4 GB size limit ?">What
         happens if output file size exceeds wav format 4 GB size limit ?</a></h2>
     <ul>

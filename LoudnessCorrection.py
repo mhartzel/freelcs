@@ -35,7 +35,7 @@ import pickle
 import math
 import copy
 
-version = '192'
+version = '193'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -2001,13 +2001,23 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 	ffmpeg_commandline = []
 	bit_depth = 0
 	sample_rate = 0
+	input_audiostream_format = ''
+	output_audiostream_format = ''
+	map_number = ''
 	number_of_audio_channels = '0'
 	estimated_uncompressed_size_for_single_mono_file = 0
 	estimated_uncompressed_size_for_combined_channels = 0
 	global wav_format_maximum_file_size
 	file_type = ''
 	audio_coding_format = ''
-	list_of_error_messages_for_unsupported_streams = []	
+	list_of_error_messages_for_unsupported_streams = []
+	
+	# Define lists of supported pcm bit depths
+	pcm_8_bit_formats = ['pcm_s8', 'pcm_s8_planar', 'pcm_u8']
+	pcm_16_bit_formats = ['pcm_s16be', 'pcm_s16le', 'pcm_s16le_planar', 'pcm_u16be', 'pcm_u16le']
+	pcm_24_bit_formats = ['pcm_dvd', 'pcm_lxf', 'pcm_s24be', 'pcm_s24daud', 'pcm_s24le', 'pcm_u24be', 'pcm_u24le']
+	pcm_32_bit_formats = ['pcm_f32be', 'pcm_f32le', 'pcm_s32be', 'pcm_s32le', 'pcm_u32be', 'pcm_u32le']
+	pcm_64_bit_formats = ['pcm_f64be', 'pcm_f64le']
 	
 	try:
 		# Define filename for the temporary file that we are going to use as stdout for the external command.
@@ -2059,10 +2069,10 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		error_message = 'Error deleting ffmpeg stdout - file ' * english + 'FFmpegin stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
 		send_error_messages_to_screen_logfile_email(error_message, [])
 		
-	#############################################################################################
-	# Find lines from FFmpeg output that have information about audio streams and file duration #
-	# Also record channels count for each stream found                                          #
-	#############################################################################################
+	##################################################################################################
+	# Find lines from FFmpeg output that have information about audio streams and file duration      #
+	# Also record channels count, bit depth, sample rate and FFmpeg map number for each stream found #
+	##################################################################################################
 	
 	audio_stream_number = 0
 	
@@ -2084,8 +2094,8 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			
 			# Create names for audio streams found in the file.
 			# First parse the number of audio channels in each stream ffmpeg reported and put it in a variable.
-			ffmpeg_stream_info = str(item.strip())
-			number_of_audio_channels_as_text = str(ffmpeg_stream_info.split(',')[2].strip()) # FFmpeg reports audio channel count as a string.		
+			item = str(item.strip())
+			number_of_audio_channels_as_text = str(item.split(',')[2].strip()) # FFmpeg reports audio channel count as a string.		
 			
 			# Split audio channel count to a list ('2 channels' becomes ['2', 'channels']
 			number_of_audio_channels_as_text_split_to_a_list = number_of_audio_channels_as_text.split()
@@ -2122,8 +2132,100 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				list_of_error_messages_for_unsupported_streams.append([unsupported_stream_name, error_message])			
 				continue
 			
+			# Find audio stream format information
+			input_audiostream_format = item.split('Audio:')[1].split(',')[0].strip()
+			output_audiostream_format = 'pcm_s16le' # Default audio extraction bit depth is 16 bits if input file bit depth is not known.
+			bit_depth = 16 # Default bit depth.
+			
+			# Check if the stream format is a supported PCM - format and assign output format and bit depth according to input bit depth.
+			if input_audiostream_format in pcm_8_bit_formats:
+				output_audiostream_format = 'pcm_u8'
+				bit_depth = 8
+				
+			if input_audiostream_format in pcm_16_bit_formats:
+				output_audiostream_format = 'pcm_s16le'
+				bit_depth = 16
+				
+			if input_audiostream_format in pcm_24_bit_formats:
+				output_audiostream_format = 'pcm_s24le'
+				bit_depth = 24
+				
+			if input_audiostream_format in pcm_32_bit_formats:
+				output_audiostream_format = 'pcm_s32le'
+				bit_depth = 32
+				
+			if input_audiostream_format in pcm_64_bit_formats: # Bit depth is bigger than 32 bits, convert to 32 bits because sox does not support bit depth over 32 bits.
+				output_audiostream_format = 'pcm_s32le'
+				bit_depth = 32
+				
+			# If audio format is flac, then try to find out the bit depth of flac audio from FFmpeg text output.
+			if input_audiostream_format == 'flac':
+			
+				# Find audio bit depth from FFmpeg stream info output.
+				bit_depth_info_field = str(item.split(',')[3].strip())
+				
+				for start_character in range(0, len(bit_depth_info_field)):
+					if bit_depth_info_field[start_character].isnumeric() == True:
+						break
+				
+				end_character = start_character + 1 # In case 'start_character' already points to the last character of 'bit_depth_info_field', then 'end_character' must be manually assigned because the following for loop won't run.
+				
+				for end_character in range(start_character + 1, len(bit_depth_info_field)):
+					if bit_depth_info_field[end_character].isnumeric() == False:
+						break
+				
+				bit_depth_as_text = bit_depth_info_field[start_character:end_character + 1]		
+				
+				if bit_depth_as_text.isnumeric() == True:
+					bit_depth = int(bit_depth_as_text)
+				else:
+					error_message = 'ERROR !!! I could not parse FFmpeg bit depth string for flac format: ' * english + 'VIRHE !!! En osannut tulkita ffmpeg:in antamaa tietoa flac formaatin bittisyvyydestä: ' * finnish + '\'' + bit_depth_as_text + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
+					send_error_messages_to_screen_logfile_email(error_message, [])
+				
+				# FFmpeg displays flac bit depths 24 bits and 32 bits both as 32 bits. Force flac bit depth to 24 if it is 32.
+				if bit_depth == 32:
+					output_audiostream_format = 'pcm_s24le'
+					bit_depth = 24
+				
+			# Find out what is FFmpegs map number for the audio stream.
+			map_number = ''
+			for map_number_counter in range(item.find('#') + 1, len(item)):
+				if item[map_number_counter] == '.':
+					continue
+				if item[map_number_counter].isnumeric() == False:
+					break
+
+			map_number = item[item.find('#') + 1:map_number_counter]
+			
+			# Test if we really have found the stream map number.
+			mapnumber_digit_1 = ''
+			mapnumber_digit_2 = ''
+			map_number_test_list = map_number.split('.')
+			
+			try:
+				mapnumber_digit_1 = map_number_test_list[0]
+				mapnumber_digit_2 = map_number_test_list[1]
+				
+				if (mapnumber_digit_1.isnumeric() == False) or (mapnumber_digit_2.isnumeric() == False):
+					error_message = 'Error: stream map number found in FFmpeg output is not a number: ' * english + 'Virhe: FFmpegin tulosteesta löydetty streamin numero ei ole numero: ' * finnish + map_number
+					send_error_messages_to_screen_logfile_email(error_message, [])
+					continue # If map number is not found then skip the stream.
+			except IndexError:
+				error_message = 'Error: stream map number found in FFmpeg output is not in correct format: ' * english + 'Virhe: FFmpegin tulosteesta löydetty streamin numero ei ole oikeassa formaatissa: ' * finnish + map_number
+				send_error_messages_to_screen_logfile_email(error_message, [])
+				continue # If map number is not found then skip the stream.
+
+			# Find audio sample rate from FFmpeg stream info.
+			sample_rate_as_text = str(item.split(',')[1].strip().split(' ')[0].strip())
+			
+			if sample_rate_as_text.isnumeric() == True:
+				sample_rate = int(sample_rate_as_text)
+			else:
+				error_message = 'ERROR !!! I could not parse FFmpeg sample rate string for flac format: ' * english + 'VIRHE !!! En osannut tulkita ffmpeg:in antamaa tietoa flac formaatin näyteenottotaajuuudesta: ' * finnish + '\'' + sample_rate_as_text + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
+				send_error_messages_to_screen_logfile_email(error_message, [])
+			
 			number_of_ffmpeg_supported_audiostreams = number_of_ffmpeg_supported_audiostreams + 1
-			details_of_ffmpeg_supported_audiostreams.append([str(item.strip()), str(audio_stream_number), number_of_audio_channels])
+			details_of_ffmpeg_supported_audiostreams.append([str(item.strip()), str(audio_stream_number), number_of_audio_channels, input_audiostream_format, output_audiostream_format, sample_rate, bit_depth, map_number])
 			
 		if 'Duration:' in item:
 			audio_duration_string = str(item).split(',')[0].strip() # The first item on the line is the duration, get it.
@@ -2158,46 +2260,10 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 	# Generate the commandline that will later be used to extract all valid audio streams with FFmpeg #
 	###################################################################################################
 	
-	# Go through FFmpeg output that tells about audio streams and find channel counts for each stream #
-	
 	for counter in range(0, number_of_ffmpeg_supported_audiostreams):
 		
-		# Get info about supported audio streams and their channel counts from a list.
-		ffmpeg_stream_info, audio_stream_number, number_of_audio_channels = details_of_ffmpeg_supported_audiostreams[counter]
-		
-		# Find audio sample rate from FFmpeg stream info.
-		sample_rate_as_text = str(ffmpeg_stream_info.split(',')[1].strip().split(' ')[0].strip())
-		
-		if sample_rate_as_text.isnumeric() == True:
-			sample_rate = int(sample_rate_as_text)
-		else:
-			error_message = 'ERROR !!! I could not parse FFmpeg sample rate string: ' * english + 'VIRHE !!! En osannut tulkita ffmpeg:in antamaa tietoa näyteenottotaajuuudesta: ' * finnish + '\'' + sample_rate_as_text + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
-			send_error_messages_to_screen_logfile_email(error_message, [])
-		
-		# Find audio bit depth from FFmpeg stream info output.
-		bit_depth_info_field = str(ffmpeg_stream_info.split(',')[3].strip())
-		
-		for start_character in range(0, len(bit_depth_info_field)):
-			if bit_depth_info_field[start_character].isnumeric() == True:
-				break
-		
-		end_character = start_character + 1 # In case 'start_character' already points to the last character of 'bit_depth_info_field', then 'end_character' must be manually assigned because the following for loop won't run.
-		
-		for end_character in range(start_character + 1, len(bit_depth_info_field)):
-			if bit_depth_info_field[end_character].isnumeric() == False:
-				break
-		
-		bit_depth_as_text = bit_depth_info_field[start_character:end_character + 1]		
-		
-		if bit_depth_as_text.isnumeric() == True:
-			bit_depth = int(bit_depth_as_text)
-		else:
-			error_message = 'ERROR !!! I could not parse FFmpeg bit depth string: ' * english + 'VIRHE !!! En osannut tulkita ffmpeg:in antamaa tietoa bittisyvyydestä: ' * finnish + '\'' + bit_depth_as_text + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
-			send_error_messages_to_screen_logfile_email(error_message, [])
-		
-		# FFmpeg displays bit depths 24 bits and 32 bits both as 32 bits. Force bit depth to 24 if it is 32.
-		if bit_depth == 32:
-			bit_depth = 24
+		# Get info about supported audio streams from a list.
+		ffmpeg_stream_info, audio_stream_number, number_of_audio_channels, input_audiostream_format, output_audiostream_format, sample_rate, bit_depth, map_number = details_of_ffmpeg_supported_audiostreams[counter]
 		
 		# Calculate estimated uncompressed file size. Add one second of data to the file size (sample_rate = 1 second) to be on the safe side.
 		estimated_uncompressed_size_for_single_mono_file = int((sample_rate * audio_duration * int(bit_depth / 8)) + sample_rate)
@@ -2212,30 +2278,9 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			# Use lossless flac compression if input file bit depth is 16 bits or if estimated output file size is bigger that wav max 4 GB.
 			ffmpeg_output_format = 'flac'
 		
-		# Assign the inital commandline to the list and decide what output format to use.
-		# Demux audio to wav if output file size is below wav max 4 GB limit.
-		# Try to preserve bit depth even though FFmpeg bugs makes it a bit difficult.
-		# FFmpeg uses always bit depth of 16 when writing flac, so we try to avoid flac if possible.
-
+		# Assign the inital FFmpeg audio extract commandline to the list.
 		if len(ffmpeg_commandline) == 0:
-			
-			if ffmpeg_output_format == 'flac':
-				
-				# FFmpeg flac writing always forces bit depth to 16 bits, so we use flac only when we have no choice (ouput file bigger than 4 GB).
-				ffmpeg_commandline = ['ffmpeg', '-y', '-i', file_to_process, '-vn', '-acodec', 'flac']
-				
-			if ffmpeg_output_format == 'wav':
-				
-				ffmpeg_commandline = ['ffmpeg', '-y', '-i', file_to_process, '-vn', '-acodec', 'pcm_s16le'] # If bit depth is something else than 8 or 24 bits, then always use 16 bits.
-				
-				if bit_depth == 24:
-					ffmpeg_commandline = ['ffmpeg', '-y', '-i', file_to_process, '-vn', '-acodec', 'pcm_s24le']
-					
-				if bit_depth == 8:
-					ffmpeg_commandline = ['ffmpeg', '-y', '-i', file_to_process, '-vn', '-acodec', 'pcm_u8']
-					
-		# Find audio coding format from FFmpeg output.
-		audio_coding_format = str(ffmpeg_stream_info.split('Audio:')[1].split(',')[0].strip())	
+			ffmpeg_commandline = ['ffmpeg', '-y', '-i', file_to_process, '-vn']
 		
 		if debug == True:
 			print()
@@ -2249,42 +2294,27 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			print('estimated_uncompressed_size_for_single_mono_file =', estimated_uncompressed_size_for_single_mono_file)
 			print('estimated_uncompressed_size_for_combined_channels =', estimated_uncompressed_size_for_combined_channels)
 			print('audio_duration =', audio_duration)
-			print('audio_coding_format =', audio_coding_format)
+			print('input_audiostream_format =', input_audiostream_format)
+			print('output_audiostream_format =', output_audiostream_format)
 			print('ffmpeg_output_format =', ffmpeg_output_format)
+			print('map_number =', str(map_number))
 			print()
 		
 		# Compile the name of the audiostream to an list of all audio stream filenames.
 		target_filenames.append(filename_and_extension[0] + '-AudioStream-' * english + '-Miksaus-' * finnish + audio_stream_number + '-ChannelCount-' * english + '-AaniKanavia-' * finnish  + number_of_audio_channels + '.' + ffmpeg_output_format)
 		
 		# Generate FFmpeg extract options for audio stream.
+		ffmpeg_commandline.append('-acodec')
+		
+		if ffmpeg_output_format == 'flac':
+			ffmpeg_commandline.append('flac')
+		else:
+			# If output format is not flac, then use pcm format with bit depth that was decided earlier in this subroutine.
+			ffmpeg_commandline.append(output_audiostream_format)
+			
 		ffmpeg_commandline.append('-f')
 		ffmpeg_commandline.append(ffmpeg_output_format)
 		ffmpeg_commandline.append(directory_for_temporary_files + os.sep + target_filenames[counter])
-		
-		# Find out what is FFmpegs map number for the audio stream.	
-		for map_number_counter in range(ffmpeg_stream_info.find('#') + 1, len(ffmpeg_stream_info)):
-			if ffmpeg_stream_info[map_number_counter] == '.':
-				continue
-			if ffmpeg_stream_info[map_number_counter].isnumeric() == False:
-				break
-
-		map_number = ffmpeg_stream_info[ffmpeg_stream_info.find('#') + 1:map_number_counter]
-		
-		# Test if we really have found the stream map number.
-		mapnumber_digit_1 = ''
-		mapnumber_digit_2 = ''
-		map_number_test_list = map_number.split('.')
-		
-		try:
-			mapnumber_digit_1 = map_number_test_list[0]
-			mapnumber_digit_2 = map_number_test_list[1]
-			
-			if (mapnumber_digit_1.isnumeric() == False) or (mapnumber_digit_2.isnumeric() == False):
-				error_message = 'Error: stream map number found in FFmpeg output is not a number: ' * english + 'Virhe: FFmpegin tulosteesta löydetty streamin numero ei ole numero: ' * finnish + map_number
-				send_error_messages_to_screen_logfile_email(error_message, [])
-		except IndexError:
-			error_message = 'Error: stream map number found in FFmpeg output is not in correct format: ' * english + 'Virhe: FFmpegin tulosteesta löydetty streamin numero ei ole oikeassa formaatissa: ' * finnish + map_number
-			send_error_messages_to_screen_logfile_email(error_message, [])
 	
 		# Create a audio stream mapping command list that will be appended at the end of ffmpeg commandline. Without this the streams would be extracted in random order and our stream numbers wouldn't match the streams.
 		ffmpeg_stream_mapping_commands.extend(['-map',  str(map_number) + ':0.' + str(counter)])
@@ -2333,14 +2363,20 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		# If there are more than 1 streams in ogg then extract streams with FFmpeg.
 		natively_supported_file_format = False
 	
-	if (str(os.path.splitext(filename)[1]).lower() == '.wav') and (audio_coding_format not in ['pcm_u8', 'pcm_s16le', 'pcm_s24le', 'pcm_s32le']):
+	if (str(os.path.splitext(filename)[1]).lower() == '.wav') and (input_audiostream_format not in ['pcm_u8', 'pcm_s16le', 'pcm_s24le', 'pcm_s32le']):
 		# Wav container might contain other data than uncompressed pcm, if this is the case then first decompress audio / convert streams with FFmpeg.
+		natively_supported_file_format = False
+	
+	if input_audiostream_format in pcm_64_bit_formats:
+		# Bit depth is bigger than 32 bits the file must be converted before processing because sox only support up to 32 bits.
 		natively_supported_file_format = False
 	
 	file_format_support_information = [natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames]	
 	
 	if debug == True:
-		print('ffmpeg_commandline =', ffmpeg_commandline) 
+		print('ffmpeg_commandline =', ffmpeg_commandline)
+		print('natively_supported_file_format =', natively_supported_file_format)
+		print()
 	
 	return(file_format_support_information, ffmpeg_error_message, send_ffmpeg_error_message_by_email)
 	

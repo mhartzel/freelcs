@@ -1,3 +1,11 @@
+LoudnessCorrection Version 193
+-------------------------------
+- Bugfix: If audio file had many audio streams with uncompressed PCM audio then bit depth was not preserved correctly.
+- 64 bit audio files are now converted to 32 bits before processing. This is done because sox does not support bit depth over 32 bits.
+- Added some more text output when debug mode is on.
+- Bugfix: if FFmpeg stream map number can not be found when parsing FFmpeg text output then the audio stream is skipped.
+
+
 #####################################
 # Released FreeLCS 2.00 with:       #
 # ----------------------------      #
