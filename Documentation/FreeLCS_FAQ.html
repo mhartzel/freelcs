@@ -250,10 +250,10 @@
       <li>If audio has been compressed using a lossy codec then the audio has no
         real bit depth anymore and audio will be extracted using bit depth of 16
         bits.</li>
-      <li>If output file size would exceed 4 GBs then the audio must be stored
-        in flac format when processing it. This causes bit depth conversion if
-        input file bit depth is more than 16 bits. This is caused by FFmpeg that
-        always uses 16 bits when storing in flac format.<br>
+      <li>If output file size would exceed 4 GBs then FreeLCS must store the
+        audio in flac format when processing it. Bit depths bigger than 16 will
+        be converted to 16 bits. This is caused by internal limitation in
+        FFmpeg, it always uses 16 bits when storing in flac format.<br>
       </li>
     </ul>
     <u><strong></strong></u><br>

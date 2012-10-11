@@ -1,3 +1,16 @@
+#####################################
+# Released FreeLCS 2.1 with:        #
+# ----------------------------      #
+# - LoudnessCorrection version 193  #
+# - HeartBeat_Checker version 020   #
+# - Installer version 051           #
+# - Latest Documentation            #
+#####################################
+
+Documentation
+--------------
+- Minor fix in documentation clarifying what happens to bit depth when a file is processed.
+
 LoudnessCorrection Version 193
 -------------------------------
 - Bugfix: If audio file had many audio streams with uncompressed PCM audio then bit depth was not preserved correctly.
