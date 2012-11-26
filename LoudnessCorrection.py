@@ -35,7 +35,7 @@ import pickle
 import math
 import copy
 
-version = '193'
+version = '194'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -1253,7 +1253,7 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 		send_error_messages_to_screen_logfile_email(error_message, [])
 	
 	# Sox can not get duration from long files correctly, get audio duration with mediainfo.
-	audio_duration = get_audiofile_duration_with_mediainfo(directory_for_temporary_files, filename, file_to_process, english, finnish)
+	dummy, dummy, dummy, dummy, audio_duration, dummy,  = get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish)
 	
 	# Calculate estimated uncompressed file size. Add one second of data to the file size (sample_rate = 1 second) to be on the safe side.
 	estimated_uncompressed_size_for_single_mono_file = int((sample_rate * audio_duration * int(bit_depth / 8)) + sample_rate)
@@ -1974,10 +1974,10 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 	
 	# This subprocess works like this:
 	# ---------------------------------
-	# The process runs FFmpeg the get information about audio streams in a file.
+	# The process runs FFmpeg to get information about audio streams in a file.
 	# FFmpeg output is then parsed and a FFmpeg commandline created that will later be used to extract all valid audio streams from the file.
 
-	natively_supported_file_format = False # This variable tells if the file format is natively supported by libebur128 and sox. We do not yet know the format of the file, we just set the default here. If format is not natively supported by libebur128 and sox, file will be first extracted to flac with ffmpeg.
+	natively_supported_file_format = False # This variable tells if the file format is natively supported by libebur128 and sox. We do not yet know the format of the file, we just set the default here. If format is not natively supported by libebur128 and sox, file will be first extracted to wav or flac with ffmpeg.
 	ffmpeg_supported_fileformat = False # This variable tells if the file format is natively supported by ffmpeg. We do not yet know the format of the file, we just set the default here. If format is not supported by ffmpeg, we have no way of processing the file and it will be queued for deletion.
 	number_of_ffmpeg_supported_audiostreams = 0 # This variable holds the number of audio streams ffmpeg finds in the file.
 	details_of_ffmpeg_supported_audiostreams = [] # Holds ffmpeg produced information about audio streams found in file (example: 'Stream #0.1[0x82]: Audio: ac3, 48000 Hz, 5.1, s16, 384 kb/s' )
@@ -2025,7 +2025,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		# Open the stdout temporary file in binary write mode.
 		with open(stdout_for_external_command, 'wb') as stdout_commandfile_handler:
 	
-			# Examine the file with ffmpeg and parse its output.
+			# Examine the file in HotFolder with ffmpeg.
 			subprocess.Popen(['ffmpeg', '-i', file_to_process], stdout=stdout_commandfile_handler, stderr=stdout_commandfile_handler, stdin=None, close_fds=True).communicate()[0] # Run ffmpeg.
 	
 			# Make sure all data written to temporary stdout - file is flushed from the os cache and written to disk.
@@ -2221,7 +2221,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			if sample_rate_as_text.isnumeric() == True:
 				sample_rate = int(sample_rate_as_text)
 			else:
-				error_message = 'ERROR !!! I could not parse FFmpeg sample rate string for flac format: ' * english + 'VIRHE !!! En osannut tulkita ffmpeg:in antamaa tietoa flac formaatin näyteenottotaajuuudesta: ' * finnish + '\'' + sample_rate_as_text + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
+				error_message = 'ERROR !!! I could not parse FFmpeg sample rate string: ' * english + 'VIRHE !!! En osannut tulkita ffmpeg:in antamaa tietoa näyteenottotaajuuudesta: ' * finnish + '\'' + sample_rate_as_text + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
 				send_error_messages_to_screen_logfile_email(error_message, [])
 			
 			number_of_ffmpeg_supported_audiostreams = number_of_ffmpeg_supported_audiostreams + 1
@@ -2251,7 +2251,8 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			
 	# Test if file type is mpegts. FFmpeg can not always extract file duration correctly from mpegts so in this case get file duration with the mediainfo - command.
 	if file_type == 'mpegts':
-		audio_duration_according_to_mediainfo = get_audiofile_duration_with_mediainfo(directory_for_temporary_files, filename, file_to_process, english, finnish)
+		dummy, dummy, dummy, dummy, audio_duration_according_to_mediainfo, dummy = get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish)
+		dummy = ''
 		if audio_duration_according_to_mediainfo != 0:
 			audio_duration = audio_duration_according_to_mediainfo
 			audio_duration_rounded_to_seconds = int(audio_duration_according_to_mediainfo)
@@ -2265,7 +2266,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		# Get info about supported audio streams from a list.
 		ffmpeg_stream_info, audio_stream_number, number_of_audio_channels, input_audiostream_format, output_audiostream_format, sample_rate, bit_depth, map_number = details_of_ffmpeg_supported_audiostreams[counter]
 		
-		# Calculate estimated uncompressed file size. Add one second of data to the file size (sample_rate = 1 second) to be on the safe side.
+		# Calculate estimated uncompressed file size. Add one second of data to the file size (sample_rate = 1 second of audio data) to be on the safe side.
 		estimated_uncompressed_size_for_single_mono_file = int((sample_rate * audio_duration * int(bit_depth / 8)) + sample_rate)
 		estimated_uncompressed_size_for_combined_channels = estimated_uncompressed_size_for_single_mono_file * int(number_of_audio_channels)
 		
@@ -2276,9 +2277,10 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			
 		if (estimated_uncompressed_size_for_combined_channels >= wav_format_maximum_file_size) or (bit_depth == 16):
 			# Use lossless flac compression if input file bit depth is 16 bits or if estimated output file size is bigger that wav max 4 GB.
+			# Note this forces output bitdepth to 16 bits since FFmpeg always uses bit depth of 16 when writing flac. This is an internal limitation in FFmpeg.
 			ffmpeg_output_format = 'flac'
 		
-		# Assign the inital FFmpeg audio extract commandline to the list.
+		# Assign the start of FFmpeg audio extract commandline to the list.
 		if len(ffmpeg_commandline) == 0:
 			ffmpeg_commandline = ['ffmpeg', '-y', '-i', file_to_process, '-vn']
 		
@@ -2319,7 +2321,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		# Create a audio stream mapping command list that will be appended at the end of ffmpeg commandline. Without this the streams would be extracted in random order and our stream numbers wouldn't match the streams.
 		ffmpeg_stream_mapping_commands.extend(['-map',  str(map_number) + ':0.' + str(counter)])
 	
-	# Complete the FFmpeg commandline by adding stream mapping commands at the end of it. The commandline is later used to extract all valid audio streams from the file.
+	# Complete the FFmpeg commandline by adding stream mapping commands at the end of it. The commandline is later used to extract all valid audio streams from the file (only if the audio file is not natively supported by libebur128 and sox and needs to be processed with FFmpeg first).
 	ffmpeg_commandline.extend(ffmpeg_stream_mapping_commands)
 	
 	if number_of_ffmpeg_supported_audiostreams >= 1:
@@ -2351,7 +2353,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 	# In case the file has only 1 audio stream and the format is ogg then do an additional check.
 	# Sox only supports ogg files that have max 2 channels. If there are more then the audio must be converted to another format before processing.
 	# 'natively_supported_file_format = False'  means audio must be converted with FFmpeg before prosessing.
-	if number_of_ffmpeg_supported_audiostreams > 0: # If ffmpeg found audio streams check if the file extension is one that sox supported (wav, flac, ogg).
+	if number_of_ffmpeg_supported_audiostreams > 0: # If ffmpeg found audio streams check if the file extension is one that sox supports (wav, flac, ogg).
 		if str(os.path.splitext(filename)[1]).lower() in natively_supported_file_formats:
 			natively_supported_file_format = True
 			
@@ -2380,7 +2382,10 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 	
 	return(file_format_support_information, ffmpeg_error_message, send_ffmpeg_error_message_by_email)
 	
-def get_audiofile_duration_with_mediainfo(directory_for_temporary_files, filename, file_to_process, english, finnish):
+def get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish):
+	
+	global debug
+	global natively_supported_file_formats
 	
 	audio_duration_string = ''
 	audio_duration_fractions_string =''
@@ -2388,30 +2393,40 @@ def get_audiofile_duration_with_mediainfo(directory_for_temporary_files, filenam
 	audio_duration_rounded_to_seconds = 0
 	audio_duration_fractions = 0
 	audio_duration = 0
-	global debug
 	
+	audiostream_count = 0
+	channel_count = 0
+	bit_depth = 0
+	sample_format = ''
+	
+	file_to_process = hotfolder_path + os.sep + filename
+
 	mediainfo_output = ''
 	mediainfo_output_decoded = ''
-	mediainfo_output
+	natively_supported_file_format = False
+	
+	#####################################################
+	# Find how many audio streams there are in the file #
+	#####################################################
 	
 	try:
 		# Define filename for the temporary file that we are going to use as stdout for the external command.
-		stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_ffmpeg_find_audio_streams_stdout.txt'
+		stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_mediainfo_find_audiofile_info_stdout.txt'
 		# Open the stdout temporary file in binary write mode.
 		with open(stdout_for_external_command, 'wb') as stdout_commandfile_handler:
 	
-			# Examine the file with ffmpeg and parse its output.
-			subprocess.Popen(['mediainfo', '--Inform=General;%Duration/String3%', file_to_process], stdout=stdout_commandfile_handler, stderr=stdout_commandfile_handler, stdin=None, close_fds=True).communicate()[0] # Run mediainfo.
+			# Get the number of audio streams in the file
+			subprocess.Popen(['mediainfo', '--Inform=General;%AudioCount%', file_to_process], stdout=stdout_commandfile_handler, stderr=stdout_commandfile_handler, stdin=None, close_fds=True).communicate()[0] # Run mediainfo.
 	
 			# Make sure all data written to temporary stdout - file is flushed from the os cache and written to disk.
 			stdout_commandfile_handler.flush() # Flushes written data to os cache
 			os.fsync(stdout_commandfile_handler.fileno()) # Flushes os cache to disk
 			
 	except IOError as reason_for_error:
-		error_message = 'Error writing to mediainfo stdout - file ' * english + 'Mediainfon stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+		error_message = 'Error writing to mediainfo (audiostream_count) stdout - file ' * english + 'Mediainfon (audiostreamien lukumäärän selvitys) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
 		send_error_messages_to_screen_logfile_email(error_message, [])
 	except OSError as reason_for_error:
-		error_message = 'Error writing to mediainfo stdout - file ' * english + 'Mediainfon stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+		error_message = 'Error writing to mediainfo  (audiostream_count) stdout - file ' * english + 'Mediainfonn (audiostreamien lukumäärän selvitys) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
 		send_error_messages_to_screen_logfile_email(error_message, [])
 		
 	# Open the file we used as stdout for the external program and read in what the external program wrote to it.
@@ -2419,44 +2434,306 @@ def get_audiofile_duration_with_mediainfo(directory_for_temporary_files, filenam
 		with open(stdout_for_external_command, 'rb') as stdout_commandfile_handler:
 			mediainfo_output = stdout_commandfile_handler.read(None)
 	except IOError as reason_for_error:
-		error_message = 'Error reading from mediainfo stdout - file ' * english + 'Mediainfon stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+		error_message = 'Error reading from mediainfo (audiostream_count) stdout - file ' * english + 'Mediainfon (audiostreamien lukumäärän selvitys) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
 		send_error_messages_to_screen_logfile_email(error_message, [])
 	except OSError as reason_for_error:
-		error_message = 'Error reading from mediainfo stdout - file ' * english + 'Mediainfon stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+		error_message = 'Error reading from mediainfo (audiostream_count) stdout - file ' * english + 'Mediainfon (audiostreamien lukumäärän selvitys) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
 		send_error_messages_to_screen_logfile_email(error_message, [])
 	
-	# Convert ffmpeg output from binary to UTF-8 text.
+	# Convert mediainfo output from binary to UTF-8 text.
 	try:
-		mediainfo_output_decoded = mediainfo_output.decode('UTF-8') # Convert ffmpeg output from binary to utf-8 text.
+		mediainfo_output_decoded = mediainfo_output.decode('UTF-8') # Convert mediainfo output from binary to utf-8 text.
 	except UnicodeDecodeError:
 		# If UTF-8 conversion fails, try conversion with another character map.
-		mediainfo_output_decoded = mediainfo_output.decode('ISO-8859-15') # Convert ffmpeg output from binary to text.
-	
-	if debug == True:
-		print()
-		print("Mediainfo says '" + filename + "' duration is:", mediainfo_output)
-		print()		
+		mediainfo_output_decoded = mediainfo_output.decode('ISO-8859-15') # Convert mediainfo output from binary to text.	
 		
-	# Get the file duration as a string and also calculate it in seconds.
+	# Get the audiostream count from mediainfo output.
 	if (mediainfo_output_decoded.strip() != '') and ('-' not in mediainfo_output_decoded):
-		audio_duration_string, audio_duration_fractions_string = mediainfo_output_decoded.split('.') # Split the time string to two variables, the last will hold the fractions part (0 - 999 hundreds of a second).
-		audio_duration_fractions = int(audio_duration_fractions_string) / 1000
-		audio_duration_list = audio_duration_string.split(':') # Separate each element in the time string (hours, minutes, seconds) and put them in a list.
-		audio_duration_rounded_to_seconds = (int(audio_duration_list[0]) * 60 * 60) + (int(audio_duration_list[1]) * 60) + int(audio_duration_list[2]) # Calculate audio duration in seconds.
-		audio_duration = audio_duration_rounded_to_seconds + audio_duration_fractions
+		if mediainfo_output_decoded.strip().isnumeric() == True:
+			audiostream_count = int(mediainfo_output_decoded.strip())
 		
 	# Delete the temporary stdout - file.
 	try:
 		os.remove(stdout_for_external_command)
 	except IOError as reason_for_error:
-		error_message = 'Error deleting mediainfo stdout - file ' * english + 'Mediainfon stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+		error_message = 'Error deleting mediainfo (audiostream_count) stdout - file ' * english + 'Mediainfon (audiostreamien lukumäärän selvitys) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
 		send_error_messages_to_screen_logfile_email(error_message, [])
 	except OSError as reason_for_error:
-		error_message = 'Error deleting mediainfo stdout - file ' * english + 'Mediainfon stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message, [])
+		error_message = 'Error deleting mediainfo (audiostream_count) stdout - file ' * english + 'Mediainfon (audiostreamien lukumäärän selvitys) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message, [])	
+
+
+	if audiostream_count == 1:
+
+		######################################################
+		# Find how many audio channels there are in the file #
+		######################################################
+		
+		try:
+			# Define filename for the temporary file that we are going to use as stdout for the external command.
+			stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_mediainfo_find_audiofile_info_stdout.txt'
+			# Open the stdout temporary file in binary write mode.
+			with open(stdout_for_external_command, 'wb') as stdout_commandfile_handler:
+		
+				# Get the number of audio channels in the file
+				subprocess.Popen(['mediainfo', '--Inform=Audio;%Channels%', file_to_process], stdout=stdout_commandfile_handler, stderr=stdout_commandfile_handler, stdin=None, close_fds=True).communicate()[0] # Run mediainfo.
+		
+				# Make sure all data written to temporary stdout - file is flushed from the os cache and written to disk.
+				stdout_commandfile_handler.flush() # Flushes written data to os cache
+				os.fsync(stdout_commandfile_handler.fileno()) # Flushes os cache to disk
+				
+		except IOError as reason_for_error:
+			error_message = 'Error writing to mediainfo (channel_count) stdout - file ' * english + 'Mediainfon (kanavamäärä) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message, [])
+		except OSError as reason_for_error:
+			error_message = 'Error writing to mediainfo  (channel_count) stdout - file ' * english + 'Mediainfon (kanavamäärä) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message, [])
+			
+		# Open the file we used as stdout for the external program and read in what the external program wrote to it.
+		try:
+			with open(stdout_for_external_command, 'rb') as stdout_commandfile_handler:
+				mediainfo_output = stdout_commandfile_handler.read(None)
+		except IOError as reason_for_error:
+			error_message = 'Error reading from mediainfo (channel_count) stdout - file ' * english + 'Mediainfon (kanavamäärä) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message, [])
+		except OSError as reason_for_error:
+			error_message = 'Error reading from mediainfo (channel_count) stdout - file ' * english + 'Mediainfon (kanavamäärä) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message, [])
+		
+		# Convert mediainfo output from binary to UTF-8 text.
+		try:
+			mediainfo_output_decoded = mediainfo_output.decode('UTF-8') # Convert mediainfo output from binary to utf-8 text.
+		except UnicodeDecodeError:
+			# If UTF-8 conversion fails, try conversion with another character map.
+			mediainfo_output_decoded = mediainfo_output.decode('ISO-8859-15') # Convert mediainfo output from binary to text.	
+			
+		# Get the channel count from mediainfo output.
+		if (mediainfo_output_decoded.strip() != '') and ('-' not in mediainfo_output_decoded):
+			if mediainfo_output_decoded.strip().isnumeric() == True:
+				channel_count = int(mediainfo_output_decoded.strip())
+			
+		# Delete the temporary stdout - file.
+		try:
+			os.remove(stdout_for_external_command)
+		except IOError as reason_for_error:
+			error_message = 'Error deleting mediainfo (channel_count) stdout - file ' * english + 'Mediainfon (kanavamäärä) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message, [])
+		except OSError as reason_for_error:
+			error_message = 'Error deleting mediainfo (channel_count) stdout - file ' * english + 'Mediainfon (kanavamäärä) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message, [])
+		
+		if (channel_count != 0) and (channel_count <= 6):
+		
+			############################
+			# Find out audio bit depth #
+			############################
+			
+			try:
+				# Define filename for the temporary file that we are going to use as stdout for the external command.
+				stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_mediainfo_find_audiofile_info_stdout.txt'
+				# Open the stdout temporary file in binary write mode.
+				with open(stdout_for_external_command, 'wb') as stdout_commandfile_handler:
+			
+					# Get the bit depth of the audio file
+					subprocess.Popen(['mediainfo', '--Inform=Audio;%BitDepth%', file_to_process], stdout=stdout_commandfile_handler, stderr=stdout_commandfile_handler, stdin=None, close_fds=True).communicate()[0] # Run mediainfo.
+			
+					# Make sure all data written to temporary stdout - file is flushed from the os cache and written to disk.
+					stdout_commandfile_handler.flush() # Flushes written data to os cache
+					os.fsync(stdout_commandfile_handler.fileno()) # Flushes os cache to disk
+					
+			except IOError as reason_for_error:
+				error_message = 'Error writing to mediainfo (bit_depth) stdout - file ' * english + 'Mediainfon (bittisyvyys) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+				send_error_messages_to_screen_logfile_email(error_message, [])
+			except OSError as reason_for_error:
+				error_message = 'Error writing to mediainfo  (bit_depth) stdout - file ' * english + 'Mediainfon (bittisyvyys) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+				send_error_messages_to_screen_logfile_email(error_message, [])
+				
+			# Open the file we used as stdout for the external program and read in what the external program wrote to it.
+			try:
+				with open(stdout_for_external_command, 'rb') as stdout_commandfile_handler:
+					mediainfo_output = stdout_commandfile_handler.read(None)
+			except IOError as reason_for_error:
+				error_message = 'Error reading from mediainfo (bit_depth) stdout - file ' * english + 'Mediainfon (bittisyvyys) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+				send_error_messages_to_screen_logfile_email(error_message, [])
+			except OSError as reason_for_error:
+				error_message = 'Error reading from mediainfo (bit_depth) stdout - file ' * english + 'Mediainfon (bittisyvyys) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+				send_error_messages_to_screen_logfile_email(error_message, [])
+			
+			# Convert mediainfo output from binary to UTF-8 text.
+			try:
+				mediainfo_output_decoded = mediainfo_output.decode('UTF-8') # Convert mediainfo output from binary to utf-8 text.
+			except UnicodeDecodeError:
+				# If UTF-8 conversion fails, try conversion with another character map.
+				mediainfo_output_decoded = mediainfo_output.decode('ISO-8859-15') # Convert mediainfo output from binary to text.
+				
+			# Get the bit depth from mediainfo output.
+			if (mediainfo_output_decoded.strip() != '') and ('-' not in mediainfo_output_decoded):
+				if mediainfo_output_decoded.strip().isnumeric() == True:
+					bit_depth = int(mediainfo_output_decoded.strip())
+				
+			# Delete the temporary stdout - file.
+			try:
+				os.remove(stdout_for_external_command)
+			except IOError as reason_for_error:
+				error_message = 'Error deleting mediainfo (bit_depth) stdout - file ' * english + 'Mediainfon (bittisyvyys) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+				send_error_messages_to_screen_logfile_email(error_message, [])
+			except OSError as reason_for_error:
+				error_message = 'Error deleting mediainfo (bit_depth) stdout - file ' * english + 'Mediainfon (bittisyvyys) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+				send_error_messages_to_screen_logfile_email(error_message, [])
+			
+			##########################
+			# Find out sample format #
+			##########################
+			
+			try:
+				# Define filename for the temporary file that we are going to use as stdout for the external command.
+				stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_mediainfo_find_audiofile_info_stdout.txt'
+				# Open the stdout temporary file in binary write mode.
+				with open(stdout_for_external_command, 'wb') as stdout_commandfile_handler:
+			
+					# Get the sample format of the audio file
+					subprocess.Popen(['mediainfo', '--Inform=Audio;%Format%', file_to_process], stdout=stdout_commandfile_handler, stderr=stdout_commandfile_handler, stdin=None, close_fds=True).communicate()[0] # Run mediainfo.
+			
+					# Make sure all data written to temporary stdout - file is flushed from the os cache and written to disk.
+					stdout_commandfile_handler.flush() # Flushes written data to os cache
+					os.fsync(stdout_commandfile_handler.fileno()) # Flushes os cache to disk
+					
+			except IOError as reason_for_error:
+				error_message = 'Error writing to mediainfo (sample_format) stdout - file ' * english + 'Mediainfon (sample formaatti) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+				send_error_messages_to_screen_logfile_email(error_message, [])
+			except OSError as reason_for_error:
+				error_message = 'Error writing to mediainfo  (sample_format) stdout - file ' * english + 'Mediainfon (sample formaatti) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+				send_error_messages_to_screen_logfile_email(error_message, [])
+				
+			# Open the file we used as stdout for the external program and read in what the external program wrote to it.
+			try:
+				with open(stdout_for_external_command, 'rb') as stdout_commandfile_handler:
+					mediainfo_output = stdout_commandfile_handler.read(None)
+			except IOError as reason_for_error:
+				error_message = 'Error reading from mediainfo (sample_format) stdout - file ' * english + 'Mediainfon (sample formaatti) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+				send_error_messages_to_screen_logfile_email(error_message, [])
+			except OSError as reason_for_error:
+				error_message = 'Error reading from mediainfo (sample_format) stdout - file ' * english + 'Mediainfon (sample formaatti) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+				send_error_messages_to_screen_logfile_email(error_message, [])
+			
+			# Convert mediainfo output from binary to UTF-8 text.
+			try:
+				mediainfo_output_decoded = mediainfo_output.decode('UTF-8') # Convert mediainfo output from binary to utf-8 text.
+			except UnicodeDecodeError:
+				# If UTF-8 conversion fails, try conversion with another character map.
+				mediainfo_output_decoded = mediainfo_output.decode('ISO-8859-15') # Convert mediainfo output from binary to text.	
+				
+			# Get the sample format from mediainfo output.
+			if (mediainfo_output_decoded.strip() != '') and ('-' not in mediainfo_output_decoded):
+				sample_format = mediainfo_output_decoded.strip().lower()
+				
+			# Delete the temporary stdout - file.
+			try:
+				os.remove(stdout_for_external_command)
+			except IOError as reason_for_error:
+				error_message = 'Error deleting mediainfo (sample_format) stdout - file ' * english + 'Mediainfon (sample formaatti) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+				send_error_messages_to_screen_logfile_email(error_message, [])
+			except OSError as reason_for_error:
+				error_message = 'Error deleting mediainfo (sample_format) stdout - file ' * english + 'Mediainfon (sample formaatti) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+				send_error_messages_to_screen_logfile_email(error_message, [])
+			
+			#######################
+			# Find audio duration #
+			#######################
+			
+			try:
+				# Define filename for the temporary file that we are going to use as stdout for the external command.
+				stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_mediainfo_find_audiofile_info_stdout.txt'
+				# Open the stdout temporary file in binary write mode.
+				with open(stdout_for_external_command, 'wb') as stdout_commandfile_handler:
+			
+					# Get the audio duration of the file
+					subprocess.Popen(['mediainfo', '--Inform=General;%Duration/String3%', file_to_process], stdout=stdout_commandfile_handler, stderr=stdout_commandfile_handler, stdin=None, close_fds=True).communicate()[0] # Run mediainfo.
+			
+					# Make sure all data written to temporary stdout - file is flushed from the os cache and written to disk.
+					stdout_commandfile_handler.flush() # Flushes written data to os cache
+					os.fsync(stdout_commandfile_handler.fileno()) # Flushes os cache to disk
+					
+			except IOError as reason_for_error:
+				error_message = 'Error writing to mediainfo (audio duration) stdout - file ' * english + 'Mediainfon (audion kesto) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+				send_error_messages_to_screen_logfile_email(error_message, [])
+			except OSError as reason_for_error:
+				error_message = 'Error writing to mediainfo (audio duration) stdout - file ' * english + 'Mediainfon (audion kesto) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+				send_error_messages_to_screen_logfile_email(error_message, [])
+				
+			# Open the file we used as stdout for the external program and read in what the external program wrote to it.
+			try:
+				with open(stdout_for_external_command, 'rb') as stdout_commandfile_handler:
+					mediainfo_output = stdout_commandfile_handler.read(None)
+			except IOError as reason_for_error:
+				error_message = 'Error reading from mediainfo (audio duration) stdout - file ' * english + 'Mediainfon (audion kesto) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+				send_error_messages_to_screen_logfile_email(error_message, [])
+			except OSError as reason_for_error:
+				error_message = 'Error reading from mediainfo (audio duration) stdout - file ' * english + 'Mediainfon (audion kesto) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+				send_error_messages_to_screen_logfile_email(error_message, [])
+			
+			# Convert mediainfo output from binary to UTF-8 text.
+			try:
+				mediainfo_output_decoded = mediainfo_output.decode('UTF-8') # Convert mediainfo output from binary to utf-8 text.
+			except UnicodeDecodeError:
+				# If UTF-8 conversion fails, try conversion with another character map.
+				mediainfo_output_decoded = mediainfo_output.decode('ISO-8859-15') # Convert mediainfo output from binary to text.
+			
+			# Get the file duration as a string and also calculate it in seconds.
+			if (mediainfo_output_decoded.strip() != '') and ('-' not in mediainfo_output_decoded):
+				audio_duration_string, audio_duration_fractions_string = mediainfo_output_decoded.split('.') # Split the time string to two variables, the last will hold the fractions part (0 - 999 hundreds of a second).
+				audio_duration_fractions = int(audio_duration_fractions_string) / 1000
+				audio_duration_list = audio_duration_string.split(':') # Separate each element in the time string (hours, minutes, seconds) and put them in a list.
+				audio_duration_rounded_to_seconds = (int(audio_duration_list[0]) * 60 * 60) + (int(audio_duration_list[1]) * 60) + int(audio_duration_list[2]) # Calculate audio duration in seconds.
+				audio_duration = audio_duration_rounded_to_seconds + audio_duration_fractions
+				
+			# Delete the temporary stdout - file.
+			try:
+				os.remove(stdout_for_external_command)
+			except IOError as reason_for_error:
+				error_message = 'Error deleting mediainfo (audio duration) stdout - file ' * english + 'Mediainfon (audion kesto) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+				send_error_messages_to_screen_logfile_email(error_message, [])
+			except OSError as reason_for_error:
+				error_message = 'Error deleting mediainfo (audio duration) stdout - file ' * english + 'Mediainfon (audion kesto) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+				send_error_messages_to_screen_logfile_email(error_message, [])
+
+	###################################################################
+	# Decide if the file is one of the natively supported formats     #
+	###################################################################
+				
+	if (str(os.path.splitext(filename)[1]).lower() in natively_supported_file_formats) and (audiostream_count == 1) and (channel_count != 0) and (channel_count <= 6) and (audio_duration_rounded_to_seconds > 0):
+		natively_supported_file_format = True
+		
+	if str(os.path.splitext(filename)[1]).lower() == '.ogg':
+		bit_depth = 16
 	
-	return(audio_duration)
+	if (str(os.path.splitext(filename)[1]).lower() == '.ogg') and (sample_format != 'vorbis'):
+		natively_supported_file_format = False
+		
+	if (str(os.path.splitext(filename)[1]).lower() == '.ogg') and (channel_count > 2):
+		natively_supported_file_format = False
+		
+
+	if (str(os.path.splitext(filename)[1]).lower() == '.wav') and (sample_format != 'pcm'):
+		natively_supported_file_format = False
 	
+	if (bit_depth < 8) and (bit_depth > 32):
+			natively_supported_file_format = False
+	
+	if debug == True:
+		print()
+		print('Mediainfo: ' + filename)
+		print((len('Mediainfo: ' + filename) + 1 ) * '-')
+		print("File extension: '" + str(os.path.splitext(filename)[1]).lower() + "'")
+		print('Audiostream count is:', audiostream_count)
+		print('Channel count is:', channel_count)
+		print('Bit depth is:', bit_depth)
+		print('Sample format is:', sample_format)
+		print('Audio duration rounded to seconds is:', audio_duration_rounded_to_seconds)
+		print('Natively supported file format:', natively_supported_file_format)
+		print()
+	
+	return(audiostream_count, channel_count, bit_depth, sample_format, audio_duration_rounded_to_seconds, natively_supported_file_format)
 	
 def debug_write_loudness_calculation_info_to_a_logfile(filename, integrated_loudness, loudness_range, highest_peak_db, channel_count, sample_rate, bit_depth, audio_duration):
 	
@@ -2483,7 +2760,7 @@ def debug_write_loudness_calculation_info_to_a_logfile(filename, integrated_loud
 		error_message = 'Error opening loudness calculation logfile for writing ' * english + 'Äänekkyyslogitiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
 		send_error_messages_to_screen_logfile_email(error_message, [])
 			
-			
+	
 
 ##############################################################################################
 #                                The main program starts here:)                              #
@@ -2719,9 +2996,6 @@ if gnuplot_executable_found == False:
 if sox_executable_found == False:
 	print('\n!!!!!!! sox - can not be found or it does not have \'executable\' permissions on !!!!!!!' * english + '\n!!!!!!! gnuplot - ohjelmaa ei löydy tai sillä ei ole käynnistyksen mahdollistava \'executable\' oikeudet päällä !!!!!!!' * finnish)
 	sys.exit(1)
-if ffmpeg_executable_found == False:
-	print('\n!!!!!!! ffmpeg - can not be found or it does not have \'executable\' permissions on !!!!!!!' * english + '\n!!!!!!! ffmpeg - ohjelmaa ei löydy tai sillä ei ole käynnistyksen mahdollistava \'executable\' oikeudet päällä !!!!!!!' * finnish)
-	sys.exit(1)
 if mediainfo_executable_found == False:
 	print('\n!!!!!!! mediainfo - can not be found or it does not have \'executable\' permissions on !!!!!!!' * english + '\n!!!!!!! mediainfo - ohjelmaa ei löydy tai sillä ei ole käynnistyksen mahdollistava \'executable\' oikeudet päällä !!!!!!!' * finnish)
 	sys.exit(1)
@@ -2792,7 +3066,6 @@ if silent == False:
 	print(version_string_to_print)
 	print('-' * (len(version_string_to_print) + 1))
 	print()
-
 
 #############################
 # The main loop starts here #
@@ -2986,12 +3259,32 @@ while True:
 						we_have_true_read_access_to_the_file = False
 					
 					if we_have_true_read_access_to_the_file == True:
-						
-						# Call a subroutine to inspect file with FFmpeg to get audio stream information.
-						ffmpeg_parsed_audio_stream_information, ffmpeg_error_message, send_ffmpeg_error_message_by_email = get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(filename, hotfolder_path, directory_for_temporary_files, ffmpeg_output_format, english, finnish)
-						# Assign audio stream information to variables.
-						natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames = ffmpeg_parsed_audio_stream_information
 
+						# Test if FFmpeg is installed.
+						if ffmpeg_executable_found == True:
+							
+							# Call a subroutine to inspect file with FFmpeg to get audio stream information.
+							ffmpeg_parsed_audio_stream_information, ffmpeg_error_message, send_ffmpeg_error_message_by_email = get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(filename, hotfolder_path, directory_for_temporary_files, ffmpeg_output_format, english, finnish)
+							# Assign audio stream information to variables.
+							natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames = ffmpeg_parsed_audio_stream_information
+						else:
+							# FFmpeg is not installed, test input file with mediainfo
+							audiostream_count, channel_count, bit_depth, sample_format, audio_duration_rounded_to_seconds, natively_supported_file_format = get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish)
+							
+							if natively_supported_file_format == True: 
+								ffmpeg_supported_fileformat = True
+								number_of_ffmpeg_supported_audiostreams = 1
+								ffmpeg_error_message = ''
+							else:
+								ffmpeg_supported_fileformat = False
+								number_of_ffmpeg_supported_audiostreams = 0
+								ffmpeg_error_message = 'Format is not supported. Supported formats are: wav (pcm) 1 - 6 channels, flac 1 - 6 channels, ogg vorbis 1 - 2 channels' * english + 'Formaatti ei ole tuettu. Tuetut formaatit ovat: wav (pcm) 1 - 6 kanavaa, flac 1 - 6 kanavaa, ogg vorbis  1 - 2 kanavaa' * finnish
+								
+							ffmpeg_commandline = []
+							target_filenames = []
+							details_of_ffmpeg_supported_audiostreams = []
+							send_ffmpeg_error_message_by_email = False
+							
 						if (ffmpeg_supported_fileformat == False) and (filename not in unsupported_ignored_files_dict):
 							# No audiostreams were found in the file, plot an error graphics file to tell the user about it and add the filename and the time it was first seen to the list of files we will ignore.
 							if ffmpeg_error_message == '': # Check if ffmpeg printed an error message.

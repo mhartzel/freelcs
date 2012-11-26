@@ -80,6 +80,9 @@
       <li>FreeLCS corrects the loudness of each file dropped in. It also
         produces a loudness history graphics file that tells about loudness
         variations across time in the file.</li>
+      <li>FreeLCS is open source and free software. You don't have to pay
+        anything to use it :)<br>
+      </li>
       <li>FreeLCS site is here:
         <meta http-equiv="content-type" content="text/html; charset=utf-8">
         <a href="http://freelcs.sourceforge.net/">http://freelcs.sourceforge.net/</a></li>
@@ -238,13 +241,13 @@
     <br>
     <h2><a id="Is bit depth and sample rate preserved ?">Is bit depth and sample
         rate preserved ?</a></h2>
-    Sample rate should be always preserved.<br>
+    Sample rate should always be preserved.<br>
     <br>
     (The following rules for bit depth conversion come from internal limitations
     in FFmpeg and sox).<br>
     <u><strong></strong></u><br>
     <ul>
-      <li>If audio is in uncopressed PCM - format, then bit depth will be
+      <li>If audio is in uncompressed PCM - format, then bit depth will be
         preserved except that 64 bit audio will be converted to 32 bits because
         sox supports bit depths only up to 32 bits.</li>
       <li>If audio has been compressed using a lossy codec then the audio has no
