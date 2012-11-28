@@ -35,17 +35,12 @@ import pickle
 import math
 import copy
 
-version = '194'
+version = '195'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
 # These values are used if the script is run without giving an settings file as an argument. Values read from the settingsfile override these default settings.                        #
 ########################################################################################################################################################################################
-#
-# If you change debug to 'True' the script will print out contents of all mission critical lists and dictionaries once a minute.
-# It will also print out values that are read from the configfile and transferred to local variables.
-#
-debug = False
 #
 # Language to use for directories and printing messages. Finnish and english are supported.
 # Python has a neat feature which enables one to print a number of characters by using a multiplication function.
@@ -61,41 +56,110 @@ else:
 	english = 0
 	finnish = 1
 
-# If the user did not give enough arguments on the commandline print an error message.
-if (len(sys.argv) < 2) or (len(sys.argv) > 3):
-	print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)
+# Parse commandline arguments and assign values to variables
+debug_lists = False
+debug_processing = False
+debug_all = False
+configfile_path = ''
+configfile_found = False
+debug_internal_variables  = False
+debug_file_processing = False
+save_measurement_results_to_a_file = False
+target_path = ''
+debug = False # Remove this when fine grained debugging is ready
+
+arguments_remaining = copy.deepcopy(sys.argv[1:])
+number_of_arguments = len(arguments_remaining)
+
+for argument in sys.argv[1:]:
+	
+	if configfile_found == True:
+		configfile_path = argument
+		arguments_remaining.pop(arguments_remaining.index(argument))
+		configfile_found = False
+		continue		
+
+	if argument.lower() == '-configfile':
+		configfile_found = True
+		arguments_remaining.pop(arguments_remaining.index(argument))
+		continue
+
+	if argument.lower() == '-debug_internal_variables':
+		debug_internal_variables = True
+		arguments_remaining.pop(arguments_remaining.index(argument))
+		continue
+
+	if argument.lower() == '-debug_file_processing':
+		debug_file_processing = True
+		arguments_remaining.pop(arguments_remaining.index(argument))
+		continue
+	
+	if argument.lower() == '-debug_all':
+		debug_all = True
+		arguments_remaining.pop(arguments_remaining.index(argument))
+		continue
+
+	if argument.lower() == '-save_measurement_results_to_a_file':
+		save_measurement_results_to_a_file = True
+		arguments_remaining.pop(arguments_remaining.index(argument))
+		continue
+
+
+if (configfile_path == '') and (len(arguments_remaining) > 0):
+	target_path = arguments_remaining[0]
+	arguments_remaining.pop(0)
+
+if len(arguments_remaining) != 0:
+	print()
+	print('Unknown arguments:', arguments_remaining)
+	print()
 	sys.exit(1)
 
-target_path = ''
-configfile_path = ''
+# If the user did not give enough arguments on the commandline print an error message.
+if (configfile_path == '') and (target_path == ''):
+	print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)
+	print('Debug options: -debug_file_processing, -debug_internal_variables, -save_measurement_results_to_a_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_internal_variables, -save_measurement_results_to_a_file' * finnish )
+	print()
+	sys.exit(1)
 
-# If there was only one argument on the commandline, it must be path to HotFolder, check that the the path is an existing directory.
-if len(sys.argv) == 2:
-	target_path = sys.argv[1]
-	if os.path.isdir(target_path):
-		target_path = os.sep + target_path.strip(os.sep) # If there is a slash at the end of the path name, remove it.
-	else:
-		print('\n!!!!!!! Target is not a directory !!!!!!!' * english + '\n!!!!!!! Kohde ei ole hakemisto !!!!!!!' * finnish)
+if configfile_path != '':
+
+	if (os.path.exists(configfile_path) == False) or (os.access(configfile_path, os.R_OK) == False):
+		print('\n!!!!!!! Configfile does not exist or exists but is not readable !!!!!!!' * english + '\n!!!!!!! Asetustiedostoa ei ole olemassa tai siihen ei ole lukuoikeuksia !!!!!!!' * finnish)
 		print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)	
+		print('Debug options: -debug_file_processing, -debug_internal_variables, -save_measurement_results_to_a_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_internal_variables, -save_measurement_results_to_a_file' * finnish )
+		print()
 		sys.exit(1)
 
-# If there were two arguments on the commandline, then the first must be '-configfile' and the second the path to the config file. Check that the file exists and is readable.
-if len(sys.argv) == 3:
-	argument = sys.argv[1]
-	configfile_path = sys.argv[2]
-	if not argument.lower() == '-configfile':
-		print('\n!!!!!!! Unknown option:' * english + '\n!!!!!!! Tuntematon optio:' * finnish, argument)
-		print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)	
-		sys.exit(1)
-	if argument.lower() == '-configfile':
-		if (os.path.exists(configfile_path) == False) or (os.access(configfile_path, os.R_OK) == False):
-			print('\n!!!!!!! Configfile does not exist or exists but is not readable !!!!!!!' * english + '\n!!!!!!! Asetustiedostoa ei ole olemassa tai siihen ei ole lukuoikeuksia !!!!!!!' * finnish)
-			print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)	
-			sys.exit(1)
 	if os.path.isfile(configfile_path) == False:
 		print('\n!!!!!!! Configfile is not a regular file !!!!!!!' * english + '\n!!!!!!! Asetustiedosto ei ole tiedosto !!!!!!!' * finnish)
 		print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)	
+		print('Debug options: -debug_file_processing, -debug_internal_variables, -save_measurement_results_to_a_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_internal_variables, -save_measurement_results_to_a_file' * finnish )
+		print()
 		sys.exit(1)
+else:
+	if os.path.exists(target_path) == True:
+		if os.path.isdir(target_path):
+			target_path = os.sep + target_path.strip(os.sep) # If there is a slash at the end of the path name, remove it.
+		else:
+			print('\n!!!!!!! Target is not a directory !!!!!!!' * english + '\n!!!!!!! Kohde ei ole hakemisto !!!!!!!' * finnish)
+			print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)	
+			print('Debug options: -debug_file_processing, -debug_internal_variables, -save_measurement_results_to_a_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_internal_variables, -save_measurement_results_to_a_file' * finnish )
+			print()
+			sys.exit(1)
+	else:
+
+		print('\n!!!!!!! Target directory does not exist !!!!!!!' * english + '\n!!!!!!! Kohdehakemistoa ei ole olemassa !!!!!!!' * finnish)
+		print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)	
+		print('Debug options: -debug_file_processing, -debug_internal_variables, -save_measurement_results_to_a_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_internal_variables, -save_measurement_results_to_a_file' * finnish )
+		print()
+		sys.exit(1)
+
+if debug_all == True:
+	debug_internal_variables = True
+	debug_file_processing = True
+	save_measurement_results_to_a_file = True
+	debug = True # Remove this when fine grained debugging is ready
 
 # Define folder names according to the language selected above.
 if language == 'en':
@@ -1253,7 +1317,7 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 		send_error_messages_to_screen_logfile_email(error_message, [])
 	
 	# Sox can not get duration from long files correctly, get audio duration with mediainfo.
-	dummy, dummy, dummy, dummy, audio_duration, dummy,  = get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish)
+	dummy, dummy, dummy, dummy, audio_duration, dummy, dummy = get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish)
 	
 	# Calculate estimated uncompressed file size. Add one second of data to the file size (sample_rate = 1 second) to be on the safe side.
 	estimated_uncompressed_size_for_single_mono_file = int((sample_rate * audio_duration * int(bit_depth / 8)) + sample_rate)
@@ -1760,13 +1824,18 @@ def debug_lists_and_dictionaries():
 	global silent
 	global web_page_path
 	global directory_for_error_logs
+	real_time_string = get_realtime(english, finnish)
 	debug_messages_path = web_page_path
-	debug_messages_file = 'debug_messages-' + str(get_realtime(english, finnish)) + '.txt' # Debug messages filename is 'debug_messages-' + current date + time
+	debug_messages_file = 'debug_messages-' + real_time_string + '.txt' # Debug messages filename is 'debug_messages-' + current date + time
 	
 	while True:
-		
+	
+		# FIXME siirrä aika pois listasta, muuten listan uutta ja vanhaa arvoa ei voi verrata keskenään. Siirrä myös '###' merkkien alku- ja lopputulostus pois listasta, siirrä se sekä tulostukseen, että tiedoston kirjoittamiseen.
+
+		real_time_string = get_realtime(english, finnish)
 		list_printouts = []
 		list_printouts.append('###################################################################################################################################################################################')
+		list_printouts.append('\nTimestamp = ' + real_time_string + '\n')
 		list_printouts.append('len(new_hotfolder_filelist_dict)= ' + str(len(new_hotfolder_filelist_dict)) + ' new_hotfolder_filelist_dict = ' + str(new_hotfolder_filelist_dict))
 		list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
 		list_printouts.append('len(old_hotfolder_filelist_dict)= ' +  str(len(old_hotfolder_filelist_dict)) + ' old_hotfolder_filelist_dict = ' + str(old_hotfolder_filelist_dict))
@@ -2251,7 +2320,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			
 	# Test if file type is mpegts. FFmpeg can not always extract file duration correctly from mpegts so in this case get file duration with the mediainfo - command.
 	if file_type == 'mpegts':
-		dummy, dummy, dummy, dummy, audio_duration_according_to_mediainfo, dummy = get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish)
+		dummy, dummy, dummy, dummy, audio_duration_according_to_mediainfo, dummy, dummy = get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish)
 		dummy = ''
 		if audio_duration_according_to_mediainfo != 0:
 			audio_duration = audio_duration_according_to_mediainfo
@@ -2522,7 +2591,7 @@ def get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, h
 			error_message = 'Error deleting mediainfo (channel_count) stdout - file ' * english + 'Mediainfon (kanavamäärä) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
 			send_error_messages_to_screen_logfile_email(error_message, [])
 		
-		if (channel_count != 0) and (channel_count <= 6):
+		if channel_count != 0:
 		
 			############################
 			# Find out audio bit depth #
@@ -2686,7 +2755,7 @@ def get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, h
 				audio_duration_list = audio_duration_string.split(':') # Separate each element in the time string (hours, minutes, seconds) and put them in a list.
 				audio_duration_rounded_to_seconds = (int(audio_duration_list[0]) * 60 * 60) + (int(audio_duration_list[1]) * 60) + int(audio_duration_list[2]) # Calculate audio duration in seconds.
 				audio_duration = audio_duration_rounded_to_seconds + audio_duration_fractions
-				
+			
 			# Delete the temporary stdout - file.
 			try:
 				os.remove(stdout_for_external_command)
@@ -2700,25 +2769,43 @@ def get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, h
 	###################################################################
 	# Decide if the file is one of the natively supported formats     #
 	###################################################################
-				
+	
+	mediainfo_error_message = ''
+
 	if (str(os.path.splitext(filename)[1]).lower() in natively_supported_file_formats) and (audiostream_count == 1) and (channel_count != 0) and (channel_count <= 6) and (audio_duration_rounded_to_seconds > 0):
 		natively_supported_file_format = True
+	else:
+		natively_supported_file_format = False
+		# Assign a general error message about file format not supported.
+		mediainfo_error_message = 'Format ' + str(sample_format)  + ' is not supported. Supported formats are: wav (pcm) 1 - 6 channels, flac 1 - 6 channels, ogg vorbis 1 - 2 channels' * english + 'Formaatti ei ole tuettu. Tuetut formaatit ovat: wav (pcm) 1 - 6 kanavaa, flac 1 - 6 kanavaa, ogg vorbis  1 - 2 kanavaa' * finnish
+
+	if channel_count == 0:
+		mediainfo_error_message = 'There are no audio channels in the file' * english + 'Tiedostossa ei ole äänikanavia' * finnish
+
+	if channel_count > 6:
+		mediainfo_error_message = 'There are ' * english + 'Tiedostossa on ' * finnish + str(channel_count) + ' channels in audio file, only channel counts from one to six are supported' * english + ' äänikanavaa, vain kanavamäärät yhdestä kuuteen ovat tuettuja' * finnish
 		
 	if str(os.path.splitext(filename)[1]).lower() == '.ogg':
 		bit_depth = 16
 	
 	if (str(os.path.splitext(filename)[1]).lower() == '.ogg') and (sample_format != 'vorbis'):
 		natively_supported_file_format = False
+		mediainfo_error_message =  'Format: ' * english + 'Formaatti: ' * finnish + str(sample_format) + ' is not supported in ogg container' * english + ' ogg - paketissa ei ole tuettu' * finnish
 		
 	if (str(os.path.splitext(filename)[1]).lower() == '.ogg') and (channel_count > 2):
 		natively_supported_file_format = False
-		
+		mediainfo_error_message = 'There are ' * english + 'Tiedostossa on ' * finnish + str(channel_count) + ' channels in audio file, only channel counts from one to two are supported in ogg - format' * english + ' äänikanavaa, vain kanavamäärät yhdestä kahteen ovat tuettuja ogg - formaatissa' * finnish
 
 	if (str(os.path.splitext(filename)[1]).lower() == '.wav') and (sample_format != 'pcm'):
 		natively_supported_file_format = False
+		mediainfo_error_message =  'Format: ' * english + 'Formaatti: ' * finnish + str(sample_format) + ' is not supported in wav container' * english + ' wav - paketissa ei ole tuettu' * finnish
 	
 	if (bit_depth < 8) and (bit_depth > 32):
-			natively_supported_file_format = False
+		natively_supported_file_format = False
+		mediainfo_error_message =  'Audio bit depth: ' * english + 'Tiedoston bittisyvyys: ' * finnish + str(bit_depth) + ' bits is not supported' * english + ' bittiä ei ole tuettu' * finnish
+		
+	if audio_duration_rounded_to_seconds == 0:
+		mediainfo_error_message =  'Audio duration is less than 1 second' * english + 'Tiedoston ääniraidan pituus on alle 1 sekunti' * finnish 
 	
 	if debug == True:
 		print()
@@ -2731,9 +2818,10 @@ def get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, h
 		print('Sample format is:', sample_format)
 		print('Audio duration rounded to seconds is:', audio_duration_rounded_to_seconds)
 		print('Natively supported file format:', natively_supported_file_format)
+		print('Mediainfo_error_message: ', mediainfo_error_message )
 		print()
 	
-	return(audiostream_count, channel_count, bit_depth, sample_format, audio_duration_rounded_to_seconds, natively_supported_file_format)
+	return(audiostream_count, channel_count, bit_depth, sample_format, audio_duration_rounded_to_seconds, natively_supported_file_format, mediainfo_error_message)
 	
 def debug_write_loudness_calculation_info_to_a_logfile(filename, integrated_loudness, loudness_range, highest_peak_db, channel_count, sample_rate, bit_depth, audio_duration):
 	
@@ -3010,9 +3098,6 @@ else:
 		print('\n!!!!!!! libebur128 loudness-executable does not have \'executable\' permissions on !!!!!!!\n' * english + '\n!!!!!!! libebur128:n loudness-ohjelmalla ei ole käynnistyksen mahdollistava \'executable\' oikeudet päällä !!!!!!!\n' * finnish)
 		sys.exit(1)
 
-# If you wan't to enable debug mode to see debug messages printed on the terminal window, then uncomment the line below.
-# debug = True
-
 # Define the name of the error logfile.
 error_logfile_path = directory_for_error_logs + os.sep + 'error_log-' + str(get_realtime(english, finnish)) + '.txt' # Error log filename is 'error_log' + current date + time
 
@@ -3269,8 +3354,10 @@ while True:
 							natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames = ffmpeg_parsed_audio_stream_information
 						else:
 							# FFmpeg is not installed, test input file with mediainfo
-							audiostream_count, channel_count, bit_depth, sample_format, audio_duration_rounded_to_seconds, natively_supported_file_format = get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish)
-							
+							audiostream_count, channel_count, bit_depth, sample_format, audio_duration_rounded_to_seconds, natively_supported_file_format, mediainfo_error_message = get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish)
+						
+							ffmpeg_error_message = mediainfo_error_message
+
 							if natively_supported_file_format == True: 
 								ffmpeg_supported_fileformat = True
 								number_of_ffmpeg_supported_audiostreams = 1
@@ -3278,7 +3365,6 @@ while True:
 							else:
 								ffmpeg_supported_fileformat = False
 								number_of_ffmpeg_supported_audiostreams = 0
-								ffmpeg_error_message = 'Format is not supported. Supported formats are: wav (pcm) 1 - 6 channels, flac 1 - 6 channels, ogg vorbis 1 - 2 channels' * english + 'Formaatti ei ole tuettu. Tuetut formaatit ovat: wav (pcm) 1 - 6 kanavaa, flac 1 - 6 kanavaa, ogg vorbis  1 - 2 kanavaa' * finnish
 								
 							ffmpeg_commandline = []
 							target_filenames = []

@@ -1,3 +1,13 @@
+LoudnessCorrection Version 195
+-------------------------------
+- Bugfix: Corrected some bugs left over in new functionality that appeared in version 194.
+- Added more descriptive error messages to result graphics, when unsupported formats are encountered in case FFmpeg is not installed.
+- Started work towards more fine grained debug information output.
+
+LoudnessCorrection Version 194
+-------------------------------
+- It is now possible to use LoudnessCorrection when FFmpeg is not installed. This reduces the supported formats to: wav, flac and ogg.  The installer needs to be modified before this functionality becomes available to the user.
+
 #####################################
 # Released FreeLCS 2.1 with:        #
 # ----------------------------      #
