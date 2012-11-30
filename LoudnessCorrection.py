@@ -35,7 +35,7 @@ import pickle
 import math
 import copy
 
-version = '195'
+version = '197'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -227,9 +227,11 @@ peak_measurement_method = '--peak=sample'
 
 wav_format_maximum_file_size = 4294967296 # Define wav max file size. Theoretical max size is 2 ^ 32 = 4294967296.
 # wav_format_maximum_file_size = 31000000 # Use this when debugging with shrunken test files :)
+
 ###############################################################################################################################################################################
 # Default value definitions end here :)                                                                                                                                       #
 ###############################################################################################################################################################################
+
 
 def calculate_integrated_loudness(event_for_integrated_loudness_calculation, filename, hotfolder_path, libebur128_commands_for_integrated_loudness_calculation, english, finnish):
 
@@ -248,6 +250,7 @@ def calculate_integrated_loudness(event_for_integrated_loudness_calculation, fil
 	file_to_process = hotfolder_path + os.sep + filename
 	highest_peak_db = float('-120') # Set default value for sample peak.
 	integrated_loudness_is_below_measurement_threshold = False
+	integrated_loudness_calculation_error_message = ''
 
 	if os.path.exists(file_to_process): # Check if the audio file still exists, user may have deleted it. If True start loudness calculation.
 	
@@ -325,18 +328,69 @@ def calculate_integrated_loudness(event_for_integrated_loudness_calculation, fil
 		else:
 			# Loudness calculation was successful, calculate loudness difference from target loudness and assign results to variables.
 			integrated_loudness_calculation_error = False
-			integrated_loudness_calculation_parsed_results=integrated_loudness_calculation_stdout_string.replace('LUFS', '').replace('LU','').replace(',', '').strip().split()[0:3]
+			integrated_loudness_calculation_uncleaned_results = integrated_loudness_calculation_stdout_string.split('\n')[0].split(',')
+			integrated_loudness_calculation_parsed_results = [integrated_loudness_calculation_uncleaned_results[0].replace(' LUFS','').strip()]
+			integrated_loudness_calculation_parsed_results.append(integrated_loudness_calculation_uncleaned_results[1].replace(' LU','').strip())
+			integrated_loudness_calculation_parsed_results.append(integrated_loudness_calculation_uncleaned_results[2].strip())
+			
 			integrated_loudness = float(integrated_loudness_calculation_parsed_results[0])
 			loudness_range = float(integrated_loudness_calculation_parsed_results[1])
 			highest_peak_float = float(integrated_loudness_calculation_parsed_results[2])
-			highest_peak_db = round(20 * math.log(highest_peak_float, 10),1)
+
+
+			# Test if integrated loudness calculation results are sane (output is numeric).
+			if isinstance(integrated_loudness, (float, int)) == False:
+				integrated_loudness_calculation_error = True
+				integrated_loudness_calculation_error_message = 'Error: libebur128 calculation result (integrated_loudness) is not a number: ' * english + 'Virhe: libebur128 laskentatulos (integroitu äänekkyys) ei ole numero: ' * finnish + '\'' + str(integrated_loudness_calculation_parsed_results[0]) + '\''
+
+			if isinstance(loudness_range , (float, int)) == False:
+				integrated_loudness_calculation_error = True
+				integrated_loudness_calculation_error_message = 'Error: libebur128 calculation result (loudness_range) is not a number: ' * english + 'Virhe: libebur128 laskentatulos (äänekkyyden vaihteluväli) ei ole numero: ' * finnish + '\'' + str(integrated_loudness_calculation_parsed_results[1]) + '\''
+			
+			if isinstance(highest_peak_float , (float, int)) == False:
+				integrated_loudness_calculation_error = True
+				integrated_loudness_calculation_error_message = 'Error: libebur128 calculation result (highest_peak) is not a number: ' * english + 'Virhe: libebur128 laskentatulos (Huippuarvo) ei ole numero: ' * finnish + '\'' + str(integrated_loudness_calculation_parsed_results[2]) + '\''
+			
+			if highest_peak_float == 0:
+				integrated_loudness_calculation_error = True
+				integrated_loudness_calculation_error_message = 'Error: libebur128 calculation result (highest_peak) is zero: ' * english + 'Virhe: libebur128 laskentatulos (Huippuarvo) ei ole numero: ' * finnish + '\'' + str(integrated_loudness_calculation_parsed_results[2]) + '\''
+			
+			if highest_peak_float < 0:
+				integrated_loudness_calculation_error = True
+				integrated_loudness_calculation_error_message = 'Error: libebur128 calculation result (highest_peak) is negative: ' * english + 'Virhe: libebur128 laskentatulos (Huippuarvo) on negatiivinen: ' * finnish + '\'' + str(integrated_loudness_calculation_parsed_results[2]) + '\''
+
+			try:
+				highest_peak_db = round(20 * math.log(highest_peak_float, 10),1)
+			except ValueError as reason_for_error:
+				integrated_loudness_calculation_error = True
+				integrated_loudness_calculation_error_message = 'Error: ' + '\'' + str(reason_for_error) + '\'' + ' trying to convert libebur128 sample / truepeak value to decibels: ' * english + 'Virhe: ' + '\'' + str(reason_for_error) + '\'' + ' muutettaessa libebur128:n huippuarvoa desibeleiksi: ' * finnish  + str(highest_peak_float)
+
+
 			difference_from_target_loudness = round(integrated_loudness - float('-23'), 1)
-			integrated_loudness_calculation_error_message = ''
+
+
 			# If integrated loudness measurement is below -70 LUFS, then libebur128 says the measurement is '-inf', which means roughly 'not possible to measure'. Generate error since '-inf' can not be used in calculations.
 			if integrated_loudness == float('-inf'):
 				integrated_loudness_calculation_error = True
 				integrated_loudness_calculation_error_message = 'Loudness is below measurement threshold (-70 LUFS)' * english + 'Äänekkyys on alle mittauksen alarajan (-70 LUFS)' * finnish
 				integrated_loudness_is_below_measurement_threshold = True
+			
+			if debug == True:
+			
+				print()
+				print('Integrated loudness calculation thread')
+				print('---------------------------------------')
+				print('integrated_loudness_calculation_stdout', integrated_loudness_calculation_stdout)
+				print('integrated_loudness_calculation_stderr', integrated_loudness_calculation_stderr)
+				print('integrated_loudness_calculation_stdout_string', integrated_loudness_calculation_stdout_string)
+				print('integrated_loudness_calculation_parsed_results', integrated_loudness_calculation_parsed_results)
+				print('integrated_loudness', integrated_loudness)
+				print('loudness_range', loudness_range)
+				print('integrated_loudness_calculation_parsed_results[0] =', integrated_loudness_calculation_parsed_results[0], type(integrated_loudness_calculation_parsed_results[0]))
+				print('integrated_loudness_calculation_parsed_results[1] =', integrated_loudness_calculation_parsed_results[1], type(integrated_loudness_calculation_parsed_results[1]))
+				print('integrated_loudness_calculation_parsed_results[2] =', integrated_loudness_calculation_parsed_results[2], type(integrated_loudness_calculation_parsed_results[2]))
+				print()
+			
 		integrated_loudness_calculation_results_list = [integrated_loudness, difference_from_target_loudness, loudness_range, integrated_loudness_calculation_error, integrated_loudness_calculation_error_message, highest_peak_db, integrated_loudness_is_below_measurement_threshold] # Assign result variables to the list that is going to be read in the other loudness calculation process.
 		integrated_loudness_calculation_results[filename] = integrated_loudness_calculation_results_list # Put loudness calculation results in a dictionary along with the filename.		
 	else:
@@ -1824,18 +1878,21 @@ def debug_lists_and_dictionaries():
 	global silent
 	global web_page_path
 	global directory_for_error_logs
+	list_printouts = []
+	list_printouts_old_values = []
 	real_time_string = get_realtime(english, finnish)
 	debug_messages_path = web_page_path
 	debug_messages_file = 'debug_messages-' + real_time_string + '.txt' # Debug messages filename is 'debug_messages-' + current date + time
 	
 	while True:
 	
-		# FIXME siirrä aika pois listasta, muuten listan uutta ja vanhaa arvoa ei voi verrata keskenään. Siirrä myös '###' merkkien alku- ja lopputulostus pois listasta, siirrä se sekä tulostukseen, että tiedoston kirjoittamiseen.
-
-		real_time_string = get_realtime(english, finnish)
 		list_printouts = []
-		list_printouts.append('###################################################################################################################################################################################')
-		list_printouts.append('\nTimestamp = ' + real_time_string + '\n')
+		list_printouts.append('len(list_of_growing_files)= ' + str(len(list_of_growing_files)) + ' list_of_growing_files = ' + str(list_of_growing_files))
+		list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
+		list_printouts.append('len(files_queued_to_loudness_calculation)= ' + str(len(files_queued_to_loudness_calculation)) + ' files_queued_to_loudness_calculation = ' + str(files_queued_to_loudness_calculation))
+		list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
+		list_printouts.append('len(loudness_calculation_queue)= ' + str(len(loudness_calculation_queue)) + ' loudness_calculation_queue = ' + str(loudness_calculation_queue))
+		list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
 		list_printouts.append('len(new_hotfolder_filelist_dict)= ' + str(len(new_hotfolder_filelist_dict)) + ' new_hotfolder_filelist_dict = ' + str(new_hotfolder_filelist_dict))
 		list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
 		list_printouts.append('len(old_hotfolder_filelist_dict)= ' +  str(len(old_hotfolder_filelist_dict)) + ' old_hotfolder_filelist_dict = ' + str(old_hotfolder_filelist_dict))
@@ -1844,13 +1901,7 @@ def debug_lists_and_dictionaries():
 		list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
 		list_printouts.append('len(old_results_directory_filelist_dict)= '+  str(len(old_results_directory_filelist_dict)) + ' old_results_directory_filelist_dict = ' + str(old_results_directory_filelist_dict))
 		list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
-		list_printouts.append('len(list_of_growing_files)= ' + str(len(list_of_growing_files)) + ' list_of_growing_files = ' + str(list_of_growing_files))
-		list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
 		list_printouts.append('len(unsupported_ignored_files_dict)= ' + str(len(unsupported_ignored_files_dict)) + ' unsupported_ignored_files_dict = ' + str(unsupported_ignored_files_dict))
-		list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
-		list_printouts.append('len(files_queued_to_loudness_calculation)= ' + str(len(files_queued_to_loudness_calculation)) + ' files_queued_to_loudness_calculation = ' + str(files_queued_to_loudness_calculation))
-		list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
-		list_printouts.append('len(loudness_calculation_queue)= ' + str(len(loudness_calculation_queue)) + ' loudness_calculation_queue = ' + str(loudness_calculation_queue))
 		list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
 		list_printouts.append('len(files_queued_for_deletion)= ' + str(len(files_queued_for_deletion)) + ' files_queued_for_deletion = ' + str(files_queued_for_deletion))
 		list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
@@ -1860,39 +1911,48 @@ def debug_lists_and_dictionaries():
 		list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
 		list_printouts.append('len(error_messages_to_email_later_list)= ' + str(len(error_messages_to_email_later_list)) + ' error_messages_to_email_later_list = ' + str(error_messages_to_email_later_list))
 		list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
-		list_printouts.append('len(finished_processes)= ' + str(len(finished_processes)) + ' finished_processes = ' + str(finished_processes))
-		list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
 		list_printouts.append('len(integrated_loudness_calculation_results)= ' + str(len(integrated_loudness_calculation_results)) + ' integrated_loudness_calculation_results = ' + str(integrated_loudness_calculation_results))
-		list_printouts.append('###################################################################################################################################################################################')
-		
-		# Print list_printouts to screen
-		if not silent == True:
-			for item in list_printouts:
-				print(item)
-		
-		# Print list_printouts to disk. First write it to temporary directory and then move to the target directory.
-		try:
-			# Move debug_log - file to the temp directory so we can append new messages to it.
-			if os.path.exists(directory_for_error_logs + os.sep + debug_messages_file):
-				shutil.move(directory_for_error_logs + os.sep + debug_messages_file, directory_for_temporary_files + os.sep + debug_messages_file)
-			with open(directory_for_temporary_files + os.sep + debug_messages_file, 'at') as debug_messages_filehandler:
+
+		if list_printouts != list_printouts_old_values:
+
+			# Print list_printouts to screen
+			if not silent == True:
+				real_time_string = get_realtime(english, finnish)
+				print('###################################################################################################################################################################################')
+				print('\nTimestamp = ' + real_time_string + '\n')
 				for item in list_printouts:
-					debug_messages_filehandler.write(item + '\n')
-				debug_messages_filehandler.flush() # Flushes written data to os cache
-				os.fsync(debug_messages_filehandler.fileno()) # Flushes os cache to disk
-			shutil.move(directory_for_temporary_files + os.sep + debug_messages_file, directory_for_error_logs + os.sep + debug_messages_file)
-		except KeyboardInterrupt:
-			print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
-			sys.exit(0)
-		except IOError as reason_for_error:
-			error_message = 'Error opening debug-messages file for writing ' * english + 'Debug-tiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
-			send_error_messages_to_screen_logfile_email(error_message, [])
-		except OSError as reason_for_error:
-			error_message = 'Error opening debug-messages file for writing ' * english + 'Debug-tiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
-			send_error_messages_to_screen_logfile_email(error_message, [])
+					print(item)
+				print('###################################################################################################################################################################################')
+			
+			# Print list_printouts to disk. First write it to temporary directory and then move to the target directory.
+			try:
+				# Move debug_log - file to the temp directory so we can append new messages to it.
+				if os.path.exists(directory_for_error_logs + os.sep + debug_messages_file):
+					shutil.move(directory_for_error_logs + os.sep + debug_messages_file, directory_for_temporary_files + os.sep + debug_messages_file)
+				with open(directory_for_temporary_files + os.sep + debug_messages_file, 'at') as debug_messages_filehandler:
+					debug_messages_filehandler.write('###################################################################################################################################################################################\n')
+					debug_messages_filehandler.write('\nTimestamp = ' + real_time_string + '\n\n')
+					for item in list_printouts:
+						debug_messages_filehandler.write(item + '\n')
+					debug_messages_filehandler.write('###################################################################################################################################################################################\n')
+					debug_messages_filehandler.flush() # Flushes written data to os cache
+					os.fsync(debug_messages_filehandler.fileno()) # Flushes os cache to disk
+				shutil.move(directory_for_temporary_files + os.sep + debug_messages_file, directory_for_error_logs + os.sep + debug_messages_file)
+			except KeyboardInterrupt:
+				print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
+				sys.exit(0)
+			except IOError as reason_for_error:
+				error_message = 'Error opening debug-messages file for writing ' * english + 'Debug-tiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
+				send_error_messages_to_screen_logfile_email(error_message, [])
+			except OSError as reason_for_error:
+				error_message = 'Error opening debug-messages file for writing ' * english + 'Debug-tiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
+				send_error_messages_to_screen_logfile_email(error_message, [])
+			
+			# Save the old state of the variable so that we can see if changes happened.
+			list_printouts_old_values = list_printouts
 
 		# Sleep between writing output
-		time.sleep(60)
+		time.sleep(30)
 
 def debug_variables_read_from_configfile():
 

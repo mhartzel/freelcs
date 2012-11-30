@@ -1,3 +1,8 @@
+LoudnessCorrection Version 197
+------------------------------
+- Bugfix: Hunted down a rare hanging bug. The error crashed integrated loudness calculation and the crash seems to be caused by the logarithm function that converts libebur128 given floating point value to decibels was getting a forbidden value (zero or negative number) sometimes. The bug is hard to reproduce, when it happened it wouldn't happen again with the same test files. I changed the way libebur128 output is parsed and added some code to catch the possible forbidden values. These changes should prevent the crash from happening again.
+- Continued working towards better and more defined debug information output.
+
 LoudnessCorrection Version 195
 -------------------------------
 - Bugfix: Corrected some bugs left over in new functionality that appeared in version 194.
