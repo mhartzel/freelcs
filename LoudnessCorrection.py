@@ -35,7 +35,7 @@ import pickle
 import math
 import copy
 
-version = '197'
+version = '198'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -56,17 +56,21 @@ else:
 	english = 0
 	finnish = 1
 
-# Parse commandline arguments and assign values to variables
-debug_lists = False
-debug_processing = False
+# Assign some debug variables.
 debug_all = False
-configfile_path = ''
-configfile_found = False
 debug_internal_variables  = False
 debug_file_processing = False
+debug_information_for_integrated_loudness_calculation_dict = {}
+debug_information_for_timeslice_calculation_and_file_processing_dict ={}
+debug_information_for_file_processing_dict = {} # All file processing debug information is gathered to this dictionary and later saved to disk.
+debug_information_for_lists_and_dictionaries = {} # All list and dictionary debug information is gathered to this dictionary and later saved to disk.
+debug = False # Remove this when fine grained debugging is ready
+
+# Parse commandline arguments and assign values to variables
+configfile_path = ''
+configfile_found = False
 save_measurement_results_to_a_file = False
 target_path = ''
-debug = False # Remove this when fine grained debugging is ready
 
 arguments_remaining = copy.deepcopy(sys.argv[1:])
 number_of_arguments = len(arguments_remaining)
@@ -245,12 +249,25 @@ def calculate_integrated_loudness(event_for_integrated_loudness_calculation, fil
 # This thread communicates it's results to the other thread by putting them in dictionary 'integrated_loudness_calculation_results' that can be read in the other thread.
 
 	global integrated_loudness_calculation_results
+	global debug_information_for_integrated_loudness_calculation_dict
+	debug_information_list = []
 	integrated_loudness_calculation_stdout = ''
 	integrated_loudness_calculation_stderr = ''
 	file_to_process = hotfolder_path + os.sep + filename
 	highest_peak_db = float('-120') # Set default value for sample peak.
 	integrated_loudness_is_below_measurement_threshold = False
 	integrated_loudness_calculation_error_message = ''
+	integrated_loudness_calculation_stdout_string = ''
+	integrated_loudness_calculation_stderr_string = ''
+	error_message = ''
+
+	# Save some debug information. Items are always saved in pairs (Title, value) so that the list is easy to parse later.
+	unix_time_in_ticks, realtime = get_realtime(english, finnish)
+	debug_information_list.append('Start Time')
+	debug_information_list.append(unix_time_in_ticks)
+	debug_information_list.append('Subprocess Name')
+	debug_information_list.append('calculate_integrated_loudness')
+	debug_information_for_integrated_loudness_calculation_dict[filename] = debug_information_list
 
 	if os.path.exists(file_to_process): # Check if the audio file still exists, user may have deleted it. If True start loudness calculation.
 	
@@ -309,6 +326,14 @@ def calculate_integrated_loudness(event_for_integrated_loudness_calculation, fil
 			error_message = 'Error deleting stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston deletoiminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(libebur128_commands_for_integrated_loudness_calculation) + '. ' + str(reason_for_error)
 			send_error_messages_to_screen_logfile_email(error_message, [])
 
+		# Save debug information.
+		debug_information_list.append('integrated_loudness_calculation_stdout_string')
+		debug_information_list.append(integrated_loudness_calculation_stdout_string.replace('\n','\\n'))
+		debug_information_list.append('integrated_loudness_calculation_stderr_string')
+		debug_information_list.append(' '.join(integrated_loudness_calculation_stderr_string.replace('#','').replace('[','').replace(']','').replace('\n','').split())) # Remove # - characters and white space from string.
+		debug_information_for_integrated_loudness_calculation_dict[filename] = debug_information_list
+
+
 		# Test if libebur128 was successful in processing the file or not.
 		# If libebur128 can successfully process the file it prints the results to its stdout and the progress printout to stderr.
 		# If libebur128 encounters an error it won't print anything to stdout and prints error message to stderr. In some error cases libebur128 does not print anything to stdout or stderr.
@@ -359,6 +384,17 @@ def calculate_integrated_loudness(event_for_integrated_loudness_calculation, fil
 				integrated_loudness_calculation_error = True
 				integrated_loudness_calculation_error_message = 'Error: libebur128 calculation result (highest_peak) is negative: ' * english + 'Virhe: libebur128 laskentatulos (Huippuarvo) on negatiivinen: ' * finnish + '\'' + str(integrated_loudness_calculation_parsed_results[2]) + '\''
 
+			# Save debug information.
+			debug_information_list.append('integrated_loudness_calculation_parsed_results')
+			debug_information_list.append(integrated_loudness_calculation_parsed_results)
+			debug_information_list.append('integrated_loudness')
+			debug_information_list.append(integrated_loudness)
+			debug_information_list.append('loudness_range')
+			debug_information_list.append(loudness_range)
+			debug_information_list.append('highest_peak_float')
+			debug_information_list.append(highest_peak_float)
+			debug_information_for_integrated_loudness_calculation_dict[filename] = debug_information_list
+
 			try:
 				highest_peak_db = round(20 * math.log(highest_peak_float, 10),1)
 			except ValueError as reason_for_error:
@@ -375,22 +411,6 @@ def calculate_integrated_loudness(event_for_integrated_loudness_calculation, fil
 				integrated_loudness_calculation_error_message = 'Loudness is below measurement threshold (-70 LUFS)' * english + 'Äänekkyys on alle mittauksen alarajan (-70 LUFS)' * finnish
 				integrated_loudness_is_below_measurement_threshold = True
 			
-			if debug == True:
-			
-				print()
-				print('Integrated loudness calculation thread')
-				print('---------------------------------------')
-				print('integrated_loudness_calculation_stdout', integrated_loudness_calculation_stdout)
-				print('integrated_loudness_calculation_stderr', integrated_loudness_calculation_stderr)
-				print('integrated_loudness_calculation_stdout_string', integrated_loudness_calculation_stdout_string)
-				print('integrated_loudness_calculation_parsed_results', integrated_loudness_calculation_parsed_results)
-				print('integrated_loudness', integrated_loudness)
-				print('loudness_range', loudness_range)
-				print('integrated_loudness_calculation_parsed_results[0] =', integrated_loudness_calculation_parsed_results[0], type(integrated_loudness_calculation_parsed_results[0]))
-				print('integrated_loudness_calculation_parsed_results[1] =', integrated_loudness_calculation_parsed_results[1], type(integrated_loudness_calculation_parsed_results[1]))
-				print('integrated_loudness_calculation_parsed_results[2] =', integrated_loudness_calculation_parsed_results[2], type(integrated_loudness_calculation_parsed_results[2]))
-				print()
-			
 		integrated_loudness_calculation_results_list = [integrated_loudness, difference_from_target_loudness, loudness_range, integrated_loudness_calculation_error, integrated_loudness_calculation_error_message, highest_peak_db, integrated_loudness_is_below_measurement_threshold] # Assign result variables to the list that is going to be read in the other loudness calculation process.
 		integrated_loudness_calculation_results[filename] = integrated_loudness_calculation_results_list # Put loudness calculation results in a dictionary along with the filename.		
 	else:
@@ -398,11 +418,29 @@ def calculate_integrated_loudness(event_for_integrated_loudness_calculation, fil
 		error_message ='ERROR !!!!!!! FILE' * english + 'VIRHE !!!!!!! Tiedosto' * finnish + ' ' + filename + ' ' + 'dissapeared from disk before processing started.' * english + 'hävisi kovalevyltä ennen käsittelyn alkua.' * finnish
 		send_error_messages_to_screen_logfile_email(error_message, [])
 
+	# Save debug information.
+	debug_information_list.append('highest_peak_db')
+	debug_information_list.append(highest_peak_db)
+	debug_information_list.append('difference_from_target_loudness')
+	debug_information_list.append(difference_from_target_loudness)
+	debug_information_list.append('integrated_loudness_calculation_error')
+	debug_information_list.append(integrated_loudness_calculation_error)
+	debug_information_list.append('integrated_loudness_calculation_error_message')
+	debug_information_list.append(integrated_loudness_calculation_error_message)
+	debug_information_list.append('integrated_loudness_is_below_measurement_threshold')
+	debug_information_list.append(integrated_loudness_is_below_measurement_threshold)
+	debug_information_list.append('error_message')
+	debug_information_list.append(error_message)
+	unix_time_in_ticks, realtime = get_realtime(english, finnish)
+	debug_information_list.append('Stop Time')
+	debug_information_list.append(unix_time_in_ticks)
+	debug_information_for_integrated_loudness_calculation_dict[filename] = debug_information_list
+
 	# Set the event for this calculation thread. The main program checks the events and sees that this calculation thread is ready.
 	event_for_integrated_loudness_calculation.set()
 	return()
 
-def calculate_loudness_timeslices(filename, hotfolder_path, libebur128_commands_for_time_slice_calculation, directory_for_temporary_files, directory_for_results, english, finnish):
+def calculate_loudness_timeslices(filename, hotfolder_path, libebur128_commands_for_time_slice_calculation, directory_for_temporary_files, directory_for_results, english, finnish, expected_number_of_time_slices, expected_file_size):
 
 	"""This subroutine uses libebur128 loudness-executable to calculate file loudness segmenting the file in time slices and calculating loudness of each slice."""
 
@@ -417,6 +455,20 @@ def calculate_loudness_timeslices(filename, hotfolder_path, libebur128_commands_
 	timeslice_loudness_calculation_stdout = ''
 	timeslice_loudness_calculation_stderr = ''
 	file_to_process = hotfolder_path + os.sep + filename
+
+	global debug_information_for_timeslice_calculation_and_file_processing_dict
+	debug_information_list = []
+	error_message = ''
+
+	# Save some debug information. Items are always saved in pairs (Title, value) so that the list is easy to parse later.
+	if filename in debug_information_for_timeslice_calculation_and_file_processing_dict:
+		debug_information_list = debug_information_for_timeslice_calculation_and_file_processing_dict[filename]
+	unix_time_in_ticks, realtime = get_realtime(english, finnish)
+	debug_information_list.append('Start Time')
+	debug_information_list.append(unix_time_in_ticks)
+	debug_information_list.append('Subprocess Name')
+	debug_information_list.append('calculate_loudness_timeslices')
+	debug_information_for_timeslice_calculation_and_file_processing_dict[filename] = debug_information_list
 
 	if os.path.exists(file_to_process): # Check if the audio file still exists, user may have deleted it. If True start loudness calculation.
 		# Start time slice loudness calculation.
@@ -492,9 +544,21 @@ def calculate_loudness_timeslices(filename, hotfolder_path, libebur128_commands_
 			else:
 				timeslice_calculation_error_message = 'Loudness calculation table is empty' * english + 'Äänekkyysmittaustulosten taulukko on tyhjä' * finnish
 
+		if abs(number_of_timeslices - expected_number_of_time_slices) > 1:
+			timeslice_calculation_error = True
+			timeslice_calculation_error_message = 'Number of time slices from loudness calculation: ' * english + 'Äänekkyyslaskennasta saatujen aikaviipaleiden määrä: ' * finnish + str(number_of_timeslices) + ' differs from the number that was expected: ' * english + ' eroaa ennakoidusta lukumäärästä: ' * finnish + str(expected_number_of_time_slices) 
+
+		# Save some debug information.
+		debug_information_list.append('number_of_timeslices')
+		debug_information_list.append(number_of_timeslices)
+		debug_information_list.append('expected_number_of_time_slices')
+		debug_information_list.append(expected_number_of_time_slices)
+		debug_information_for_timeslice_calculation_and_file_processing_dict[filename] = debug_information_list
+
 		# Wait for the other loudness calculation thread to end since it's results are needed in the next step of the process.
 		integrated_loudness_calculation_is_ready = False
 		event_for_timeslice_loudness_calculation, event_for_integrated_loudness_calculation = loudness_calculation_queue[filename] # Take events for both of the loudness calculation threads from the dictionary.
+		
 		while integrated_loudness_calculation_is_ready == False: # Wait until the other thread has finished. event = set, means thread has finished.
 			if event_for_integrated_loudness_calculation.is_set():
 				integrated_loudness_calculation_is_ready = True
@@ -504,6 +568,30 @@ def calculate_loudness_timeslices(filename, hotfolder_path, libebur128_commands_
 		# If we get here the file we were supposed to process vanished from disk after the main program started this thread. Print a message to the user.
 		error_message = 'VIRHE !!!!!!! Tiedosto' * finnish + 'ERROR !!!!!!! FILE' * english + ' ' + filename + ' ' + 'hävisi kovalevyltä ennen käsittelyn alkua.' * finnish + 'dissapeared from disk before processing started.' * english
 		send_error_messages_to_screen_logfile_email(error_message, [])
+
+	# Check once again that the file size has now changed, if it has then we have started loudness calculation before the file was fully transmitted.	
+	file_metadata=os.lstat(file_to_process) # Get file information (size, date, etc)
+	file_size = file_metadata.st_size
+
+	if file_size != expected_file_size:
+		timeslice_calculation_error = True
+		timeslice_calculation_error_message = 'File size has changed during processing from: ' * english + 'Tiedoston koko on muuttunut laskennan aikana: ' * finnish + str(expected_file_size) + ' to: ' * english + ' -> ' * finnish + str(file_size)
+
+	# Save some debug information. 
+	debug_information_list.append('expected_file_size')
+	debug_information_list.append(expected_file_size)
+	debug_information_list.append('file_size')
+	debug_information_list.append(file_size)
+	debug_information_list.append('timeslice_calculation_error')
+	debug_information_list.append(timeslice_calculation_error)
+	debug_information_list.append('timeslice_calculation_error_message')
+	debug_information_list.append(timeslice_calculation_error_message)
+	debug_information_list.append('error_message')
+	debug_information_list.append(error_message)
+	unix_time_in_ticks, realtime = get_realtime(english, finnish)
+	debug_information_list.append('Stop Time')
+	debug_information_list.append(unix_time_in_ticks)
+	debug_information_for_timeslice_calculation_and_file_processing_dict[filename] = debug_information_list
 
 	# We now have all loudness calculation results needed for graphics generation, start the subprocess that plots graphics and calls another subprocess that creates loudness corrected audio with sox.
 	create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_string, timeslice_calculation_error, timeslice_calculation_error_message, timeslice_loudness_calculation_stdout, hotfolder_path, directory_for_temporary_files, directory_for_results, english, finnish)
@@ -636,7 +724,7 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 		# File is so big that even separate mono channels would exceed 4GB each, so flac format must be used for the output file.
 		warning_message = warning_message + '\\nWarning: file size exceeds wav format max limit 4 GB, file will be stored in flac - format' * english + '\\nVaroitus: tiedoston koko ylittää wav - formaatin maksimin (4 GB), tiedosto tallennetaan flac - formaattiin' * finnish
 	
-	# Generate gnuplot commands needed for plotting the graphicsfile and store commands in a list.
+	# Generate gnuplot commands needed for plotting the graphics file and store commands in a list.
 	if (integrated_loudness_calculation_error == True) or (timeslice_calculation_error == True):
 		# Loudness calculation encountered an error, generate gnuplot commands for plotting default graphics with the error message.
 		error_message_to_print_with_gnuplot = ''
@@ -1371,7 +1459,8 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 		send_error_messages_to_screen_logfile_email(error_message, [])
 	
 	# Sox can not get duration from long files correctly, get audio duration with mediainfo.
-	dummy, dummy, dummy, dummy, audio_duration, dummy, dummy = get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish)
+	not_used, not_used, not_used, not_used, audio_duration, not_used, not_used = get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish)
+	not_used = ''
 	
 	# Calculate estimated uncompressed file size. Add one second of data to the file size (sample_rate = 1 second) to be on the safe side.
 	estimated_uncompressed_size_for_single_mono_file = int((sample_rate * audio_duration * int(bit_depth / 8)) + sample_rate)
@@ -1426,30 +1515,32 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 	
 	return(channel_count, sample_rate, bit_depth, sample_count, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, audio_channels_will_be_split_to_separate_mono_files, audio_duration, output_file_too_big_to_split_to_separate_wav_channels)
 
-def get_realtime(english, finnish):
-
-	'''Get current time and return it so that each digit is two numbers wide (7 becomes 07)'''
-
+def get_realtime(english, finnish):                                                                                                                                                                            
+																			      
+	'''Get current time and return it so that each digit is two numbers wide (7 becomes 07)'''                                                                    
+																				      
 	# Get current time and put hours, minutes and seconds in to their own variables.
-	current_time = time.localtime
-	year = current_time().tm_year
-	month = current_time().tm_mon
-	day = current_time().tm_mday
-	hours = current_time().tm_hour
-	minutes = current_time().tm_min
-	seconds = current_time().tm_sec
-
+	unix_time_in_ticks = time.time()
+	current_time = time.localtime(unix_time_in_ticks)                                                                                                                                 
+	year = current_time.tm_year                                                                                                                                 
+	month = current_time.tm_mon                                                                                                                                 
+	day = current_time.tm_mday                                                                                                                                  
+	hours = current_time.tm_hour                                                                                                                                
+	minutes = current_time.tm_min                                                                                                                               
+	seconds = current_time.tm_sec                                                                                                                               
+																				      
 	# The length of each time string is either 1 or 2. Subtract the string length from number 2 and use the result to count how many zeroes needs to be before the time string.
-	year = str(year)
-	month = str('0' *( 2 - len(str(month))) + str(month))
-	day = str('0' * (2 - len(str(day))) + str(day))
-	hours = str('0' * (2 - len(str(hours))) + str(hours))
-	minutes = str('0' *( 2 - len(str(minutes))) + str(minutes))
-	seconds = str('0' * (2 - len(str(seconds))) + str(seconds))
+	year = str(year)                                                                                                                                              
+	month = str('0' *( 2 - len(str(month))) + str(month))                                                                                                         
+	day = str('0' * (2 - len(str(day))) + str(day))                                                                                                               
+	hours = str('0' * (2 - len(str(hours))) + str(hours))                                                                                                         
+	minutes = str('0' *( 2 - len(str(minutes))) + str(minutes))                                                                                                   
+	seconds = str('0' * (2 - len(str(seconds))) + str(seconds))                                                                                                   
+																				      
+	# Return the time string.                                                                                                                                     
+	realtime = year + '.' + month + '.' + day + '_' + 'at' * english + 'klo' * finnish + '_' + hours + '.' + minutes + '.' + seconds                              
 
-	# Return the time string.
-	realtime = year + '.' + month + '.' + day + '_' + 'at' * english + 'klo' * finnish + '_' + hours + '.' + minutes + '.' + seconds
-	return (realtime)
+	return (unix_time_in_ticks, realtime)  
 
 def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversion, event_2_for_ffmpeg_audiostream_conversion, filename, file_format_support_information, hotfolder_path, directory_for_temporary_files, english, finnish):
 	'''This subprocess decompresses all valid audiostreams from a file with ffmpeg'''
@@ -1549,7 +1640,7 @@ def send_error_messages_to_screen_logfile_email(error_message, send_error_messag
 	global error_messages_to_email_later_list # This variable is used to store messages that are later all sent by email in one go.
 	global where_to_send_error_messages
 	global error_logfile_path
-	error_message_with_timestamp = str(get_realtime(english, finnish)) + '   ' + error_message # Add the current date and time at the beginning of the error message.
+	error_message_with_timestamp = str(get_realtime(english, finnish)[1]) + '   ' + error_message # Add the current date and time at the beginning of the error message.
 	
 	# If the calling subroutine did not define where it wants us to send error messages then use global defaults.
 	if send_error_messages_to_these_destinations == []:
@@ -1719,7 +1810,7 @@ def write_html_progress_report_thread(english, finnish):
 		
 		counter = 0
 		html_code = [] # The finished html - page is stored in this list variable.
-		realtime = get_realtime(english, finnish) # Get the current date and time of day.
+		realtime = get_realtime(english, finnish)[1] # Get the current date and time of day.
 		
 		# Create the start of the html page by putting the first static part of the html - code in to a list variable.
 		html_code_part_1 = ['<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">', \
@@ -1880,7 +1971,7 @@ def debug_lists_and_dictionaries():
 	global directory_for_error_logs
 	list_printouts = []
 	list_printouts_old_values = []
-	real_time_string = get_realtime(english, finnish)
+	real_time_string = get_realtime(english, finnish)[1]
 	debug_messages_path = web_page_path
 	debug_messages_file = 'debug_messages-' + real_time_string + '.txt' # Debug messages filename is 'debug_messages-' + current date + time
 	
@@ -1917,7 +2008,7 @@ def debug_lists_and_dictionaries():
 
 			# Print list_printouts to screen
 			if not silent == True:
-				real_time_string = get_realtime(english, finnish)
+				real_time_string = get_realtime(english, finnish)[1]
 				print('###################################################################################################################################################################################')
 				print('\nTimestamp = ' + real_time_string + '\n')
 				for item in list_printouts:
@@ -2141,6 +2232,16 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 	audio_coding_format = ''
 	list_of_error_messages_for_unsupported_streams = []
 	
+	# Save some debug information. Items are always saved in pairs (Title, value) so that the list is easy to parse later.
+	global debug_information_for_timeslice_calculation_and_file_processing_dict
+	debug_information_list = []
+	unix_time_in_ticks, realtime = get_realtime(english, finnish)
+	debug_information_list.append('Start Time')
+	debug_information_list.append(unix_time_in_ticks)
+	debug_information_list.append('Subprocess Name')
+	debug_information_list.append('get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters')
+	debug_information_for_timeslice_calculation_and_file_processing_dict[filename] = debug_information_list
+
 	# Define lists of supported pcm bit depths
 	pcm_8_bit_formats = ['pcm_s8', 'pcm_s8_planar', 'pcm_u8']
 	pcm_16_bit_formats = ['pcm_s16be', 'pcm_s16le', 'pcm_s16le_planar', 'pcm_u16be', 'pcm_u16le']
@@ -2380,8 +2481,9 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			
 	# Test if file type is mpegts. FFmpeg can not always extract file duration correctly from mpegts so in this case get file duration with the mediainfo - command.
 	if file_type == 'mpegts':
-		dummy, dummy, dummy, dummy, audio_duration_according_to_mediainfo, dummy, dummy = get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish)
-		dummy = ''
+		not_used, not_used, not_used, not_used, audio_duration_according_to_mediainfo, not_used, not_used = get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish)
+		not_used = ''
+
 		if audio_duration_according_to_mediainfo != 0:
 			audio_duration = audio_duration_according_to_mediainfo
 			audio_duration_rounded_to_seconds = int(audio_duration_according_to_mediainfo)
@@ -2413,27 +2515,40 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		if len(ffmpeg_commandline) == 0:
 			ffmpeg_commandline = ['ffmpeg', '-y', '-i', file_to_process, '-vn']
 		
-		if debug == True:
-			print()
-			print('get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters')
-			print('--------------------------------------------------------------------------')
-			print('filename =', filename)
-			print('file_type =', file_type)
-			print('bit_depth =', bit_depth)
-			print('sample_rate =', sample_rate)
-			print('number_of_audio_channels =', number_of_audio_channels)
-			print('estimated_uncompressed_size_for_single_mono_file =', estimated_uncompressed_size_for_single_mono_file)
-			print('estimated_uncompressed_size_for_combined_channels =', estimated_uncompressed_size_for_combined_channels)
-			print('audio_duration =', audio_duration)
-			print('input_audiostream_format =', input_audiostream_format)
-			print('output_audiostream_format =', output_audiostream_format)
-			print('ffmpeg_output_format =', ffmpeg_output_format)
-			print('map_number =', str(map_number))
-			print()
-		
 		# Compile the name of the audiostream to an list of all audio stream filenames.
 		target_filenames.append(filename_and_extension[0] + '-AudioStream-' * english + '-Miksaus-' * finnish + audio_stream_number + '-ChannelCount-' * english + '-AaniKanavia-' * finnish  + number_of_audio_channels + '.' + ffmpeg_output_format)
-		
+
+		# Save some debug information.
+		debug_information_list.append('Stream Filename')
+		debug_information_list.append(target_filenames[-1])
+		debug_information_list.append('Stream Is Supported')
+		debug_information_list.append('True')
+		debug_information_list.append('audio_stream_number')
+		debug_information_list.append(audio_stream_number)
+		debug_information_list.append('map_number')
+		debug_information_list.append(map_number)
+		debug_information_list.append('number_of_audio_channels')
+		debug_information_list.append(number_of_audio_channels)
+		debug_information_list.append('file_type')
+		debug_information_list.append(file_type)
+		debug_information_list.append('bit_depth')
+		debug_information_list.append(bit_depth)
+		debug_information_list.append('sample_rate')
+		debug_information_list.append(sample_rate)
+		debug_information_list.append('audio_duration')
+		debug_information_list.append(audio_duration)
+		debug_information_list.append('estimated_uncompressed_size_for_single_mono_file')
+		debug_information_list.append(estimated_uncompressed_size_for_single_mono_file)
+		debug_information_list.append('estimated_uncompressed_size_for_combined_channels')
+		debug_information_list.append(estimated_uncompressed_size_for_combined_channels)
+		debug_information_list.append('input_audiostream_format')
+		debug_information_list.append(input_audiostream_format)
+		debug_information_list.append('output_audiostream_format')
+		debug_information_list.append(output_audiostream_format)
+		debug_information_list.append('ffmpeg_output_format')
+		debug_information_list.append(ffmpeg_output_format)
+		debug_information_for_timeslice_calculation_and_file_processing_dict[filename] = debug_information_list
+
 		# Generate FFmpeg extract options for audio stream.
 		ffmpeg_commandline.append('-acodec')
 		
@@ -2471,6 +2586,15 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			
 			# Create the result graphics file with an error message telling stream is not supported.
 			create_gnuplot_commands_for_error_message(error_message, unsupported_stream_name, directory_for_temporary_files, directory_for_results, english, finnish)
+		
+			# Save some debug information.
+			debug_information_list.append('Stream Filename')
+			debug_information_list.append(unsupported_stream_name)
+			debug_information_list.append('Stream Is Supported')
+			debug_information_list.append('False')
+			debug_information_list.append('Error Message')
+			debug_information_list.append(error_message)
+			debug_information_for_timeslice_calculation_and_file_processing_dict[filename] = debug_information_list
 			
 	# If there are only unsupported audio streams in the file then assign an error message that gets printed on the results graphics file.
 	# Currently the only known unsupported streams in a file are streams with channel counts of zero and more than 6 channels.
@@ -2504,10 +2628,22 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 	
 	file_format_support_information = [natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames]	
 	
-	if debug == True:
-		print('ffmpeg_commandline =', ffmpeg_commandline)
-		print('natively_supported_file_format =', natively_supported_file_format)
-		print()
+	# Save some debug information.
+	debug_information_list.append('ffmpeg_supported_fileformat')
+	debug_information_list.append(ffmpeg_supported_fileformat)
+	debug_information_list.append('natively_supported_file_format')
+	debug_information_list.append(natively_supported_file_format)
+	debug_information_list.append('ffmpeg_error_message')
+	debug_information_list.append(ffmpeg_error_message)
+	if audio_duration_rounded_to_seconds == 0:
+		debug_information_list.append('Error Message')
+		debug_information_list.append('Audio duration less than 1 second')
+	debug_information_list.append('ffmpeg_commandline')
+	debug_information_list.append(ffmpeg_commandline)
+	unix_time_in_ticks, realtime = get_realtime(english, finnish)
+	debug_information_list.append('Stop Time')
+	debug_information_list.append(unix_time_in_ticks)
+	debug_information_for_timeslice_calculation_and_file_processing_dict[filename] = debug_information_list
 	
 	return(file_format_support_information, ffmpeg_error_message, send_ffmpeg_error_message_by_email)
 	
@@ -2837,7 +2973,7 @@ def get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, h
 	else:
 		natively_supported_file_format = False
 		# Assign a general error message about file format not supported.
-		mediainfo_error_message = 'Format ' + str(sample_format)  + ' is not supported. Supported formats are: wav (pcm) 1 - 6 channels, flac 1 - 6 channels, ogg vorbis 1 - 2 channels' * english + 'Formaatti ei ole tuettu. Tuetut formaatit ovat: wav (pcm) 1 - 6 kanavaa, flac 1 - 6 kanavaa, ogg vorbis  1 - 2 kanavaa' * finnish
+		mediainfo_error_message = 'Format: \'' * english + 'Formaatti: \''* finnish + str(sample_format)  + '\' is not supported. Supported formats are: wav (pcm) 1 - 6 channels, flac 1 - 6 channels, ogg vorbis 1 - 2 channels' * english + '\' ei ole tuettu. Tuetut formaatit ovat: wav (pcm) 1 - 6 kanavaa, flac 1 - 6 kanavaa, ogg vorbis  1 - 2 kanavaa' * finnish
 
 	if channel_count == 0:
 		mediainfo_error_message = 'There are no audio channels in the file' * english + 'Tiedostossa ei ole äänikanavia' * finnish
@@ -2850,7 +2986,7 @@ def get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, h
 	
 	if (str(os.path.splitext(filename)[1]).lower() == '.ogg') and (sample_format != 'vorbis'):
 		natively_supported_file_format = False
-		mediainfo_error_message =  'Format: ' * english + 'Formaatti: ' * finnish + str(sample_format) + ' is not supported in ogg container' * english + ' ogg - paketissa ei ole tuettu' * finnish
+		mediainfo_error_message =  'Format: \'' * english + 'Formaatti: \'' * finnish + str(sample_format) + '\' is not supported in ogg container' * english + '\' ogg - paketissa ei ole tuettu' * finnish
 		
 	if (str(os.path.splitext(filename)[1]).lower() == '.ogg') and (channel_count > 2):
 		natively_supported_file_format = False
@@ -2858,7 +2994,7 @@ def get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, h
 
 	if (str(os.path.splitext(filename)[1]).lower() == '.wav') and (sample_format != 'pcm'):
 		natively_supported_file_format = False
-		mediainfo_error_message =  'Format: ' * english + 'Formaatti: ' * finnish + str(sample_format) + ' is not supported in wav container' * english + ' wav - paketissa ei ole tuettu' * finnish
+		mediainfo_error_message =  'Format: \'' * english + 'Formaatti: \'' * finnish + str(sample_format) + '\' is not supported in wav container' * english + '\' wav - paketissa ei ole tuettu' * finnish
 	
 	if (bit_depth < 8) and (bit_depth > 32):
 		natively_supported_file_format = False
@@ -2866,6 +3002,10 @@ def get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, h
 		
 	if audio_duration_rounded_to_seconds == 0:
 		mediainfo_error_message =  'Audio duration is less than 1 second' * english + 'Tiedoston ääniraidan pituus on alle 1 sekunti' * finnish 
+
+	if str(os.path.splitext(filename)[1]).lower() not in natively_supported_file_formats:
+		natively_supported_file_format = False
+		mediainfo_error_message =  'Format: \'' * english + 'Formaatti: \'' * finnish + str(os.path.splitext(filename)[1]).lower()  + '\' is not supported' * english + '\' ei ole tuettu' * finnish
 	
 	if debug == True:
 		print()
@@ -3159,11 +3299,11 @@ else:
 		sys.exit(1)
 
 # Define the name of the error logfile.
-error_logfile_path = directory_for_error_logs + os.sep + 'error_log-' + str(get_realtime(english, finnish)) + '.txt' # Error log filename is 'error_log' + current date + time
+error_logfile_path = directory_for_error_logs + os.sep + 'error_log-' + str(get_realtime(english, finnish)[1]) + '.txt' # Error log filename is 'error_log' + current date + time
 
 # Define the name of the loudness calculation logfile.
 if debug == True:
-	loudness_calculation_logfile_path = directory_for_error_logs + os.sep + 'loudness_calculation_log-' + str(get_realtime(english, finnish)) + '.txt'
+	loudness_calculation_logfile_path = directory_for_error_logs + os.sep + 'loudness_calculation_log-' + str(get_realtime(english, finnish)[1]) + '.txt'
 
 # Get IP-Addresses of the machine.
 all_ip_addresses_of_the_machine = get_ip_addresses_of_the_host_machine()
@@ -3194,7 +3334,6 @@ if write_html_progress_report == True:
 if heartbeat == True:
 	heartbeat_process = threading.Thread(target=write_to_heartbeat_file_thread, args=()) # Create a process instance.
 	thread_object = heartbeat_process.start() # Start the process in it'own thread.
-
 # If degub = True the script will print out the contents of main lists and dictionaries once a minute.
 if debug == True:
 	debug_lists_process = threading.Thread(target=debug_lists_and_dictionaries, args=()) # Create a process instance.
@@ -3334,7 +3473,7 @@ while True:
 	try:
 		files_to_delete = copy.deepcopy(files_queued_for_deletion) # Copy file list to a new list, since we are going to modify the original list it can not be used as the iterator for the for-loop.
 		for filename in files_to_delete:
-			realtime = get_realtime(english, finnish)
+			realtime = get_realtime(english, finnish)[1]
 			if os.path.exists(hotfolder_path + os.sep + filename):
 				os.remove(hotfolder_path + os.sep + filename)
 				files_queued_for_deletion.remove(filename)
@@ -3457,6 +3596,12 @@ while True:
 								
 							create_gnuplot_commands_for_error_message(error_message, filename, directory_for_temporary_files, directory_for_results, english, finnish)
 							unsupported_ignored_files_dict[filename] = int(time.time())
+
+							# Move debug information for the file from a temporary dictionary to the main debug dictionary.
+							if filename in debug_information_for_timeslice_calculation_and_file_processing_dict:
+								temporary_gathering_list = []
+								temporary_gathering_list = debug_information_for_timeslice_calculation_and_file_processing_dict.pop(filename)
+								debug_information_for_file_processing_dict[filename] = temporary_gathering_list
 						
 						# If file duration was not found, or it is less than one second, then we have an error.
 						# Don't process file, inform user by plotting an error graphics file and add the filename to the list of files we will ignore.
@@ -3471,12 +3616,19 @@ while True:
 							
 							create_gnuplot_commands_for_error_message(error_message, filename, directory_for_temporary_files, directory_for_results, english, finnish)
 							unsupported_ignored_files_dict[filename] = int(time.time())
+
+							# Move debug information for the file from a temporary dictionary to the main debug dictionary.
+							if filename in debug_information_for_timeslice_calculation_and_file_processing_dict:
+								temporary_gathering_list = []
+								temporary_gathering_list = debug_information_for_timeslice_calculation_and_file_processing_dict.pop(filename)
+								debug_information_for_file_processing_dict[filename] = temporary_gathering_list
+
 						# The time slice value used in loudness calculation is normally 3 seconds. When we calculate short files <12 seconds, it's more convenient to use a smaller value of 0.5 seconds to get more detailed loudness graphics.
 						if  (audio_duration_rounded_to_seconds > 0) and (audio_duration_rounded_to_seconds < 12):
 							time_slice_duration_string = '0.5'
 						if  audio_duration_rounded_to_seconds >= 12:
 							time_slice_duration_string = '3'
-						
+
 						# If ffmpeg found audiostreams in the file, queue it for loudness calculation and print message to user.
 						if filename not in unsupported_ignored_files_dict:
 							file_format_support_information = [natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames]
@@ -3508,7 +3660,14 @@ while True:
 				filename = files_queued_to_loudness_calculation.pop(0) # Remove the first file from the queue and put it in a variable.
 				file_format_support_information = old_hotfolder_filelist_dict[filename][3] # The information about the file format is stored in a list in the dictionary, get it and store in a list.
 				natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames = file_format_support_information # Save file format information to separate variables.
-				realtime = get_realtime(english, finnish).replace('_', ' ')
+
+				# Calculate the number of time slices we expect to get from loudness calculation.
+				expected_number_of_time_slices = int(audio_duration_rounded_to_seconds / float(time_slice_duration_string)) 
+
+				# Get the size of file, we check this once again after loudness calculation to make sure the calculation did not start too early.
+				expected_file_size = old_hotfolder_filelist_dict[filename][0]
+				
+				realtime = get_realtime(english, finnish)[1].replace('_', ' ')
 				
 				# If audio fileformat is natively supported by libebur128 and sox and has only one audio stream, we don't need to do extraction and flac conversion with ffmpeg, just start two loudness calculation processes for the file.
 				if (number_of_ffmpeg_supported_audiostreams == 1) and (natively_supported_file_format == True):
@@ -3528,7 +3687,7 @@ while True:
 					# Add file name and both the calculation process events to the dictionary of files that are currently being calculated upon.
 					loudness_calculation_queue[filename] = [event_for_timeslice_loudness_calculation, event_for_integrated_loudness_calculation]
 					# Create threads for both processes, the threads are not started yet.
-					process_1 = threading.Thread(target=calculate_loudness_timeslices, args=(filename, hotfolder_path, libebur128_commands_for_time_slice_calculation, directory_for_temporary_files, directory_for_results, english, finnish)) # Create a process instance.
+					process_1 = threading.Thread(target=calculate_loudness_timeslices, args=(filename, hotfolder_path, libebur128_commands_for_time_slice_calculation, directory_for_temporary_files, directory_for_results, english, finnish, expected_number_of_time_slices, expected_file_size)) # Create a process instance.
 					process_2 = threading.Thread(target=calculate_integrated_loudness, args=(event_for_integrated_loudness_calculation, filename, hotfolder_path, libebur128_commands_for_integrated_loudness_calculation, english, finnish)) # Create a process instance.
 					
 					# Start both calculation threads.
@@ -3546,8 +3705,8 @@ while True:
 						for counter in range(0, number_of_ffmpeg_supported_audiostreams): # Print information about all the audio streams we are going to extract.
 							print('\r' + adjust_line_printout, ' ' + details_of_ffmpeg_supported_audiostreams[counter][0])
 					
-					event_1_for_ffmpeg_audiostream_conversion = threading.Event() # Create two unique events for the process. The events are being used to signal other threads that this process has finished. This thread does not really need two events, only one, but as other calculation processes are started in pairs resulting two events per file, two events must be created here also for this process..
-					event_2_for_ffmpeg_audiostream_conversion = threading.Event()
+					event_1_for_ffmpeg_audiostream_conversion = threading.Event() # Create events for the process. The events are being used to signal other threads that this process has finished. 
+					event_2_for_ffmpeg_audiostream_conversion = event_1_for_ffmpeg_audiostream_conversion 
 					process_3 = threading.Thread(target = decompress_audio_streams_with_ffmpeg, args=(event_1_for_ffmpeg_audiostream_conversion, event_2_for_ffmpeg_audiostream_conversion, filename, file_format_support_information, hotfolder_path, directory_for_temporary_files, english, finnish)) # Create a process instance.
 					thread_object = process_3.start() # Start the process in it'own thread.
 					loudness_calculation_queue[filename] = [event_1_for_ffmpeg_audiostream_conversion, event_2_for_ffmpeg_audiostream_conversion] # Add file name and both process events to the dictionary of files that are currently being calculated upon.
@@ -3575,10 +3734,58 @@ while True:
 
 		# If both threads processing the file have finished, remove file from the queue of files being processed.
 		for filename in finished_processes: # Get names of files who's processing threads have completed and print message to user.
-			realtime = get_realtime(english, finnish).replace('_', ' ')
+			
+			# Move debugging information from process specific dictionaries to one main information gathering dictionary.
+			# If both events are equal (pointing to the same event object) then the file was not yet processed, but it was just inspected with ffmpeg (searched for audio streams).
+			# When file processing really is ready events are not equal (events point to different event objects).
+			event_for_process_1, event_for_process_2 = loudness_calculation_queue[filename]
+			temporary_gathering_list = []
+			
+			if event_for_process_1 != event_for_process_2:
+				# File processing is ready move debugging information to the main debugging dictionary.
+				# We get here only if both integrated and time slice loudness calculation are ready.
+				temporary_gathering_list = debug_information_for_timeslice_calculation_and_file_processing_dict.pop(filename)
+				temporary_gathering_list.extend(debug_information_for_integrated_loudness_calculation_dict.pop(filename))
+				debug_information_for_file_processing_dict[filename] = temporary_gathering_list
+			else:
+				# The first step of file processing, namely finding audio streams from the file is ready move debugging information to the main debugging dictionary.
+				# We get here only when the process that has finished is function: get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters 
+				temporary_gathering_list = debug_information_for_timeslice_calculation_and_file_processing_dict.pop(filename)
+				debug_information_for_file_processing_dict[filename] = temporary_gathering_list
+			
+			realtime = get_realtime(english, finnish)[1].replace('_', ' ')
 			del loudness_calculation_queue[filename] # Remove file name from the list of files currently being calculated upon.
 			completed_files_list.insert(0, filename) # Add filename at the beginning of the list of completed files. This list stores only the order in which the files were completed.
 			completed_files_dict[filename] = realtime # This dictionary stores the time processing each file was completed.
+			
+
+
+
+
+
+
+
+#			# Fixme: Delete these debugging lines.
+#			print()
+#			print('len(debug_information_for_integrated_loudness_calculation_dict) =', len(debug_information_for_integrated_loudness_calculation_dict))
+#			print('len(debug_information_for_timeslice_calculation_and_file_processing_dict) =', len(debug_information_for_timeslice_calculation_and_file_processing_dict))
+#			print('len(debug_information_for_file_processing_dict) =', len(debug_information_for_file_processing_dict))
+#			print()
+#			for item in debug_information_for_file_processing_dict:
+#				print(item)
+#				print('------------------------------------------------------------------------------------------------------')
+#				print(debug_information_for_file_processing_dict[item])
+#				print()
+#			print()
+#
+
+
+
+
+
+
+
+
 			if silent == False:
 				print('\r' + 'File' * english + 'Tiedoston' * finnish, '"' + filename + '"', 'processing finished' * english + 'käsittely valmistui' * finnish, realtime)
 			
@@ -3592,6 +3799,32 @@ while True:
 		# Wait one second before checking if processor cores have become free and more calculation processes can be started.
 		time.sleep(1)
 		loop_counter = loop_counter + 1
+
+
+
+
+
+
+
+
+#		# Fixme: Delete these debugging lines.
+#		if (len(loudness_calculation_queue) == 0) and (debug_information_for_timeslice_calculation_and_file_processing_dict != 0):
+#			print()
+#			print('-----------------------------------------------------------------------------------------------------------------')
+#			print('len(debug_information_for_timeslice_calculation_and_file_processing_dict) =',len(debug_information_for_timeslice_calculation_and_file_processing_dict))
+#			for item in debug_information_for_timeslice_calculation_and_file_processing_dict:
+#				print('\t' + item)
+#				print('\t------------------------------------------------------------------------------------------------------')
+#				print('\t', end='')
+#				print(debug_information_for_timeslice_calculation_and_file_processing_dict[item])
+#				print()
+#			print()
+#
+
+
+
+
+
 					
 	# Check if the time between directory polls has expired and a new poll needs to be made. One advacement of the counter is approximately one second. Default time between directory polls is 5 seconds.
 	if loop_counter >= delay_between_directory_reads:
