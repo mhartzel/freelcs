@@ -35,7 +35,7 @@ import pickle
 import math
 import copy
 
-version = '198'
+version = '199'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -569,7 +569,7 @@ def calculate_loudness_timeslices(filename, hotfolder_path, libebur128_commands_
 		error_message = 'VIRHE !!!!!!! Tiedosto' * finnish + 'ERROR !!!!!!! FILE' * english + ' ' + filename + ' ' + 'hävisi kovalevyltä ennen käsittelyn alkua.' * finnish + 'dissapeared from disk before processing started.' * english
 		send_error_messages_to_screen_logfile_email(error_message, [])
 
-	# Check once again that the file size has now changed, if it has then we have started loudness calculation before the file was fully transmitted.	
+	# Check once again that the file size has not changed, if it has then we have started loudness calculation before the file was fully transmitted.	
 	file_metadata=os.lstat(file_to_process) # Get file information (size, date, etc)
 	file_size = file_metadata.st_size
 
@@ -629,6 +629,7 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 	integrated_loudness_calculation_error_message = integrated_loudness_calculation_results_list[4]
 	highest_peak_db = integrated_loudness_calculation_results_list[5]
 	integrated_loudness_is_below_measurement_threshold = integrated_loudness_calculation_results_list[6]
+
 	# If TruePeak method was used to determine the highest peak, then it can be above 0 dBFS, add a plus sign if this is the case.
 	if highest_peak_db > 0:
 		highest_peak_db_string = '+' + str(highest_peak_db)
@@ -963,6 +964,19 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 	filename_and_extension = os.path.splitext(filename)
 	global integrated_loudness_calculation_results
 	global libebur128_path
+	global debug_information_for_timeslice_calculation_and_file_processing_dict
+	debug_information_list = []
+	error_message = ''
+	
+	# Save some debug information. Items are always saved in pairs (Title, value) so that the list is easy to parse later.
+	if filename in debug_information_for_timeslice_calculation_and_file_processing_dict:
+		debug_information_list = debug_information_for_timeslice_calculation_and_file_processing_dict[filename]
+	unix_time_in_ticks, realtime = get_realtime(english, finnish)
+	debug_information_list.append('Start Time')
+	debug_information_list.append(unix_time_in_ticks)
+	debug_information_list.append('Subprocess Name')
+	debug_information_list.append('create_sox_commands_for_loudness_adjusting_a_file')
+	debug_information_for_timeslice_calculation_and_file_processing_dict[filename] = debug_information_list
 
 	# Create loudness corrected file if there were no errors in loudness calculation.
 	if (integrated_loudness_calculation_error == False):
@@ -1459,7 +1473,7 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 		send_error_messages_to_screen_logfile_email(error_message, [])
 	
 	# Sox can not get duration from long files correctly, get audio duration with mediainfo.
-	not_used, not_used, not_used, not_used, audio_duration, not_used, not_used = get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish)
+	not_used, not_used, not_used, not_used, audio_duration, not_used, not_used = get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish, save_debug_information = False)
 	not_used = ''
 	
 	# Calculate estimated uncompressed file size. Add one second of data to the file size (sample_rate = 1 second) to be on the safe side.
@@ -2481,7 +2495,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			
 	# Test if file type is mpegts. FFmpeg can not always extract file duration correctly from mpegts so in this case get file duration with the mediainfo - command.
 	if file_type == 'mpegts':
-		not_used, not_used, not_used, not_used, audio_duration_according_to_mediainfo, not_used, not_used = get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish)
+		not_used, not_used, not_used, not_used, audio_duration_according_to_mediainfo, not_used, not_used = get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish, save_debug_information = False)
 		not_used = ''
 
 		if audio_duration_according_to_mediainfo != 0:
@@ -2647,7 +2661,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 	
 	return(file_format_support_information, ffmpeg_error_message, send_ffmpeg_error_message_by_email)
 	
-def get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish):
+def get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish, save_debug_information):
 	
 	global debug
 	global natively_supported_file_formats
@@ -2669,7 +2683,22 @@ def get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, h
 	mediainfo_output = ''
 	mediainfo_output_decoded = ''
 	natively_supported_file_format = False
-	
+	error_message = ''
+
+	# Only save debug information when ffmpeg is not installed and mediainfo is used in its place to find audio from files.
+	if save_debug_information == True:
+
+		global debug_information_for_timeslice_calculation_and_file_processing_dict
+		debug_information_list = []
+
+		# Save some debug information. Items are always saved in pairs (Title, value) so that the list is easy to parse later.
+		unix_time_in_ticks, realtime = get_realtime(english, finnish)
+		debug_information_list.append('Start Time')
+		debug_information_list.append(unix_time_in_ticks)
+		debug_information_list.append('Subprocess Name')
+		debug_information_list.append('get_audiofile_info_with_mediainfo')
+		debug_information_for_timeslice_calculation_and_file_processing_dict[filename] = debug_information_list
+
 	#####################################################
 	# Find how many audio streams there are in the file #
 	#####################################################
@@ -3007,19 +3036,30 @@ def get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, h
 		natively_supported_file_format = False
 		mediainfo_error_message =  'Format: \'' * english + 'Formaatti: \'' * finnish + str(os.path.splitext(filename)[1]).lower()  + '\' is not supported' * english + '\' ei ole tuettu' * finnish
 	
-	if debug == True:
-		print()
-		print('Mediainfo: ' + filename)
-		print((len('Mediainfo: ' + filename) + 1 ) * '-')
-		print("File extension: '" + str(os.path.splitext(filename)[1]).lower() + "'")
-		print('Audiostream count is:', audiostream_count)
-		print('Channel count is:', channel_count)
-		print('Bit depth is:', bit_depth)
-		print('Sample format is:', sample_format)
-		print('Audio duration rounded to seconds is:', audio_duration_rounded_to_seconds)
-		print('Natively supported file format:', natively_supported_file_format)
-		print('Mediainfo_error_message: ', mediainfo_error_message )
-		print()
+	# Only save debug information when ffmpeg is not installed and mediainfo is used in its place to find audio from files.
+	if save_debug_information == True:
+
+		# Save some debug information.
+		debug_information_list.append('File extension')
+		debug_information_list.append(str(os.path.splitext(filename)[1]).lower() + "'")
+		debug_information_list.append('audiostream_count')
+		debug_information_list.append(audiostream_count)
+		debug_information_list.append('channel_count')
+		debug_information_list.append(channel_count)
+		debug_information_list.append('bit_depth')
+		debug_information_list.append(bit_depth)
+		debug_information_list.append('sample_format')
+		debug_information_list.append(sample_format)
+		debug_information_list.append('audio_duration_rounded_to_seconds')
+		debug_information_list.append(audio_duration_rounded_to_seconds)
+		debug_information_list.append('natively_supported_file_format')
+		debug_information_list.append(natively_supported_file_format)
+		debug_information_list.append('mediainfo_error_message')
+		debug_information_list.append(mediainfo_error_message)
+		unix_time_in_ticks, realtime = get_realtime(english, finnish)
+		debug_information_list.append('Stop Time')
+		debug_information_list.append(unix_time_in_ticks)
+		debug_information_for_timeslice_calculation_and_file_processing_dict[filename] = debug_information_list
 	
 	return(audiostream_count, channel_count, bit_depth, sample_format, audio_duration_rounded_to_seconds, natively_supported_file_format, mediainfo_error_message)
 	
@@ -3553,7 +3593,7 @@ while True:
 							natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames = ffmpeg_parsed_audio_stream_information
 						else:
 							# FFmpeg is not installed, test input file with mediainfo
-							audiostream_count, channel_count, bit_depth, sample_format, audio_duration_rounded_to_seconds, natively_supported_file_format, mediainfo_error_message = get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish)
+							audiostream_count, channel_count, bit_depth, sample_format, audio_duration_rounded_to_seconds, natively_supported_file_format, mediainfo_error_message = get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish, save_debug_information = True)
 						
 							ffmpeg_error_message = mediainfo_error_message
 
@@ -3758,34 +3798,6 @@ while True:
 			completed_files_list.insert(0, filename) # Add filename at the beginning of the list of completed files. This list stores only the order in which the files were completed.
 			completed_files_dict[filename] = realtime # This dictionary stores the time processing each file was completed.
 			
-
-
-
-
-
-
-
-#			# Fixme: Delete these debugging lines.
-#			print()
-#			print('len(debug_information_for_integrated_loudness_calculation_dict) =', len(debug_information_for_integrated_loudness_calculation_dict))
-#			print('len(debug_information_for_timeslice_calculation_and_file_processing_dict) =', len(debug_information_for_timeslice_calculation_and_file_processing_dict))
-#			print('len(debug_information_for_file_processing_dict) =', len(debug_information_for_file_processing_dict))
-#			print()
-#			for item in debug_information_for_file_processing_dict:
-#				print(item)
-#				print('------------------------------------------------------------------------------------------------------')
-#				print(debug_information_for_file_processing_dict[item])
-#				print()
-#			print()
-#
-
-
-
-
-
-
-
-
 			if silent == False:
 				print('\r' + 'File' * english + 'Tiedoston' * finnish, '"' + filename + '"', 'processing finished' * english + 'käsittely valmistui' * finnish, realtime)
 			
@@ -3807,19 +3819,64 @@ while True:
 
 
 
-#		# Fixme: Delete these debugging lines.
-#		if (len(loudness_calculation_queue) == 0) and (debug_information_for_timeslice_calculation_and_file_processing_dict != 0):
-#			print()
-#			print('-----------------------------------------------------------------------------------------------------------------')
-#			print('len(debug_information_for_timeslice_calculation_and_file_processing_dict) =',len(debug_information_for_timeslice_calculation_and_file_processing_dict))
-#			for item in debug_information_for_timeslice_calculation_and_file_processing_dict:
-#				print('\t' + item)
-#				print('\t------------------------------------------------------------------------------------------------------')
-#				print('\t', end='')
-#				print(debug_information_for_timeslice_calculation_and_file_processing_dict[item])
-#				print()
-#			print()
-#
+		# Fixme: Delete these debugging lines.
+		if len(loudness_calculation_queue) == 0:
+			
+			if len(debug_information_for_file_processing_dict) != 0:
+
+				print()
+				print('len(debug_information_for_integrated_loudness_calculation_dict) =', len(debug_information_for_integrated_loudness_calculation_dict))
+				print('len(debug_information_for_timeslice_calculation_and_file_processing_dict) =', len(debug_information_for_timeslice_calculation_and_file_processing_dict))
+				print('len(debug_information_for_file_processing_dict) =', len(debug_information_for_file_processing_dict))
+				print()
+				
+				print('\033[7m' + '################################################################################################################################'  + '\033[0m')
+				print()
+
+				for item in debug_information_for_file_processing_dict:
+					
+					print(item)
+					print('------------------------------------------------------------------------------------------------------')
+					print()
+					
+					debug_list_for_one_file = debug_information_for_file_processing_dict[item]
+					
+					for counter in range(0, len(debug_list_for_one_file), 2):
+						item_1 = str(debug_list_for_one_file[counter])
+						item_2 = str(debug_list_for_one_file[counter + 1])
+						if item_1 == 'Start Time':
+							item_2 = item_2 + '\n'
+						if item_1 == 'Stop Time':
+							item_1 = '\n' + item_1
+							item_2 = item_2 + '\n'
+						if item_1 == 'Stream Filename':
+							item_1 = '\n\t' + item_1
+							item_2 = item_2 + '\n'
+						if (item_1 != 'Start Time') and (item_1 != 'Stop Time'):
+							item_1 = '\t' + item_1
+						if ('Subprocess Name'not in item_1) and (item_1 != 'Start Time') and (item_1 != 'Stop Time'):
+							item_1 = '\t' + item_1
+						if ('error message' in item_1.lower().replace('_',' ')) and (item_2 != ''):
+							item_2 = '\033[7m' + item_2  + '\033[0m'
+						print(item_1, '=', item_2)
+					print()
+				print()
+		
+			if debug_information_for_timeslice_calculation_and_file_processing_dict != 0:
+
+				print()
+				print('-----------------------------------------------------------------------------------------------------------------')
+				print('len(debug_information_for_timeslice_calculation_and_file_processing_dict) =',len(debug_information_for_timeslice_calculation_and_file_processing_dict))
+				print()
+
+				for item in debug_information_for_timeslice_calculation_and_file_processing_dict:
+					print('\t' + item)
+					print('\t------------------------------------------------------------------------------------------------------')
+					print('\t', end='')
+					print(debug_information_for_timeslice_calculation_and_file_processing_dict[item])
+					print()
+				print()
+
 
 
 
