@@ -35,7 +35,7 @@ import pickle
 import math
 import copy
 
-version = '201'
+version = '202'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -58,13 +58,21 @@ else:
 
 # Assign some debug variables.
 debug_all = False
-debug_internal_variables  = False
+debug_lists_and_dictionaries  = False
 debug_file_processing = False
-debug_information_for_integrated_loudness_calculation_dict = {} # Debug information about integrated loudness calculation processing is stored in this dictionary. This information is later appended to 'debug_information_for_file_processing_dict'. The information must be first gathered to separate dictionary because loudness calculation information is simultaneously gathered in two threads.
-debug_information_for_timeslice_calculation_and_all_file_processing_dict ={} # Debug information about time slice calculation processing is stored in this dictionary. This information is later appended to 'debug_information_for_file_processing_dict'. The information must be first gathered to separate dictionary because loudness calculation information is simultaneously gathered in two threads.
-debug_information_for_file_processing_dict = {} # All file processing debug information is gathered to this dictionary and later saved to disk.
-debug_information_for_lists_and_dictionaries = {} # All list and dictionary debug information is gathered to this dictionary and later saved to disk.
-debug = False # Remove this when fine grained debugging is ready
+
+# Information about integrated loudness calculation and time slice processing is stored in separate dictionaries.
+# This information is later appended to 'debug_complete_final_information_for_all_file_processing_dict'.
+# The information must be first gathered to separate dictionary because loudness calculation information is simultaneously gathered in two threads.
+debug_temporary_dict_for_integrated_loudness_calculation_information = {} 
+debug_temporary_dict_for_timeslice_calculation_information = {} 
+
+# Debug information about file processing is stored in this dictionary.
+# This information is later appended to 'debug_complete_final_information_for_all_file_processing_dict'. 
+debug_temporary_dict_for_all_file_processing_information ={} 
+
+# All file processing debug information from the temp dictionaries defined above is gathered to this dictionary and later saved to disk.
+debug_complete_final_information_for_all_file_processing_dict = {} 
 
 # Parse commandline arguments and assign values to variables
 configfile_path = ''
@@ -88,8 +96,8 @@ for argument in sys.argv[1:]:
 		arguments_remaining.pop(arguments_remaining.index(argument))
 		continue
 
-	if argument.lower() == '-debug_internal_variables':
-		debug_internal_variables = True
+	if argument.lower() == '-debug_lists_and_dictionaries':
+		debug_lists_and_dictionaries = True
 		arguments_remaining.pop(arguments_remaining.index(argument))
 		continue
 
@@ -122,7 +130,7 @@ if len(arguments_remaining) != 0:
 # If the user did not give enough arguments on the commandline print an error message.
 if (configfile_path == '') and (target_path == ''):
 	print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)
-	print('Debug options: -debug_file_processing, -debug_internal_variables, -save_measurement_results_to_a_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_internal_variables, -save_measurement_results_to_a_file' * finnish )
+	print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file' * finnish )
 	print()
 	sys.exit(1)
 
@@ -131,14 +139,14 @@ if configfile_path != '':
 	if (os.path.exists(configfile_path) == False) or (os.access(configfile_path, os.R_OK) == False):
 		print('\n!!!!!!! Configfile does not exist or exists but is not readable !!!!!!!' * english + '\n!!!!!!! Asetustiedostoa ei ole olemassa tai siihen ei ole lukuoikeuksia !!!!!!!' * finnish)
 		print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)	
-		print('Debug options: -debug_file_processing, -debug_internal_variables, -save_measurement_results_to_a_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_internal_variables, -save_measurement_results_to_a_file' * finnish )
+		print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file' * finnish )
 		print()
 		sys.exit(1)
 
 	if os.path.isfile(configfile_path) == False:
 		print('\n!!!!!!! Configfile is not a regular file !!!!!!!' * english + '\n!!!!!!! Asetustiedosto ei ole tiedosto !!!!!!!' * finnish)
 		print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)	
-		print('Debug options: -debug_file_processing, -debug_internal_variables, -save_measurement_results_to_a_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_internal_variables, -save_measurement_results_to_a_file' * finnish )
+		print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file' * finnish )
 		print()
 		sys.exit(1)
 else:
@@ -148,22 +156,21 @@ else:
 		else:
 			print('\n!!!!!!! Target is not a directory !!!!!!!' * english + '\n!!!!!!! Kohde ei ole hakemisto !!!!!!!' * finnish)
 			print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)	
-			print('Debug options: -debug_file_processing, -debug_internal_variables, -save_measurement_results_to_a_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_internal_variables, -save_measurement_results_to_a_file' * finnish )
+			print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file' * finnish )
 			print()
 			sys.exit(1)
 	else:
 
 		print('\n!!!!!!! Target directory does not exist !!!!!!!' * english + '\n!!!!!!! Kohdehakemistoa ei ole olemassa !!!!!!!' * finnish)
 		print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)	
-		print('Debug options: -debug_file_processing, -debug_internal_variables, -save_measurement_results_to_a_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_internal_variables, -save_measurement_results_to_a_file' * finnish )
+		print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file' * finnish )
 		print()
 		sys.exit(1)
 
 if debug_all == True:
-	debug_internal_variables = True
+	debug_lists_and_dictionaries = True
 	debug_file_processing = True
 	save_measurement_results_to_a_file = True
-	debug = True # Remove this when fine grained debugging is ready
 
 # Define folder names according to the language selected above.
 if language == 'en':
@@ -249,7 +256,7 @@ def calculate_integrated_loudness(event_for_integrated_loudness_calculation, fil
 # This thread communicates it's results to the other thread by putting them in dictionary 'integrated_loudness_calculation_results' that can be read in the other thread.
 
 	global integrated_loudness_calculation_results
-	global debug_information_for_integrated_loudness_calculation_dict
+	global debug_temporary_dict_for_integrated_loudness_calculation_information
 	debug_information_list = []
 	integrated_loudness_calculation_stdout = ''
 	integrated_loudness_calculation_stderr = ''
@@ -267,7 +274,7 @@ def calculate_integrated_loudness(event_for_integrated_loudness_calculation, fil
 	debug_information_list.append(unix_time_in_ticks)
 	debug_information_list.append('Subprocess Name')
 	debug_information_list.append('calculate_integrated_loudness')
-	debug_information_for_integrated_loudness_calculation_dict[filename] = debug_information_list
+	debug_temporary_dict_for_integrated_loudness_calculation_information[filename] = debug_information_list
 
 	if os.path.exists(file_to_process): # Check if the audio file still exists, user may have deleted it. If True start loudness calculation.
 	
@@ -331,7 +338,7 @@ def calculate_integrated_loudness(event_for_integrated_loudness_calculation, fil
 		debug_information_list.append(integrated_loudness_calculation_stdout_string.replace('\n','\\n'))
 		debug_information_list.append('integrated_loudness_calculation_stderr_string')
 		debug_information_list.append(' '.join(integrated_loudness_calculation_stderr_string.replace('#','').replace('[','').replace(']','').replace('\n','').split())) # Remove # - characters and white space from string.
-		debug_information_for_integrated_loudness_calculation_dict[filename] = debug_information_list
+		debug_temporary_dict_for_integrated_loudness_calculation_information[filename] = debug_information_list
 
 
 		# Test if libebur128 was successful in processing the file or not.
@@ -393,7 +400,7 @@ def calculate_integrated_loudness(event_for_integrated_loudness_calculation, fil
 			debug_information_list.append(loudness_range)
 			debug_information_list.append('highest_peak_float')
 			debug_information_list.append(highest_peak_float)
-			debug_information_for_integrated_loudness_calculation_dict[filename] = debug_information_list
+			debug_temporary_dict_for_integrated_loudness_calculation_information[filename] = debug_information_list
 
 			try:
 				highest_peak_db = round(20 * math.log(highest_peak_float, 10),1)
@@ -436,7 +443,7 @@ def calculate_integrated_loudness(event_for_integrated_loudness_calculation, fil
 	unix_time_in_ticks, realtime = get_realtime(english, finnish)
 	debug_information_list.append('Stop Time')
 	debug_information_list.append(unix_time_in_ticks)
-	debug_information_for_integrated_loudness_calculation_dict[filename] = debug_information_list
+	debug_temporary_dict_for_integrated_loudness_calculation_information[filename] = debug_information_list
 
 	# Set the event for this calculation thread. The main program checks the events and sees that this calculation thread is ready.
 	event_for_integrated_loudness_calculation.set()
@@ -458,19 +465,19 @@ def calculate_loudness_timeslices(filename, hotfolder_path, libebur128_commands_
 	timeslice_loudness_calculation_stderr = ''
 	file_to_process = hotfolder_path + os.sep + filename
 
-	global debug_information_for_timeslice_calculation_and_all_file_processing_dict
+	global debug_temporary_dict_for_timeslice_calculation_information
 	debug_information_list = []
 	error_message = ''
 
 	# Save some debug information. Items are always saved in pairs (Title, value) so that the list is easy to parse later.
-	if filename in debug_information_for_timeslice_calculation_and_all_file_processing_dict:
-		debug_information_list = debug_information_for_timeslice_calculation_and_all_file_processing_dict[filename]
+	if filename in debug_temporary_dict_for_timeslice_calculation_information:
+		debug_information_list = debug_temporary_dict_for_timeslice_calculation_information[filename]
 	unix_time_in_ticks, realtime = get_realtime(english, finnish)
 	debug_information_list.append('Start Time')
 	debug_information_list.append(unix_time_in_ticks)
 	debug_information_list.append('Subprocess Name')
 	debug_information_list.append('calculate_loudness_timeslices')
-	debug_information_for_timeslice_calculation_and_all_file_processing_dict[filename] = debug_information_list
+	debug_temporary_dict_for_timeslice_calculation_information[filename] = debug_information_list
 
 	if os.path.exists(file_to_process): # Check if the audio file still exists, user may have deleted it. If True start loudness calculation.
 		# Start time slice loudness calculation.
@@ -557,7 +564,7 @@ def calculate_loudness_timeslices(filename, hotfolder_path, libebur128_commands_
 		debug_information_list.append(timeslice_loudness_calculation_result_list)
 		debug_information_list.append('expected_number_of_time_slices')
 		debug_information_list.append(expected_number_of_time_slices)
-		debug_information_for_timeslice_calculation_and_all_file_processing_dict[filename] = debug_information_list
+		debug_temporary_dict_for_timeslice_calculation_information[filename] = debug_information_list
 
 		# Wait for the other loudness calculation thread to end since it's results are needed in the next step of the process.
 		integrated_loudness_calculation_is_ready = False
@@ -595,7 +602,7 @@ def calculate_loudness_timeslices(filename, hotfolder_path, libebur128_commands_
 	unix_time_in_ticks, realtime = get_realtime(english, finnish)
 	debug_information_list.append('Stop Time')
 	debug_information_list.append(unix_time_in_ticks)
-	debug_information_for_timeslice_calculation_and_all_file_processing_dict[filename] = debug_information_list
+	debug_temporary_dict_for_timeslice_calculation_information[filename] = debug_information_list
 
 	# We now have all loudness calculation results needed for graphics generation, start the subprocess that plots graphics and calls another subprocess that creates loudness corrected audio with sox.
 	create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_string, timeslice_calculation_error, timeslice_calculation_error_message, timeslice_loudness_calculation_stdout, hotfolder_path, directory_for_temporary_files, directory_for_results, english, finnish)
@@ -624,20 +631,20 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 	gnuplot_output_graphicsfile = directory_for_results + os.sep + filename + '-Loudness_Results_Graphics.jpg' * english + '-Aanekkyyslaskennan_Tulokset.jpg' * finnish
 	warning_message = ''
 	
-	global debug_information_for_timeslice_calculation_and_all_file_processing_dict
+	global debug_temporary_dict_for_all_file_processing_information
 
 	debug_information_list = []
 	error_message = ''
 
 	# Save some debug information. Items are always saved in pairs (Title, value) so that the list is easy to parse later.
-	if filename in debug_information_for_timeslice_calculation_and_all_file_processing_dict:
-		debug_information_list = debug_information_for_timeslice_calculation_and_all_file_processing_dict[filename]
+	if filename in debug_temporary_dict_for_all_file_processing_information:
+		debug_information_list = debug_temporary_dict_for_all_file_processing_information[filename]
 	unix_time_in_ticks, realtime = get_realtime(english, finnish)
 	debug_information_list.append('Start Time')
 	debug_information_list.append(unix_time_in_ticks)
 	debug_information_list.append('Subprocess Name')
 	debug_information_list.append('create_gnuplot_commands')
-	debug_information_for_timeslice_calculation_and_all_file_processing_dict[filename] = debug_information_list
+	debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 	
 	# Get loudness calculation results from the integrated loudness calculation process. Results are in list format in dictionary 'integrated_loudness_calculation_results', assing results to variables.
 	integrated_loudness_calculation_results_list = integrated_loudness_calculation_results.pop(filename)# Get loudness results for the file and remove this information from dictionary.
@@ -768,16 +775,18 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 		
 		peak_measurement_string_english = '\\nSample peak: '
 		peak_measurement_string_finnish = '\\nHuipputaso: '
+		peak_measurement_unit = 'dBFS'
 		if peak_measurement_method == '--peak=true':
 			peak_measurement_string_english = '\\nTruePeak: '
 			peak_measurement_string_finnish = peak_measurement_string_english
+			peak_measurement_unit = 'dBTP'
 		
 		# Generate gnuplot commands for plotting the graphics. Put all gnuplot commands in a list.
 		gnuplot_commands=['set terminal jpeg size 1280,960 medium font \'arial\'', \
 		'set output ' + '\"' + gnuplot_temporary_output_graphicsfile.replace('"','\\"') + '\"', \
 		'set yrange [ 0 : -60 ] noreverse nowriteback', \
 		'set grid', \
-		'set title ' + '\"\'' + filename.replace('_', ' ').replace('"','\\"') + '\'\\n' + 'Integrated Loudness ' * english + 'Äänekkyystaso ' * finnish + str(integrated_loudness) + ' LUFS\\n ' + difference_from_target_loudness_string + ' dB from target loudness (-23 LUFS)\\nLoudness Range (LRA) ' * english + ' dB:tä tavoitetasosta (-23 LUFS)\\nÄänekkyyden vaihteluväli (LRA) '  * finnish + str(loudness_range) + ' LU' + peak_measurement_string_english * english + peak_measurement_string_finnish * finnish + highest_peak_db_string + ' dBFS' + warning_message + '\"', \
+		'set title ' + '\"\'' + filename.replace('_', ' ').replace('"','\\"') + '\'\\n' + 'Integrated Loudness ' * english + 'Keskimääräinen Äänekkyystaso ' * finnish + str(integrated_loudness) + ' LUFS\\n ' + difference_from_target_loudness_string + ' LU from target loudness (-23 LUFS)\\nLoudness Range (LRA) ' * english + ' LU:ta tavoitetasosta (-23 LUFS)\\nÄänekkyyden vaihteluväli (LRA) '  * finnish + str(loudness_range) + ' LU' + peak_measurement_string_english * english + peak_measurement_string_finnish * finnish + highest_peak_db_string + ' ' + peak_measurement_unit + warning_message + '\"', \
 		'set ylabel ' + '\"Loudness (LUFS)\"' * english + '\"Äänekkyystaso (LUFS)\"' *finnish, \
 		plotfile_x_axis_time_information, \
 		'set xlabel \"' + plotfile_x_axis_name + '\"', \
@@ -825,7 +834,7 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 		unix_time_in_ticks, realtime = get_realtime(english, finnish)
 		debug_information_list.append('Stop Time')
 		debug_information_list.append(unix_time_in_ticks)
-		debug_information_for_timeslice_calculation_and_all_file_processing_dict[filename] = debug_information_list
+		debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 
 		# Call a subprocess to run gnuplot
 		run_gnuplot(filename, directory_for_temporary_files, directory_for_results, english, finnish)
@@ -844,20 +853,20 @@ def create_gnuplot_commands_for_error_message(error_message, filename, directory
 	gnuplot_temporary_output_graphicsfile = directory_for_temporary_files + os.sep + filename + '-Loudness_Results_Graphics.jpg' * english + '-Aanekkyyslaskennan_Tulokset.jpg' * finnish
 	gnuplot_output_graphicsfile = directory_for_results + os.sep + filename + '-Loudness_Results_Graphics.jpg' * english + '-Aanekkyyslaskennan_Tulokset.jpg' * finnish
 
-	global debug_information_for_timeslice_calculation_and_all_file_processing_dict
+	global debug_temporary_dict_for_all_file_processing_information
 	
 	debug_information_list = []
 	error_message = ''
 
 	# Save some debug information. Items are always saved in pairs (Title, value) so that the list is easy to parse later.
-	if filename in debug_information_for_timeslice_calculation_and_all_file_processing_dict:
-		debug_information_list = debug_information_for_timeslice_calculation_and_all_file_processing_dict[filename]
+	if filename in debug_temporary_dict_for_all_file_processing_information:
+		debug_information_list = debug_temporary_dict_for_all_file_processing_information[filename]
 	unix_time_in_ticks, realtime = get_realtime(english, finnish)
 	debug_information_list.append('Start Time')
 	debug_information_list.append(create_gnuplot_commands_for_error_message)
 	debug_information_list.append('Subprocess Name')
 	debug_information_list.append('create_gnuplot_commands')
-	debug_information_for_timeslice_calculation_and_all_file_processing_dict[filename] = debug_information_list
+	debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 
 	# Write 4 coordinates to gnuplot data file. These 4 coordinates are used to draw a big red cross on the error graphics file.
 	try:
@@ -907,7 +916,7 @@ def create_gnuplot_commands_for_error_message(error_message, filename, directory
 	unix_time_in_ticks, realtime = get_realtime(english, finnish)
 	debug_information_list.append('Stop Time')
 	debug_information_list.append(unix_time_in_ticks)
-	debug_information_for_timeslice_calculation_and_all_file_processing_dict[filename] = debug_information_list
+	debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 
 	# Call a subprocess to run gnuplot
 	run_gnuplot(filename, directory_for_temporary_files, directory_for_results, english, finnish)
@@ -922,19 +931,19 @@ def run_gnuplot(filename, directory_for_temporary_files, directory_for_results, 
 	gnuplot_temporary_output_graphicsfile = directory_for_temporary_files + os.sep + filename + '-Loudness_Results_Graphics.jpg' * english + '-Aanekkyyslaskennan_Tulokset.jpg' * finnish
 	gnuplot_output_graphicsfile = directory_for_results + os.sep + filename + '-Loudness_Results_Graphics.jpg' * english + '-Aanekkyyslaskennan_Tulokset.jpg' * finnish
 
-	global debug_information_for_timeslice_calculation_and_all_file_processing_dict
+	global debug_temporary_dict_for_all_file_processing_information
 	debug_information_list = []
 	error_message = ''
 
 	# Save some debug information. Items are always saved in pairs (Title, value) so that the list is easy to parse later.
-	if filename in debug_information_for_timeslice_calculation_and_all_file_processing_dict:
-		debug_information_list = debug_information_for_timeslice_calculation_and_all_file_processing_dict[filename]
+	if filename in debug_temporary_dict_for_all_file_processing_information:
+		debug_information_list = debug_temporary_dict_for_all_file_processing_information[filename]
 	unix_time_in_ticks, realtime = get_realtime(english, finnish)
 	debug_information_list.append('Start Time')
 	debug_information_list.append(unix_time_in_ticks)
 	debug_information_list.append('Subprocess Name')
 	debug_information_list.append('run_gnuplot')
-	debug_information_for_timeslice_calculation_and_all_file_processing_dict[filename] = debug_information_list
+	debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 
 	try:
 		# Define filename for the temporary file that we are going to use as stdout for the external command.
@@ -991,7 +1000,7 @@ def run_gnuplot(filename, directory_for_temporary_files, directory_for_results, 
 	unix_time_in_ticks, realtime = get_realtime(english, finnish)
 	debug_information_list.append('Stop Time')
 	debug_information_list.append(unix_time_in_ticks)
-	debug_information_for_timeslice_calculation_and_all_file_processing_dict[filename] = debug_information_list
+	debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 
 	# Remove time slice and gnuplot command files and move graphics file to results directory.
 	try:
@@ -1037,19 +1046,19 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 	global integrated_loudness_calculation_results
 	global libebur128_path
 	
-	global debug_information_for_timeslice_calculation_and_all_file_processing_dict
+	global debug_temporary_dict_for_all_file_processing_information
 	debug_information_list = []
 	error_message = ''
 	
 	# Save some debug information. Items are always saved in pairs (Title, value) so that the list is easy to parse later.
-	if filename in debug_information_for_timeslice_calculation_and_all_file_processing_dict:
-		debug_information_list = debug_information_for_timeslice_calculation_and_all_file_processing_dict[filename]
+	if filename in debug_temporary_dict_for_all_file_processing_information:
+		debug_information_list = debug_temporary_dict_for_all_file_processing_information[filename]
 	unix_time_in_ticks, realtime = get_realtime(english, finnish)
 	debug_information_list.append('Start Time')
 	debug_information_list.append(unix_time_in_ticks)
 	debug_information_list.append('Subprocess Name')
 	debug_information_list.append('create_sox_commands_for_loudness_adjusting_a_file')
-	debug_information_for_timeslice_calculation_and_all_file_processing_dict[filename] = debug_information_list
+	debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 
 	# Create loudness corrected file if there were no errors in loudness calculation.
 	if (integrated_loudness_calculation_error == False):
@@ -1343,7 +1352,7 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 	unix_time_in_ticks, realtime = get_realtime(english, finnish)
 	debug_information_list.append('Stop Time')
 	debug_information_list.append(unix_time_in_ticks)
-	debug_information_for_timeslice_calculation_and_all_file_processing_dict[filename] = debug_information_list
+	debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 
 def run_sox_commands_in_parallel_threads(directory_for_temporary_files, filename, list_of_sox_commandlines, english, finnish):
 	
@@ -1405,11 +1414,6 @@ def run_sox(directory_for_temporary_files, filename, sox_commandline, english, f
 	we_are_part_of_a_multithread_sox_command = False
 	error_message = ''
 	global debug
-	
-	if debug == True:
-		print()
-		print('Sox commandline:', sox_commandline)
-		print()
 	
 	# Test if the value in variable is an event or not. If it is an event, then there are other sox threads processing the same file.
 	variable_type_string = str(type(event_for_sox_command))
@@ -1528,19 +1532,19 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 	output_format_for_intermediate_files = 'wav'
 	output_format_for_final_file = 'wav'
 	
-	global debug_information_for_timeslice_calculation_and_all_file_processing_dict
+	global debug_temporary_dict_for_all_file_processing_information
 	debug_information_list = []
 	error_message = ''
 	
 	# Save some debug information. Items are always saved in pairs (Title, value) so that the list is easy to parse later.
-	if filename in debug_information_for_timeslice_calculation_and_all_file_processing_dict:
-		debug_information_list = debug_information_for_timeslice_calculation_and_all_file_processing_dict[filename]
+	if filename in debug_temporary_dict_for_all_file_processing_information:
+		debug_information_list = debug_temporary_dict_for_all_file_processing_information[filename]
 	unix_time_in_ticks, realtime = get_realtime(english, finnish)
 	debug_information_list.append('Start Time')
 	debug_information_list.append(unix_time_in_ticks)
 	debug_information_list.append('Subprocess Name')
 	debug_information_list.append('get_audiofile_info_with_sox_and_determine_output_format')
-	debug_information_for_timeslice_calculation_and_all_file_processing_dict[filename] = debug_information_list
+	debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 	
 	try:
 		# Define filename for the temporary file that we are going to use as stdout for the external command.
@@ -1707,7 +1711,7 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 	unix_time_in_ticks, realtime = get_realtime(english, finnish)
 	debug_information_list.append('Stop Time')
 	debug_information_list.append(unix_time_in_ticks)
-	debug_information_for_timeslice_calculation_and_all_file_processing_dict[filename] = debug_information_list
+	debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 
 	return(channel_count, sample_rate, bit_depth, sample_count, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, audio_channels_will_be_split_to_separate_mono_files, audio_duration, output_file_too_big_to_split_to_separate_wav_channels)
 
@@ -1750,19 +1754,19 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 
 	global files_queued_for_deletion
 
-	global debug_information_for_timeslice_calculation_and_all_file_processing_dict
+	global debug_temporary_dict_for_all_file_processing_information
 	debug_information_list = []
 	error_message = ''
 	
 	# Save some debug information. Items are always saved in pairs (Title, value) so that the list is easy to parse later.
-	if filename in debug_information_for_timeslice_calculation_and_all_file_processing_dict:
-		debug_information_list = debug_information_for_timeslice_calculation_and_all_file_processing_dict[filename]
+	if filename in debug_temporary_dict_for_all_file_processing_information:
+		debug_information_list = debug_temporary_dict_for_all_file_processing_information[filename]
 	unix_time_in_ticks, realtime = get_realtime(english, finnish)
 	debug_information_list.append('Start Time')
 	debug_information_list.append(unix_time_in_ticks)
 	debug_information_list.append('Subprocess Name')
 	debug_information_list.append('decompress_audio_streams_with_ffmpeg')
-	debug_information_for_timeslice_calculation_and_all_file_processing_dict[filename] = debug_information_list
+	debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 	
 	# In list 'file_format_support_information' we already have all the information FFmpeg was able to find about the valid audio streams in the file, assign all info to variables.
 	natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames = file_format_support_information
@@ -1845,7 +1849,7 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 	unix_time_in_ticks, realtime = get_realtime(english, finnish)
 	debug_information_list.append('Stop Time')
 	debug_information_list.append(unix_time_in_ticks)
-	debug_information_for_timeslice_calculation_and_all_file_processing_dict[filename] = debug_information_list
+	debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 
 	# Set the events so that the main program can see that extracting audio streams from file is ready.
 	event_1_for_ffmpeg_audiostream_conversion.set()
@@ -2192,10 +2196,82 @@ def debug_lists_and_dictionaries():
 	global directory_for_error_logs
 	list_printouts = []
 	list_printouts_old_values = []
-	real_time_string = get_realtime(english, finnish)[1]
 	debug_messages_path = web_page_path
+	time_to_start_writing_to_a_new_file = int(time.time() + 86400) # Write debug info to a new file every 24 hours (starting from LoudnessCorrection startup time).
+	real_time_string = get_realtime(english, finnish)[1]
 	debug_messages_file = 'debug_messages-' + real_time_string + '.txt' # Debug messages filename is 'debug_messages-' + current date + time
+	values_read_from_configfile = []
 	
+	# If LoudnessCorrection read config values from a file, then all_settings_dict is not empty.
+	# Store values read from configfile to a list, so that the values can be saved at the beginning of the list and dictionary debug info file.
+	if all_settings_dict != {}:
+		# Print variables read from the configfile. This is useful for debugging settings previously saved in a file.
+		global language
+		global english
+		global finnish
+		global target_path
+		global hotfolder_path
+		global directory_for_temporary_files
+		global directory_for_results
+		global libebur128_path
+		global delay_between_directory_reads
+		global number_of_processor_cores
+		global file_expiry_time
+		global natively_supported_file_formats
+		global ffmpeg_output_format
+		global write_html_progress_report
+		global html_progress_report_write_interval
+		global web_page_name
+		global heartbeat
+		global heartbeat_file_name
+		global heartbeat_write_interval
+		global where_to_send_error_messages
+		global send_error_messages_to_logfile
+		global send_error_messages_by_email
+		global email_sending_details
+		
+		title_text = 'Local variable values after reading the configfile: ' + configfile_path + ' are:'
+		values_read_from_configfile.append(str((len(title_text) + 1) * '-'))
+		values_read_from_configfile.append(title_text)
+		values_read_from_configfile.append('')
+		values_read_from_configfile.append('language =', language)
+		values_read_from_configfile.append('english =', english)
+		values_read_from_configfile.append('finnish =', finnish)
+		values_read_from_configfile.append('')
+		values_read_from_configfile.append('target_path =', target_path)
+		values_read_from_configfile.append('hotfolder_path =', hotfolder_path)
+		values_read_from_configfile.append('directory_for_temporary_files =', directory_for_temporary_files)
+		values_read_from_configfile.append('directory_for_results =', directory_for_results)
+		values_read_from_configfile.append('libebur128_path =', libebur128_path)
+		values_read_from_configfile.append('')
+		values_read_from_configfile.append('delay_between_directory_reads =', str(delay_between_directory_reads))	
+		values_read_from_configfile.append('number_of_processor_cores =', str(number_of_processor_cores))
+		values_read_from_configfile.append('file_expiry_time =', str(file_expiry_time))
+		values_read_from_configfile.append('')
+		values_read_from_configfile.append('natively_supported_file_formats =', ', '.join(natively_supported_file_formats))
+		values_read_from_configfile.append('ffmpeg_output_format =', ffmpeg_output_format)
+		values_read_from_configfile.append('peak_measurement_method =', all_settings_dict['peak_measurement_method'])
+		values_read_from_configfile.append('')
+		values_read_from_configfile.append('silent =', str(silent))
+		values_read_from_configfile.append('')
+		values_read_from_configfile.append('write_html_progress_report =', str(write_html_progress_report))
+		values_read_from_configfile.append('html_progress_report_write_interval =', str(html_progress_report_write_interval))
+		values_read_from_configfile.append('web_page_name =', web_page_name)
+		values_read_from_configfile.append('web_page_path =', web_page_path)
+		values_read_from_configfile.append('')
+		values_read_from_configfile.append('heartbeat =', str(heartbeat))
+		values_read_from_configfile.append('heartbeat_file_name =', heartbeat_file_name)
+		values_read_from_configfile.append('heartbeat_write_interval =', str(heartbeat_write_interval))
+		values_read_from_configfile.append('')
+		values_read_from_configfile.append('where_to_send_error_messages =', ', '.join(where_to_send_error_messages))
+		values_read_from_configfile.append('send_error_messages_to_logfile =', str(send_error_messages_to_logfile))
+		values_read_from_configfile.append('directory_for_error_logs =', directory_for_error_logs)
+		values_read_from_configfile.append('error_logfile_path =', error_logfile_path)
+		values_read_from_configfile.append('')
+		values_read_from_configfile.append('send_error_messages_by_email =', str(send_error_messages_by_email))
+		values_read_from_configfile.append('email_sending_details =', ', '.join(email_sending_details))
+		values_read_from_configfile.append(str((len(title_text) + 1) * '-'))
+
 	while True:
 	
 		list_printouts = []
@@ -2225,24 +2301,31 @@ def debug_lists_and_dictionaries():
 		list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
 		list_printouts.append('len(integrated_loudness_calculation_results)= ' + str(len(integrated_loudness_calculation_results)) + ' integrated_loudness_calculation_results = ' + str(integrated_loudness_calculation_results))
 
+		# Only write list and dictionary debug info to file if the information has changed.
 		if list_printouts != list_printouts_old_values:
-
-			# Print list_printouts to screen
-			if not silent == True:
-				real_time_string = get_realtime(english, finnish)[1]
-				print('###################################################################################################################################################################################')
-				print('\nTimestamp = ' + real_time_string + '\n')
-				for item in list_printouts:
-					print(item)
-				print('###################################################################################################################################################################################')
 			
-			# Print list_printouts to disk. First write it to temporary directory and then move to the target directory.
+			# If it has been 24 hours since starting to write to the file, then start writing to a new file.
+			if int(time.time()) >= time_to_start_writing_to_a_new_file:
+				time_to_start_writing_to_a_new_file = int(time.time() + 86400) # Write debug info to a new file every 24 hours (starting from LoudnessCorrection startup time).
+				real_time_string = get_realtime(english, finnish)[1]
+				debug_messages_file = 'debug_messages-' + real_time_string + '.txt' # Debug messages filename is 'debug_messages-' + current date + time
+				first_write_to_a_new_logfile = True
+			else:
+				first_write_to_a_new_logfile = False
+
+			# Write list_printouts to disk. First write it to temporary directory and then move to the target directory.
 			try:
+				real_time_string = get_realtime(english, finnish)[1]
+				
 				# Move debug_log - file to the temp directory so we can append new messages to it.
 				if os.path.exists(directory_for_error_logs + os.sep + debug_messages_file):
 					shutil.move(directory_for_error_logs + os.sep + debug_messages_file, directory_for_temporary_files + os.sep + debug_messages_file)
 				with open(directory_for_temporary_files + os.sep + debug_messages_file, 'at') as debug_messages_filehandler:
+					if first_write_to_a_new_logfile == True:
+						for item in values_read_from_configfile:
+							debug_messages_filehandler.write(item + '\n')
 					debug_messages_filehandler.write('###################################################################################################################################################################################\n')
+					
 					debug_messages_filehandler.write('\nTimestamp = ' + real_time_string + '\n\n')
 					for item in list_printouts:
 						debug_messages_filehandler.write(item + '\n')
@@ -2266,79 +2349,6 @@ def debug_lists_and_dictionaries():
 		# Sleep between writing output
 		time.sleep(30)
 
-def debug_variables_read_from_configfile():
-
-	if all_settings_dict != {}:
-		# Print variables read from the configfile. This is useful for debugging settings previously saved in a file.
-		global language
-		global english
-		global finnish
-		global target_path
-		global hotfolder_path
-		global directory_for_temporary_files
-		global directory_for_results
-		global libebur128_path
-		global delay_between_directory_reads
-		global number_of_processor_cores
-		global file_expiry_time
-		global natively_supported_file_formats
-		global ffmpeg_output_format
-		global silent
-		global write_html_progress_report
-		global html_progress_report_write_interval
-		global web_page_name
-		global web_page_path
-		global heartbeat
-		global heartbeat_file_name
-		global heartbeat_write_interval
-		global where_to_send_error_messages
-		global send_error_messages_to_logfile
-		global directory_for_error_logs
-		global send_error_messages_by_email
-		global email_sending_details
-		
-		title_text = '\nLocal variable values after reading the configfile: ' + configfile_path + ' are:'
-		print(title_text)
-		print((len(title_text) + 1) * '-' + '\n') # Print a line exactly the length of the title text line + 1.
-		
-		print('language =', language)
-		print('english =', english)
-		print('finnish =', finnish)
-		print()	
-		print('target_path =', target_path)
-		print('hotfolder_path =', hotfolder_path)
-		print('directory_for_temporary_files =', directory_for_temporary_files)
-		print('directory_for_results =', directory_for_results)
-		print('libebur128_path =', libebur128_path)
-		print()
-		print('delay_between_directory_reads =', delay_between_directory_reads)	
-		print('number_of_processor_cores =', number_of_processor_cores)
-		print('file_expiry_time =', file_expiry_time)
-		print()
-		print('natively_supported_file_formats =', natively_supported_file_formats)
-		print('ffmpeg_output_format =', ffmpeg_output_format)
-		print('peak_measurement_method =', all_settings_dict['peak_measurement_method'])
-		print()	
-		print('silent =', silent)
-		print()	
-		print('write_html_progress_report =', write_html_progress_report)
-		print('html_progress_report_write_interval =', html_progress_report_write_interval)
-		print('web_page_name =', web_page_name)
-		print('web_page_path =', web_page_path)
-		print()
-		print('heartbeat =', heartbeat)
-		print('heartbeat_file_name =', heartbeat_file_name)
-		print('heartbeat_write_interval =', heartbeat_write_interval)
-		print()
-		print('where_to_send_error_messages =', where_to_send_error_messages)
-		print('send_error_messages_to_logfile =', send_error_messages_to_logfile)
-		print('directory_for_error_logs =', directory_for_error_logs)
-		print('error_logfile_path =', error_logfile_path)
-		print()
-		print('send_error_messages_by_email =', send_error_messages_by_email)
-		print('email_sending_details =', email_sending_details)
-		print()
-
 def get_ip_addresses_of_the_host_machine():
 	
 	global all_ip_addresses_of_the_machine
@@ -2347,10 +2357,6 @@ def get_ip_addresses_of_the_host_machine():
 	# Create the commandline we need to run as root.
 	commands_to_run = ['hostname', '-I']
 
-	if debug == True:
-		print()
-		print('Running commands:', commands_to_run)
-	
 	try:
 		# Define filenames for temporary files that we are going to use as stdout and stderr for the external command.
 		stdout_for_external_command = directory_for_temporary_files + os.sep + 'Hostname_command_stdout.txt'
@@ -2405,11 +2411,6 @@ def get_ip_addresses_of_the_host_machine():
 	
 	return(all_ip_addresses_of_the_machine)
 	
-	if debug == True:
-		print()
-		print('stdout:', stdout)
-		print('stderr:', stderr)
-		print('all_ip_addresses_of_the_machine =', all_ip_addresses_of_the_machine)
 		
 def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(filename, hotfolder_path, directory_for_temporary_files, ffmpeg_output_format, english, finnish):
 	
@@ -2454,14 +2455,14 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 	list_of_error_messages_for_unsupported_streams = []
 	
 	# Save some debug information. Items are always saved in pairs (Title, value) so that the list is easy to parse later.
-	global debug_information_for_timeslice_calculation_and_all_file_processing_dict
+	global debug_temporary_dict_for_all_file_processing_information
 	debug_information_list = []
 	unix_time_in_ticks, realtime = get_realtime(english, finnish)
 	debug_information_list.append('Start Time')
 	debug_information_list.append(unix_time_in_ticks)
 	debug_information_list.append('Subprocess Name')
 	debug_information_list.append('get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters')
-	debug_information_for_timeslice_calculation_and_all_file_processing_dict[filename] = debug_information_list
+	debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 
 	# Define lists of supported pcm bit depths
 	pcm_8_bit_formats = ['pcm_s8', 'pcm_s8_planar', 'pcm_u8']
@@ -2786,7 +2787,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		debug_information_list.append(output_audiostream_format)
 		debug_information_list.append('ffmpeg_output_format')
 		debug_information_list.append(ffmpeg_output_format)
-		debug_information_for_timeslice_calculation_and_all_file_processing_dict[filename] = debug_information_list
+		debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 
 		# Generate FFmpeg extract options for audio stream.
 		ffmpeg_commandline.append('-acodec')
@@ -2831,7 +2832,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			debug_information_list.append(unsupported_stream_name)
 			debug_information_list.append('Stream Is Supported')
 			debug_information_list.append('False')
-			debug_information_for_timeslice_calculation_and_all_file_processing_dict[filename] = debug_information_list
+			debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 			
 	# If there are only unsupported audio streams in the file then assign an error message that gets printed on the results graphics file.
 	# Currently the only known unsupported streams in a file are streams with channel counts of zero and more than 6 channels.
@@ -2880,7 +2881,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 	unix_time_in_ticks, realtime = get_realtime(english, finnish)
 	debug_information_list.append('Stop Time')
 	debug_information_list.append(unix_time_in_ticks)
-	debug_information_for_timeslice_calculation_and_all_file_processing_dict[filename] = debug_information_list
+	debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 	
 	return(file_format_support_information, ffmpeg_error_message, send_ffmpeg_error_message_by_email)
 	
@@ -2911,7 +2912,7 @@ def get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, h
 	# Only save debug information when ffmpeg is not installed and mediainfo is used in its place to find audio from files.
 	if save_debug_information == True:
 
-		global debug_information_for_timeslice_calculation_and_all_file_processing_dict
+		global debug_temporary_dict_for_all_file_processing_information
 		debug_information_list = []
 
 		# Save some debug information. Items are always saved in pairs (Title, value) so that the list is easy to parse later.
@@ -2920,7 +2921,7 @@ def get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, h
 		debug_information_list.append(unix_time_in_ticks)
 		debug_information_list.append('Subprocess Name')
 		debug_information_list.append('get_audiofile_info_with_mediainfo')
-		debug_information_for_timeslice_calculation_and_all_file_processing_dict[filename] = debug_information_list
+		debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 
 	#####################################################
 	# Find how many audio streams there are in the file #
@@ -3282,7 +3283,7 @@ def get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, h
 		unix_time_in_ticks, realtime = get_realtime(english, finnish)
 		debug_information_list.append('Stop Time')
 		debug_information_list.append(unix_time_in_ticks)
-		debug_information_for_timeslice_calculation_and_all_file_processing_dict[filename] = debug_information_list
+		debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 	
 	return(audiostream_count, channel_count, bit_depth, sample_format, audio_duration_rounded_to_seconds, natively_supported_file_format, mediainfo_error_message)
 	
@@ -3565,7 +3566,7 @@ else:
 error_logfile_path = directory_for_error_logs + os.sep + 'error_log-' + str(get_realtime(english, finnish)[1]) + '.txt' # Error log filename is 'error_log' + current date + time
 
 # Define the name of the loudness calculation logfile.
-if debug == True:
+if save_measurement_results_to_a_file == True:
 	loudness_calculation_logfile_path = directory_for_error_logs + os.sep + 'loudness_calculation_log-' + str(get_realtime(english, finnish)[1]) + '.txt'
 
 # Get IP-Addresses of the machine.
@@ -3597,15 +3598,12 @@ if write_html_progress_report == True:
 if heartbeat == True:
 	heartbeat_process = threading.Thread(target=write_to_heartbeat_file_thread, args=()) # Create a process instance.
 	thread_object = heartbeat_process.start() # Start the process in it'own thread.
-# If degub = True the script will print out the contents of main lists and dictionaries once a minute.
-if debug == True:
+
+# If debug_lists_and_dictionaries = True the script will save the contents of main lists and dictionaries once a minute to a file.
+if debug_lists_and_dictionaries == True:
 	debug_lists_process = threading.Thread(target=debug_lists_and_dictionaries, args=()) # Create a process instance.
 	thread_object = debug_lists_process.start() # Start the process in it'own thread.
 
-# If degub = True the script will print out variable values read from the configfile.
-if debug == True:
-	debug_variables_read_from_configfile()
-	
 # Print version information to screen
 if silent == False:
 	print()
@@ -3856,6 +3854,10 @@ while True:
 									if 'email' in error_message_destinations:
 										error_message_destinations.remove('email')
 								send_error_messages_to_screen_logfile_email(error_message + ': ' + filename, error_message_destinations)
+							
+							# Remove file processing information from temporary debug dictionary, as file is not supported, it will not be processed and this info is no longer needed.
+							temporary_gathering_list = debug_temporary_dict_for_all_file_processing_information.pop(filename)
+							debug_complete_final_information_for_all_file_processing_dict[filename] = temporary_gathering_list
 								
 							create_gnuplot_commands_for_error_message(error_message, filename, directory_for_temporary_files, directory_for_results, english, finnish)
 							unsupported_ignored_files_dict[filename] = int(time.time())
@@ -3870,6 +3872,10 @@ while True:
 							if 'email' in error_message_destinations:
 								error_message_destinations.remove('email')
 							send_error_messages_to_screen_logfile_email(error_message + ': ' + filename, error_message_destinations)
+							
+							# Remove file processing information from temporary debug dictionary, as file is not supported, it will not be processed and this info is no longer needed.
+							temporary_gathering_list = debug_temporary_dict_for_all_file_processing_information.pop(filename)
+							debug_complete_final_information_for_all_file_processing_dict[filename] = temporary_gathering_list
 							
 							create_gnuplot_commands_for_error_message(error_message, filename, directory_for_temporary_files, directory_for_results, english, finnish)
 							unsupported_ignored_files_dict[filename] = int(time.time())
@@ -3995,13 +4001,17 @@ while True:
 			if event_for_process_1 != event_for_process_2:
 				# Loudness processing of the file is ready, move debugging information to the main debugging dictionary.
 				# We get here only if both integrated and time slice loudness calculation are ready.
-				temporary_gathering_list = debug_information_for_timeslice_calculation_and_all_file_processing_dict.pop(filename)
-				temporary_gathering_list.extend(debug_information_for_integrated_loudness_calculation_dict.pop(filename))
-				debug_information_for_file_processing_dict[filename] = temporary_gathering_list
+				temporary_gathering_list = debug_temporary_dict_for_timeslice_calculation_information.pop(filename)
+				temporary_gathering_list.extend(debug_temporary_dict_for_integrated_loudness_calculation_information.pop(filename))
+				temporary_gathering_list.extend(debug_temporary_dict_for_all_file_processing_information.pop(filename))
+				debug_complete_final_information_for_all_file_processing_dict[filename] = temporary_gathering_list
 			else:
 				# We get here only when the process that has finished is function: decompress_audio_streams_with_ffmpeg. 
-				temporary_gathering_list = debug_information_for_timeslice_calculation_and_all_file_processing_dict.pop(filename)
-				debug_information_for_file_processing_dict[filename] = temporary_gathering_list
+				# Move debug processing info from temp dictionary to the main debug dictionary.
+				# The decompressed file will enter processing queue, but the decompressed file has different name than the compressed,
+				# So we have to remove the debug info about compressed version from the dictionary, as it is no longer used for anything.
+				temporary_gathering_list = debug_temporary_dict_for_all_file_processing_information.pop(filename)
+				debug_complete_final_information_for_all_file_processing_dict[filename] = temporary_gathering_list
 			
 			realtime = get_realtime(english, finnish)[1].replace('_', ' ')
 			del loudness_calculation_queue[filename] # Remove file name from the list of files currently being calculated upon.
@@ -4032,24 +4042,25 @@ while True:
 		# Fixme: Delete these debugging lines.
 		if len(loudness_calculation_queue) == 0:
 			
-			if len(debug_information_for_file_processing_dict) != 0:
+			if len(debug_complete_final_information_for_all_file_processing_dict) != 0:
 
 				print()
-				print('len(debug_information_for_integrated_loudness_calculation_dict) =', len(debug_information_for_integrated_loudness_calculation_dict))
-				print('len(debug_information_for_timeslice_calculation_and_all_file_processing_dict) =', len(debug_information_for_timeslice_calculation_and_all_file_processing_dict))
-				print('len(debug_information_for_file_processing_dict) =', len(debug_information_for_file_processing_dict))
+				print('len(debug_temporary_dict_for_integrated_loudness_calculation_information) =', len(debug_temporary_dict_for_integrated_loudness_calculation_information))
+				print('len(debug_temporary_dict_for_timeslice_calculation_information) =', len(debug_temporary_dict_for_timeslice_calculation_information))
+				print('len(debug_temporary_dict_for_all_file_processing_information) =', len(debug_temporary_dict_for_all_file_processing_information))
+				print('len(debug_complete_final_information_for_all_file_processing_dict) =', len(debug_complete_final_information_for_all_file_processing_dict))
 				print()
 				
 				print('\033[7m' + '################################################################################################################################'  + '\033[0m')
 				print()
 
-				for item in debug_information_for_file_processing_dict:
+				for item in debug_complete_final_information_for_all_file_processing_dict:
 					
 					print(item)
 					print('------------------------------------------------------------------------------------------------------')
 					print()
 					
-					debug_list_for_one_file = debug_information_for_file_processing_dict[item]
+					debug_list_for_one_file = debug_complete_final_information_for_all_file_processing_dict[item]
 					
 					for counter in range(0, len(debug_list_for_one_file), 2):
 						item_1 = str(debug_list_for_one_file[counter])
@@ -4071,24 +4082,54 @@ while True:
 						print(item_1, '=', item_2)
 					print()
 				print()
-		
-			if debug_information_for_timeslice_calculation_and_all_file_processing_dict != 0:
+			
+			# If the dictionary was not empty an error happened, show me which information did not get moved to the main debugging dictionary.
+			if debug_temporary_dict_for_timeslice_calculation_information != 0:
 
 				print()
 				print('-----------------------------------------------------------------------------------------------------------------')
-				print('len(debug_information_for_timeslice_calculation_and_all_file_processing_dict) =',len(debug_information_for_timeslice_calculation_and_all_file_processing_dict))
+				print('len(debug_temporary_dict_for_timeslice_calculation_information) =',len(debug_temporary_dict_for_timeslice_calculation_information))
 				print()
 
-				for item in debug_information_for_timeslice_calculation_and_all_file_processing_dict:
+				for item in debug_temporary_dict_for_timeslice_calculation_information:
 					print('\t' + item)
 					print('\t------------------------------------------------------------------------------------------------------')
 					print('\t', end='')
-					print(debug_information_for_timeslice_calculation_and_all_file_processing_dict[item])
+					print(debug_temporary_dict_for_timeslice_calculation_information[item])
 					print()
 				print()
 
+			# If the dictionary was not empty an error happened, show me which information did not get moved to the main debugging dictionary.
+			if debug_temporary_dict_for_integrated_loudness_calculation_information != 0:
 
+				print()
+				print('-----------------------------------------------------------------------------------------------------------------')
+				print('len(debug_temporary_dict_for_integrated_loudness_calculation_information) =',len(debug_temporary_dict_for_integrated_loudness_calculation_information))
+				print()
 
+				for item in debug_temporary_dict_for_integrated_loudness_calculation_information:
+					print('\t' + item)
+					print('\t------------------------------------------------------------------------------------------------------')
+					print('\t', end='')
+					print(debug_temporary_dict_for_integrated_loudness_calculation_information[item])
+					print()
+				print()
+
+			# If the dictionary was not empty an error happened, show me which information did not get moved to the main debugging dictionary.
+			if debug_temporary_dict_for_all_file_processing_information != 0:
+
+				print()
+				print('-----------------------------------------------------------------------------------------------------------------')
+				print('len(debug_temporary_dict_for_all_file_processing_information) =',len(debug_temporary_dict_for_all_file_processing_information))
+				print()
+
+				for item in debug_temporary_dict_for_all_file_processing_information:
+					print('\t' + item)
+					print('\t------------------------------------------------------------------------------------------------------')
+					print('\t', end='')
+					print(debug_temporary_dict_for_all_file_processing_information[item])
+					print()
+				print()
 
 
 

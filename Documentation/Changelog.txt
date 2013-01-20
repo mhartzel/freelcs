@@ -1,7 +1,17 @@
+LoudnessCorrection Version 202
+-------------------------------
+- Bugfix: Unit for difference from target loudness was dB in loudness history graphics file, corrected to LU.
+- Bugfix: Corrected unit from dBFS to dBTP in loudness history graphics when TruePeak measurement method is used.
+- Did split one big debug information dictionary to two more logically named ones.
+- List and dictionary function no longer prints debug info on screen only saves to disk. Info if written to a new file every 24 hours (starting from LoudnessCorrection startup time).
+- Values read from a configfile are now printed as first things on lists and dictionaries debug file if debug mode is on.
+- Removed the all old debugging code.
+- Added more untested debugging code :)
+
 LoudnessCorrection Version 201
 -------------------------------
 - Changed subroutine: 'get_audiofile_info_with_sox_and_determine_output_format' to get sample count again with sox, since 14.4.0 seems to get seems to get this info correctly (14.3.2 was buggy). Sample count is used when calculating audio duration (audio duration = sample_count / sample_rate).
-- Added even some more untested debuggin code :)
+- Added even some more untested debugging code :)
 
 LoudnessCorrection Version 200
 -------------------------------
