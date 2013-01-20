@@ -1,3 +1,7 @@
+LoudnessCorrection Version 199
+-------------------------------
+- This is a intermediate version to save changes made so far.  Warning: this is work in progress, so there is a lot of new untested code. Version 197 of LoudnessCorrection works quite well, so use it if you must have a newer version that what was in official FreeLCS release.
+
 LoudnessCorrection Version 198 
 ------------------------------
 - Continueing the work towards better debug information output. Warning lots of new code here, so it might contain new bugs.
