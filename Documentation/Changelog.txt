@@ -1,3 +1,12 @@
+LoudnessCorrection Version 201
+-------------------------------
+- Changed subroutine: 'get_audiofile_info_with_sox_and_determine_output_format' to get sample count again with sox, since 14.4.0 seems to get seems to get this info correctly (14.3.2 was buggy). Sample count is used when calculating audio duration (audio duration = sample_count / sample_rate).
+- Added even some more untested debuggin code :)
+
+LoudnessCorrection Version 200
+-------------------------------
+- Some more work on debug information gathering. Code totally untested.
+
 LoudnessCorrection Version 199
 -------------------------------
 - This is a intermediate version to save changes made so far.  Warning: this is work in progress, so there is a lot of new untested code. Version 197 of LoudnessCorrection works quite well, so use it if you must have a newer version that what was in official FreeLCS release.

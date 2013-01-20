@@ -35,7 +35,7 @@ import pickle
 import math
 import copy
 
-version = '200'
+version = '201'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -349,7 +349,7 @@ def calculate_integrated_loudness(event_for_integrated_loudness_calculation, fil
 				integrated_loudness_calculation_error_message = integrated_loudness_calculation_stderr_string
 			else:
 				integrated_loudness_calculation_error_message = 'libebur128 did not tell the cause of the error.' * english + 'libebur128 ei kertonut virheen syytä.' * finnish
-			
+		
 		else:
 			# Loudness calculation was successful, calculate loudness difference from target loudness and assign results to variables.
 			integrated_loudness_calculation_error = False
@@ -1258,6 +1258,9 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 						#Gather all commands needed to process a file to a list of sox commandlines.
 						list_of_sox_commandlines.append(sox_commandline)
 						list_of_filenames.append(split_channel_targetfile_name)
+						
+					debug_information_list.append('list_of_sox_commandlines')
+					debug_information_list.append(list_of_sox_commandlines)
 
 					# Run several sox commands in parallel threads, this speeds up splitting the file to separate mono files.	
 					run_sox_commands_in_parallel_threads(directory_for_temporary_files, filename, list_of_sox_commandlines, english, finnish)
@@ -1284,6 +1287,10 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 					if output_format_for_final_file == 'flac':
 						sox_commandline.extend(flac_compression_level)
 					sox_commandline.extend([directory_for_temporary_files + os.sep + combined_channels_targetfile_name, 'gain', str(difference_from_target_loudness_sign_inverted)])
+					
+					# Save some debug information.
+					debug_information_list.append('sox_commandline')
+					debug_information_list.append(sox_commandline)
 					
 					#Gather all names of processed files to a list.
 					list_of_filenames = [combined_channels_targetfile_name]
@@ -1521,6 +1528,20 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 	output_format_for_intermediate_files = 'wav'
 	output_format_for_final_file = 'wav'
 	
+	global debug_information_for_timeslice_calculation_and_all_file_processing_dict
+	debug_information_list = []
+	error_message = ''
+	
+	# Save some debug information. Items are always saved in pairs (Title, value) so that the list is easy to parse later.
+	if filename in debug_information_for_timeslice_calculation_and_all_file_processing_dict:
+		debug_information_list = debug_information_for_timeslice_calculation_and_all_file_processing_dict[filename]
+	unix_time_in_ticks, realtime = get_realtime(english, finnish)
+	debug_information_list.append('Start Time')
+	debug_information_list.append(unix_time_in_ticks)
+	debug_information_list.append('Subprocess Name')
+	debug_information_list.append('get_audiofile_info_with_sox_and_determine_output_format')
+	debug_information_for_timeslice_calculation_and_all_file_processing_dict[filename] = debug_information_list
+	
 	try:
 		# Define filename for the temporary file that we are going to use as stdout for the external command.
 		stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_sox_read_audio_info_stdout.txt'
@@ -1582,29 +1603,55 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 		channel_count = int(channel_count_string)
 	else:
 		error_message = 'ERROR !!! I could not parse sox channel count string: ' * english + 'VIRHE !!! En osannut tulkita sox:in antamaa tietoa kanavamäärästä: ' * finnish + '\'' + channel_count_string + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
+		# Save some debug information.
+		debug_information_list.append('error_message')
+		debug_information_list.append(error_message)
 		send_error_messages_to_screen_logfile_email(error_message, [])
 
 	if sample_rate_string.isnumeric() == True:
 		sample_rate = int(sample_rate_string)
 	else:
 		error_message = 'ERROR !!! I could not parse sox sample rate string: ' * english + 'VIRHE !!! En osannut tulkita sox:in antamaa tietoa näyteenottotaajuudesta: ' * finnish + '\'' + sample_rate_string + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
+		# Save some debug information.
+		debug_information_list.append('error_message')
+		debug_information_list.append(error_message)
 		send_error_messages_to_screen_logfile_email(error_message, [])
 
 	if bit_depth_string.isnumeric() == True:
 		bit_depth = int(bit_depth_string)
 	else:
 		error_message = 'ERROR !!! I could not parse sox bit depth string: ' * english + 'VIRHE !!! En osannut tulkita sox:in antamaa tietoa bittisyvyydestä: ' * finnish + '\'' + bit_depth_string + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
+		# Save some debug information.
+		debug_information_list.append('error_message')
+		debug_information_list.append(error_message)
 		send_error_messages_to_screen_logfile_email(error_message, [])
 
 	if sample_count_string.isnumeric() == True:
 		sample_count = int(sample_count_string)
 	else:
 		error_message = 'ERROR !!! I could not parse sox sample count string: ' * english + 'VIRHE !!! En osannut tulkita sox:in antamaa tietoa näytteiden lukumäärästä: ' * finnish + '\'' + sample_count_string + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
+		# Save some debug information.
+		debug_information_list.append('error_message')
+		debug_information_list.append(error_message)
 		send_error_messages_to_screen_logfile_email(error_message, [])
-	
+
+	# Calculate file duration from sample count.
+	audio_duration = sample_count / sample_rate
+
+
+
+
+	# Fixme: delete the following 6 lines when testfiles have been processed and it becomes clear that sox reported sample count is reliable. Sample count is used in calculating audio duration.
 	# Sox can not get duration from long files correctly, get audio duration with mediainfo.
-	not_used, not_used, not_used, not_used, audio_duration, not_used, not_used = get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish, save_debug_information = False)
+	not_used, not_used, not_used, not_used, mediainfo_audio_duration, not_used, not_used = get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish, save_debug_information = False)
 	not_used = ''
+	if audio_duration != mediainfo_audio_duration:
+		error_message = 'ERROR !!! Sox audio duration differs from mediainfo audio duration: ' * english + 'VIRHE !!! Soxin ilmoittama audion kesto eroaa mediainfon ilmoittamasta kestosta: ' * finnish + '\'' + sampl
+		send_error_messages_to_screen_logfile_email(error_message, [])
+
+
+
+
 	
 	# Calculate estimated uncompressed file size. Add one second of data to the file size (sample_rate = 1 second) to be on the safe side.
 	estimated_uncompressed_size_for_single_mono_file = int((sample_rate * audio_duration * int(bit_depth / 8)) + sample_rate)
@@ -1631,32 +1678,37 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 		# In this case the combined channels in one file does not exceed the maximum size, so we can use wav for all processing.
 		output_format_for_intermediate_files = 'wav'
 		output_format_for_final_file = 'wav'
-	
-	# Print technical data for each file when in debug mode.
-	if debug == True:
-	
-		print()
-		print('get_audiofile_info_with_sox_and_determine_output_format')
-		print('---------------------------------------------------------')
-		print(filename)
-		print((len(filename) + 1) * '-')
-		print('channel_count_string =', channel_count_string)
-		print('sample_rate_string =', sample_rate_string)
-		print('bit_depth_string =', bit_depth_string)
-		print('sox: sample_count_string (this is not used in calculations because it was buggy in sox 14.3.2 for very long files) =', sample_count_string)
-		print('mediainfo: audio_duration (this is used in calculations instead of sox sample count) =', audio_duration)
-		print('wav_format_maximum_file_size =', wav_format_maximum_file_size)
-		print('estimated_uncompressed_size_for_combined_channels =', estimated_uncompressed_size_for_combined_channels)
-		print('difference to max size', wav_format_maximum_file_size - estimated_uncompressed_size_for_combined_channels)
-		print('estimated_uncompressed_size_for_single_mono_file =', estimated_uncompressed_size_for_single_mono_file)
-		print('difference to max size', wav_format_maximum_file_size - estimated_uncompressed_size_for_single_mono_file)
-		print('output_format_for_intermediate_files =', output_format_for_intermediate_files)
-		print('output_format_for_final_file =', output_format_for_final_file)
-		print('estimated_uncompressed_size_for_combined_channels =', estimated_uncompressed_size_for_combined_channels)
-		print('audio_channels_will_be_split_to_separate_mono_files =', audio_channels_will_be_split_to_separate_mono_files)
-		print('output_file_too_big_to_split_to_separate_wav_channels =', output_file_too_big_to_split_to_separate_wav_channels)
-		print()
-	
+
+	# Save some debug information.
+	debug_information_list.append('channel_count_string')
+	debug_information_list.append(channel_count_string)
+	debug_information_list.append('sample_rate_string')
+	debug_information_list.append(sample_rate_string)
+	debug_information_list.append('bit_depth_string')
+	debug_information_list.append(bit_depth_string)
+	debug_information_list.append('sample_count_string')
+	debug_information_list.append(sample_count_string)
+	debug_information_list.append('audio_duration')
+	debug_information_list.append(audio_duration)
+	debug_information_list.append('wav_format_maximum_file_size')
+	debug_information_list.append(wav_format_maximum_file_size)
+	debug_information_list.append('estimated_uncompressed_size_for_single_mono_file')
+	debug_information_list.append(estimated_uncompressed_size_for_single_mono_file)
+	debug_information_list.append('estimated_uncompressed_size_for_combined_channels')
+	debug_information_list.append(estimated_uncompressed_size_for_combined_channels)
+	debug_information_list.append('output_format_for_intermediate_files')
+	debug_information_list.append(output_format_for_intermediate_files)
+	debug_information_list.append('output_format_for_final_file')
+	debug_information_list.append(output_format_for_final_file)
+	debug_information_list.append('audio_channels_will_be_split_to_separate_mono_files')
+	debug_information_list.append(audio_channels_will_be_split_to_separate_mono_files)
+	debug_information_list.append('output_file_too_big_to_split_to_separate_wav_channels')
+	debug_information_list.append(output_file_too_big_to_split_to_separate_wav_channels)
+	unix_time_in_ticks, realtime = get_realtime(english, finnish)
+	debug_information_list.append('Stop Time')
+	debug_information_list.append(unix_time_in_ticks)
+	debug_information_for_timeslice_calculation_and_all_file_processing_dict[filename] = debug_information_list
+
 	return(channel_count, sample_rate, bit_depth, sample_count, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, audio_channels_will_be_split_to_separate_mono_files, audio_duration, output_file_too_big_to_split_to_separate_wav_channels)
 
 def get_realtime(english, finnish):                                                                                                                                                                            
@@ -1697,6 +1749,20 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 	# The original file is queued for deletion.
 
 	global files_queued_for_deletion
+
+	global debug_information_for_timeslice_calculation_and_all_file_processing_dict
+	debug_information_list = []
+	error_message = ''
+	
+	# Save some debug information. Items are always saved in pairs (Title, value) so that the list is easy to parse later.
+	if filename in debug_information_for_timeslice_calculation_and_all_file_processing_dict:
+		debug_information_list = debug_information_for_timeslice_calculation_and_all_file_processing_dict[filename]
+	unix_time_in_ticks, realtime = get_realtime(english, finnish)
+	debug_information_list.append('Start Time')
+	debug_information_list.append(unix_time_in_ticks)
+	debug_information_list.append('Subprocess Name')
+	debug_information_list.append('decompress_audio_streams_with_ffmpeg')
+	debug_information_for_timeslice_calculation_and_all_file_processing_dict[filename] = debug_information_list
 	
 	# In list 'file_format_support_information' we already have all the information FFmpeg was able to find about the valid audio streams in the file, assign all info to variables.
 	natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames = file_format_support_information
@@ -1743,6 +1809,9 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 	for item in ffmpeg_run_output_result_list:
 		if 'error:' in item.lower(): # If there is the string 'error' in ffmpeg's output, there has been an error.
 			error_message = 'ERROR !!! Extracting audio streams with ffmpeg, ' * english + 'VIRHE !!! Audio streamien purkamisessa ffmpeg:illä, ' * finnish + ' ' + filename + ' : ' + item
+			# Save some debug information.
+			debug_information_list.append('error_message')
+			debug_information_list.append(error_message)
 			send_error_messages_to_screen_logfile_email(error_message, [])
 	
 	# Delete the temporary stdout - file.
@@ -1771,6 +1840,12 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 	
 	# Queue the original file for deletion. It is no longer needed since we have extracted all audio streams from it.		
 	files_queued_for_deletion.append(filename)
+	
+	# Save some debug information.
+	unix_time_in_ticks, realtime = get_realtime(english, finnish)
+	debug_information_list.append('Stop Time')
+	debug_information_list.append(unix_time_in_ticks)
+	debug_information_for_timeslice_calculation_and_all_file_processing_dict[filename] = debug_information_list
 
 	# Set the events so that the main program can see that extracting audio streams from file is ready.
 	event_1_for_ffmpeg_audiostream_conversion.set()
@@ -2072,6 +2147,8 @@ def write_to_heartbeat_file_thread():
 	global web_page_path
 	global heartbeat_file_name
 	global loudness_correction_program_info_and_timestamps
+	global english
+	global finnish
 
 	while True:
 
@@ -2496,6 +2573,9 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			
 			if number_of_audio_channels == '0':
 				error_message = 'ERROR !!! I could not parse FFmpeg channel count string: ' * english + 'VIRHE !!! En osannut tulkita ffmpeg:in antamaa tietoa kanavien lukumäärästä: ' * finnish + '\'' + str(number_of_audio_channels_as_text_split_to_a_list[0]) + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
+				# Save some debug information.
+				debug_information_list.append('error_message')
+				debug_information_list.append(error_message)
 				send_error_messages_to_screen_logfile_email(error_message, [])
 			
 			# Channel counts bigger than 6 are not supported, get the stream name and error message to a list and skip the stream.
@@ -2554,6 +2634,9 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 					bit_depth = int(bit_depth_as_text)
 				else:
 					error_message = 'ERROR !!! I could not parse FFmpeg bit depth string for flac format: ' * english + 'VIRHE !!! En osannut tulkita ffmpeg:in antamaa tietoa flac formaatin bittisyvyydestä: ' * finnish + '\'' + bit_depth_as_text + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
+					# Save some debug information.
+					debug_information_list.append('error_message')
+					debug_information_list.append(error_message)
 					send_error_messages_to_screen_logfile_email(error_message, [])
 				
 				# FFmpeg displays flac bit depths 24 bits and 32 bits both as 32 bits. Force flac bit depth to 24 if it is 32.
@@ -2582,10 +2665,16 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				
 				if (mapnumber_digit_1.isnumeric() == False) or (mapnumber_digit_2.isnumeric() == False):
 					error_message = 'Error: stream map number found in FFmpeg output is not a number: ' * english + 'Virhe: FFmpegin tulosteesta löydetty streamin numero ei ole numero: ' * finnish + map_number
+					# Save some debug information.
+					debug_information_list.append('error_message')
+					debug_information_list.append(error_message)
 					send_error_messages_to_screen_logfile_email(error_message, [])
 					continue # If map number is not found then skip the stream.
 			except IndexError:
 				error_message = 'Error: stream map number found in FFmpeg output is not in correct format: ' * english + 'Virhe: FFmpegin tulosteesta löydetty streamin numero ei ole oikeassa formaatissa: ' * finnish + map_number
+				# Save some debug information.
+				debug_information_list.append('error_message')
+				debug_information_list.append(error_message)
 				send_error_messages_to_screen_logfile_email(error_message, [])
 				continue # If map number is not found then skip the stream.
 
@@ -2596,6 +2685,9 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				sample_rate = int(sample_rate_as_text)
 			else:
 				error_message = 'ERROR !!! I could not parse FFmpeg sample rate string: ' * english + 'VIRHE !!! En osannut tulkita ffmpeg:in antamaa tietoa näyteenottotaajuuudesta: ' * finnish + '\'' + sample_rate_as_text + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
+				# Save some debug information.
+				debug_information_list.append('error_message')
+				debug_information_list.append(error_message)
 				send_error_messages_to_screen_logfile_email(error_message, [])
 			
 			number_of_ffmpeg_supported_audiostreams = number_of_ffmpeg_supported_audiostreams + 1
@@ -2616,6 +2708,9 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				# The FFmpeg reported audio duration as 'N/A' then this means ffmpeg could not determine the audio duration. Set audio duration to 0 seconds and inform user about the error.
 				audio_duration_rounded_to_seconds = 0
 				error_message = 'FFmpeg Error : Audio Duration = N/A' * english + 'FFmpeg Virhe: Äänen Kesto = N/A' * finnish + ': ' + filename
+				# Save some debug information.
+				debug_information_list.append('error_message')
+				debug_information_list.append(error_message)
 				send_error_messages_to_screen_logfile_email(error_message, [])
 		if 'Input #0' in item:
 			# Get the type of the file, if it is 'mpegts' then we later need to do some tricks to get the correct duration from the file.
@@ -2736,8 +2831,6 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			debug_information_list.append(unsupported_stream_name)
 			debug_information_list.append('Stream Is Supported')
 			debug_information_list.append('False')
-			debug_information_list.append('Error Message')
-			debug_information_list.append(error_message)
 			debug_information_for_timeslice_calculation_and_all_file_processing_dict[filename] = debug_information_list
 			
 	# If there are only unsupported audio streams in the file then assign an error message that gets printed on the results graphics file.
