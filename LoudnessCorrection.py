@@ -35,7 +35,7 @@ import pickle
 import math
 import copy
 
-version = '202'
+version = '203'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -60,6 +60,8 @@ else:
 debug_all = False
 debug_lists_and_dictionaries  = False
 debug_file_processing = False
+
+silent = False # Use True if you don't want this programs to print anything on screen (useful if you want to start this program from Linux init scripts).
 
 # Information about integrated loudness calculation and time slice processing is stored in separate dictionaries.
 # This information is later appended to 'debug_complete_final_information_for_all_file_processing_dict'.
@@ -115,7 +117,18 @@ for argument in sys.argv[1:]:
 		save_measurement_results_to_a_file = True
 		arguments_remaining.pop(arguments_remaining.index(argument))
 		continue
+	
+	if argument.lower() == '-finnish':
+		language == 'fi'
+		finnish = 1
+		english = 0
+		arguments_remaining.pop(arguments_remaining.index(argument))
+		continue
 
+	if argument.lower() == '-silent':
+		silent = True
+		arguments_remaining.pop(arguments_remaining.index(argument))
+		continue
 
 if (configfile_path == '') and (len(arguments_remaining) > 0):
 	target_path = arguments_remaining[0]
@@ -190,8 +203,6 @@ natively_supported_file_formats = ['.wav', '.flac', '.ogg'] # Natively supported
 ffmpeg_output_format = 'wav' # Possible values are 'flac' and 'wav'. This only affects formats that are first decodec with ffmpeg (all others but wav, flac, ogg).
 if not ffmpeg_output_format == 'wav':
 	ffmpeg_output_format = 'flac'
-
-silent = False # Use True if you don't want this programs to print anything on screen (useful if you want to start this program from Linux init scripts).
 
 # Write calculation queue progress report to a html-page on disk.
 write_html_progress_report = True # Controls if the program writes loudness calculation queue information to a web page on disk.
@@ -1650,7 +1661,7 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 	not_used, not_used, not_used, not_used, mediainfo_audio_duration, not_used, not_used = get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish, save_debug_information = False)
 	not_used = ''
 	if audio_duration != mediainfo_audio_duration:
-		error_message = 'ERROR !!! Sox audio duration differs from mediainfo audio duration: ' * english + 'VIRHE !!! Soxin ilmoittama audion kesto eroaa mediainfon ilmoittamasta kestosta: ' * finnish + '\'' + sampl
+		error_message = 'ERROR !!! Sox audio duration: ' + str(audio_duration)  + ' differs from mediainfo audio duration: ' + str(mediainfo_audio_duration)
 		send_error_messages_to_screen_logfile_email(error_message, [])
 
 
@@ -1863,6 +1874,7 @@ def send_error_messages_to_screen_logfile_email(error_message, send_error_messag
 	global error_messages_to_email_later_list # This variable is used to store messages that are later all sent by email in one go.
 	global where_to_send_error_messages
 	global error_logfile_path
+	global silent
 	error_message_with_timestamp = str(get_realtime(english, finnish)[1]) + '   ' + error_message # Add the current date and time at the beginning of the error message.
 	
 	# If the calling subroutine did not define where it wants us to send error messages then use global defaults.
@@ -1871,7 +1883,8 @@ def send_error_messages_to_screen_logfile_email(error_message, send_error_messag
 	
 	# Print error messages to screen
 	if 'screen' in send_error_messages_to_these_destinations:
-		print('\033[7m' + '\r-------->  ' + error_message_with_timestamp + '\033[0m')
+		if silent == False:
+			print('\033[7m' + '\r-------->  ' + error_message_with_timestamp + '\033[0m')
 
 	# Print error messages to a logfile
 	if 'logfile' in send_error_messages_to_these_destinations:
@@ -3312,7 +3325,71 @@ def debug_write_loudness_calculation_info_to_a_logfile(filename, integrated_loud
 		error_message = 'Error opening loudness calculation logfile for writing ' * english + 'Äänekkyyslogitiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
 		send_error_messages_to_screen_logfile_email(error_message, [])
 			
+def manage_file_processing_debug_information():
 	
+	# This subroutine handles file processing debug information. LoudnessCorrection holds a couple of hours of debug data in memory (default 8 hours) and deletes info older than that.
+	# If debug debug_lists_and_dictionaries = True, then this subroutine periodically saves debug info to disk as a pickle.
+	# If debug mode is activated by sending a signal to LoudnessCorrection, then the program saves info of the last 8 hours to disk and continues saving info until debug is cancelled by sending the same signal again.
+
+	global debug_complete_final_information_for_all_file_processing_dict
+	global debug_lists_and_dictionaries
+	global english
+	global finnish
+
+	debug_info_expiry_time = 8 * 60 * 60 # How old debug data will be automatically deleted when debug mode is off and info is not saved to disk. Default = 8 hours.
+	debug_information_save_interval = 10 * 60 # How often do we save debug information to disk. Default 10 minutes.
+	real_time_string = get_realtime(english, finnish)[1]
+	filename_for_processing_debug_info = 'file_processing_debug_info-' + real_time_string + '.pickle'
+	filename_change_interval = 24 * 60 * 60 # Periodically change filename where to save to. Default 24 hours starting from LoudnessCorrection startup.
+	filename_last_change_time = 0
+
+	while True:
+
+		if debug_lists_and_dictionaries == False:
+
+			# Find debug data that is too old and delete it.
+			for filename in debug_complete_final_information_for_all_file_processing_dict:
+				info_timestamp = debug_complete_final_information_for_all_file_processing_dict[filename][1]
+				if int(time.time()) >= int(info_timestamp + debug_info_expiry_time):
+					del debug_complete_final_information_for_all_file_processing_dict[filename]
+
+		else:
+			# Debug mode is on, save data periodically to disk.
+
+			# Check if we have saved too long to the same file and need to change the filename.
+			if int(time.time()) >= int(filename_last_change_time + filename_change_interval)
+
+				real_time_string = get_realtime(english, finnish)[1]
+				filename_for_processing_debug_info = 'file_processing_debug_info-' + real_time_string + '.pickle'
+				filename_last_change_time = int(time.time())
+				
+				# We have changed the filename, delete all debug data that is older that file save interval and delete it.
+				# This takes care that each file saved don't have too much duplicate data in them.
+				for filename in debug_complete_final_information_for_all_file_processing_dict:
+					info_timestamp = debug_complete_final_information_for_all_file_processing_dict[filename][1]
+					if int(time.time()) >= int(info_timestamp + debug_information_save_interval):
+						del debug_complete_final_information_for_all_file_processing_dict[filename]
+	i
+			# Save the file.
+			try:
+				with open(directory_for_error_logs + os.sep + filename_for_processing_debug_info, 'wb') as filehandler:
+					pickle.dump(debug_complete_final_information_for_all_file_processing_dict, filehandler)
+					filehandler.flush() # Flushes written data to os cache
+					os.fsync(filehandler.fileno()) # Flushes os cache to disk
+
+			except KeyboardInterrupt:
+				print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
+				sys.exit(0)
+			except IOError as reason_for_error:
+				error_message = 'Error opening debug file processing pickle - file  for writing ' * english + 'Tiedostoprosessoinnin debug - tiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
+				send_error_messages_to_screen_logfile_email(error_message, [])
+			except OSError as reason_for_error:
+				error_message = 'Error opening debug file processing pickle - file  for writing ' * english + 'Tiedostoprosessoinnin debug - tiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
+				send_error_messages_to_screen_logfile_email(error_message, [])
+
+		# Wait a couple of minutes before processing data again.
+		time.sleep(debug_information_save_interval)
+
 
 ##############################################################################################
 #                                The main program starts here:)                              #
@@ -3603,6 +3680,11 @@ if heartbeat == True:
 if debug_lists_and_dictionaries == True:
 	debug_lists_process = threading.Thread(target=debug_lists_and_dictionaries, args=()) # Create a process instance.
 	thread_object = debug_lists_process.start() # Start the process in it'own thread.
+
+# Start the silent debugger process that gathers file processing debug data for the last couple of hours (default 8 hours).
+# This gathered info can be written to disk by sending LoudnessCorrection a signal.
+debug_file_processing_process = threading.Thread(target=manage_file_processing_debug_information, args=()) # Create a process instance.
+thread_object = debug_file_processing_process.start() # Start the process in it'own thread.
 
 # Print version information to screen
 if silent == False:
@@ -4031,108 +4113,6 @@ while True:
 		# Wait one second before checking if processor cores have become free and more calculation processes can be started.
 		time.sleep(1)
 		loop_counter = loop_counter + 1
-
-
-
-
-
-
-
-
-		# Fixme: Delete these debugging lines.
-		if len(loudness_calculation_queue) == 0:
-			
-			if len(debug_complete_final_information_for_all_file_processing_dict) != 0:
-
-				print()
-				print('len(debug_temporary_dict_for_integrated_loudness_calculation_information) =', len(debug_temporary_dict_for_integrated_loudness_calculation_information))
-				print('len(debug_temporary_dict_for_timeslice_calculation_information) =', len(debug_temporary_dict_for_timeslice_calculation_information))
-				print('len(debug_temporary_dict_for_all_file_processing_information) =', len(debug_temporary_dict_for_all_file_processing_information))
-				print('len(debug_complete_final_information_for_all_file_processing_dict) =', len(debug_complete_final_information_for_all_file_processing_dict))
-				print()
-				
-				print('\033[7m' + '################################################################################################################################'  + '\033[0m')
-				print()
-
-				for item in debug_complete_final_information_for_all_file_processing_dict:
-					
-					print(item)
-					print('------------------------------------------------------------------------------------------------------')
-					print()
-					
-					debug_list_for_one_file = debug_complete_final_information_for_all_file_processing_dict[item]
-					
-					for counter in range(0, len(debug_list_for_one_file), 2):
-						item_1 = str(debug_list_for_one_file[counter])
-						item_2 = str(debug_list_for_one_file[counter + 1])
-						if item_1 == 'Start Time':
-							item_2 = item_2 + '\n'
-						if item_1 == 'Stop Time':
-							item_1 = '\n' + item_1
-							item_2 = item_2 + '\n'
-						if item_1 == 'Stream Filename':
-							item_1 = '\n\t' + item_1
-							item_2 = item_2 + '\n'
-						if (item_1 != 'Start Time') and (item_1 != 'Stop Time'):
-							item_1 = '\t' + item_1
-						if ('Subprocess Name'not in item_1) and (item_1 != 'Start Time') and (item_1 != 'Stop Time'):
-							item_1 = '\t' + item_1
-						if ('error message' in item_1.lower().replace('_',' ')) and (item_2 != ''):
-							item_2 = '\033[7m' + item_2  + '\033[0m'
-						print(item_1, '=', item_2)
-					print()
-				print()
-			
-			# If the dictionary was not empty an error happened, show me which information did not get moved to the main debugging dictionary.
-			if debug_temporary_dict_for_timeslice_calculation_information != 0:
-
-				print()
-				print('-----------------------------------------------------------------------------------------------------------------')
-				print('len(debug_temporary_dict_for_timeslice_calculation_information) =',len(debug_temporary_dict_for_timeslice_calculation_information))
-				print()
-
-				for item in debug_temporary_dict_for_timeslice_calculation_information:
-					print('\t' + item)
-					print('\t------------------------------------------------------------------------------------------------------')
-					print('\t', end='')
-					print(debug_temporary_dict_for_timeslice_calculation_information[item])
-					print()
-				print()
-
-			# If the dictionary was not empty an error happened, show me which information did not get moved to the main debugging dictionary.
-			if debug_temporary_dict_for_integrated_loudness_calculation_information != 0:
-
-				print()
-				print('-----------------------------------------------------------------------------------------------------------------')
-				print('len(debug_temporary_dict_for_integrated_loudness_calculation_information) =',len(debug_temporary_dict_for_integrated_loudness_calculation_information))
-				print()
-
-				for item in debug_temporary_dict_for_integrated_loudness_calculation_information:
-					print('\t' + item)
-					print('\t------------------------------------------------------------------------------------------------------')
-					print('\t', end='')
-					print(debug_temporary_dict_for_integrated_loudness_calculation_information[item])
-					print()
-				print()
-
-			# If the dictionary was not empty an error happened, show me which information did not get moved to the main debugging dictionary.
-			if debug_temporary_dict_for_all_file_processing_information != 0:
-
-				print()
-				print('-----------------------------------------------------------------------------------------------------------------')
-				print('len(debug_temporary_dict_for_all_file_processing_information) =',len(debug_temporary_dict_for_all_file_processing_information))
-				print()
-
-				for item in debug_temporary_dict_for_all_file_processing_information:
-					print('\t' + item)
-					print('\t------------------------------------------------------------------------------------------------------')
-					print('\t', end='')
-					print(debug_temporary_dict_for_all_file_processing_information[item])
-					print()
-				print()
-
-
-
 					
 	# Check if the time between directory polls has expired and a new poll needs to be made. One advacement of the counter is approximately one second. Default time between directory polls is 5 seconds.
 	if loop_counter >= delay_between_directory_reads:

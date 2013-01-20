@@ -1,3 +1,7 @@
+LoudnessCorrection Version 203
+-------------------------------
+- Even more untested debugging code, the new debugging info gathering functionality is almost ready.
+
 LoudnessCorrection Version 202
 -------------------------------
 - Bugfix: Unit for difference from target loudness was dB in loudness history graphics file, corrected to LU.
