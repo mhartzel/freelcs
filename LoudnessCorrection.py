@@ -35,7 +35,7 @@ import pickle
 import math
 import copy
 
-version = '203'
+version = '204'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -71,7 +71,7 @@ debug_temporary_dict_for_timeslice_calculation_information = {}
 
 # Debug information about file processing is stored in this dictionary.
 # This information is later appended to 'debug_complete_final_information_for_all_file_processing_dict'. 
-debug_temporary_dict_for_all_file_processing_information ={} 
+debug_temporary_dict_for_all_file_processing_information = {} 
 
 # All file processing debug information from the temp dictionaries defined above is gathered to this dictionary and later saved to disk.
 debug_complete_final_information_for_all_file_processing_dict = {} 
@@ -646,6 +646,7 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 
 	debug_information_list = []
 	error_message = ''
+	gnuplot_commands = []
 
 	# Save some debug information. Items are always saved in pairs (Title, value) so that the list is easy to parse later.
 	if filename in debug_temporary_dict_for_all_file_processing_information:
@@ -780,6 +781,17 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 			error_message = 'ERROR !!! in libebur128 timeslice calculation: ' * english + 'VIRHE !!! libebur128:n aanekkyystaulukon laskennassa: ' * finnish +  timeslice_calculation_error_message
 			send_error_messages_to_screen_logfile_email(error_message + ': ' + filename, [])
 			error_message_to_print_with_gnuplot = error_message_to_print_with_gnuplot + timeslice_calculation_error_message + '\\n'
+		
+		# Save some debug information.
+		debug_information_list.append('gnuplot_commands')
+		debug_information_list.append(gnuplot_commands)
+		debug_information_list.append('error_message')
+		debug_information_list.append(error_message)
+		unix_time_in_ticks, realtime = get_realtime(english, finnish)
+		debug_information_list.append('Stop Time')
+		debug_information_list.append(unix_time_in_ticks)
+		debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
+		
 		create_gnuplot_commands_for_error_message(error_message_to_print_with_gnuplot, filename, directory_for_temporary_files, directory_for_results, english, finnish)		
 	else:
 		# Loudness calculation succeeded.
@@ -867,16 +879,15 @@ def create_gnuplot_commands_for_error_message(error_message, filename, directory
 	global debug_temporary_dict_for_all_file_processing_information
 	
 	debug_information_list = []
-	error_message = ''
 
 	# Save some debug information. Items are always saved in pairs (Title, value) so that the list is easy to parse later.
 	if filename in debug_temporary_dict_for_all_file_processing_information:
 		debug_information_list = debug_temporary_dict_for_all_file_processing_information[filename]
 	unix_time_in_ticks, realtime = get_realtime(english, finnish)
 	debug_information_list.append('Start Time')
-	debug_information_list.append(create_gnuplot_commands_for_error_message)
+	debug_information_list.append(unix_time_in_ticks)
 	debug_information_list.append('Subprocess Name')
-	debug_information_list.append('create_gnuplot_commands')
+	debug_information_list.append('create_gnuplot_commands_for_error_message')
 	debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 
 	# Write 4 coordinates to gnuplot data file. These 4 coordinates are used to draw a big red cross on the error graphics file.
@@ -1651,7 +1662,7 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 		send_error_messages_to_screen_logfile_email(error_message, [])
 
 	# Calculate file duration from sample count.
-	audio_duration = sample_count / sample_rate
+	audio_duration = int(sample_count / sample_rate)
 
 
 
@@ -2207,42 +2218,43 @@ def debug_lists_and_dictionaries():
 	global silent
 	global web_page_path
 	global directory_for_error_logs
+	global language
+	global english
+	global finnish
+	global target_path
+	global hotfolder_path
+	global directory_for_temporary_files
+	global directory_for_results
+	global libebur128_path
+	global delay_between_directory_reads
+	global number_of_processor_cores
+	global file_expiry_time
+	global natively_supported_file_formats
+	global ffmpeg_output_format
+	global write_html_progress_report
+	global html_progress_report_write_interval
+	global web_page_name
+	global heartbeat
+	global heartbeat_file_name
+	global heartbeat_write_interval
+	global where_to_send_error_messages
+	global send_error_messages_to_logfile
+	global send_error_messages_by_email
+	global email_sending_details
+
 	list_printouts = []
 	list_printouts_old_values = []
 	debug_messages_path = web_page_path
 	time_to_start_writing_to_a_new_file = int(time.time() + 86400) # Write debug info to a new file every 24 hours (starting from LoudnessCorrection startup time).
 	real_time_string = get_realtime(english, finnish)[1]
-	debug_messages_file = 'debug_messages-' + real_time_string + '.txt' # Debug messages filename is 'debug_messages-' + current date + time
+	debug_messages_file = 'debug-variables_lists_and_dictionaries-' + real_time_string + '.txt' # Debug messages filename is 'debug_messages-' + current date + time
 	values_read_from_configfile = []
 	
 	# If LoudnessCorrection read config values from a file, then all_settings_dict is not empty.
 	# Store values read from configfile to a list, so that the values can be saved at the beginning of the list and dictionary debug info file.
 	if all_settings_dict != {}:
+
 		# Print variables read from the configfile. This is useful for debugging settings previously saved in a file.
-		global language
-		global english
-		global finnish
-		global target_path
-		global hotfolder_path
-		global directory_for_temporary_files
-		global directory_for_results
-		global libebur128_path
-		global delay_between_directory_reads
-		global number_of_processor_cores
-		global file_expiry_time
-		global natively_supported_file_formats
-		global ffmpeg_output_format
-		global write_html_progress_report
-		global html_progress_report_write_interval
-		global web_page_name
-		global heartbeat
-		global heartbeat_file_name
-		global heartbeat_write_interval
-		global where_to_send_error_messages
-		global send_error_messages_to_logfile
-		global send_error_messages_by_email
-		global email_sending_details
-		
 		title_text = 'Local variable values after reading the configfile: ' + configfile_path + ' are:'
 		values_read_from_configfile.append(str((len(title_text) + 1) * '-'))
 		values_read_from_configfile.append(title_text)
@@ -3325,67 +3337,72 @@ def debug_write_loudness_calculation_info_to_a_logfile(filename, integrated_loud
 		error_message = 'Error opening loudness calculation logfile for writing ' * english + 'Äänekkyyslogitiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
 		send_error_messages_to_screen_logfile_email(error_message, [])
 			
-def manage_file_processing_debug_information():
+def debug_manage_file_processing_debug_information():
 	
 	# This subroutine handles file processing debug information. LoudnessCorrection holds a couple of hours of debug data in memory (default 8 hours) and deletes info older than that.
 	# If debug debug_lists_and_dictionaries = True, then this subroutine periodically saves debug info to disk as a pickle.
 	# If debug mode is activated by sending a signal to LoudnessCorrection, then the program saves info of the last 8 hours to disk and continues saving info until debug is cancelled by sending the same signal again.
 
 	global debug_complete_final_information_for_all_file_processing_dict
-	global debug_lists_and_dictionaries
+	global debug_file_processing_processing
 	global english
 	global finnish
 
-	debug_info_expiry_time = 8 * 60 * 60 # How old debug data will be automatically deleted when debug mode is off and info is not saved to disk. Default = 8 hours.
+	debug_info_expiry_time = 8 * 60 * 60 # How old debug data will be automatically deleted when debug mode is off. Default = Keep processing data of last 8 hours.
 	debug_information_save_interval = 10 * 60 # How often do we save debug information to disk. Default 10 minutes.
 	real_time_string = get_realtime(english, finnish)[1]
-	filename_for_processing_debug_info = 'file_processing_debug_info-' + real_time_string + '.pickle'
+	filename_for_processing_debug_info = 'debug-file_processing_info-' + real_time_string + '.pickle'
 	filename_change_interval = 24 * 60 * 60 # Periodically change filename where to save to. Default 24 hours starting from LoudnessCorrection startup.
 	filename_last_change_time = 0
 
 	while True:
 
-		if debug_lists_and_dictionaries == False:
+		if debug_file_processing == False:
 
 			# Find debug data that is too old and delete it.
-			for filename in debug_complete_final_information_for_all_file_processing_dict:
+			list_of_dictionary_keys = list(debug_complete_final_information_for_all_file_processing_dict)
+
+			for filename in list_of_dictionary_keys:
 				info_timestamp = debug_complete_final_information_for_all_file_processing_dict[filename][1]
 				if int(time.time()) >= int(info_timestamp + debug_info_expiry_time):
 					del debug_complete_final_information_for_all_file_processing_dict[filename]
 
 		else:
-			# Debug mode is on, save data periodically to disk.
+			# Debug mode is on, save data periodically to disk
 
+			# Save the dictionary to disk it is not empty.
+			if len(debug_complete_final_information_for_all_file_processing_dict) != 0:
+				try:
+					with open(directory_for_error_logs + os.sep + filename_for_processing_debug_info, 'wb') as filehandler:
+						pickle.dump(debug_complete_final_information_for_all_file_processing_dict, filehandler)
+						filehandler.flush() # Flushes written data to os cache
+						os.fsync(filehandler.fileno()) # Flushes os cache to disk
+
+				except KeyboardInterrupt:
+					print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
+					sys.exit(0)
+				except IOError as reason_for_error:
+					error_message = 'Error opening debug file processing pickle - file  for writing ' * english + 'Tiedostoprosessoinnin debug - tiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
+					send_error_messages_to_screen_logfile_email(error_message, [])
+				except OSError as reason_for_error:
+					error_message = 'Error opening debug file processing pickle - file  for writing ' * english + 'Tiedostoprosessoinnin debug - tiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
+					send_error_messages_to_screen_logfile_email(error_message, [])
+			
 			# Check if we have saved too long to the same file and need to change the filename.
-			if int(time.time()) >= int(filename_last_change_time + filename_change_interval)
+			if int(time.time()) >= int(filename_last_change_time + filename_change_interval):
 
 				real_time_string = get_realtime(english, finnish)[1]
-				filename_for_processing_debug_info = 'file_processing_debug_info-' + real_time_string + '.pickle'
+				filename_for_processing_debug_info = 'debug-file_processing_info-' + real_time_string + '.pickle'
 				filename_last_change_time = int(time.time())
 				
-				# We have changed the filename, delete all debug data that is older that file save interval and delete it.
+				# We have changed the filename, delete all debug data that is older than file save interval + 1 minute and delete it.
 				# This takes care that each file saved don't have too much duplicate data in them.
-				for filename in debug_complete_final_information_for_all_file_processing_dict:
+				list_of_dictionary_keys = list(debug_complete_final_information_for_all_file_processing_dict)
+				
+				for filename in list_of_dictionary_keys:
 					info_timestamp = debug_complete_final_information_for_all_file_processing_dict[filename][1]
-					if int(time.time()) >= int(info_timestamp + debug_information_save_interval):
+					if int(time.time()) >= int(info_timestamp + debug_information_save_interval + 60):
 						del debug_complete_final_information_for_all_file_processing_dict[filename]
-	i
-			# Save the file.
-			try:
-				with open(directory_for_error_logs + os.sep + filename_for_processing_debug_info, 'wb') as filehandler:
-					pickle.dump(debug_complete_final_information_for_all_file_processing_dict, filehandler)
-					filehandler.flush() # Flushes written data to os cache
-					os.fsync(filehandler.fileno()) # Flushes os cache to disk
-
-			except KeyboardInterrupt:
-				print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
-				sys.exit(0)
-			except IOError as reason_for_error:
-				error_message = 'Error opening debug file processing pickle - file  for writing ' * english + 'Tiedostoprosessoinnin debug - tiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
-				send_error_messages_to_screen_logfile_email(error_message, [])
-			except OSError as reason_for_error:
-				error_message = 'Error opening debug file processing pickle - file  for writing ' * english + 'Tiedostoprosessoinnin debug - tiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
-				send_error_messages_to_screen_logfile_email(error_message, [])
 
 		# Wait a couple of minutes before processing data again.
 		time.sleep(debug_information_save_interval)
@@ -3683,7 +3700,7 @@ if debug_lists_and_dictionaries == True:
 
 # Start the silent debugger process that gathers file processing debug data for the last couple of hours (default 8 hours).
 # This gathered info can be written to disk by sending LoudnessCorrection a signal.
-debug_file_processing_process = threading.Thread(target=manage_file_processing_debug_information, args=()) # Create a process instance.
+debug_file_processing_process = threading.Thread(target=debug_manage_file_processing_debug_information, args=()) # Create a process instance.
 thread_object = debug_file_processing_process.start() # Start the process in it'own thread.
 
 # Print version information to screen

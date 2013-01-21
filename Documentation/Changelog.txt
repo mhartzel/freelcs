@@ -1,3 +1,7 @@
+LoudnessCorrection Version 204
+------------------------------
+- Corrected numerous bugs and misspellings I did when writing new debug info gathering code in version 198 - 203 :)
+
 LoudnessCorrection Version 203
 -------------------------------
 - Even more untested debugging code, the new debugging info gathering functionality is almost ready.
