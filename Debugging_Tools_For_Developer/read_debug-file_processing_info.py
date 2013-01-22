@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 
-# This program reads a 'debug-file_processing_info.pickle' the and displays all values in it.
+# This program reads a 'debug-file_processing_info.pickle' and displays all values in it.
 
 import pickle
 import sys

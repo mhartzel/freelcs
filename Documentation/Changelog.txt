@@ -1,3 +1,7 @@
+LoudnessCorrection Version 207
+------------------------------
+- Bugfix: Corrected some more bugs found in the new debugging code :)
+
 LoudnessCorrection Version 205
 ------------------------------
 - Bugfix: Corrected some more bugs in the new debugging code.

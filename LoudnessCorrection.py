@@ -36,7 +36,7 @@ import math
 import copy
 import signal
 
-version = '205'
+version = '207'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -2215,7 +2215,7 @@ def write_to_heartbeat_file_thread():
 			error_message = 'Error opening HeartBeat commandfile for writing ' * english + 'HeartBeat - tiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
 			send_error_messages_to_screen_logfile_email(error_message, [])
 			
-def debug_lists_and_dictionaries():
+def debug_lists_and_dictionaries_thread():
 	
 	# This subroutine is used to print out the length and contents of lists and dictionaries this program uses.
 	# This subroutine is only used for debugging purposes.
@@ -2255,6 +2255,10 @@ def debug_lists_and_dictionaries():
 	global send_error_messages_to_logfile
 	global send_error_messages_by_email
 	global email_sending_details
+	global debug_temporary_dict_for_integrated_loudness_calculation_information
+	global debug_temporary_dict_for_timeslice_calculation_information
+	global debug_temporary_dict_for_all_file_processing_information
+	global debug_complete_final_information_for_all_file_processing_dict
 
 	list_printouts = []
 	list_printouts_old_values = []
@@ -2314,6 +2318,12 @@ def debug_lists_and_dictionaries():
 	while True:
 	
 		if debug_lists_and_dictionaries == True:
+
+			keys_of_debug_temporary_dict_for_integrated_loudness_calculation_information = set(debug_temporary_dict_for_integrated_loudness_calculation_information)
+			keys_of_debug_temporary_dict_for_timeslice_calculation_information = set(debug_temporary_dict_for_timeslice_calculation_information)
+			keys_of_debug_temporary_dict_for_all_file_processing_information = set(debug_temporary_dict_for_all_file_processing_information)
+			keys_of_debug_complete_final_information_for_all_file_processing_dict = set(debug_complete_final_information_for_all_file_processing_dict)
+
 			list_printouts = []
 			list_printouts.append('len(list_of_growing_files)= ' + str(len(list_of_growing_files)) + ' list_of_growing_files = ' + str(list_of_growing_files))
 			list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
@@ -2340,6 +2350,14 @@ def debug_lists_and_dictionaries():
 			list_printouts.append('len(error_messages_to_email_later_list)= ' + str(len(error_messages_to_email_later_list)) + ' error_messages_to_email_later_list = ' + str(error_messages_to_email_later_list))
 			list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
 			list_printouts.append('len(integrated_loudness_calculation_results)= ' + str(len(integrated_loudness_calculation_results)) + ' integrated_loudness_calculation_results = ' + str(integrated_loudness_calculation_results))
+			list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
+			list_printouts.append('len(debug_temporary_dict_for_integrated_loudness_calculation_information)= ' + str(len(debug_temporary_dict_for_integrated_loudness_calculation_information)) + ' keys_of_debug_temporary_dict_for_integrated_loudness_calculation_information = ' + str(keys_of_debug_temporary_dict_for_integrated_loudness_calculation_information))
+			list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
+			list_printouts.append('len(debug_temporary_dict_for_timeslice_calculation_information)= ' + str(len(debug_temporary_dict_for_timeslice_calculation_information)) + ' keys_of_debug_temporary_dict_for_timeslice_calculation_information = ' + str(keys_of_debug_temporary_dict_for_timeslice_calculation_information))
+			list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
+			list_printouts.append('len(debug_temporary_dict_for_all_file_processing_information)= ' + str(len(debug_temporary_dict_for_all_file_processing_information)) + ' keys_of_debug_temporary_dict_for_all_file_processing_information = ' + str(keys_of_debug_temporary_dict_for_all_file_processing_information))
+			list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
+			list_printouts.append('len(debug_complete_final_information_for_all_file_processing_dict)= ' + str(len(debug_complete_final_information_for_all_file_processing_dict)) + ' keys_of_debug_complete_final_information_for_all_file_processing_dict = ' + str(keys_of_debug_complete_final_information_for_all_file_processing_dict))
 
 			# Only write list and dictionary debug info to file if the information has changed.
 			if list_printouts != list_printouts_old_values:
@@ -3356,7 +3374,7 @@ def debug_write_loudness_calculation_info_to_a_logfile(filename, integrated_loud
 		error_message = 'Error opening loudness calculation logfile for writing ' * english + 'Äänekkyyslogitiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
 		send_error_messages_to_screen_logfile_email(error_message, [])
 			
-def debug_manage_file_processing_debug_information():
+def debug_manage_file_processing_information_thread():
 	
 	# This subroutine handles file processing debug information. LoudnessCorrection holds a couple of hours of debug data in memory (default 8 hours) and deletes info older than that.
 	# If debug_file_processing = True, then this subroutine periodically saves debug info to disk as a pickle.
@@ -3771,13 +3789,13 @@ if heartbeat == True:
 	heartbeat_process = threading.Thread(target=write_to_heartbeat_file_thread, args=()) # Create a process instance.
 	thread_object = heartbeat_process.start() # Start the process in it'own thread.
 
-# Start a debigging process that saves the contents of variables, main lists and dictionaries once a minute to a file.
-debug_lists_process = threading.Thread(target=debug_lists_and_dictionaries, args=()) # Create a process instance.
+# Start a debugging process that saves the contents of variables, main lists and dictionaries once a minute to a file.
+debug_lists_process = threading.Thread(target=debug_lists_and_dictionaries_thread, args=()) # Create a process instance.
 thread_object = debug_lists_process.start() # Start the process in it'own thread.
 
 # Start the silent debugger process that gathers file processing debug data for the last couple of hours (default 8 hours).
 # This gathered info can be written to disk by sending LoudnessCorrection a signal.
-debug_file_processing_process = threading.Thread(target=debug_manage_file_processing_debug_information, args=()) # Create a process instance.
+debug_file_processing_process = threading.Thread(target=debug_manage_file_processing_information_thread, args=()) # Create a process instance.
 thread_object = debug_file_processing_process.start() # Start the process in it'own thread.
 
 # Define a handler routine for signals recieved outside of program.
@@ -4034,13 +4052,13 @@ while True:
 									if 'email' in error_message_destinations:
 										error_message_destinations.remove('email')
 								send_error_messages_to_screen_logfile_email(error_message + ': ' + filename, error_message_destinations)
+								
+							create_gnuplot_commands_for_error_message(error_message, filename, directory_for_temporary_files, directory_for_results, english, finnish)
+							unsupported_ignored_files_dict[filename] = int(time.time())
 							
 							# Remove file processing information from temporary debug dictionary, as file is not supported, it will not be processed and this info is no longer needed.
 							temporary_gathering_list = debug_temporary_dict_for_all_file_processing_information.pop(filename)
 							debug_complete_final_information_for_all_file_processing_dict[filename] = temporary_gathering_list
-								
-							create_gnuplot_commands_for_error_message(error_message, filename, directory_for_temporary_files, directory_for_results, english, finnish)
-							unsupported_ignored_files_dict[filename] = int(time.time())
 
 						# If file duration was not found, or it is less than one second, then we have an error.
 						# Don't process file, inform user by plotting an error graphics file and add the filename to the list of files we will ignore.
@@ -4053,12 +4071,12 @@ while True:
 								error_message_destinations.remove('email')
 							send_error_messages_to_screen_logfile_email(error_message + ': ' + filename, error_message_destinations)
 							
+							create_gnuplot_commands_for_error_message(error_message, filename, directory_for_temporary_files, directory_for_results, english, finnish)
+							unsupported_ignored_files_dict[filename] = int(time.time())
+							
 							# Remove file processing information from temporary debug dictionary, as file is not supported, it will not be processed and this info is no longer needed.
 							temporary_gathering_list = debug_temporary_dict_for_all_file_processing_information.pop(filename)
 							debug_complete_final_information_for_all_file_processing_dict[filename] = temporary_gathering_list
-							
-							create_gnuplot_commands_for_error_message(error_message, filename, directory_for_temporary_files, directory_for_results, english, finnish)
-							unsupported_ignored_files_dict[filename] = int(time.time())
 
 						# The time slice value used in loudness calculation is normally 3 seconds. When we calculate short files <12 seconds, it's more convenient to use a smaller value of 0.5 seconds to get more detailed loudness graphics.
 						if  (audio_duration_rounded_to_seconds > 0) and (audio_duration_rounded_to_seconds < 12):
