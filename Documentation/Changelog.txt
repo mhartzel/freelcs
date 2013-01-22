@@ -1,3 +1,10 @@
+LoudnessCorrection Version 205
+------------------------------
+- Bugfix: Corrected some more bugs in the new debugging code.
+- Function 'debug_file_processing' can be swithced on / off by sending the running LoudnessCorrection - process the SIGUSR1 - signal.
+- Function 'debug_all' can be swithced on / off by sending the running LoudnessCorrection - process the SIGUSR2 - signal.
+- Added tools to read debugging files that LoudnessCorrection.py writes.
+
 LoudnessCorrection Version 204
 ------------------------------
 - Corrected numerous bugs and misspellings I did when writing new debug info gathering code in version 198 - 203 :)

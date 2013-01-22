@@ -34,8 +34,9 @@ import email.mime.multipart
 import pickle
 import math
 import copy
+import signal
 
-version = '204'
+version = '205'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -57,10 +58,6 @@ else:
 	finnish = 1
 
 # Assign some debug variables.
-debug_all = False
-debug_lists_and_dictionaries  = False
-debug_file_processing = False
-
 silent = False # Use True if you don't want this programs to print anything on screen (useful if you want to start this program from Linux init scripts).
 
 # Information about integrated loudness calculation and time slice processing is stored in separate dictionaries.
@@ -77,9 +74,12 @@ debug_temporary_dict_for_all_file_processing_information = {}
 debug_complete_final_information_for_all_file_processing_dict = {} 
 
 # Parse commandline arguments and assign values to variables
+debug_all = False
+debug_lists_and_dictionaries  = False
+debug_file_processing = False
+save_measurement_results_to_a_file = False
 configfile_path = ''
 configfile_found = False
-save_measurement_results_to_a_file = False
 target_path = ''
 
 arguments_remaining = copy.deepcopy(sys.argv[1:])
@@ -350,7 +350,6 @@ def calculate_integrated_loudness(event_for_integrated_loudness_calculation, fil
 		debug_information_list.append('integrated_loudness_calculation_stderr_string')
 		debug_information_list.append(' '.join(integrated_loudness_calculation_stderr_string.replace('#','').replace('[','').replace(']','').replace('\n','').split())) # Remove # - characters and white space from string.
 		debug_temporary_dict_for_integrated_loudness_calculation_information[filename] = debug_information_list
-
 
 		# Test if libebur128 was successful in processing the file or not.
 		# If libebur128 can successfully process the file it prints the results to its stdout and the progress printout to stderr.
@@ -747,8 +746,20 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 		plotfile_x_axis_time_information.append(')')
 		plotfile_x_axis_time_information = ''.join(plotfile_x_axis_time_information)
 	
+	# Save some debug information.
+	debug_information_list.append('Message')
+	debug_information_list.append('Calling subroutine: get_audiofile_info_with_sox_and_determine_output_format')
+	
 	# Get technical info from audio file and determine what the ouput format will be
 	channel_count, sample_rate, bit_depth, sample_count, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, audio_channels_will_be_split_to_separate_mono_files, audio_duration, output_file_too_big_to_split_to_separate_wav_channels = get_audiofile_info_with_sox_and_determine_output_format(directory_for_temporary_files, hotfolder_path, filename)
+
+	# Write details of loudness measurement of the file to a logfile.
+	if save_measurement_results_to_a_file == True:
+		debug_write_loudness_calculation_info_to_a_logfile(filename, integrated_loudness, loudness_range, highest_peak_db, channel_count, sample_rate, bit_depth, audio_duration)
+
+	# Save some debug information.
+	debug_information_list.append('Message')
+	debug_information_list.append('Returned from subroutine: get_audiofile_info_with_sox_and_determine_output_format')
 	
 	# If file size exceeds 4 GB, a warning message must be displayed informing the user that the
 	# outputfile will either be split to separate mono channels or stored in flac - format.
@@ -1253,6 +1264,9 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 				debug_information_list.append(peak_measurement_method )
 				debug_information_list.append('highest_peak_db')
 				debug_information_list.append(highest_peak_db)
+
+				# Remove debug data about integrated loudness measurement of temporary peak limited file since this data is already appended to debug dictionary by the lines above.
+				del debug_temporary_dict_for_integrated_loudness_calculation_information[temporary_peak_limited_targetfile]
 
 				if audio_channels_will_be_split_to_separate_mono_files == False:
 				
@@ -2299,77 +2313,78 @@ def debug_lists_and_dictionaries():
 
 	while True:
 	
-		list_printouts = []
-		list_printouts.append('len(list_of_growing_files)= ' + str(len(list_of_growing_files)) + ' list_of_growing_files = ' + str(list_of_growing_files))
-		list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
-		list_printouts.append('len(files_queued_to_loudness_calculation)= ' + str(len(files_queued_to_loudness_calculation)) + ' files_queued_to_loudness_calculation = ' + str(files_queued_to_loudness_calculation))
-		list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
-		list_printouts.append('len(loudness_calculation_queue)= ' + str(len(loudness_calculation_queue)) + ' loudness_calculation_queue = ' + str(loudness_calculation_queue))
-		list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
-		list_printouts.append('len(new_hotfolder_filelist_dict)= ' + str(len(new_hotfolder_filelist_dict)) + ' new_hotfolder_filelist_dict = ' + str(new_hotfolder_filelist_dict))
-		list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
-		list_printouts.append('len(old_hotfolder_filelist_dict)= ' +  str(len(old_hotfolder_filelist_dict)) + ' old_hotfolder_filelist_dict = ' + str(old_hotfolder_filelist_dict))
-		list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
-		list_printouts.append('len(new_results_directory_filelist_dict)= '+  str(len(new_results_directory_filelist_dict)) + ' new_results_directory_filelist_dict = ' + str(new_results_directory_filelist_dict))
-		list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
-		list_printouts.append('len(old_results_directory_filelist_dict)= '+  str(len(old_results_directory_filelist_dict)) + ' old_results_directory_filelist_dict = ' + str(old_results_directory_filelist_dict))
-		list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
-		list_printouts.append('len(unsupported_ignored_files_dict)= ' + str(len(unsupported_ignored_files_dict)) + ' unsupported_ignored_files_dict = ' + str(unsupported_ignored_files_dict))
-		list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
-		list_printouts.append('len(files_queued_for_deletion)= ' + str(len(files_queued_for_deletion)) + ' files_queued_for_deletion = ' + str(files_queued_for_deletion))
-		list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
-		list_printouts.append('len(completed_files_list)= ' + str(len(completed_files_list)) + ' completed_files_list = ' + str(completed_files_list))
-		list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
-		list_printouts.append('len(completed_files_dict)= ' + str(len(completed_files_dict)) + ' completed_files_dict = ' + str(completed_files_dict))
-		list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
-		list_printouts.append('len(error_messages_to_email_later_list)= ' + str(len(error_messages_to_email_later_list)) + ' error_messages_to_email_later_list = ' + str(error_messages_to_email_later_list))
-		list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
-		list_printouts.append('len(integrated_loudness_calculation_results)= ' + str(len(integrated_loudness_calculation_results)) + ' integrated_loudness_calculation_results = ' + str(integrated_loudness_calculation_results))
+		if debug_lists_and_dictionaries == True:
+			list_printouts = []
+			list_printouts.append('len(list_of_growing_files)= ' + str(len(list_of_growing_files)) + ' list_of_growing_files = ' + str(list_of_growing_files))
+			list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
+			list_printouts.append('len(files_queued_to_loudness_calculation)= ' + str(len(files_queued_to_loudness_calculation)) + ' files_queued_to_loudness_calculation = ' + str(files_queued_to_loudness_calculation))
+			list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
+			list_printouts.append('len(loudness_calculation_queue)= ' + str(len(loudness_calculation_queue)) + ' loudness_calculation_queue = ' + str(loudness_calculation_queue))
+			list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
+			list_printouts.append('len(new_hotfolder_filelist_dict)= ' + str(len(new_hotfolder_filelist_dict)) + ' new_hotfolder_filelist_dict = ' + str(new_hotfolder_filelist_dict))
+			list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
+			list_printouts.append('len(old_hotfolder_filelist_dict)= ' +  str(len(old_hotfolder_filelist_dict)) + ' old_hotfolder_filelist_dict = ' + str(old_hotfolder_filelist_dict))
+			list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
+			list_printouts.append('len(new_results_directory_filelist_dict)= '+  str(len(new_results_directory_filelist_dict)) + ' new_results_directory_filelist_dict = ' + str(new_results_directory_filelist_dict))
+			list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
+			list_printouts.append('len(old_results_directory_filelist_dict)= '+  str(len(old_results_directory_filelist_dict)) + ' old_results_directory_filelist_dict = ' + str(old_results_directory_filelist_dict))
+			list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
+			list_printouts.append('len(unsupported_ignored_files_dict)= ' + str(len(unsupported_ignored_files_dict)) + ' unsupported_ignored_files_dict = ' + str(unsupported_ignored_files_dict))
+			list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
+			list_printouts.append('len(files_queued_for_deletion)= ' + str(len(files_queued_for_deletion)) + ' files_queued_for_deletion = ' + str(files_queued_for_deletion))
+			list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
+			list_printouts.append('len(completed_files_list)= ' + str(len(completed_files_list)) + ' completed_files_list = ' + str(completed_files_list))
+			list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
+			list_printouts.append('len(completed_files_dict)= ' + str(len(completed_files_dict)) + ' completed_files_dict = ' + str(completed_files_dict))
+			list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
+			list_printouts.append('len(error_messages_to_email_later_list)= ' + str(len(error_messages_to_email_later_list)) + ' error_messages_to_email_later_list = ' + str(error_messages_to_email_later_list))
+			list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
+			list_printouts.append('len(integrated_loudness_calculation_results)= ' + str(len(integrated_loudness_calculation_results)) + ' integrated_loudness_calculation_results = ' + str(integrated_loudness_calculation_results))
 
-		# Only write list and dictionary debug info to file if the information has changed.
-		if list_printouts != list_printouts_old_values:
-			
-			# If it has been 24 hours since starting to write to the file, then start writing to a new file.
-			if int(time.time()) >= time_to_start_writing_to_a_new_file:
-				time_to_start_writing_to_a_new_file = int(time.time() + 86400) # Write debug info to a new file every 24 hours (starting from LoudnessCorrection startup time).
-				real_time_string = get_realtime(english, finnish)[1]
-				debug_messages_file = 'debug_messages-' + real_time_string + '.txt' # Debug messages filename is 'debug_messages-' + current date + time
-				first_write_to_a_new_logfile = True
-			else:
-				first_write_to_a_new_logfile = False
-
-			# Write list_printouts to disk. First write it to temporary directory and then move to the target directory.
-			try:
-				real_time_string = get_realtime(english, finnish)[1]
+			# Only write list and dictionary debug info to file if the information has changed.
+			if list_printouts != list_printouts_old_values:
 				
-				# Move debug_log - file to the temp directory so we can append new messages to it.
-				if os.path.exists(directory_for_error_logs + os.sep + debug_messages_file):
-					shutil.move(directory_for_error_logs + os.sep + debug_messages_file, directory_for_temporary_files + os.sep + debug_messages_file)
-				with open(directory_for_temporary_files + os.sep + debug_messages_file, 'at') as debug_messages_filehandler:
-					if first_write_to_a_new_logfile == True:
-						for item in values_read_from_configfile:
-							debug_messages_filehandler.write(item + '\n')
-					debug_messages_filehandler.write('###################################################################################################################################################################################\n')
+				# If it has been 24 hours since starting to write to the file, then start writing to a new file.
+				if int(time.time()) >= time_to_start_writing_to_a_new_file:
+					time_to_start_writing_to_a_new_file = int(time.time() + 86400) # Write debug info to a new file every 24 hours (starting from LoudnessCorrection startup time).
+					real_time_string = get_realtime(english, finnish)[1]
+					debug_messages_file = 'debug_messages-' + real_time_string + '.txt' # Debug messages filename is 'debug_messages-' + current date + time
+					first_write_to_a_new_logfile = True
+				else:
+					first_write_to_a_new_logfile = False
+
+				# Write list_printouts to disk. First write it to temporary directory and then move to the target directory.
+				try:
+					real_time_string = get_realtime(english, finnish)[1]
 					
-					debug_messages_filehandler.write('\nTimestamp = ' + real_time_string + '\n\n')
-					for item in list_printouts:
-						debug_messages_filehandler.write(item + '\n')
-					debug_messages_filehandler.write('###################################################################################################################################################################################\n')
-					debug_messages_filehandler.flush() # Flushes written data to os cache
-					os.fsync(debug_messages_filehandler.fileno()) # Flushes os cache to disk
-				shutil.move(directory_for_temporary_files + os.sep + debug_messages_file, directory_for_error_logs + os.sep + debug_messages_file)
-			except KeyboardInterrupt:
-				print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
-				sys.exit(0)
-			except IOError as reason_for_error:
-				error_message = 'Error opening debug-messages file for writing ' * english + 'Debug-tiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
-				send_error_messages_to_screen_logfile_email(error_message, [])
-			except OSError as reason_for_error:
-				error_message = 'Error opening debug-messages file for writing ' * english + 'Debug-tiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
-				send_error_messages_to_screen_logfile_email(error_message, [])
-			
-			# Save the old state of the variable so that we can see if changes happened.
-			list_printouts_old_values = list_printouts
+					# Move debug_log - file to the temp directory so we can append new messages to it.
+					if os.path.exists(directory_for_error_logs + os.sep + debug_messages_file):
+						shutil.move(directory_for_error_logs + os.sep + debug_messages_file, directory_for_temporary_files + os.sep + debug_messages_file)
+					with open(directory_for_temporary_files + os.sep + debug_messages_file, 'at') as debug_messages_filehandler:
+						if first_write_to_a_new_logfile == True:
+							for item in values_read_from_configfile:
+								debug_messages_filehandler.write(item + '\n')
+						debug_messages_filehandler.write('###################################################################################################################################################################################\n')
+						
+						debug_messages_filehandler.write('\nTimestamp = ' + real_time_string + '\n\n')
+						for item in list_printouts:
+							debug_messages_filehandler.write(item + '\n')
+						debug_messages_filehandler.write('###################################################################################################################################################################################\n')
+						debug_messages_filehandler.flush() # Flushes written data to os cache
+						os.fsync(debug_messages_filehandler.fileno()) # Flushes os cache to disk
+					shutil.move(directory_for_temporary_files + os.sep + debug_messages_file, directory_for_error_logs + os.sep + debug_messages_file)
+				except KeyboardInterrupt:
+					print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
+					sys.exit(0)
+				except IOError as reason_for_error:
+					error_message = 'Error opening debug-messages file for writing ' * english + 'Debug-tiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
+					send_error_messages_to_screen_logfile_email(error_message, [])
+				except OSError as reason_for_error:
+					error_message = 'Error opening debug-messages file for writing ' * english + 'Debug-tiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
+					send_error_messages_to_screen_logfile_email(error_message, [])
+				
+				# Save the old state of the variable so that we can see if changes happened.
+				list_printouts_old_values = list_printouts
 
 		# Sleep between writing output
 		time.sleep(30)
@@ -3320,6 +3335,10 @@ def debug_write_loudness_calculation_info_to_a_logfile(filename, integrated_loud
 	# confirmed that the results from the new version are the same as in the earlier saved file.
 	
 	global loudness_calculation_logfile_path
+
+	if loudness_calculation_logfile_path == '':	
+		loudness_calculation_logfile_path = directory_for_error_logs + os.sep + 'loudness_calculation_log-' + str(get_realtime(english, finnish)[1]) + '.txt'
+
 	loudness_calculation_data = filename + ',EndOFFileName,' + str(integrated_loudness) + ',' + str(loudness_range) + ',' + str(highest_peak_db) + ',' + str(channel_count) + ',' + str(sample_rate) + ',' + str(bit_depth) + ',' + str(int(audio_duration)) + '\n'
 	
 	try:
@@ -3340,11 +3359,11 @@ def debug_write_loudness_calculation_info_to_a_logfile(filename, integrated_loud
 def debug_manage_file_processing_debug_information():
 	
 	# This subroutine handles file processing debug information. LoudnessCorrection holds a couple of hours of debug data in memory (default 8 hours) and deletes info older than that.
-	# If debug debug_lists_and_dictionaries = True, then this subroutine periodically saves debug info to disk as a pickle.
+	# If debug_file_processing = True, then this subroutine periodically saves debug info to disk as a pickle.
 	# If debug mode is activated by sending a signal to LoudnessCorrection, then the program saves info of the last 8 hours to disk and continues saving info until debug is cancelled by sending the same signal again.
 
 	global debug_complete_final_information_for_all_file_processing_dict
-	global debug_file_processing_processing
+	global debug_file_processing
 	global english
 	global finnish
 
@@ -3353,7 +3372,8 @@ def debug_manage_file_processing_debug_information():
 	real_time_string = get_realtime(english, finnish)[1]
 	filename_for_processing_debug_info = 'debug-file_processing_info-' + real_time_string + '.pickle'
 	filename_change_interval = 24 * 60 * 60 # Periodically change filename where to save to. Default 24 hours starting from LoudnessCorrection startup.
-	filename_last_change_time = 0
+	filename_last_change_time = int(time.time())
+	old_value_of_debug_file_processing = debug_file_processing
 
 	while True:
 
@@ -3405,7 +3425,64 @@ def debug_manage_file_processing_debug_information():
 						del debug_complete_final_information_for_all_file_processing_dict[filename]
 
 		# Wait a couple of minutes before processing data again.
-		time.sleep(debug_information_save_interval)
+		# In the mean time check if user has turned debugging on by sending a signal to LoudnessCorrection.
+		# If debugging has been turned on then exit loop and save debug data immediately.
+
+		counter = 0
+		sleep_time = 10
+
+		while counter < debug_information_save_interval:
+			time.sleep(sleep_time)
+
+			if debug_file_processing != old_value_of_debug_file_processing:
+				old_value_of_debug_file_processing = debug_file_processing
+
+				if debug_file_processing == True:
+					break
+
+			counter = counter + sleep_time
+
+def signal_handler_routine(signal_number, stack_frame):
+	
+	# This routine catches SIGUSR1 and SIGUSR2 sent from the outside world to LoudnessCorrection.
+	#
+	# SIGUSR1 flips the state of variable 'debug_file_processing' between True / False which in turn starts / stops writing of file processing debug info to disk.
+	# SIGUSR2 flips the state of variable 'debug_all' between True / False which in turn starts / stops writing of all debugging information to disk.
+	#
+	# All debugging information means:
+	#
+	# - File processing
+	# - Variables lists and dictionaries
+	# - Loudness measurement results
+	#
+	# Debugging information is written to the directory '00-Error_Logs' that is in the same subdirectory as 'LoudnessCorrection'.
+
+	global debug_all
+	global debug_lists_and_dictionaries
+	global debug_file_processing
+	global save_measurement_results_to_a_file
+
+	# Handle SIGUSR1
+	if signal_number == 10:
+
+		if debug_file_processing == False:
+			debug_file_processing = True
+		else:
+			debug_file_processing = False
+
+	# Handle SIGUSR2
+	if signal_number == 12:
+
+		if debug_all == False:
+			debug_all = True
+			debug_lists_and_dictionaries  = True
+			debug_file_processing = True
+			save_measurement_results_to_a_file = True
+		else:
+			debug_all = False
+			debug_lists_and_dictionaries  = False 
+			debug_file_processing = False
+			save_measurement_results_to_a_file = False
 
 
 ##############################################################################################
@@ -3660,7 +3737,8 @@ else:
 error_logfile_path = directory_for_error_logs + os.sep + 'error_log-' + str(get_realtime(english, finnish)[1]) + '.txt' # Error log filename is 'error_log' + current date + time
 
 # Define the name of the loudness calculation logfile.
-if save_measurement_results_to_a_file == True:
+loudness_calculation_logfile_path = '' 
+if debug_file_processing == True: 
 	loudness_calculation_logfile_path = directory_for_error_logs + os.sep + 'loudness_calculation_log-' + str(get_realtime(english, finnish)[1]) + '.txt'
 
 # Get IP-Addresses of the machine.
@@ -3693,15 +3771,18 @@ if heartbeat == True:
 	heartbeat_process = threading.Thread(target=write_to_heartbeat_file_thread, args=()) # Create a process instance.
 	thread_object = heartbeat_process.start() # Start the process in it'own thread.
 
-# If debug_lists_and_dictionaries = True the script will save the contents of main lists and dictionaries once a minute to a file.
-if debug_lists_and_dictionaries == True:
-	debug_lists_process = threading.Thread(target=debug_lists_and_dictionaries, args=()) # Create a process instance.
-	thread_object = debug_lists_process.start() # Start the process in it'own thread.
+# Start a debigging process that saves the contents of variables, main lists and dictionaries once a minute to a file.
+debug_lists_process = threading.Thread(target=debug_lists_and_dictionaries, args=()) # Create a process instance.
+thread_object = debug_lists_process.start() # Start the process in it'own thread.
 
 # Start the silent debugger process that gathers file processing debug data for the last couple of hours (default 8 hours).
 # This gathered info can be written to disk by sending LoudnessCorrection a signal.
 debug_file_processing_process = threading.Thread(target=debug_manage_file_processing_debug_information, args=()) # Create a process instance.
 thread_object = debug_file_processing_process.start() # Start the process in it'own thread.
+
+# Define a handler routine for signals recieved outside of program.
+signal.signal(signal.SIGUSR1, signal_handler_routine)
+signal.signal(signal.SIGUSR2, signal_handler_routine)
 
 # Print version information to screen
 if silent == False:
