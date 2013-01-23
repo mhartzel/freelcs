@@ -36,7 +36,7 @@ import math
 import copy
 import signal
 
-version = '207'
+version = '208'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -135,49 +135,84 @@ if (configfile_path == '') and (len(arguments_remaining) > 0):
 	arguments_remaining.pop(0)
 
 if len(arguments_remaining) != 0:
-	print()
-	print('Unknown arguments:', arguments_remaining)
-	print()
+	error_message = 'Error: Unknown arguments on commandline: ' * english + 'Virhe: komentorivillä on tuntemattomia argumentteja: ' * finnish + str(arguments_remaining)
+
+	if silent == False:
+		print()
+		print(error_message)
+		print()
+	else:
+		raise Exception(error_message)
 	sys.exit(1)
 
-# If the user did not give enough arguments on the commandline print an error message.
+# If the user did not define target path on the commandline print an error message.
 if (configfile_path == '') and (target_path == ''):
-	print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)
-	print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file' * finnish )
-	print()
+	error_message = 'Error: Target path and configfile paths are not defined' * english + 'Virhe: Kohdehakemistoa ja asetustiedostoa ei ole määritelty' * finnish
+
+	if silent == False:
+		print()
+		print(error_message)
+		print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)
+		print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file' * finnish )
+		print()
+	else:
+		raise Exception(error_message)
 	sys.exit(1)
 
 if configfile_path != '':
 
 	if (os.path.exists(configfile_path) == False) or (os.access(configfile_path, os.R_OK) == False):
-		print('\n!!!!!!! Configfile does not exist or exists but is not readable !!!!!!!' * english + '\n!!!!!!! Asetustiedostoa ei ole olemassa tai siihen ei ole lukuoikeuksia !!!!!!!' * finnish)
-		print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)	
-		print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file' * finnish )
-		print()
+		error_message = 'Error: Configfile does not exist or exists but is not readable' * english + 'Virhe: Asetustiedostoa ei ole olemassa tai siihen ei ole lukuoikeuksia' * finnish
+
+		if silent == False:
+			print()
+			print(error_message)
+			print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)	
+			print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file' * finnish )
+			print()
+		else:
+			raise Exception(error_message)
 		sys.exit(1)
 
 	if os.path.isfile(configfile_path) == False:
-		print('\n!!!!!!! Configfile is not a regular file !!!!!!!' * english + '\n!!!!!!! Asetustiedosto ei ole tiedosto !!!!!!!' * finnish)
-		print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)	
-		print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file' * finnish )
-		print()
+		error_message = 'Error: Configfile is not a regular file' * english + 'Virhe: Asetustiedosto ei ole tiedosto' * finnish
+
+		if silent == False:
+			print()
+			print(error_message)
+			print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)	
+			print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file' * finnish )
+			print()
+		else:
+			raise Exception(error_message)
 		sys.exit(1)
 else:
 	if os.path.exists(target_path) == True:
 		if os.path.isdir(target_path):
 			target_path = os.sep + target_path.strip(os.sep) # If there is a slash at the end of the path name, remove it.
 		else:
-			print('\n!!!!!!! Target is not a directory !!!!!!!' * english + '\n!!!!!!! Kohde ei ole hakemisto !!!!!!!' * finnish)
+			error_message = 'Error: Target path is not a directory' * english + 'Virhe: Kohdepolku ei ole hakemisto' * finnish
+
+			if silent == False:
+				print()
+				print(error_message)
+				print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)	
+				print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file' * finnish )
+				print()
+			else:
+				raise Exception(error_message)
+			sys.exit(1)
+	else:
+		error_message = 'Error: Target directory does not exist' * english + 'Virhe: Kohdehakemistoa ei ole olemassa' * finnish
+
+		if silent == False:
+			print()
+			print(error_message)
 			print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)	
 			print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file' * finnish )
 			print()
-			sys.exit(1)
-	else:
-
-		print('\n!!!!!!! Target directory does not exist !!!!!!!' * english + '\n!!!!!!! Kohdehakemistoa ei ole olemassa !!!!!!!' * finnish)
-		print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)	
-		print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file' * finnish )
-		print()
+		else:
+			raise Exception(error_message)
 		sys.exit(1)
 
 if debug_all == True:
@@ -634,6 +669,7 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 
 
 	global integrated_loudness_calculation_results
+	global silent
 	integrated_loudness_calculation_results_list = []
 	commandfile_for_gnuplot = directory_for_temporary_files + os.sep + filename + '-gnuplot_commands'
 	loudness_calculation_table = directory_for_temporary_files + os.sep + filename + '-loudness_calculation_table'
@@ -834,7 +870,8 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 				timeslice_file_handler.flush() # Flushes written data to os cache
 				os.fsync(timeslice_file_handler.fileno()) # Flushes os cache to disk
 		except KeyboardInterrupt:
-			print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
+			if silent == False:
+				print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
 			sys.exit(0)
 		except IOError as reason_for_error:
 			error_message = 'Error opening timeslice tablefile for writing ' * english + 'Aikaviipaleiden taulukkotiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
@@ -851,7 +888,8 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 				gnuplot_commandfile_handler.flush() # Flushes written data to os cache
 				os.fsync(gnuplot_commandfile_handler.fileno()) # Flushes os cache to disk
 		except KeyboardInterrupt:
-			print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
+			if silent == False:
+				print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
 			sys.exit(0)
 		except IOError as reason_for_error:
 			error_message = 'Error opening Gnuplot commandfile for writing ' * english + 'Gnuplotin komentotiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
@@ -888,6 +926,7 @@ def create_gnuplot_commands_for_error_message(error_message, filename, directory
 	gnuplot_output_graphicsfile = directory_for_results + os.sep + filename + '-Loudness_Results_Graphics.jpg' * english + '-Aanekkyyslaskennan_Tulokset.jpg' * finnish
 
 	global debug_temporary_dict_for_all_file_processing_information
+	global silent
 	
 	debug_information_list = []
 
@@ -908,7 +947,8 @@ def create_gnuplot_commands_for_error_message(error_message, filename, directory
 			timeslice_file_handler.flush() # Flushes written data to os cache
 			os.fsync(timeslice_file_handler.fileno()) # Flushes os cache to disk
 	except KeyboardInterrupt:
-		print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
+		if silent == False:
+			print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
 		sys.exit(0)
 	except IOError as reason_for_error:
 		error_message = 'Error opening gnuplot datafile for writing error graphics data ' * english + 'Gnuplotin datatiedoston avaaminen virhegrafiikan datan kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
@@ -932,7 +972,8 @@ def create_gnuplot_commands_for_error_message(error_message, filename, directory
 			gnuplot_commandfile_handler.flush() # Flushes written data to os cache
 			os.fsync(gnuplot_commandfile_handler.fileno()) # Flushes os cache to disk
 	except KeyboardInterrupt:
-		print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
+		if silent == False:
+			print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
 		sys.exit(0)
 	except IOError as reason_for_error:
 		error_message = 'Error opening Gnuplot commandfile for writing ' * english + 'Gnuplotin komentotiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
@@ -965,6 +1006,7 @@ def run_gnuplot(filename, directory_for_temporary_files, directory_for_results, 
 	gnuplot_output_graphicsfile = directory_for_results + os.sep + filename + '-Loudness_Results_Graphics.jpg' * english + '-Aanekkyyslaskennan_Tulokset.jpg' * finnish
 
 	global debug_temporary_dict_for_all_file_processing_information
+	global silent
 	debug_information_list = []
 	error_message = ''
 
@@ -1040,7 +1082,8 @@ def run_gnuplot(filename, directory_for_temporary_files, directory_for_results, 
 		os.remove(commandfile_for_gnuplot)
 		os.remove(loudness_calculation_table)
 	except KeyboardInterrupt:
-		print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
+		if silent == False:
+			print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
 		sys.exit(0)
 	except IOError as reason_for_error:
 		error_message = 'Error deleting gnuplot command- or time slice file ' * english + 'Gnuplotin komento- tai aikaviipale-tiedoston poistaminen epäonnistui ' * finnish + str(reason_for_error)
@@ -1052,7 +1095,8 @@ def run_gnuplot(filename, directory_for_temporary_files, directory_for_results, 
 	try:
 		shutil.move(gnuplot_temporary_output_graphicsfile, gnuplot_output_graphicsfile)
 	except KeyboardInterrupt:
-		print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
+		if silent == False:
+			print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
 		sys.exit(0)
 	except IOError as reason_for_error:
 		error_message = 'Error moving gnuplot graphics file ' * english + 'Gnuplotin grafiikkatiedoston siirtäminen epäonnistui ' * finnish + str(reason_for_error)
@@ -1078,6 +1122,7 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 	filename_and_extension = os.path.splitext(filename)
 	global integrated_loudness_calculation_results
 	global libebur128_path
+	global silent
 	
 	global debug_temporary_dict_for_all_file_processing_information
 	debug_information_list = []
@@ -1373,7 +1418,8 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 			try:
 				os.remove(directory_for_temporary_files + os.sep + temporary_peak_limited_targetfile)
 			except KeyboardInterrupt:
-				print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
+				if silent == False:
+					print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
 				sys.exit(0)
 			except IOError as reason_for_error:
 				error_message = 'Error deleting temporary peak limited file ' * english + 'Väliaikaisen limitoidun tiedoston poistaminen epäonnistui ' * finnish + str(reason_for_error)
@@ -1530,6 +1576,8 @@ def run_sox(directory_for_temporary_files, filename, sox_commandline, english, f
 
 def move_processed_audio_files_to_target_directory(source_directory, target_directory, list_of_filenames, english, finnish):
 	
+	global silent
+
 	for filename in list_of_filenames:
 		# Check if file exists and move it to results folder.
 		if os.path.exists(source_directory + os.sep + filename):
@@ -1537,7 +1585,8 @@ def move_processed_audio_files_to_target_directory(source_directory, target_dire
 			try:
 				shutil.move(source_directory + os.sep + filename, target_directory + os.sep + filename)
 			except KeyboardInterrupt:
-				print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
+				if silent == False:
+					print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
 				sys.exit(0)
 			except IOError as reason_for_error:
 				error_message = 'Error moving loudness adjusted file ' * english + 'Äänekkyyskorjatun tiedoston siirtäminen epäonnistui ' * finnish + str(reason_for_error)
@@ -1789,7 +1838,7 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 	# The original file is queued for deletion.
 
 	global files_queued_for_deletion
-
+	global silent
 	global debug_temporary_dict_for_all_file_processing_information
 	debug_information_list = []
 	error_message = ''
@@ -1869,7 +1918,8 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 		try:
 			shutil.move(directory_for_temporary_files + os.sep + item, hotfolder_path + os.sep + item)
 		except KeyboardInterrupt:
-			print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
+			if silent == False:
+				print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
 			sys.exit(0)
 		except IOError as reason_for_error:
 			error_message = 'Error moving ffmpeg decompressed file ' * english + 'FFmpeg:illä puretun tiedoston siirtäminen epäonnistui ' * finnish + str(reason_for_error)
@@ -1907,11 +1957,11 @@ def send_error_messages_to_screen_logfile_email(error_message, send_error_messag
 		send_error_messages_to_these_destinations = where_to_send_error_messages
 	
 	# Print error messages to screen
-	if 'screen' in send_error_messages_to_these_destinations:
-		if silent == False:
+	if silent == False:
+		if 'screen' in send_error_messages_to_these_destinations:
 			print('\033[7m' + '\r-------->  ' + error_message_with_timestamp + '\033[0m')
 
-	# Print error messages to a logfile
+	# Write error messages to a logfile
 	if 'logfile' in send_error_messages_to_these_destinations:
 		try:
 			with open(error_logfile_path, 'at') as error_file_handler:
@@ -1919,15 +1969,22 @@ def send_error_messages_to_screen_logfile_email(error_message, send_error_messag
 				error_file_handler.flush() # Flushes written data to os cache
 				os.fsync(error_file_handler.fileno()) # Flushes os cache to disk
 		except KeyboardInterrupt:
-			print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
+			if silent == False:
+				print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
 			sys.exit(0)
 		except IOError as reason_for_error:
 			exception_error_message = 'Error opening error logfile for writing ' * english + 'Virhe lokitiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
-			print('\033[7m' + '\r-------->  ' + exception_error_message + '\033[0m')
+
+			if silent == False:
+				print('\033[7m' + '\r-------->  ' + exception_error_message + '\033[0m')
+
 			error_messages_to_email_later_list.append(exception_error_message)
 		except OSError as reason_for_error:
 			exception_error_message = 'Error opening error logfile for writing ' * english + 'Virhe lokitiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
-			print('\033[7m' + '\r-------->  ' + exception_error_message + '\033[0m')
+
+			if silent == False:
+				print('\033[7m' + '\r-------->  ' + exception_error_message + '\033[0m')
+
 			error_messages_to_email_later_list.append(exception_error_message)
 			
 	# If user wants us to send error messages by email, write error message to a list that is watched by the thread that sends the emails.
@@ -2040,7 +2097,8 @@ def send_error_messages_by_email_thread(email_sending_details, english, finnish)
 							error_file_handler.flush() # Flushes written data to os cache
 							os.fsync(error_file_handler.fileno()) # Flushes os cache to disk
 					except KeyboardInterrupt:
-						print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
+						if silent == False:
+							print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
 						sys.exit(0)
 					except IOError as reason_for_error:
 						exception_error_message = 'Error opening error logfile for writing ' * english + 'Virhe lokitiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
@@ -2061,6 +2119,7 @@ def write_html_progress_report_thread(english, finnish):
 	global web_page_path
 	global web_page_name
 	global html_progress_report_write_interval
+	global silent
 	
 	while True:
 		
@@ -2171,7 +2230,8 @@ def write_html_progress_report_thread(english, finnish):
 				os.fsync(webpage_filehandler.fileno()) # Flushes os cache to disk
 			shutil.move(web_page_path + os.sep + '.temporary_files' + os.sep + web_page_name, web_page_path + os.sep + web_page_name)
 		except KeyboardInterrupt:
-			print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
+			if silent == False:
+				print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
 			sys.exit(0)
 		except IOError as reason_for_error:
 			error_message = 'Error opening loudness calculation queue html-file for writing ' * english + 'Laskentajonon html-tiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
@@ -2191,6 +2251,7 @@ def write_to_heartbeat_file_thread():
 	global loudness_correction_program_info_and_timestamps
 	global english
 	global finnish
+	global silent
 
 	while True:
 
@@ -2206,7 +2267,8 @@ def write_to_heartbeat_file_thread():
 				os.fsync(heartbeat_commandfile_handler.fileno()) # Flushes os cache to disk
 				shutil.move(web_page_path + os.sep + '.temporary_files' + os.sep + heartbeat_file_name, web_page_path + os.sep + heartbeat_file_name)
 		except KeyboardInterrupt:
-			print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
+			if silent == False:
+				print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
 			sys.exit(0)
 		except IOError as reason_for_error:
 			error_message = 'Error opening HeartBeat commandfile for writing ' * english + 'HeartBeat - tiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
@@ -2217,7 +2279,7 @@ def write_to_heartbeat_file_thread():
 			
 def debug_lists_and_dictionaries_thread():
 	
-	# This subroutine is used to print out the length and contents of lists and dictionaries this program uses.
+	# This subroutine is used to write out the length and contents of lists and dictionaries this program uses.
 	# This subroutine is only used for debugging purposes.
 	
 	global list_of_growing_files
@@ -2272,7 +2334,7 @@ def debug_lists_and_dictionaries_thread():
 	# Store values read from configfile to a list, so that the values can be saved at the beginning of the list and dictionary debug info file.
 	if all_settings_dict != {}:
 
-		# Print variables read from the configfile. This is useful for debugging settings previously saved in a file.
+		# Store variables read from the configfile. This is useful for debugging settings previously saved in a file.
 		title_text = 'Local variable values after reading the configfile: ' + configfile_path + ' are:'
 		values_read_from_configfile.append(str((len(title_text) + 1) * '-'))
 		values_read_from_configfile.append(title_text)
@@ -2392,7 +2454,8 @@ def debug_lists_and_dictionaries_thread():
 						os.fsync(debug_messages_filehandler.fileno()) # Flushes os cache to disk
 					shutil.move(directory_for_temporary_files + os.sep + debug_messages_file, directory_for_error_logs + os.sep + debug_messages_file)
 				except KeyboardInterrupt:
-					print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
+					if silent == False:
+						print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
 					sys.exit(0)
 				except IOError as reason_for_error:
 					error_message = 'Error opening debug-messages file for writing ' * english + 'Debug-tiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
@@ -3353,6 +3416,7 @@ def debug_write_loudness_calculation_info_to_a_logfile(filename, integrated_loud
 	# confirmed that the results from the new version are the same as in the earlier saved file.
 	
 	global loudness_calculation_logfile_path
+	global silent
 
 	if loudness_calculation_logfile_path == '':	
 		loudness_calculation_logfile_path = directory_for_error_logs + os.sep + 'loudness_calculation_log-' + str(get_realtime(english, finnish)[1]) + '.txt'
@@ -3365,7 +3429,8 @@ def debug_write_loudness_calculation_info_to_a_logfile(filename, integrated_loud
 			loudness_calculation_logfile_handler.flush() # Flushes written data to os cache
 			os.fsync(loudness_calculation_logfile_handler.fileno()) # Flushes os cache to disk
 	except KeyboardInterrupt:
-		print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
+		if silent == False:
+			print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
 		sys.exit(0)
 	except IOError as reason_for_error:
 		error_message = 'Error opening loudness calculation logfile for writing ' * english + 'Äänekkyyslogitiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
@@ -3585,7 +3650,8 @@ if configfile_path != '':
 		with open(configfile_path, 'rb') as configfile_handler:
 			all_settings_dict = pickle.load(configfile_handler)
 	except KeyboardInterrupt:
-		print('\n\nUser cancelled operation.\n')
+		if silent == False:
+			print('\n\nUser cancelled operation.\n')
 		sys.exit(0)
 	except IOError as reason_for_error:
 		error_message = 'Error reading configfile: ' * english + 'Asetustiedoston lukemisessa tapahtui virhe: ' * finnish + str(reason_for_error)
@@ -3670,7 +3736,8 @@ if configfile_path != '':
 
 # Test if the user given target path exists.
 if (not os.path.exists(target_path)):
-	print('\n!!!!!!! Directory' * english + '\n!!!!!!! Hakemistoa' * finnish , target_path, 'does not exist !!!!!!!\n' * english + 'ei ole olemassa !!!!!!!\n' * finnish)
+	error_message = '\n!!!!!!! Directory ' * english + '\n!!!!!!! Hakemistoa ' * finnish + str(target_path) + ' does not exist !!!!!!!\n' * english + ' ei ole olemassa !!!!!!!\n' * finnish
+	send_error_messages_to_screen_logfile_email(error_message, [])
 	sys.exit(1)
 # There needs to be a couple of directories in the target path, if they do not exist create them.
 if (not os.path.exists(hotfolder_path)):
@@ -3732,23 +3799,28 @@ for os_path in os_environment_list:
 		libebur128_path = os_path + os.sep + 'loudness'
 	
 if gnuplot_executable_found == False:
-	print('\n!!!!!!! gnuplot - can not be found or it does not have \'executable\' permissions on !!!!!!!' * english + '\n!!!!!!! gnuplot - ohjelmaa ei löydy tai sillä ei ole käynnistyksen mahdollistava \'executable\' oikeudet päällä !!!!!!!' * finnish)
+	error_message = '\n!!!!!!! gnuplot - can not be found or it does not have \'executable\' permissions on !!!!!!!' * english + '\n!!!!!!! gnuplot - ohjelmaa ei löydy tai sillä ei ole käynnistyksen mahdollistava \'executable\' oikeudet päällä !!!!!!!' * finnish
+	send_error_messages_to_screen_logfile_email(error_message, [])
 	sys.exit(1)
 if sox_executable_found == False:
-	print('\n!!!!!!! sox - can not be found or it does not have \'executable\' permissions on !!!!!!!' * english + '\n!!!!!!! gnuplot - ohjelmaa ei löydy tai sillä ei ole käynnistyksen mahdollistava \'executable\' oikeudet päällä !!!!!!!' * finnish)
+	error_message = '\n!!!!!!! sox - can not be found or it does not have \'executable\' permissions on !!!!!!!' * english + '\n!!!!!!! gnuplot - ohjelmaa ei löydy tai sillä ei ole käynnistyksen mahdollistava \'executable\' oikeudet päällä !!!!!!!' * finnish
+	send_error_messages_to_screen_logfile_email(error_message, [])
 	sys.exit(1)
 if mediainfo_executable_found == False:
-	print('\n!!!!!!! mediainfo - can not be found or it does not have \'executable\' permissions on !!!!!!!' * english + '\n!!!!!!! mediainfo - ohjelmaa ei löydy tai sillä ei ole käynnistyksen mahdollistava \'executable\' oikeudet päällä !!!!!!!' * finnish)
+	error_message = '\n!!!!!!! mediainfo - can not be found or it does not have \'executable\' permissions on !!!!!!!' * english + '\n!!!!!!! mediainfo - ohjelmaa ei löydy tai sillä ei ole käynnistyksen mahdollistava \'executable\' oikeudet päällä !!!!!!!' * finnish
+	send_error_messages_to_screen_logfile_email(error_message, [])
 	sys.exit(1)
 	
 # Check if libebur128 loudness-executable can be found.
 if (not os.path.exists(libebur128_path)):
-	print('\n!!!!!!! libebur128 loudness-executable can\'t be found in path or directory' * english + '\n!!!!!!! libebur128:n loudness-ohjelmaa ei löydy polusta eikä määritellystä hakemistosta' * finnish, libebur128_path, '!!!!!!!\n')
+	error_message = '\n!!!!!!! libebur128 loudness-executable can\'t be found in path or directory: ' * english + '\n!!!!!!! libebur128:n loudness-ohjelmaa ei löydy polusta eikä määritellystä hakemistosta: ' * finnish + str(libebur128_path) + ' !!!!!!!\n'
+	send_error_messages_to_screen_logfile_email(error_message, [])
 	sys.exit(1)
 else:
 	# Test that libebur128n loudness-executable has executable permissions on.
 	if (not os.access(libebur128_path, os.X_OK)):
-		print('\n!!!!!!! libebur128 loudness-executable does not have \'executable\' permissions on !!!!!!!\n' * english + '\n!!!!!!! libebur128:n loudness-ohjelmalla ei ole käynnistyksen mahdollistava \'executable\' oikeudet päällä !!!!!!!\n' * finnish)
+		error_message = '\n!!!!!!! libebur128 loudness-executable does not have \'executable\' permissions on !!!!!!!\n' * english + '\n!!!!!!! libebur128:n loudness-ohjelmalla ei ole käynnistyksen mahdollistava \'executable\' oikeudet päällä !!!!!!!\n' * finnish
+		send_error_messages_to_screen_logfile_email(error_message, [])
 		sys.exit(1)
 
 # Define the name of the error logfile.
@@ -3824,7 +3896,8 @@ while True:
 		for path, list_of_directories, list_of_files in os.walk(hotfolder_path):
 			break
 	except KeyboardInterrupt:
-		print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
+		if silent == False:
+			print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
 		sys.exit(0)
 	except IOError as reason_for_error:
 		error_message = 'Error reading HotFolder directory listing ' * english + 'Lähdehakemistopuun lukeminen epäonnistui ' * finnish + str(reason_for_error)
@@ -3881,7 +3954,8 @@ while True:
 					file_information_to_save.append(dummy_information)
 				new_hotfolder_filelist_dict[filename] = file_information_to_save
 	except KeyboardInterrupt:
-		print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
+		if silent == False:
+			print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
 		sys.exit(0)
 	except IOError as reason_for_error:
 		error_message = 'Error reading HotFolder file metadata ' * english + 'Lähdehakemistopussa olevan tiedoston tietojen lukeminen epäonnistui ' * finnish + str(reason_for_error)
@@ -3913,7 +3987,8 @@ while True:
 				# If we get here the file was not there in the poll previous to this. The file is new, put the time the file was first seen in a dictionary along with the filename.
 				new_results_directory_filelist_dict[partial_path] = int(time.time())
 	except KeyboardInterrupt:
-		print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
+		if silent == False:
+			print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
 		sys.exit(0)
 	except IOError as reason_for_error:
 		error_message = 'Error reading ResultsFolder directory listing ' * english + 'Tuloshakemiston hakemistopuun lukeminen epäonnistui ' * finnish + str(reason_for_error)
@@ -3939,7 +4014,8 @@ while True:
 				if silent == False:
 					print('\r' + adjust_line_printout, ' Deleted file' * english + ' Poistin tiedoston' * finnish, '"' + str(filename) + '"', realtime)
 	except KeyboardInterrupt:
-		print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
+		if silent == False:
+			print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
 		sys.exit(0)
 	except IOError as reason_for_error:
 		error_message = 'Error deleting files queued for deletion ' * english + 'Poistettavien luettelossa olevan tiedoston poistaminen epäonnistui ' * finnish + str(reason_for_error)

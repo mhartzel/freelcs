@@ -1,3 +1,7 @@
+LoudnessCorrection Version 208
+------------------------------
+- Printing to screen when running in the background is not allower and a process is stopped if it tries. I combed through all print statements making sure nothing prints in the background. In situations when there is not possible to send email about and error an python exception is now raised with a custom error message. Exception messages are going to be handled by code that will soon be written :)
+
 LoudnessCorrection Version 207
 ------------------------------
 - Bugfix: Corrected some more bugs found in the new debugging code :)
