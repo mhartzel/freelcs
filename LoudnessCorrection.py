@@ -36,7 +36,7 @@ import math
 import copy
 import signal
 
-version = '208'
+version = '209'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -119,7 +119,7 @@ for argument in sys.argv[1:]:
 		continue
 	
 	if argument.lower() == '-finnish':
-		language == 'fi'
+		language = 'fi'
 		finnish = 1
 		english = 0
 		arguments_remaining.pop(arguments_remaining.index(argument))
@@ -225,6 +225,7 @@ if language == 'en':
 	hotfolder_path = target_path + os.sep + 'LoudnessCorrection'
 else:
 	hotfolder_path = target_path + os.sep + 'AanekkyysKorjaus'
+
 directory_for_temporary_files = target_path + os.sep + '00-Loudness_Calculation_Temporary_Files'
 directory_for_results = hotfolder_path + os.sep + '00-Corrected_Files' * english + '00-Korjatut_Tiedostot' * finnish # This directory always needs to be a subdirectory for the hotfolder, otherwise deleting files from the results directory won't work.
 
