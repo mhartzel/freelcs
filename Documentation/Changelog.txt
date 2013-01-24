@@ -1,3 +1,7 @@
+LoudnessCorrection Version 212
+------------------------------
+- Removed exception raising routines written in 208 because I found them hard to use and quite unnecessary :)
+
 LoudnessCorrection Version 211
 ------------------------------
 - New code added that catches python errors caused by a crash. The new code should help to debug hard to find bugs that happen only in specific circumstances.

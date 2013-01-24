@@ -37,7 +37,7 @@ import copy
 import signal
 import traceback
 
-version = '211'
+version = '212'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -138,26 +138,22 @@ if (configfile_path == '') and (len(arguments_remaining) > 0):
 if len(arguments_remaining) != 0:
 	error_message = 'Error: Unknown arguments on commandline: ' * english + 'Virhe: komentorivillä on tuntemattomia argumentteja: ' * finnish + str(arguments_remaining)
 
-	if silent == False:
-		print()
-		print(error_message)
-		print()
-	else:
-		raise Exception(error_message)
+	print()
+	print(error_message)
+	print()
+
 	sys.exit(1)
 
 # If the user did not define target path on the commandline print an error message.
 if (configfile_path == '') and (target_path == ''):
 	error_message = 'Error: Target path and configfile paths are not defined' * english + 'Virhe: Kohdehakemistoa ja asetustiedostoa ei ole määritelty' * finnish
 
-	if silent == False:
-		print()
-		print(error_message)
-		print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)
-		print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file' * finnish )
-		print()
-	else:
-		raise Exception(error_message)
+	print()
+	print(error_message)
+	print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)
+	print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file' * finnish )
+	print()
+
 	sys.exit(1)
 
 if configfile_path != '':
@@ -165,27 +161,23 @@ if configfile_path != '':
 	if (os.path.exists(configfile_path) == False) or (os.access(configfile_path, os.R_OK) == False):
 		error_message = 'Error: Configfile does not exist or exists but is not readable' * english + 'Virhe: Asetustiedostoa ei ole olemassa tai siihen ei ole lukuoikeuksia' * finnish
 
-		if silent == False:
-			print()
-			print(error_message)
-			print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)	
-			print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file' * finnish )
-			print()
-		else:
-			raise Exception(error_message)
+		print()
+		print(error_message)
+		print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)	
+		print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file' * finnish )
+		print()
+
 		sys.exit(1)
 
 	if os.path.isfile(configfile_path) == False:
 		error_message = 'Error: Configfile is not a regular file' * english + 'Virhe: Asetustiedosto ei ole tiedosto' * finnish
 
-		if silent == False:
-			print()
-			print(error_message)
-			print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)	
-			print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file' * finnish )
-			print()
-		else:
-			raise Exception(error_message)
+		print()
+		print(error_message)
+		print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)	
+		print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file' * finnish )
+		print()
+
 		sys.exit(1)
 else:
 	if os.path.exists(target_path) == True:
@@ -194,26 +186,22 @@ else:
 		else:
 			error_message = 'Error: Target path is not a directory' * english + 'Virhe: Kohdepolku ei ole hakemisto' * finnish
 
-			if silent == False:
-				print()
-				print(error_message)
-				print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)	
-				print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file' * finnish )
-				print()
-			else:
-				raise Exception(error_message)
-			sys.exit(1)
-	else:
-		error_message = 'Error: Target directory does not exist' * english + 'Virhe: Kohdehakemistoa ei ole olemassa' * finnish
-
-		if silent == False:
 			print()
 			print(error_message)
 			print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)	
 			print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file' * finnish )
 			print()
-		else:
-			raise Exception(error_message)
+
+			sys.exit(1)
+	else:
+		error_message = 'Error: Target directory does not exist' * english + 'Virhe: Kohdehakemistoa ei ole olemassa' * finnish
+
+		print()
+		print(error_message)
+		print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)	
+		print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file' * finnish )
+		print()
+
 		sys.exit(1)
 
 if debug_all == True:
