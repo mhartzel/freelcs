@@ -36,7 +36,7 @@ import math
 import copy
 import signal
 
-version = '209'
+version = '210'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -1736,7 +1736,7 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 	not_used, not_used, not_used, not_used, mediainfo_audio_duration, not_used, not_used = get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish, save_debug_information = False)
 	not_used = ''
 	if audio_duration != mediainfo_audio_duration:
-		error_message = 'ERROR !!! Sox audio duration: ' + str(audio_duration)  + ' differs from mediainfo audio duration: ' + str(mediainfo_audio_duration)
+		error_message = 'ERROR !!! Sox audio duration: ' + str(audio_duration)  + ' differs from mediainfo audio duration: ' + str(mediainfo_audio_duration) + ': ' + filename
 		send_error_messages_to_screen_logfile_email(error_message, [])
 
 
@@ -2340,42 +2340,42 @@ def debug_lists_and_dictionaries_thread():
 		values_read_from_configfile.append(str((len(title_text) + 1) * '-'))
 		values_read_from_configfile.append(title_text)
 		values_read_from_configfile.append('')
-		values_read_from_configfile.append('language =', language)
-		values_read_from_configfile.append('english =', english)
-		values_read_from_configfile.append('finnish =', finnish)
+		values_read_from_configfile.append('language = ' + language)
+		values_read_from_configfile.append('english = ' + str(english))
+		values_read_from_configfile.append('finnish = ' + str(finnish))
 		values_read_from_configfile.append('')
-		values_read_from_configfile.append('target_path =', target_path)
-		values_read_from_configfile.append('hotfolder_path =', hotfolder_path)
-		values_read_from_configfile.append('directory_for_temporary_files =', directory_for_temporary_files)
-		values_read_from_configfile.append('directory_for_results =', directory_for_results)
-		values_read_from_configfile.append('libebur128_path =', libebur128_path)
+		values_read_from_configfile.append('target_path = ' + target_path)
+		values_read_from_configfile.append('hotfolder_path = ' + hotfolder_path)
+		values_read_from_configfile.append('directory_for_temporary_files = ' + directory_for_temporary_files)
+		values_read_from_configfile.append('directory_for_results = ' + directory_for_results)
+		values_read_from_configfile.append('libebur128_path = ' + libebur128_path)
 		values_read_from_configfile.append('')
-		values_read_from_configfile.append('delay_between_directory_reads =', str(delay_between_directory_reads))	
-		values_read_from_configfile.append('number_of_processor_cores =', str(number_of_processor_cores))
-		values_read_from_configfile.append('file_expiry_time =', str(file_expiry_time))
+		values_read_from_configfile.append('delay_between_directory_reads = ' + str(delay_between_directory_reads))	
+		values_read_from_configfile.append('number_of_processor_cores = ' + str(number_of_processor_cores))
+		values_read_from_configfile.append('file_expiry_time = ' + str(file_expiry_time))
 		values_read_from_configfile.append('')
-		values_read_from_configfile.append('natively_supported_file_formats =', ', '.join(natively_supported_file_formats))
-		values_read_from_configfile.append('ffmpeg_output_format =', ffmpeg_output_format)
-		values_read_from_configfile.append('peak_measurement_method =', all_settings_dict['peak_measurement_method'])
+		values_read_from_configfile.append('natively_supported_file_formats = ' + ', '.join(natively_supported_file_formats))
+		values_read_from_configfile.append('ffmpeg_output_format = ' + ffmpeg_output_format)
+		values_read_from_configfile.append('peak_measurement_method = ' + all_settings_dict['peak_measurement_method'])
 		values_read_from_configfile.append('')
-		values_read_from_configfile.append('silent =', str(silent))
+		values_read_from_configfile.append('silent = ' + str(silent))
 		values_read_from_configfile.append('')
-		values_read_from_configfile.append('write_html_progress_report =', str(write_html_progress_report))
-		values_read_from_configfile.append('html_progress_report_write_interval =', str(html_progress_report_write_interval))
-		values_read_from_configfile.append('web_page_name =', web_page_name)
-		values_read_from_configfile.append('web_page_path =', web_page_path)
+		values_read_from_configfile.append('write_html_progress_report = ' + str(write_html_progress_report))
+		values_read_from_configfile.append('html_progress_report_write_interval = ' + str(html_progress_report_write_interval))
+		values_read_from_configfile.append('web_page_name = ' + web_page_name)
+		values_read_from_configfile.append('web_page_path = ' + web_page_path)
 		values_read_from_configfile.append('')
-		values_read_from_configfile.append('heartbeat =', str(heartbeat))
-		values_read_from_configfile.append('heartbeat_file_name =', heartbeat_file_name)
-		values_read_from_configfile.append('heartbeat_write_interval =', str(heartbeat_write_interval))
+		values_read_from_configfile.append('heartbeat = ' + str(heartbeat))
+		values_read_from_configfile.append('heartbeat_file_name = ' + heartbeat_file_name)
+		values_read_from_configfile.append('heartbeat_write_interval = ' + str(heartbeat_write_interval))
 		values_read_from_configfile.append('')
-		values_read_from_configfile.append('where_to_send_error_messages =', ', '.join(where_to_send_error_messages))
-		values_read_from_configfile.append('send_error_messages_to_logfile =', str(send_error_messages_to_logfile))
-		values_read_from_configfile.append('directory_for_error_logs =', directory_for_error_logs)
-		values_read_from_configfile.append('error_logfile_path =', error_logfile_path)
+		values_read_from_configfile.append('where_to_send_error_messages = ' + ', '.join(where_to_send_error_messages))
+		values_read_from_configfile.append('send_error_messages_to_logfile = ' + str(send_error_messages_to_logfile))
+		values_read_from_configfile.append('directory_for_error_logs = ' + directory_for_error_logs)
+		values_read_from_configfile.append('error_logfile_path = ' + error_logfile_path)
 		values_read_from_configfile.append('')
-		values_read_from_configfile.append('send_error_messages_by_email =', str(send_error_messages_by_email))
-		values_read_from_configfile.append('email_sending_details =', ', '.join(email_sending_details))
+		values_read_from_configfile.append('send_error_messages_by_email = ' + str(send_error_messages_by_email))
+		values_read_from_configfile.append('email_sending_details =' + ', '.join(email_sending_details))
 		values_read_from_configfile.append(str((len(title_text) + 1) * '-'))
 
 	while True:
@@ -2476,7 +2476,7 @@ def get_ip_addresses_of_the_host_machine():
 	global all_ip_addresses_of_the_machine
 	global directory_for_temporary_files
 	
-	# Create the commandline we need to run as root.
+	# Create the commandline we need to run.
 	commands_to_run = ['hostname', '-I']
 
 	try:
@@ -3568,6 +3568,71 @@ def signal_handler_routine(signal_number, stack_frame):
 			debug_file_processing = False
 			save_measurement_results_to_a_file = False
 
+def check_samba_file_locks(filename):
+
+	global silent
+	global directory_for_temporary_files
+	file_is_locked_by_samba = False
+
+	# Create the commandline we need to run.
+	commands_to_run = ['smbstatus', '-L']
+
+	try:
+		# Define filenames for temporary files that we are going to use as stdout and stderr for the external command.
+		stdout_for_external_command = directory_for_temporary_files + os.sep + 'Smbstatus_command_stdout.txt'
+		stderr_for_external_command = directory_for_temporary_files + os.sep + 'Smbstatus_command_stderr.txt'
+
+		# Open the stdout and stderr temporary files in binary write mode.
+		with open(stdout_for_external_command, 'wb') as stdout_commandfile_handler, open(stderr_for_external_command, 'wb') as stderr_commandfile_handler:
+
+			# Run our command.
+			subprocess.Popen(commands_to_run, stdout=stdout_commandfile_handler, stderr=stderr_commandfile_handler, stdin=None, close_fds=True).communicate()
+
+			# Make sure all data written to temporary stdout and stderr - files is flushed from the os cache and written to disk.
+			stdout_commandfile_handler.flush() # Flushes written data to os cache
+			os.fsync(stdout_commandfile_handler.fileno()) # Flushes os cache to disk
+			stderr_commandfile_handler.flush() # Flushes written data to os cache
+			os.fsync(stderr_commandfile_handler.fileno()) # Flushes os cache to disk
+
+	except IOError as reason_for_error:
+		error_message = 'Error writing to stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon kirjoittaminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(commands_to_run) + '. ' + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message, [])
+	except OSError as reason_for_error:
+		error_message = 'Error writing to stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon kirjoittaminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(commands_to_run) + '. ' + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message, [])
+
+	# Open files we used as stdout and stderr for the external program and read in what the program did output to those files.
+	try:
+		with open(stdout_for_external_command, 'rb') as stdout_commandfile_handler, open(stderr_for_external_command, 'rb') as stderr_commandfile_handler:
+			stdout = stdout_commandfile_handler.read(None)
+			stderr = stderr_commandfile_handler.read(None)
+	except IOError as reason_for_error:
+		error_message = 'Error reading from stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston lukeminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(commands_to_run) + '. ' + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message, [])
+	except OSError as reason_for_error:
+		error_message = 'Error reading from stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon lukeminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(commands_to_run) + '. ' + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message, [])
+
+	stdout = str(stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+	stderr = str(stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+
+	# Delete the temporary stdout and stderr - files
+	try:
+		os.remove(stdout_for_external_command)
+		os.remove(stderr_for_external_command)
+	except IOError as reason_for_error:
+		error_message = 'Error deleting stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston deletoiminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(commands_to_run) + '. ' + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message, [])
+	except OSError as reason_for_error:
+		error_message = 'Error deleting stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston deletoiminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(commands_to_run) + '. ' + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message, [])
+
+	if filename in stdout:
+		file_is_locked_by_samba = True
+
+	return(file_is_locked_by_samba )
+
+
 
 ##############################################################################################
 #                                The main program starts here:)                              #
@@ -3768,11 +3833,12 @@ if (not os.path.exists(web_page_path + os.sep + '.temporary_files')):
 		if silent == False:
 			print('Created directory' * english + 'Loin hakemiston' * finnish, str(web_page_path + os.sep + '.temporary_files'))
 
-# Test that programs gnuplot, sox, ffmpeg, mediainfo and libebur128 loudness-executable can be found in the path and that they have executable permissions on.
+# Test that programs gnuplot, sox, ffmpeg, mediainfo, libebur128, smbstatus and loudness-executable can be found in the path and that they have executable permissions on.
 gnuplot_executable_found = False
 sox_executable_found = False
 ffmpeg_executable_found = False
 mediainfo_executable_found = False
+smbstatus_executable_found = False
 libebur128_loudness_executable_found = False
 libebur128_path = '/usr/bin/loudness'
 os_environment_list = os.environ["PATH"].split(os.pathsep)
@@ -3793,6 +3859,10 @@ for os_path in os_environment_list:
 	mediainfo_true_or_false = os.path.exists(os_path + os.sep + 'mediainfo') and os.access(os_path + os.sep + 'mediainfo', os.X_OK)
 	if mediainfo_true_or_false == True:
 		mediainfo_executable_found = True
+		
+	smbstatus_true_or_false = os.path.exists(os_path + os.sep + 'smbstatus') and os.access(os_path + os.sep + 'smbstatus', os.X_OK)
+	if smbstatus_true_or_false == True:
+		smbstatus_executable_found = True
 		
 	libebur128_loudness_executable_true_or_false = os.path.exists(os_path + os.sep + 'loudness') and os.access(os_path + os.sep + 'loudness', os.X_OK)
 	if libebur128_loudness_executable_true_or_false == True:
@@ -3907,7 +3977,7 @@ while True:
 		error_message = 'Error reading HotFolder directory listing ' * english + 'Lähdehakemistopuun lukeminen epäonnistui ' * finnish + str(reason_for_error)
 		send_error_messages_to_screen_logfile_email(error_message, [])
 		
-	# The files in 'unsupported_ignored_files_dict' are files that ffmpeg was not able to find any audiostreams from, or streams were found but the duration is less than 1 second.
+	# The files in 'unsupported_ignored_files_dict' are files that ffmpeg was not able to find any audiostreams from, or streams were found but the duration is less than 1 second or file transfer ended prematurely.
 	# Check if files in the unsupported files dictionary have vanished from the HotFolder. If a name has disappeared from HotFolder, remove it also from the list of unsupported files.
 	# Check if files in the unsupported files dictionary have been there longer than the expiry time allows, queue expired files for deletion.
 	unsupported_ignored_files_list = list(unsupported_ignored_files_dict) # Copy filesnames from dictionary to a list to use as for - loop iterable, since we can't use the dictionary directly because we are going to delete values from it. The for loop - iterable is forbidden to change.
@@ -3942,18 +4012,34 @@ while True:
 			#################################################################################
 			# Add files we need to study further to a dictionary with some file information #
 			#################################################################################
-			# Add the files information to dictionary.
+			# Add information about a file to dictionary.
 			# This statement also guarantees that files put in deletion queue by subprocess 'decompress_audio_streams_with_ffmpeg' running in separate thread, are not processed here further. That would sometimes cause files being used by one thread to be deleted by the other.
 			if (filename not in files_queued_for_deletion) and (filename not in unsupported_ignored_files_dict):
-				# Save information about the file in a dictionary: filename, file size, time file was first seen in HotFolder.
+				# Save information about new files into a dictionary: filename, file size, time file was first seen in HotFolder.
 				if not filename in old_hotfolder_filelist_dict:
-					# When the file has just appeared to the HotFolder, it has not been analyzed yet.
+					# The file has just appeared to the HotFolder and it has not been analyzed yet.
 					# However some dummy data for the file needs to be filled, so we create that data here.
 					# This dummy data is replaced with real data when the file stops growing and gets analyzed.
-					# file_information_to_save = [ FileSize, TimeAppearedToHotFolder, ModificationTime, InformationFilledByFFmpeg ]
-					dummy_information = [False, False, 0, [], '3'] 
+					dummy_information = [False, False, 0, [], '3'] # This dummy information will be replaced by info from FFmpeg later.
 					file_information_to_save.append(dummy_information)
+
+					# Append time the file size or timestamp was last updated.
+					# As this is the first time we have seen the file, we don't have this information yet, we need to use some sane dummy value.
+					# So just use the time the file was first seen in HotFolder as the last update time.
+					# This information is already in 'file_information_to_save' as it's item number 1, so just copy it from there.
+					file_information_to_save.append(file_information_to_save[1])
+
+				# Data in 'file_information_to_save' is at this point (with item numbers):
+				#
+				# 0 = file size
+				# 1 = time file was first seen in HotFolder
+				# 2 = file modification time
+				# 3 = [False, False, 0, [], '3'] # This is dummy information that will later be replaced by data from FFmpeg.
+				# 4 = Time the file size or timestamp was last updated. At this point this is the same as the time the file was first seen in HotFolder.
+				#
 				new_hotfolder_filelist_dict[filename] = file_information_to_save
+
+
 	except KeyboardInterrupt:
 		if silent == False:
 			print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
@@ -4045,6 +4131,7 @@ while True:
 		if filename in old_hotfolder_filelist_dict:
 			new_filesize = new_hotfolder_filelist_dict[filename][0] # Get file size from the newest directory poll.
 			new_modification_time = new_hotfolder_filelist_dict[filename][2] # Get latest file modification time.
+			file_last_update_time = old_hotfolder_filelist_dict[filename][4] # Get the time the file size was last changed.
 			old_filesize = old_hotfolder_filelist_dict[filename][0] # Get file size from the previous directory poll.
 			time_file_was_first_seen = old_hotfolder_filelist_dict[filename][1] # Get the time the file was first seen from the previous directory poll dictionary.
 			old_modification_time = old_hotfolder_filelist_dict[filename][2] # Get old file modification time.
@@ -4052,11 +4139,21 @@ while True:
 
 			# If filesize is still zero and it has not changed in 1,5 hours (5400 seconds), stop waiting and remove filename from list_of_growing_files.
 			if (filename in list_of_growing_files) and (new_filesize == 0) and (int(time.time()) >= (time_file_was_first_seen + 5400)):
+				# When file is removed from 'list_of_growing_files' it can not get back to processing any more.
+				# This is because the file has been sitting on the disk for some time, so it's name is in both 'old_hotfolder_filelist_dict' and 'new_hotfolder_filelist_dict'
+				# and the only way to get into processing is if it is only in 'new_hotfolder_filelist_dict' meaning it just appeared on the disk.
+				# Files removed from 'list_of_growing_files' are not touched anymore and get deleted when the expiry time comes.
 				list_of_growing_files.remove(filename)
+
 			if (filename in list_of_growing_files) and (new_filesize > 0): # If file is in the list of growing files, check if growing has stopped. If HotFolder is on a native windows network share and multiple files are transferred to the HotFolder at the same time, the files get a initial file size of zero, until the file actually gets transferred. Checking for zero file size prevents trying to process the file prematurely.
+
 				if (new_filesize != old_filesize) or (new_modification_time != old_modification_time): # If file size or modification time has changed print message to user about waiting for file transfer to finish.
+					# Store the last time the file size or timestamp were updated.
+					file_last_update_time = int(time.time()) 
+
 					if silent == False:
 						print('\r' + adjust_line_printout, ' Waiting for file transfer to end' * english + ' Odotan tiedostosiirron valmistumista' * finnish, end='')
+
 				else:
 					#######################################################################################################
 					# Filesize has not changed since last poll, the file is ready to be inspected.                        #
@@ -4078,6 +4175,29 @@ while True:
 					except OSError:
 						we_have_true_read_access_to_the_file = False
 					
+					# Check if samba has a lock on the file, if it has then the file transfer is not ready yet.
+					if smbstatus_executable_found == True:
+						file_is_locked_by_samba = check_samba_file_locks(filename)
+
+						if file_is_locked_by_samba == True:
+							we_have_true_read_access_to_the_file = False
+							
+							# If file size and timestamp have not been updated in 5 minutes and samba still has a lock on the file, file transfer has failed. Inform the user about the error.
+							if (int(time.time()) >= file_last_update_time + 300) and (filename not in unsupported_ignored_files_dict):
+
+								error_message = 'File transfer failed, please send the file again under a new file name' * english + 'Tiedoston siirto epäonnistui, lähetä tiedosto uudestaan toisella tiedostonimellä' * finnish
+								
+								transfer_error_message_destinations = copy.deepcopy(where_to_send_error_messages)
+								
+								# This error is not very important, don't send it to admin by email.
+								if 'email' in transfer_error_message_destinations:
+									transfer_error_message_destinations.remove('email')
+
+								send_error_messages_to_screen_logfile_email(error_message + ': ' + filename, transfer_error_message_destinations)
+								
+								create_gnuplot_commands_for_error_message(error_message, filename, directory_for_temporary_files, directory_for_results, english, finnish)
+								unsupported_ignored_files_dict[filename] = int(time.time())
+
 					if we_have_true_read_access_to_the_file == True:
 
 						# Test if FFmpeg is installed.
@@ -4168,9 +4288,10 @@ while True:
 							if silent == False:
 								print('\r' + adjust_line_printout, '"' + str(filename) + '"', 'is in the job queue as number' * english + 'on laskentajonossa numerolla' * finnish, len(files_queued_to_loudness_calculation))
 						list_of_growing_files.remove(filename) # File has been queued for loudness calculation, or it is unsupported, in both cases we need to remove it from the list of growing files.
+
 			# Save information about the file in a dictionary:
-			# filename, file size, time file was first seen in HotFolder, latest modification time, file format wav / flac / ogg, if format is supported by ffmpeg (True/False), number of audio streams found, information ffmpeg printed about the audio streams.
-			new_hotfolder_filelist_dict[filename] = [new_filesize, time_file_was_first_seen, new_modification_time, file_format_support_information]
+			# filename, file size, time file was first seen in HotFolder, latest modification time, file format wav / flac / ogg, if format is supported by ffmpeg (True/False), number of audio streams found, information ffmpeg printed about the audio streams, the last time the file size changed.
+			new_hotfolder_filelist_dict[filename] = [new_filesize, time_file_was_first_seen, new_modification_time, file_format_support_information, file_last_update_time]
 		else:
 			# If we get here the file was not there in the directory poll before this one. We need to wait for another poll to see if the file is still growing. Add file name to the list of growing files.
 			list_of_growing_files.append(filename)

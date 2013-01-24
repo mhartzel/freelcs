@@ -1,3 +1,9 @@
+LoudnessCorrection Version 210
+------------------------------
+- Bugfix: Corrected some more bugs in the new debug reporting code.
+- Found a way to ask samba if file transfer is ready. If samba is installed then this info is used before starting processing file. This should help if the network is very slow or unreliable. If the file transfer stops for 5 minutes, then the file is discarded and an error message is printed on the loudness history graphics file.
+
+
 LoudnessCorrection Version 209
 ------------------------------
 - Bugfix: language could not be changed to Finnish with the commandline option -finnish.
