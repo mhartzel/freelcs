@@ -1,3 +1,7 @@
+LoudnessCorrection Version 211
+------------------------------
+- New code added that catches python errors caused by a crash. The new code should help to debug hard to find bugs that happen only in specific circumstances.
+
 LoudnessCorrection Version 210
 ------------------------------
 - Bugfix: Corrected some more bugs in the new debug reporting code.
