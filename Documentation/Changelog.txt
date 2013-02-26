@@ -1,3 +1,13 @@
+LoudnessCorrection Version 214
+------------------------------
+- Removed a couple of unsused variables left in the code.
+- When FFmpeg is installed then LoudnessCorrection no longer sends error messages in email if user drops files unsupported by FFmpeg (for example text files) to the HotFolder.
+
+Installer 052
+--------------
+- Removed some unused variables left in the code.
+- Bugfix: Installer always installed samba even though user did not select it for installation.
+
 LoudnessCorrection Version 212
 ------------------------------
 - Removed exception raising routines written in 208 because I found them hard to use and quite unnecessary :)

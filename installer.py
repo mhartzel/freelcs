@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '051'
+version = '052'
 
 ###################################
 # Function definitions start here #
@@ -831,11 +831,20 @@ def print_use_samba_variable_and_toggle_text_widget(*args):
 		samba_config_text_widget['background'] = 'white'
 		samba_config_text_widget['foreground'] = 'black'
 		first_window_undo_button['state'] = 'normal'
+
+		# If there is no apt-get install command for samba, then add it to the package installation list.
+		if 'samba' not in needed_packages_install_commands:
+			needed_packages_install_commands.append('samba') 
 	else:
 		samba_config_text_widget['state'] = 'disabled'
 		samba_config_text_widget['background'] = 'light gray'
 		samba_config_text_widget['foreground'] = 'gray'
 		first_window_undo_button['state'] = 'disabled'
+
+		# If there is a apt-get install command for samba, then remove it from the package installation list.
+		if 'samba' in needed_packages_install_commands:
+			needed_packages_install_commands.remove('samba') 
+
 	samba_config_text_widget.update()
 	if debug == True:
 		print()
@@ -1261,11 +1270,11 @@ def install_init_scripts_and_config_files(*args):
 			os.fsync(configfile_handler.fileno()) # Flushes os cache to disk
 	except IOError as reason_for_error:
 		error_in_string_format = 'Error opening configfile for writing ' + str(reason_for_error)
-		show_error_message_on_seventh_window(error_in_binary_format, error_in_string_format)
+		show_error_message_on_seventh_window(error_in_string_format)
 		return(True) # There was an error, exit this subprogram.
 	except OSError as reason_for_error:
 		error_in_string_format = 'Error opening configfile for writing ' + str(reason_for_error)
-		show_error_message_on_seventh_window(error_in_binary_format, error_in_string_format)
+		show_error_message_on_seventh_window(error_in_string_format)
 		return(True) # There was an error, exit this subprogram.
 
 	#########################################################################################################################
@@ -1417,11 +1426,11 @@ def install_init_scripts_and_config_files(*args):
 				os.fsync(samba_configfile_handler.fileno()) # Flushes os cache to disk
 		except IOError as reason_for_error:
 			error_in_string_format = 'Error opening Samba configfile for writing ' + str(reason_for_error)
-			show_error_message_on_seventh_window(error_in_binary_format, error_in_string_format)
+			show_error_message_on_seventh_window(error_in_string_format)
 			return(True) # There was an error, exit this subprogram.
 		except OSError as reason_for_error:
 			error_in_string_format = 'Error opening Samba configfile for writing ' + str(reason_for_error)
-			show_error_message_on_seventh_window(error_in_binary_format, error_in_string_format)
+			show_error_message_on_seventh_window(error_in_string_format)
 			return(True) # There was an error, exit this subprogram.
 		
 		###############################################################################
@@ -1493,11 +1502,11 @@ def install_init_scripts_and_config_files(*args):
 			os.fsync(init_script_file_handler.fileno()) # Flushes os cache to disk
 	except IOError as reason_for_error:
 		error_in_string_format = 'Error opening init script file for writing ' + str(reason_for_error)
-		show_error_message_on_seventh_window(error_in_binary_format, error_in_string_format)
+		show_error_message_on_seventh_window(error_in_string_format)
 		return(True) # There was an error, exit this subprogram.
 	except OSError as reason_for_error:
 		error_in_string_format = 'Error opening init script file for writing ' + str(reason_for_error)
-		show_error_message_on_seventh_window(error_in_binary_format, error_in_string_format)
+		show_error_message_on_seventh_window(error_in_string_format)
 		return(True) # There was an error, exit this subprogram.
 	
 	#######################################################################################################################
@@ -1668,7 +1677,7 @@ def test_if_root_password_is_valid(*args):
 		root_password_was_not_accepted_message.set('') # Remove possible error message from the screen.	
 		call_seventh_frame_on_top() # Call the next window.
 
-def show_error_message_on_root_password_window(error_in_binary_format, error_in_string_format):
+def show_error_message_on_root_password_window(error_in_string_format):
 	
 	# If sudo stderror output includes string 'try again', then password was not valid.
 	# Display an error message to the user. If user inputs wrong passwords many times in a row, change error messages between two messages.
@@ -1692,10 +1701,6 @@ def show_error_message_on_root_password_window(error_in_binary_format, error_in_
 	x_position = (root_window.winfo_screenwidth() / 2) - (root_window.winfo_width() / 2) - 8
 	y_position = (root_window.winfo_screenheight() / 2) - (root_window.winfo_height() / 2) - 20
 	root_window.geometry(str(root_window.winfo_width()) + 'x' +str(root_window.winfo_height()) + '+' + str(int(x_position)) + '+' + str(int(y_position)))
-	
-	if debug == True:
-		print()
-		print('error_in_binary_format =', error_in_binary_format)
 	
 	# Make the window 'shake head' like Apples OS X input windows do, when the input is not accepted :)
 	counter = 1
@@ -2898,7 +2903,7 @@ def install_missing_programs(*args):
 	
 	call_seventh_frame_on_top()
 
-def show_error_message_on_seventh_window(error_in_binary_format, error_in_string_format):
+def show_error_message_on_seventh_window(error_in_string_format):
 	
 	# If sudo stderror output includes string 'try again', then password was not valid.
 	# Display an error message to the user. If user inputs wrong passwords many times in a row, change error messages between two messages.
@@ -2933,10 +2938,6 @@ def show_error_message_on_seventh_window(error_in_binary_format, error_in_string
 	y_position = (root_window.winfo_screenheight() / 2) - (root_window.winfo_height() / 2) - 20
 	root_window.geometry(str(root_window.winfo_width()) + 'x' +str(root_window.winfo_height()) + '+' + str(int(x_position)) + '+' + str(int(y_position)))
 	
-	if debug == True:
-		print()
-		print('error_in_binary_format =', error_in_binary_format)	
-
 def get_ip_addresses_of_the_host_machine():
 	
 	global all_ip_addresses_of_the_machine
@@ -3516,15 +3517,15 @@ if (os.path.exists(configfile_path) == True) or (os.access(configfile_path, os.R
 		sys.exit(0)
 	except IOError as reason_for_error:
 		error_message = 'Error reading configfile: ' * english + 'Asetustiedoston lukemisessa tapahtui virhe: ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message, [])
+		print(error_message)
 		sys.exit(1)
 	except OSError as reason_for_error:
 		error_message = 'Error reading configfile: ' * english + 'Asetustiedoston lukemisessa tapahtui virhe: ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message, [])
+		print(error_message)
 		sys.exit(1)
 	except EOFError as reason_for_error:
 		error_message = 'Error reading configfile: ' * english + 'Asetustiedoston lukemisessa tapahtui virhe: ' * finnish + str(reason_for_error)
-		send_error_messages_to_screen_logfile_email(error_message, [])
+		print(error_message)
 		sys.exit(1)
 
 config_file_created_by_installer_version = 0
@@ -4170,7 +4171,7 @@ samba_config_text_widget.grid(column=0, row=1, columnspan=4, sticky=(tkinter.W, 
 
 # .edit_modified() returns = 1 if the text in the widget has modified.
 # The first insertion of text by this program in the widget is also considered as a modification of text.
-# This results in user being able to undo past the first text insestion, resulting in an empty text display.
+# This results in user being able to undo past the first text insertion, resulting in an empty text display.
 # To prevent user undoing too far, we set the flag to 'False' after the inital text is inserted.
 # After this the user cannot undo so far that the text widget becomes empty.
 samba_config_text_widget.edit_modified(False)
@@ -4358,7 +4359,7 @@ eigth_window_back_button.grid(column=2, row=1, padx=30, pady=10, sticky=(tkinter
 ###########################################################################################################
 
 # Create the label for the frame
-ninth_window_label = tkinter.ttk.Label(ninth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text="Everything was installed successfully :)\n\nLoudnessCorrection will be started when you boot up your computer, or you can start it now manually with the command:\n\nsudo   -b   /etc/init.d/loudnesscorrection_init_script   start'\n\nNote that there will be 90 seconds delay before LoudnessCorrection starts, HearBeat_Checker will start 60 seconds after LoudnessCorrection.")
+ninth_window_label = tkinter.ttk.Label(ninth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text="Everything was installed successfully :)\n\nLoudnessCorrection will be started when you boot up your computer, or you can start it now manually running the following commands:\n\nsudo   -b   /etc/init.d/loudnesscorrection_init_script   stop\nsudo   -b   /etc/init.d/loudnesscorrection_init_script   start\n\n\nNote that there will be 90 seconds delay before LoudnessCorrection starts, HearBeat_Checker will start 60 seconds after LoudnessCorrection.")
 ninth_window_label.grid(column=0, row=0, columnspan=4, pady=10, padx=10, sticky=(tkinter.N))
 
 # Create the buttons for the frame

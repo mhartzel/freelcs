@@ -33,11 +33,10 @@ import email.mime.text
 import email.mime.multipart
 import pickle
 import math
-import copy
 import signal
 import traceback
 
-version = '212'
+version = '214'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -683,7 +682,6 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 		commandfile_for_gnuplot = directory_for_temporary_files + os.sep + filename + '-gnuplot_commands'
 		loudness_calculation_table = directory_for_temporary_files + os.sep + filename + '-loudness_calculation_table'
 		gnuplot_temporary_output_graphicsfile = directory_for_temporary_files + os.sep + filename + '-Loudness_Results_Graphics.jpg' * english + '-Aanekkyyslaskennan_Tulokset.jpg' * finnish
-		gnuplot_output_graphicsfile = directory_for_results + os.sep + filename + '-Loudness_Results_Graphics.jpg' * english + '-Aanekkyyslaskennan_Tulokset.jpg' * finnish
 		warning_message = ''
 		
 		global debug_temporary_dict_for_all_file_processing_information
@@ -938,7 +936,6 @@ def create_gnuplot_commands_for_error_message(error_message, filename, directory
 		commandfile_for_gnuplot = directory_for_temporary_files + os.sep + filename + '-gnuplot_commands'
 		loudness_calculation_table = directory_for_temporary_files + os.sep + filename + '-loudness_calculation_table'
 		gnuplot_temporary_output_graphicsfile = directory_for_temporary_files + os.sep + filename + '-Loudness_Results_Graphics.jpg' * english + '-Aanekkyyslaskennan_Tulokset.jpg' * finnish
-		gnuplot_output_graphicsfile = directory_for_results + os.sep + filename + '-Loudness_Results_Graphics.jpg' * english + '-Aanekkyyslaskennan_Tulokset.jpg' * finnish
 
 		global debug_temporary_dict_for_all_file_processing_information
 		global silent
@@ -1503,7 +1500,7 @@ def run_sox_commands_in_parallel_threads(directory_for_temporary_files, filename
 					sox_process = threading.Thread(target=run_sox, args=(directory_for_temporary_files, filename, sox_commandline, english, finnish, event_for_sox_command)) # Create a process instance.
 					
 					# Start sox thread.
-					thread_object = sox_process.start() # Start the calculation process in it's own thread.
+					sox_process.start() # Start the calculation process in it's own thread.
 				
 				# If all sox commandlines has been used, then break out of the loop.
 				if len(list_of_sox_commandlines) == 0:
@@ -1788,7 +1785,6 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 		# Fixme: delete the following 6 lines when testfiles have been processed and it becomes clear that sox reported sample count is reliable. Sample count is used in calculating audio duration.
 		# Sox can not get duration from long files correctly, get audio duration with mediainfo.
 		not_used, not_used, not_used, not_used, mediainfo_audio_duration, not_used, not_used = get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish, save_debug_information = False)
-		not_used = ''
 		if audio_duration != mediainfo_audio_duration:
 			error_message = 'ERROR !!! Sox audio duration: ' + str(audio_duration)  + ' differs from mediainfo audio duration: ' + str(mediainfo_audio_duration) + ': ' + filename
 			send_error_messages_to_screen_logfile_email(error_message, [])
@@ -2418,7 +2414,6 @@ def debug_lists_and_dictionaries_thread():
 
 	list_printouts = []
 	list_printouts_old_values = []
-	debug_messages_path = web_page_path
 	time_to_start_writing_to_a_new_file = int(time.time() + 86400) # Write debug info to a new file every 24 hours (starting from LoudnessCorrection startup time).
 	real_time_string = get_realtime(english, finnish)[1]
 	debug_messages_file = 'debug-variables_lists_and_dictionaries-' + real_time_string + '.txt' # Debug messages filename is 'debug_messages-' + current date + time
@@ -2674,7 +2669,6 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		estimated_uncompressed_size_for_combined_channels = 0
 		global wav_format_maximum_file_size
 		file_type = ''
-		audio_coding_format = ''
 		list_of_error_messages_for_unsupported_streams = []
 		
 		# Save some debug information. Items are always saved in pairs (Title, value) so that the list is easy to parse later.
@@ -2931,7 +2925,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				else:
 					# The FFmpeg reported audio duration as 'N/A' then this means ffmpeg could not determine the audio duration. Set audio duration to 0 seconds and inform user about the error.
 					audio_duration_rounded_to_seconds = 0
-					error_message = 'FFmpeg Error : Audio Duration = N/A' * english + 'FFmpeg Virhe: Äänen Kesto = N/A' * finnish + ': ' + filename
+					error_message = 'FFmpeg Error: Audio Duration = N/A' * english + 'FFmpeg Virhe: Äänen Kesto = N/A' * finnish + ': ' + filename
 					# Save some debug information.
 					debug_information_list.append('error_message')
 					debug_information_list.append(error_message)
@@ -2940,12 +2934,11 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				# Get the type of the file, if it is 'mpegts' then we later need to do some tricks to get the correct duration from the file.
 				file_type = str(item).split('from')[0].split(',')[1].strip()
 			if filename + ':' in item: # Try to recognize some ffmpeg error messages, these always start with the filename + ':'
-				ffmpeg_error_message = 'FFmpeg Error : ' * english + 'FFmpeg Virhe: ' * finnish + item.split(':')[1] # Get the reason for error from ffmpeg output.
+				ffmpeg_error_message = 'FFmpeg Error: ' * english + 'FFmpeg Virhe: ' * finnish + item.split(':')[1] # Get the reason for error from ffmpeg output.
 				
 		# Test if file type is mpegts. FFmpeg can not always extract file duration correctly from mpegts so in this case get file duration with the mediainfo - command.
 		if file_type == 'mpegts':
 			not_used, not_used, not_used, not_used, audio_duration_according_to_mediainfo, not_used, not_used = get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish, save_debug_information = False)
-			not_used = ''
 
 			if audio_duration_according_to_mediainfo != 0:
 				audio_duration = audio_duration_according_to_mediainfo
@@ -3060,8 +3053,13 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		# If there are only unsupported audio streams in the file then assign an error message that gets printed on the results graphics file.
 		# Currently the only known unsupported streams in a file are streams with channel counts of zero and more than 6 channels.
 		send_ffmpeg_error_message_by_email = True
+
 		if (ffmpeg_supported_fileformat == False) and (len(list_of_error_messages_for_unsupported_streams) > 0):
 			ffmpeg_error_message = 'Audio streams in file are unsupported, only channel counts from 1 to 6 are supported' * english + 'Tiedoston miksaukset eivät ole tuetussa formaatissa, vain kanavamäärät välillä 1 ja 6 ovat tuettuja' * finnish
+			send_ffmpeg_error_message_by_email = False
+
+		# Don't send email if FFmpeg error message is caused by an unsupported file type, for example a text file dropped to the HotFolder.
+		if 'Invalid data found when processing input' in ffmpeg_error_message:
 			send_ffmpeg_error_message_by_email = False
 			
 		# In case the file has only 1 audio stream and the format is ogg then do an additional check.
@@ -3124,8 +3122,6 @@ def get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, h
 		audio_duration_fractions_string =''
 		audio_duration_list = []
 		audio_duration_rounded_to_seconds = 0
-		audio_duration_fractions = 0
-		audio_duration = 0
 		
 		audiostream_count = 0
 		channel_count = 0
@@ -3430,10 +3426,8 @@ def get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, h
 				# Get the file duration as a string and also calculate it in seconds.
 				if (mediainfo_output_decoded.strip() != '') and ('-' not in mediainfo_output_decoded):
 					audio_duration_string, audio_duration_fractions_string = mediainfo_output_decoded.split('.') # Split the time string to two variables, the last will hold the fractions part (0 - 999 hundreds of a second).
-					audio_duration_fractions = int(audio_duration_fractions_string) / 1000
 					audio_duration_list = audio_duration_string.split(':') # Separate each element in the time string (hours, minutes, seconds) and put them in a list.
 					audio_duration_rounded_to_seconds = (int(audio_duration_list[0]) * 60 * 60) + (int(audio_duration_list[1]) * 60) + int(audio_duration_list[2]) # Calculate audio duration in seconds.
-					audio_duration = audio_duration_rounded_to_seconds + audio_duration_fractions
 				
 				# Delete the temporary stdout - file.
 				try:
