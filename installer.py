@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '052'
+version = '053'
 
 ###################################
 # Function definitions start here #
@@ -1160,7 +1160,7 @@ def install_init_scripts_and_config_files(*args):
 	
 	# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 	if len(sudo_stderr_string) != 0:
-		show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+		show_error_message_on_seventh_window(sudo_stderr_string)
 		return(True) # There was an error, exit this subprogram.
 	
 	# Password was accepted and our command was successfully run as root.
@@ -1178,7 +1178,7 @@ def install_init_scripts_and_config_files(*args):
 	
 	# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 	if len(sudo_stderr_string) != 0:
-		show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+		show_error_message_on_seventh_window(sudo_stderr_string)
 		return(True) # There was an error, exit this subprogram.
 	
 	# Password was accepted and our command was successfully run as root.
@@ -1196,7 +1196,7 @@ def install_init_scripts_and_config_files(*args):
 	
 	# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 	if len(sudo_stderr_string) != 0:
-		show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+		show_error_message_on_seventh_window(sudo_stderr_string)
 		return(True) # There was an error, exit this subprogram.
 	
 	# Password was accepted and our command was successfully run as root.
@@ -1214,7 +1214,7 @@ def install_init_scripts_and_config_files(*args):
 	
 	# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 	if len(sudo_stderr_string) != 0:
-		show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+		show_error_message_on_seventh_window(sudo_stderr_string)
 		return(True) # There was an error, exit this subprogram.
 	
 	# Password was accepted and our command was successfully run as root.
@@ -1232,7 +1232,7 @@ def install_init_scripts_and_config_files(*args):
 	
 	# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 	if len(sudo_stderr_string) != 0:
-		show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+		show_error_message_on_seventh_window(sudo_stderr_string)
 		return(True) # There was an error, exit this subprogram.
 	
 	# Password was accepted and our command was successfully run as root.
@@ -1250,7 +1250,7 @@ def install_init_scripts_and_config_files(*args):
 	
 	# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 	if len(sudo_stderr_string) != 0:
-		show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+		show_error_message_on_seventh_window(sudo_stderr_string)
 		return(True) # There was an error, exit this subprogram.
 	
 	# Password was accepted and our command was successfully run as root.
@@ -1289,7 +1289,7 @@ def install_init_scripts_and_config_files(*args):
 	
 	# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 	if len(sudo_stderr_string) != 0:
-		show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+		show_error_message_on_seventh_window(sudo_stderr_string)
 		return(True) # There was an error, exit this subprogram.
 	
 	# Password was accepted and our command was successfully run as root.
@@ -1307,7 +1307,7 @@ def install_init_scripts_and_config_files(*args):
 	
 	# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 	if len(sudo_stderr_string) != 0:
-		show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+		show_error_message_on_seventh_window(sudo_stderr_string)
 		return(True) # There was an error, exit this subprogram.
 	
 	# Password was accepted and our command was successfully run as root.
@@ -1325,7 +1325,7 @@ def install_init_scripts_and_config_files(*args):
 	
 	# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 	if len(sudo_stderr_string) != 0:
-		show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+		show_error_message_on_seventh_window(sudo_stderr_string)
 		return(True) # There was an error, exit this subprogram.
 	
 	# Password was accepted and our command was successfully run as root.
@@ -1350,7 +1350,7 @@ def install_init_scripts_and_config_files(*args):
 			
 			# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 			if len(sudo_stderr_string) != 0:
-				show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+				show_error_message_on_seventh_window(sudo_stderr_string)
 				return(True) # There was an error, exit this subprogram.
 			
 			# Password was accepted and our command was successfully run as root.
@@ -1368,7 +1368,7 @@ def install_init_scripts_and_config_files(*args):
 			
 			# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 			if len(sudo_stderr_string) != 0:
-				show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+				show_error_message_on_seventh_window(sudo_stderr_string)
 				return(True) # There was an error, exit this subprogram.
 			
 			# Password was accepted and our command was successfully run as root.
@@ -1386,7 +1386,7 @@ def install_init_scripts_and_config_files(*args):
 			
 			# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 			if len(sudo_stderr_string) != 0:
-				show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+				show_error_message_on_seventh_window(sudo_stderr_string)
 				return(True) # There was an error, exit this subprogram.
 			
 			# Password was accepted and our command was successfully run as root.
@@ -1409,7 +1409,7 @@ def install_init_scripts_and_config_files(*args):
 			
 			# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 			if len(sudo_stderr_string) != 0:
-				show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+				show_error_message_on_seventh_window(sudo_stderr_string)
 				return(True) # There was an error, exit this subprogram.
 			
 			# Password was accepted and our command was successfully run as root.
@@ -1445,7 +1445,7 @@ def install_init_scripts_and_config_files(*args):
 		
 		# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 		if len(sudo_stderr_string) != 0:
-			show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+			show_error_message_on_seventh_window(sudo_stderr_string)
 			return(True) # There was an error, exit this subprogram.
 		
 		# Password was accepted and our command was successfully run as root.
@@ -1463,7 +1463,7 @@ def install_init_scripts_and_config_files(*args):
 		
 		# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 		if len(sudo_stderr_string) != 0:
-			show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+			show_error_message_on_seventh_window(sudo_stderr_string)
 			return(True) # There was an error, exit this subprogram.
 		
 		# Password was accepted and our command was successfully run as root.
@@ -1481,7 +1481,7 @@ def install_init_scripts_and_config_files(*args):
 		
 		# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 		if len(sudo_stderr_string) != 0:
-			show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+			show_error_message_on_seventh_window(sudo_stderr_string)
 			return(True) # There was an error, exit this subprogram.
 		
 		# Password was accepted and our command was successfully run as root.
@@ -1521,7 +1521,7 @@ def install_init_scripts_and_config_files(*args):
 	
 	# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 	if len(sudo_stderr_string) != 0:
-		show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+		show_error_message_on_seventh_window(sudo_stderr_string)
 		return(True) # There was an error, exit this subprogram.
 	
 	# Password was accepted and our command was successfully run as root.
@@ -1539,7 +1539,7 @@ def install_init_scripts_and_config_files(*args):
 	
 	# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 	if len(sudo_stderr_string) != 0:
-		show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+		show_error_message_on_seventh_window(sudo_stderr_string)
 		return(True) # There was an error, exit this subprogram.
 	
 	# Password was accepted and our command was successfully run as root.
@@ -1557,7 +1557,7 @@ def install_init_scripts_and_config_files(*args):
 	
 	# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 	if len(sudo_stderr_string) != 0:
-		show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+		show_error_message_on_seventh_window(sudo_stderr_string)
 		return(True) # There was an error, exit this subprogram.
 	
 	# Password was accepted and our command was successfully run as root.
@@ -1576,7 +1576,7 @@ def install_init_scripts_and_config_files(*args):
 	
 	# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 	if len(sudo_stderr_string) != 0:
-		show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+		show_error_message_on_seventh_window(sudo_stderr_string)
 		return(True) # There was an error, exit this subprogram.
 	
 	# Password was accepted and our command was successfully run as root.
@@ -1618,7 +1618,7 @@ def test_if_root_password_is_valid(*args):
 	# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 	if len(sudo_stderr_string) != 0:
 		root_password_was_accepted = False
-		show_error_message_on_root_password_window(sudo_stderr, sudo_stderr_string)
+		show_error_message_on_root_password_window(sudo_stderr_string)
 
 	############################################
 	# Change LoudnessCorrection.py permissions #
@@ -1635,7 +1635,7 @@ def test_if_root_password_is_valid(*args):
 		# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 		if len(sudo_stderr_string) != 0:
 			root_password_was_accepted = False
-			show_error_message_on_root_password_window(sudo_stderr, sudo_stderr_string)
+			show_error_message_on_root_password_window(sudo_stderr_string)
 		
 	######################################
 	# Change LoudnessCorrection.py owner #
@@ -1652,7 +1652,7 @@ def test_if_root_password_is_valid(*args):
 		# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 		if len(sudo_stderr_string) != 0:
 			root_password_was_accepted = False
-			show_error_message_on_root_password_window(sudo_stderr, sudo_stderr_string)
+			show_error_message_on_root_password_window(sudo_stderr_string)
 
 	##############################################
 	# Delete LoudnessCorrection.py from /usr/bin #
@@ -1669,7 +1669,7 @@ def test_if_root_password_is_valid(*args):
 		# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 		if len(sudo_stderr_string) != 0:
 			root_password_was_accepted = False
-			show_error_message_on_root_password_window(sudo_stderr, sudo_stderr_string)
+			show_error_message_on_root_password_window(sudo_stderr_string)
 
 	# If root password was valid then call the next window.
 	if root_password_was_accepted == True:
@@ -2049,7 +2049,7 @@ def install_missing_programs(*args):
 		# Check if some error keywords can be found in apt-get output.
 		for apt_error_string in possible_apt_get_error_messages:
 			if apt_error_string in sudo_stderr_string.lower():
-				show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+				show_error_message_on_seventh_window(sudo_stderr_string)
 				an_error_has_happened = True
 	
 	if an_error_has_happened == False:
@@ -2104,7 +2104,7 @@ def install_missing_programs(*args):
 			# Check if some error keywords can be found in apt-get output.
 			for apt_error_string in possible_apt_get_error_messages:
 				if apt_error_string in sudo_stderr_string.lower():
-					show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+					show_error_message_on_seventh_window(sudo_stderr_string)
 					an_error_has_happened = True
 		
 	if an_error_has_happened == False:
@@ -2146,7 +2146,7 @@ def install_missing_programs(*args):
 				
 				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
 				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
-					show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+					show_error_message_on_seventh_window(sudo_stderr_string)
 					an_error_has_happened = True
 			
 			if os.path.exists(directory_for_os_temporary_files + os.sep + 'libebur128'):
@@ -2173,7 +2173,7 @@ def install_missing_programs(*args):
 				
 				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
 				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
-					show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+					show_error_message_on_seventh_window(sudo_stderr_string)
 					an_error_has_happened = True
 			
 			# Write libebur128 source code download commands to '/tmp/libebur128_download_commands.sh'
@@ -2185,7 +2185,7 @@ def install_missing_programs(*args):
 			except IOError as reason_for_error:
 				error_in_string_format = 'Error opening file ' + directory_for_os_temporary_files + os.sep + libebur128_source_downloadfile + ' for writing ' + str(reason_for_error)
 				all_installation_messages = all_installation_messages + '-' * 80 + '\n' + error_in_string_format
-				show_error_message_on_seventh_window('', error_in_string_format)
+				show_error_message_on_seventh_window(error_in_string_format)
 				an_error_has_happened = True
 				if debug == True:
 					print()
@@ -2194,7 +2194,7 @@ def install_missing_programs(*args):
 			except OSError as reason_for_error:
 				error_in_string_format = 'Error opening file ' + directory_for_os_temporary_files + os.sep + libebur128_source_downloadfile + ' for writing ' + str(reason_for_error)
 				all_installation_messages = all_installation_messages + '-' * 80 + '\n' + error_in_string_format
-				show_error_message_on_seventh_window('', error_in_string_format)
+				show_error_message_on_seventh_window(error_in_string_format)
 				an_error_has_happened = True
 				if debug == True:
 					print()
@@ -2227,7 +2227,7 @@ def install_missing_programs(*args):
 				
 				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
 				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
-					show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+					show_error_message_on_seventh_window(sudo_stderr_string)
 					an_error_has_happened = True
 		
 			if an_error_has_happened == False:
@@ -2256,7 +2256,7 @@ def install_missing_programs(*args):
 				
 				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
 				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
-					show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+					show_error_message_on_seventh_window(sudo_stderr_string)
 					an_error_has_happened = True
 		
 			if an_error_has_happened == False:
@@ -2302,7 +2302,7 @@ def install_missing_programs(*args):
 				
 				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
 				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower() or ('cannot' in sudo_stderr_string.lower()) or ('fatal') in sudo_stderr_string.lower()):
-					show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+					show_error_message_on_seventh_window(sudo_stderr_string)
 					an_error_has_happened = True
 	
 			if an_error_has_happened == False:
@@ -2342,7 +2342,7 @@ def install_missing_programs(*args):
 					
 					# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
 					if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
-						show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+						show_error_message_on_seventh_window(sudo_stderr_string)
 						an_error_has_happened = True
 				
 				# Write cmake commands to '/tmp/libebur128_cmake_commands.sh'
@@ -2354,7 +2354,7 @@ def install_missing_programs(*args):
 				except IOError as reason_for_error:
 					error_in_string_format = 'Error opening file ' + directory_for_os_temporary_files + os.sep + cmake_commandfile + ' for writing ' + str(reason_for_error)
 					all_installation_messages = all_installation_messages + '-' * 80 + '\n' + error_in_string_format
-					show_error_message_on_seventh_window('', error_in_string_format)
+					show_error_message_on_seventh_window(error_in_string_format)
 					an_error_has_happened = True
 					if debug == True:
 						print()
@@ -2363,7 +2363,7 @@ def install_missing_programs(*args):
 				except OSError as reason_for_error:
 					error_in_string_format = 'Error opening file ' + directory_for_os_temporary_files + os.sep + cmake_commandfile + ' for writing ' + str(reason_for_error)
 					all_installation_messages = all_installation_messages + '-' * 80 + '\n' + error_in_string_format
-					show_error_message_on_seventh_window('', error_in_string_format)
+					show_error_message_on_seventh_window(error_in_string_format)
 					an_error_has_happened = True
 					if debug == True:
 						print()
@@ -2396,7 +2396,7 @@ def install_missing_programs(*args):
 				
 				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
 				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
-					show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+					show_error_message_on_seventh_window(sudo_stderr_string)
 					an_error_has_happened = True
 		
 			if an_error_has_happened == False:
@@ -2425,7 +2425,7 @@ def install_missing_programs(*args):
 				
 				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
 				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
-					show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+					show_error_message_on_seventh_window(sudo_stderr_string)
 					an_error_has_happened = True
 		
 			if an_error_has_happened == False:
@@ -2471,7 +2471,7 @@ def install_missing_programs(*args):
 				
 				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
 				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
-					show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+					show_error_message_on_seventh_window(sudo_stderr_string)
 					an_error_has_happened = True
 	
 			if an_error_has_happened == False:
@@ -2511,7 +2511,7 @@ def install_missing_programs(*args):
 					
 					# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
 					if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
-						show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+						show_error_message_on_seventh_window(sudo_stderr_string)
 						an_error_has_happened = True
 				
 				# Write make commands to '/tmp/make_and_build_commands.sh'
@@ -2523,7 +2523,7 @@ def install_missing_programs(*args):
 				except IOError as reason_for_error:
 					error_in_string_format = 'Error opening file ' + directory_for_os_temporary_files + os.sep + make_and_build_commandfile + ' for writing ' + str(reason_for_error)
 					all_installation_messages = all_installation_messages + '-' * 80 + '\n' + error_in_string_format
-					show_error_message_on_seventh_window('', error_in_string_format)
+					show_error_message_on_seventh_window(error_in_string_format)
 					an_error_has_happened = True
 					if debug == True:
 						print()
@@ -2532,7 +2532,7 @@ def install_missing_programs(*args):
 				except OSError as reason_for_error:
 					error_in_string_format = 'Error opening file ' + directory_for_os_temporary_files + os.sep + make_and_build_commandfile + ' for writing ' + str(reason_for_error)
 					all_installation_messages = all_installation_messages + '-' * 80 + '\n' + error_in_string_format
-					show_error_message_on_seventh_window('', error_in_string_format)
+					show_error_message_on_seventh_window(error_in_string_format)
 					an_error_has_happened = True
 					if debug == True:
 						print()
@@ -2565,7 +2565,7 @@ def install_missing_programs(*args):
 				
 				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
 				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
-					show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+					show_error_message_on_seventh_window(sudo_stderr_string)
 					an_error_has_happened = True
 		
 			if an_error_has_happened == False:
@@ -2594,7 +2594,7 @@ def install_missing_programs(*args):
 				
 				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
 				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
-					show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+					show_error_message_on_seventh_window(sudo_stderr_string)
 					an_error_has_happened = True
 		
 			if an_error_has_happened == False:
@@ -2640,7 +2640,7 @@ def install_missing_programs(*args):
 				
 				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
 				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
-					show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+					show_error_message_on_seventh_window(sudo_stderr_string)
 		
 	if an_error_has_happened == False:
 	
@@ -2681,7 +2681,7 @@ def install_missing_programs(*args):
 				
 				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
 				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
-					show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+					show_error_message_on_seventh_window(sudo_stderr_string)
 					an_error_has_happened = True
 			
 			if os.path.exists(directory_for_os_temporary_files + os.sep + 'sox'):
@@ -2708,7 +2708,7 @@ def install_missing_programs(*args):
 				
 				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
 				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
-					show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+					show_error_message_on_seventh_window(sudo_stderr_string)
 					an_error_has_happened = True
 			
 			# Write sox source code download commands to '/tmp/sox_download_commands.sh'
@@ -2720,7 +2720,7 @@ def install_missing_programs(*args):
 			except IOError as reason_for_error:
 				error_in_string_format = 'Error opening file ' + directory_for_os_temporary_files + os.sep + sox_source_downloadfile + ' for writing ' + str(reason_for_error)
 				all_installation_messages = all_installation_messages + '-' * 80 + '\n' + error_in_string_format
-				show_error_message_on_seventh_window('', error_in_string_format)
+				show_error_message_on_seventh_window(error_in_string_format)
 				an_error_has_happened = True
 				if debug == True:
 					print()
@@ -2729,7 +2729,7 @@ def install_missing_programs(*args):
 			except OSError as reason_for_error:
 				error_in_string_format = 'Error opening file ' + directory_for_os_temporary_files + os.sep + sox_source_downloadfile + ' for writing ' + str(reason_for_error)
 				all_installation_messages = all_installation_messages + '-' * 80 + '\n' + error_in_string_format
-				show_error_message_on_seventh_window('', error_in_string_format)
+				show_error_message_on_seventh_window(error_in_string_format)
 				an_error_has_happened = True
 				if debug == True:
 					print()
@@ -2762,7 +2762,7 @@ def install_missing_programs(*args):
 				
 				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
 				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
-					show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+					show_error_message_on_seventh_window(sudo_stderr_string)
 					an_error_has_happened = True
 		
 			if an_error_has_happened == False:
@@ -2791,7 +2791,7 @@ def install_missing_programs(*args):
 				
 				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
 				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
-					show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+					show_error_message_on_seventh_window(sudo_stderr_string)
 					an_error_has_happened = True
 		
 			if an_error_has_happened == False:
@@ -2841,7 +2841,7 @@ def install_missing_programs(*args):
 				
 				## If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
 				#if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower() or ('cannot' in sudo_stderr_string.lower()) or ('fatal') in sudo_stderr_string.lower()):
-					#show_error_message_on_seventh_window(sudo_stderr, sudo_stderr_string)
+					#show_error_message_on_seventh_window(sudo_stderr_string)
 					#an_error_has_happened = True
 		
 	external_program_installation_has_been_already_run = True

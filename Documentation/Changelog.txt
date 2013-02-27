@@ -1,3 +1,7 @@
+Installer 053
+--------------
+- Bugfix: Corrected some bugs left over when modifying installer in version 052.
+
 LoudnessCorrection Version 214
 ------------------------------
 - Removed a couple of unsused variables left in the code.
