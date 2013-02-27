@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '053'
+version = '054'
 
 ###################################
 # Function definitions start here #
@@ -3889,7 +3889,7 @@ smtp_server_name_combobox['values'] = ('smtp.gmail.com')
 if 'smtp_server_name' in previously_saved_email_sending_details:
 	smtp_server_name.set(previously_saved_email_sending_details['smtp_server_name'])
 	if smtp_server_name.get() not in smtp_server_name_combobox['values']:
-		smtp_server_name_combobox['values'] = ('smtp.gmail.com', smtp_server_name.get())
+		smtp_server_name_combobox['values'] = (smtp_server_name.get(), 'smtp.gmail.com')
 	smtp_server_name_combobox.set(smtp_server_name.get())
 smtp_server_name_combobox.state(['disabled'])
 smtp_server_name_combobox.grid(column=2, row=5, padx=10, sticky=(tkinter.N, tkinter.E))
@@ -3902,10 +3902,17 @@ smtp_server_port_combobox = tkinter.ttk.Combobox(third_frame_child_frame_1, text
 smtp_server_port_combobox['values'] = (25, 465, 587)
 
 # If a previously saved setting can be found then use it.
-if 'smtp_server_port' in previously_saved_email_sending_details:
+temporary_list = []
+if ('smtp_server_port' in previously_saved_email_sending_details) and (previously_saved_email_sending_details['smtp_server_port'] != ''):
 	smtp_server_port.set(previously_saved_email_sending_details['smtp_server_port'])
 	if smtp_server_port.get() not in smtp_server_port_combobox['values']:
-		smtp_server_port_combobox['values'] = ('smtp.gmail.com', smtp_server_port.get())
+		temporary_list.append(smtp_server_port.get())
+
+		for item in smtp_server_port_combobox['values']:
+			temporary_list.append(item)
+
+		smtp_server_port_combobox['values'] = temporary_list
+
 	smtp_server_port_combobox.set(smtp_server_port.get())
 
 smtp_server_port_combobox.state(['disabled'])

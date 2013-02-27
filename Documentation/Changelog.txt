@@ -1,3 +1,7 @@
+Installer 054
+--------------
+- Bugfix: If no email sending detail were filled in previous installer run, then the list of smtp-server ports was not correct on the next run.
+
 Installer 053
 --------------
 - Bugfix: Corrected some bugs left over when modifying installer in version 052.
