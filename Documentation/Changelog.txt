@@ -1,6 +1,11 @@
+Installer 055
+--------------
+- Installer no longer installs FFmpeg automatically, but shows user how to do it.
+- LoudnessCorrection startup commands on the last window can now be copied to clipboard and pasted to terminal.
+
 Installer 054
 --------------
-- Bugfix: If no email sending detail were filled in previous installer run, then the list of smtp-server ports was not correct on the next run.
+- Bugfix: If no email sending details were filled in previous installer run, then the list of smtp-server ports was not correct on the next run.
 
 Installer 053
 --------------

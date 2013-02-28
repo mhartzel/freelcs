@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '054'
+version = '055'
 
 ###################################
 # Function definitions start here #
@@ -168,7 +168,7 @@ def call_seventh_frame_on_top():
 	# Hide the the frames for other windows and raise the one we want.
 	sixth_frame.grid_forget()
 	eigth_frame.grid_forget()
-	ninth_frame.grid_forget()
+	ffmpeg_frame.grid_forget()
 	set_seventh_window_label_texts_and_colors()
 	seventh_frame.update() # Update the frame that has possibly changed, this triggers updating all child objects.
 	seventh_frame.grid(column=0, row=0, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E))
@@ -198,9 +198,11 @@ def call_eigth_frame_on_top():
 	root_window.geometry(str(root_window.winfo_width()) + 'x' +str(root_window.winfo_height()) + '+' + str(int(x_position)) + '+' + str(int(y_position)))
 	
 def call_ninth_frame_on_top():
-	# This function can only be called from the seventh window.
-	# Hide the seventh window and show the ninth window.
-	seventh_frame.grid_forget()
+	# This function can only be called from the FFmpeg infowindow.
+	# Hide the FFmpeg info window and show the ninth window.
+	ffmpeg_frame.grid_forget()
+	startup_commands_text_widget.focus()
+	ninth_frame.update()
 	ninth_frame.grid(column=0, row=0, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E))
 	
 	# Get Frame dimensions and resize root_window to fit the whole frame.
@@ -212,6 +214,24 @@ def call_ninth_frame_on_top():
 	y_position = (root_window.winfo_screenheight() / 2) - (root_window.winfo_height() / 2) - 20
 	root_window.geometry(str(root_window.winfo_width()) + 'x' +str(root_window.winfo_height()) + '+' + str(int(x_position)) + '+' + str(int(y_position)))
 	
+def call_ffmpeg_info_frame_on_top():
+	# This function can only be called from the seventh window.
+	# Hide the seventh window and show the ffmpeg info window.
+	seventh_frame.grid_forget()
+	ninth_frame.grid_forget()
+	ffmpeg_info_window_text_widget.focus()
+	ffmpeg_frame.update()
+	ffmpeg_frame.grid(column=0, row=0, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E))
+	
+	# Get Frame dimensions and resize root_window to fit the whole frame.
+	root_window.geometry(str(ffmpeg_frame.winfo_reqwidth()+40) +'x'+ str(ffmpeg_frame.winfo_reqheight()))
+	
+	# Get root window geometry and center it on screen.
+	root_window.update()
+	x_position = (root_window.winfo_screenwidth() / 2) - (root_window.winfo_width() / 2) - 8
+	y_position = (root_window.winfo_screenheight() / 2) - (root_window.winfo_height() / 2) - 20
+	root_window.geometry(str(root_window.winfo_width()) + 'x' +str(root_window.winfo_height()) + '+' + str(int(x_position)) + '+' + str(int(y_position)))
+
 def call_showstopper_frame_on_top():
 	# This funtions displays the showstopper window, telling user that the error we encountered stops us from continuing the program.
 	first_frame.grid_forget()
@@ -801,7 +821,7 @@ def undo_text_in_text_widget(*args):
 	if samba_config_text_widget.edit_modified() == 1:
 		samba_config_text_widget.edit_undo()
 		
-	# The Ctrl+z is also bound to <Undo> event in the tkiner system level.
+	# The Ctrl+z is also bound to <Undo> event in the tkinter at system level.
 	# User bound Ctrl+z events are run first and after that the system level bind is run.
 	# As I have defined Ctrl+z binding in my text widget, this routine is run first.
 	# The following return 'break' prevents Tkinter from running any other Ctrl+z bindings.
@@ -1065,7 +1085,6 @@ def install_init_scripts_and_config_files(*args):
 	global email_sending_details
 	global version
 	global sox_path
-	global ffmpeg_path
 	global gnuplot_path
 	global all_ip_addresses_of_the_machine
 	global peak_measurement_method
@@ -1746,7 +1765,6 @@ def set_seventh_window_label_texts_and_colors():
 	# Find paths to all critical programs we need to run LoudnessCorrection
 	find_paths_to_all_external_programs_we_need()
 	
-	seventh_window_label_3['foreground'] = 'dark green'
 	seventh_window_label_5['foreground'] = 'dark green'
 	seventh_window_label_7['foreground'] = 'dark green'
 	seventh_window_label_8['foreground'] = 'black'
@@ -1754,8 +1772,6 @@ def set_seventh_window_label_texts_and_colors():
 	seventh_window_label_11['foreground'] = 'dark green'
 	seventh_window_label_20['foreground'] = 'dark green'
 
-	if ffmpeg_is_installed.get() == 'Not Installed':
-		seventh_window_label_3['foreground'] = 'red'
 	if sox_is_installed.get() == 'Not Installed':
 		seventh_window_label_5['foreground'] = 'red'
 	if gnuplot_is_installed.get() == 'Not Installed':
@@ -1776,7 +1792,6 @@ def find_paths_to_all_external_programs_we_need():
 	# Find paths for all needed programs and define some tkinter variables, that are used on labels to indicate if some needed programs are installed or not.
 
 	global python3_path
-	global ffmpeg_path
 	global sox_path
 	global gnuplot_path
 	global samba_path
@@ -1789,13 +1804,6 @@ def find_paths_to_all_external_programs_we_need():
 	all_needed_external_programs_are_installed = True
 	python3_path = find_program_in_os_path('python3')
 	
-	ffmpeg_path = find_program_in_os_path('ffmpeg')
-	if ffmpeg_path == '':
-		ffmpeg_is_installed.set('Not Installed')
-		all_needed_external_programs_are_installed = False
-	else:
-		ffmpeg_is_installed.set('Installed')
-
 	sox_path = find_program_in_os_path('sox')
 	check_sox_version_and_add_git_commands_to_checkout_specific_commit()
 	if sox_path == '':
@@ -1837,13 +1845,11 @@ def find_paths_to_all_external_programs_we_need():
 	
 	# If user want's to reinstall all programs, then reset all path variables and force reinstallation.
 	if force_reinstallation_of_all_programs == True:
-		ffmpeg_path = ''
 		sox_path = ''
 		gnuplot_path = ''
 		samba_path = ''
 		mediainfo_path = ''
 		loudness_path = ''
-		ffmpeg_is_installed.set('Not Installed')
 		sox_is_installed.set('Not Installed')
 		gnuplot_is_installed.set('Not Installed')
 		
@@ -3014,8 +3020,6 @@ def define_program_installation_commands():
 	if sox_path == '':
 		needed_packages_install_commands.append('sox')
 		check_sox_version_and_add_git_commands_to_checkout_specific_commit()
-	if ffmpeg_path == '':
-		needed_packages_install_commands.append('ffmpeg')
 	if gnuplot_path == '':
 		needed_packages_install_commands.append('gnuplot')
 	if samba_path == '':
@@ -3363,7 +3367,6 @@ sample_peak = tkinter.BooleanVar()
 sample_peak.set(True)
 
 # Define variables that will be used as the text content on seventh window. The variables can hold one of two values: 'Installed' / 'Not Installed'.
-ffmpeg_is_installed = tkinter.StringVar()
 sox_is_installed = tkinter.StringVar()
 gnuplot_is_installed = tkinter.StringVar()	
 samba_is_installed = tkinter.StringVar()
@@ -3446,7 +3449,6 @@ directory_for_os_temporary_files = tempfile.gettempdir()
 
 # Define global variables that later hold paths to external programs that LoudnessCorrection needs to operate.
 python3_path = ''
-ffmpeg_path = ''
 sox_path = ''
 gnuplot_path = ''
 samba_path = ''
@@ -3591,6 +3593,8 @@ if int(config_file_created_by_installer_version) >= 39:
 		print('-' * 75)
 
 # Create frames inside the root window to hold other GUI elements. All frames and widgets must be created in the main program, otherwise they are not accessible in subroutines. 
+##########################################################################################################################
+
 first_frame=tkinter.ttk.Frame(root_window)
 first_frame.grid(column=0, row=0, padx=20, pady=5, columnspan=4, sticky=(tkinter.W, tkinter.N, tkinter.E, tkinter.S))
 
@@ -3598,7 +3602,9 @@ first_frame_child_frame_1=tkinter.ttk.Frame(first_frame)
 first_frame_child_frame_1['borderwidth'] = 2
 first_frame_child_frame_1['relief'] = 'sunken'
 first_frame_child_frame_1.grid(column=0, row=0, columnspan=4, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E))
-	
+
+##########################################################################################################################
+
 second_frame=tkinter.ttk.Frame(root_window)
 second_frame.grid(column=0, row=0, columnspan=4, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E))
 
@@ -3622,6 +3628,8 @@ second_frame_child_frame_4['borderwidth'] = 2
 second_frame_child_frame_4['relief'] = 'sunken'
 second_frame_child_frame_4.grid(column=0, row=3, columnspan=4, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E))
 
+##########################################################################################################################
+
 third_frame=tkinter.ttk.Frame(root_window)
 third_frame.grid(column=0, row=0, columnspan=4, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E))
 
@@ -3630,6 +3638,8 @@ third_frame_child_frame_1['borderwidth'] = 2
 third_frame_child_frame_1['relief'] = 'sunken'
 third_frame_child_frame_1.grid(column=0, row=0, columnspan=4, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E))
 
+##########################################################################################################################
+
 fourth_frame=tkinter.ttk.Frame(root_window)
 fourth_frame.grid(column=0, row=0, columnspan=4, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E))
 
@@ -3637,6 +3647,8 @@ fourth_frame_child_frame_1=tkinter.ttk.Frame(fourth_frame)
 fourth_frame_child_frame_1['borderwidth'] = 2
 fourth_frame_child_frame_1['relief'] = 'sunken'
 fourth_frame_child_frame_1.grid(column=0, row=0, columnspan=4, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E))
+
+##########################################################################################################################
 
 fifth_frame=tkinter.ttk.Frame(root_window)
 fifth_frame.columnconfigure(0, weight=1)
@@ -3655,6 +3667,8 @@ fifth_frame_child_frame_1.rowconfigure(0, weight=0)
 fifth_frame_child_frame_1.rowconfigure(1, weight=1)
 fifth_frame_child_frame_1.grid(column=0, row=0, columnspan=4, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E, tkinter.S))
 
+##########################################################################################################################
+
 sixth_frame=tkinter.ttk.Frame(root_window)
 sixth_frame.grid(column=0, row=0, columnspan=4, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E))
 
@@ -3663,6 +3677,8 @@ sixth_frame_child_frame_1['borderwidth'] = 2
 sixth_frame_child_frame_1['relief'] = 'sunken'
 sixth_frame_child_frame_1.grid(column=0, row=0, columnspan=4, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E))
 
+##########################################################################################################################
+
 seventh_frame=tkinter.ttk.Frame(root_window)
 seventh_frame.grid(column=0, row=0, columnspan=4, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E))
 
@@ -3670,6 +3686,8 @@ seventh_frame_child_frame_1=tkinter.ttk.Frame(seventh_frame)
 seventh_frame_child_frame_1['borderwidth'] = 2
 seventh_frame_child_frame_1['relief'] = 'sunken'
 seventh_frame_child_frame_1.grid(column=0, row=0, columnspan=4, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E))
+
+##########################################################################################################################
 
 eigth_frame=tkinter.ttk.Frame(root_window)
 eigth_frame.columnconfigure(0, weight=1)
@@ -3688,6 +3706,8 @@ eigth_frame_child_frame_1.rowconfigure(0, weight=0)
 eigth_frame_child_frame_1.rowconfigure(1, weight=1)
 eigth_frame_child_frame_1.grid(column=0, row=0, columnspan=4, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E, tkinter.S))
 
+##########################################################################################################################
+
 ninth_frame=tkinter.ttk.Frame(root_window)
 ninth_frame.grid(column=0, row=0, columnspan=4, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E))
 
@@ -3696,6 +3716,18 @@ ninth_frame_child_frame_1['borderwidth'] = 2
 ninth_frame_child_frame_1['relief'] = 'sunken'
 ninth_frame_child_frame_1.grid(column=0, row=0, columnspan=4, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E))
 
+##########################################################################################################################
+
+ffmpeg_frame=tkinter.ttk.Frame(root_window)
+ffmpeg_frame.grid(column=0, row=0, columnspan=4, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E))
+
+ffmpeg_frame_child_frame_1=tkinter.ttk.Frame(ffmpeg_frame)
+ffmpeg_frame_child_frame_1['borderwidth'] = 2
+ffmpeg_frame_child_frame_1['relief'] = 'sunken'
+ffmpeg_frame_child_frame_1.grid(column=0, row=0, columnspan=4, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E))
+
+##########################################################################################################################
+
 showstopper_frame=tkinter.ttk.Frame(root_window)
 showstopper_frame.grid(column=0, row=0, columnspan=4, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E))
 
@@ -3703,6 +3735,7 @@ showstopper_frame_child_frame_1=tkinter.ttk.Frame(showstopper_frame)
 showstopper_frame_child_frame_1['borderwidth'] = 2
 showstopper_frame_child_frame_1['relief'] = 'sunken'
 showstopper_frame_child_frame_1.grid(column=0, row=0, columnspan=4, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E, tkinter.S))
+
 
 ###########################################################################################################
 # Window number 1                                                                                         #
@@ -3719,6 +3752,7 @@ first_window_quit_button = tkinter.Button(first_frame, text = "Quit", command = 
 first_window_quit_button.grid(column=1, row=2, padx=30, pady=10, sticky=(tkinter.E, tkinter.N))
 first_window_next_button = tkinter.Button(first_frame, text = "Next", command = call_second_frame_on_top)
 first_window_next_button.grid(column=2, row=2, padx=30, pady=10, sticky=(tkinter.W, tkinter.N))
+
 
 ###########################################################################################################
 # Window number 2                                                                                         #
@@ -3836,6 +3870,7 @@ second_window_back_button = tkinter.Button(second_frame, text = "Back", command 
 second_window_back_button.grid(column=1, row=5, padx=30, pady=10, sticky=(tkinter.E, tkinter.N))
 second_window_next_button = tkinter.Button(second_frame, text = "Next", command = call_third_frame_on_top)
 second_window_next_button.grid(column=2, row=5, padx=30, pady=10, sticky=(tkinter.W, tkinter.N))
+
 
 ###########################################################################################################
 # Window number 3                                                                                         #
@@ -4049,6 +4084,7 @@ third_window_next_button.grid(column=2, row=1, padx=30, pady=10, sticky=(tkinter
 
 enable_email_settings()
 
+
 ###########################################################################################################
 # Window number 4                                                                                         #
 ###########################################################################################################
@@ -4153,6 +4189,7 @@ if len(list_of_normal_useraccounts) == 0:
 	fourth_window_next_button['state'] = 'disabled'
 fourth_window_next_button.grid(column=2, row=1, padx=30, pady=10, sticky=(tkinter.W, tkinter.N))
 
+
 ###########################################################################################################
 # Window number 5                                                                                         #
 ###########################################################################################################
@@ -4200,6 +4237,7 @@ first_window_undo_button.grid(column=2, row=1, padx=30, pady=10, sticky=(tkinter
 first_window_next_button = tkinter.Button(fifth_frame, text = "Next", command = call_sixth_frame_on_top)
 first_window_next_button.grid(column=3, row=1, padx=30, pady=10, sticky=(tkinter.W, tkinter.N))
 
+
 ###########################################################################################################
 # Window number 6                                                                                         #
 ###########################################################################################################
@@ -4225,6 +4263,7 @@ sixth_window_back_button.grid(column=1, row=1, padx=30, pady=10, sticky=(tkinter
 sixth_window_next_button = tkinter.Button(sixth_frame, text = "Next", command = test_if_root_password_is_valid)
 sixth_window_next_button.grid(column=2, row=1, padx=30, pady=10, sticky=(tkinter.W, tkinter.N))
 
+
 ###########################################################################################################
 # Window number 7                                                                                         #
 ###########################################################################################################
@@ -4237,95 +4276,90 @@ seventh_window_label_1.grid(column=0, row=0, columnspan=4, padx=10, pady=5, stic
 seventh_window_separator_1 = tkinter.ttk.Separator(seventh_frame_child_frame_1, orient=tkinter.HORIZONTAL)
 seventh_window_separator_1.grid(column=0, row=1, padx=10, pady=10, columnspan=5, sticky=(tkinter.W, tkinter.E))
 
-# ffmpeg
-seventh_window_label_2 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='FFmpeg')
-seventh_window_label_2.grid(column=0, row=2, columnspan=1, padx=10, sticky=(tkinter.W, tkinter.N))
-seventh_window_label_3 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, textvariable=ffmpeg_is_installed)
-seventh_window_label_3.grid(column=3, row=2, columnspan=1, padx=10, sticky=(tkinter.N))
-
 # sox
 seventh_window_label_4 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='Sox          (version 14.4.0 required)')
-seventh_window_label_4.grid(column=0, row=3, columnspan=1, padx=10, sticky=(tkinter.W, tkinter.N))
+seventh_window_label_4.grid(column=0, row=2, columnspan=1, padx=10, sticky=(tkinter.W, tkinter.N))
 seventh_window_label_5 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, textvariable=sox_is_installed)
-seventh_window_label_5.grid(column=3, row=3, columnspan=1, padx=10, sticky=(tkinter.N))
+seventh_window_label_5.grid(column=3, row=2, columnspan=1, padx=10, sticky=(tkinter.N))
 
 # gnuplot
 seventh_window_label_6 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='Gnuplot')
-seventh_window_label_6.grid(column=0, row=4, columnspan=1, padx=10, sticky=(tkinter.W, tkinter.N))
+seventh_window_label_6.grid(column=0, row=3, columnspan=1, padx=10, sticky=(tkinter.W, tkinter.N))
 seventh_window_label_7 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, textvariable=gnuplot_is_installed)
-seventh_window_label_7.grid(column=3, row=4, columnspan=1, padx=10, sticky=(tkinter.N))
+seventh_window_label_7.grid(column=3, row=3, columnspan=1, padx=10, sticky=(tkinter.N))
 
 # samba
 seventh_window_label_8 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='Samba')
-seventh_window_label_8.grid(column=0, row=5, columnspan=1, padx=10, sticky=(tkinter.W, tkinter.N))
+seventh_window_label_8.grid(column=0, row=4, columnspan=1, padx=10, sticky=(tkinter.W, tkinter.N))
 seventh_window_label_9 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, textvariable=samba_is_installed)
-seventh_window_label_9.grid(column=3, row=5, columnspan=1, padx=10, sticky=(tkinter.N))
+seventh_window_label_9.grid(column=3, row=4, columnspan=1, padx=10, sticky=(tkinter.N))
 
 # mediainfo
 seventh_window_label_19 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='Mediainfo')
-seventh_window_label_19.grid(column=0, row=6, columnspan=1, padx=10, sticky=(tkinter.W, tkinter.N))
+seventh_window_label_19.grid(column=0, row=5, columnspan=1, padx=10, sticky=(tkinter.W, tkinter.N))
 seventh_window_label_20 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, textvariable=mediainfo_is_installed)
-seventh_window_label_20.grid(column=3, row=6, columnspan=1, padx=10, sticky=(tkinter.N))
+seventh_window_label_20.grid(column=3, row=5, columnspan=1, padx=10, sticky=(tkinter.N))
 
 # libebur128
 #seventh_window_label_10 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='Libebur128 (required version: ' + str(loudness_required_install_date_list[2]) + '.' + str(loudness_required_install_date_list[1]) + '.' + str(loudness_required_install_date_list[0]) + ')')
 seventh_window_label_10 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='Libebur128   (4.0 and 5.0 compatibility patch required)')
-seventh_window_label_10.grid(column=0, row=7, columnspan=1, padx=10, sticky=(tkinter.W, tkinter.N))
+seventh_window_label_10.grid(column=0, row=6, columnspan=1, padx=10, sticky=(tkinter.W, tkinter.N))
 seventh_window_label_11 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, textvariable=libebur128_is_installed)
-seventh_window_label_11.grid(column=3, row=7, columnspan=1, padx=10, sticky=(tkinter.N))
+seventh_window_label_11.grid(column=3, row=6, columnspan=1, padx=10, sticky=(tkinter.N))
 
 # LoudnessCorrection
 seventh_window_label_12 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='LoudnessCorrection Scripts')
-seventh_window_label_12.grid(column=0, row=8, columnspan=1, padx=10, sticky=(tkinter.W, tkinter.N))
+seventh_window_label_12.grid(column=0, row=7, columnspan=1, padx=10, sticky=(tkinter.W, tkinter.N))
 loudnesscorrection_scripts_are_installed.set('Not Installed')
 seventh_window_loudnesscorrection_label = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, textvariable=loudnesscorrection_scripts_are_installed)
 seventh_window_loudnesscorrection_label['foreground'] = 'red'
-seventh_window_loudnesscorrection_label.grid(column=3, row=8, columnspan=1, padx=10, sticky=(tkinter.N))
+seventh_window_loudnesscorrection_label.grid(column=3, row=7, columnspan=1, padx=10, sticky=(tkinter.N))
 
 # Define a horizontal line to space out groups of rows.
 seventh_window_separator_2 = tkinter.ttk.Separator(seventh_frame_child_frame_1, orient=tkinter.HORIZONTAL)
-seventh_window_separator_2.grid(column=0, row=9, padx=10, pady=10, columnspan=5, sticky=(tkinter.W, tkinter.E))
+seventh_window_separator_2.grid(column=0, row=8, padx=10, pady=10, columnspan=5, sticky=(tkinter.W, tkinter.E))
 
 # Toggle installation status
 seventh_window_toggle_label = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='Toggle reinstallation of all programs:')
-seventh_window_toggle_label.grid(column=0, row=10, columnspan=2, padx=10, pady=2, sticky=(tkinter.W))
+seventh_window_toggle_label.grid(column=0, row=9, columnspan=2, padx=10, pady=2, sticky=(tkinter.W))
 seventh_window_toggle_button = tkinter.Button(seventh_frame_child_frame_1, text = "Toggle", command = toggle_installation_status)
-seventh_window_toggle_button.grid(column=3, row=10, padx=30, pady=2, sticky=(tkinter.N))
+seventh_window_toggle_button.grid(column=3, row=9, padx=30, pady=2, sticky=(tkinter.N))
 
 seventh_window_label_14 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='Install all missing programs:')
-seventh_window_label_14.grid(column=0, row=11, columnspan=2, padx=10, pady=2, sticky=(tkinter.W))
+seventh_window_label_14.grid(column=0, row=10, columnspan=2, padx=10, pady=2, sticky=(tkinter.W))
 seventh_window_install_button = tkinter.Button(seventh_frame_child_frame_1, text = "Install", command = install_missing_programs)
-seventh_window_install_button.grid(column=3, row=11, padx=30, pady=2, sticky=(tkinter.N))
+seventh_window_install_button.grid(column=3, row=10, padx=30, pady=2, sticky=(tkinter.N))
 
 seventh_window_label_15 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='Show me the shell commands to install external programs:')
-seventh_window_label_15.grid(column=0, row=12, columnspan=2, padx=10, pady=2, sticky=(tkinter.W))
+seventh_window_label_15.grid(column=0, row=11, columnspan=2, padx=10, pady=2, sticky=(tkinter.W))
 seventh_window_show_button_1 = tkinter.Button(seventh_frame_child_frame_1, text = "Show", command = show_installation_shell_commands)
-seventh_window_show_button_1.grid(column=3, row=12, padx=30, pady=2, sticky=(tkinter.N))
+seventh_window_show_button_1.grid(column=3, row=11, padx=30, pady=2, sticky=(tkinter.N))
 
 # Define a horizontal line to space out groups of rows.
 seventh_window_separator_3 = tkinter.ttk.Separator(seventh_frame_child_frame_1, orient=tkinter.HORIZONTAL)
-seventh_window_separator_3.grid(column=0, row=13, padx=10, pady=10, columnspan=5, sticky=(tkinter.W, tkinter.E))
+seventh_window_separator_3.grid(column=0, row=12, padx=10, pady=10, columnspan=5, sticky=(tkinter.W, tkinter.E))
 
 # Define labels that are used to display error or success messages.
 seventh_window_label_16 = tkinter.ttk.Label(seventh_frame_child_frame_1, textvariable=seventh_window_message_1, wraplength=text_wrap_length_in_pixels)
-seventh_window_label_16.grid(column=0, row=14, padx=10, pady=5, columnspan=3, sticky=(tkinter.W, tkinter.N))
+seventh_window_label_16.grid(column=0, row=13, padx=10, pady=5, columnspan=3, sticky=(tkinter.W, tkinter.N))
 
 seventh_window_label_17 = tkinter.ttk.Label(seventh_frame_child_frame_1, textvariable=seventh_window_message_2, wraplength=text_wrap_length_in_pixels)
-seventh_window_label_17.grid(column=0, row=15, padx=10, pady=5, columnspan=3, sticky=(tkinter.W, tkinter.N))
+seventh_window_label_17.grid(column=0, row=14, padx=10, pady=5, columnspan=3, sticky=(tkinter.W, tkinter.N))
 
 seventh_window_label_18 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='Show me the messages that the installation produced:')
-seventh_window_label_18.grid(column=0, row=16, columnspan=2, padx=10, pady=2, sticky=(tkinter.W))
+seventh_window_label_18.grid(column=0, row=15, columnspan=2, padx=10, pady=2, sticky=(tkinter.W))
 seventh_window_show_button_2 = tkinter.Button(seventh_frame_child_frame_1, text = "Show", command = show_installation_output_messages)
-seventh_window_show_button_2.grid(column=3, row=16, padx=30, pady=2, sticky=(tkinter.N))
+seventh_window_show_button_2.grid(column=3, row=15, padx=30, pady=2, sticky=(tkinter.N))
 
 # Create the buttons for the frame
 seventh_window_back_button = tkinter.Button(seventh_frame, text = "Back", command = call_sixth_frame_on_top)
 seventh_window_back_button.grid(column=1, row=1, padx=30, pady=10, sticky=(tkinter.E, tkinter.N))
-seventh_window_next_button = tkinter.Button(seventh_frame, text = "Next", command = call_ninth_frame_on_top)
+seventh_window_next_button = tkinter.Button(seventh_frame, text = "Next", command = call_ffmpeg_info_frame_on_top)
 seventh_window_next_button.grid(column=2, row=1, padx=30, pady=10, sticky=(tkinter.W, tkinter.N))	
 
 set_seventh_window_label_texts_and_colors()
 set_button_and_label_states_on_window_seven()
+
 
 ###########################################################################################################
 # Window number 8                                                                                         #
@@ -4361,19 +4395,71 @@ install_commands_text_widget.bind('<Key>', lambda any_key: 'break')
 eigth_window_back_button = tkinter.Button(eigth_frame, text = "Back", command = call_seventh_frame_on_top)
 eigth_window_back_button.grid(column=2, row=1, padx=30, pady=10, sticky=(tkinter.W, tkinter.N))
 
+
 ###########################################################################################################
 # Window number 9                                                                                         #
 ###########################################################################################################
 
 # Create the label for the frame
-ninth_window_label = tkinter.ttk.Label(ninth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text="Everything was installed successfully :)\n\nLoudnessCorrection will be started when you boot up your computer, or you can start it now manually running the following commands:\n\nsudo   -b   /etc/init.d/loudnesscorrection_init_script   stop\nsudo   -b   /etc/init.d/loudnesscorrection_init_script   start\n\n\nNote that there will be 90 seconds delay before LoudnessCorrection starts, HearBeat_Checker will start 60 seconds after LoudnessCorrection.")
-ninth_window_label.grid(column=0, row=0, columnspan=4, pady=10, padx=10, sticky=(tkinter.N))
+ninth_window_label_1 = tkinter.ttk.Label(ninth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text="Everything was installed successfully :)\n\nLoudnessCorrection will be started when you boot up your computer, or you can start it now manually running the following commands:\n")
+ninth_window_label_1.grid(column=0, row=0, columnspan=4, pady=10, padx=10, sticky=(tkinter.N))
+
+loudness_correction_manual_startup_commands = "sudo   -b   /etc/init.d/loudnesscorrection_init_script   stop && \nsudo   -b   /etc/init.d/loudnesscorrection_init_script   start"
+
+# Create a text widget to display text that can be copy pasted.
+startup_commands_text_widget = tkinter.Text(ninth_frame_child_frame_1, width=70, height=2, wrap='none', undo=False)
+startup_commands_text_widget.insert('1.0', loudness_correction_manual_startup_commands)
+startup_commands_text_widget.columnconfigure(0, weight=1)
+startup_commands_text_widget.rowconfigure(0, weight=1)
+startup_commands_text_widget['background'] = 'white'
+
+# Setting text widget state to disabled disables copying text also. But if you set the disabled text widget at focus, then copying works :)
+startup_commands_text_widget.config(state='disabled')
+startup_commands_text_widget.focus()
+
+startup_commands_text_widget.grid(column=0, row=1, columnspan=4, sticky=(tkinter.N, tkinter.S))
+
+ninth_window_label_2 = tkinter.ttk.Label(ninth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text="\nCopy both lines in a terminal window in one go and press enter to run.\n\nNote that there will be 90 seconds delay before LoudnessCorrection starts, HearBeat_Checker will start 60 seconds after LoudnessCorrection.")
+ninth_window_label_2.grid(column=0, row=2, columnspan=4, pady=10, padx=10, sticky=(tkinter.N))
 
 # Create the buttons for the frame
-ninth_window_back_button = tkinter.Button(ninth_frame_child_frame_1, text = "Back", command = call_seventh_frame_on_top)
-ninth_window_back_button.grid(column=1, row=1, padx=30, pady=10, sticky=(tkinter.E, tkinter.N))
-ninth_window_finish_button = tkinter.Button(ninth_frame_child_frame_1, text = "Finish", command = quit_program)
-ninth_window_finish_button.grid(column=2, row=1, padx=30, pady=10, sticky=(tkinter.W, tkinter.N))
+ninth_window_back_button = tkinter.Button(ninth_frame, text = "Back", command = call_ffmpeg_info_frame_on_top)
+ninth_window_back_button.grid(column=1, row=3, padx=30, pady=10, sticky=(tkinter.E, tkinter.N))
+ninth_window_finish_button = tkinter.Button(ninth_frame, text = "Finish", command = quit_program)
+ninth_window_finish_button.grid(column=2, row=3, padx=30, pady=10, sticky=(tkinter.W, tkinter.N))
+
+
+###########################################################################################################
+# FFmpeg installation info window                                                                         #
+###########################################################################################################
+
+# Create the label for the frame
+ffmpeg_info_window_label_1 = tkinter.ttk.Label(ffmpeg_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text="Installer no longer automatically installs FFmpeg for you, but you can do it easily yourself by copy / pasting the following command in a terminal window:\n")
+ffmpeg_info_window_label_1.grid(column=0, row=0, columnspan=4, pady=10, padx=10, sticky=(tkinter.N))
+
+ffmpeg_manual_installation_command = "sudo apt-get -y install ffmpeg"
+
+# Create a text widget to display text that can be copy pasted.
+ffmpeg_info_window_text_widget = tkinter.Text(ffmpeg_frame_child_frame_1, width=31, height=1, wrap='none', undo=False)
+ffmpeg_info_window_text_widget.insert('1.0', ffmpeg_manual_installation_command)
+ffmpeg_info_window_text_widget.columnconfigure(0, weight=1)
+ffmpeg_info_window_text_widget.rowconfigure(0, weight=1)
+ffmpeg_info_window_text_widget['background'] = 'white'
+
+# Setting text widget state to disabled disables copying text also. But if you set the disabled text widget at focus, then copying works :)
+ffmpeg_info_window_text_widget.config(state='disabled')
+ffmpeg_info_window_text_widget.focus()
+
+ffmpeg_info_window_text_widget.grid(column=0, row=1, columnspan=4, sticky=(tkinter.N, tkinter.S))
+
+ffmpeg_info_window_label_2 = tkinter.ttk.Label(ffmpeg_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text="\nDecompressing patented formats with FFmpeg may require a license from the rights holders. However FFmpeg may also be used to process free formats (MXF, MKV, WebM and others) or formats with possibly expired patents (Mpeg1 Layer1, Mpeg 1 Layer2) without aquiring licenses. (Disclaimer: This is not legal advice, if in doubt ask a lawyer).\n\nFFmpeg is used to process files if it's installed before starting LoudnessCorrection. So you can always install it later and reboot your server to take advantage of FFmpeg.\n\nSupported formats without FFmpeg are: Wav, Flac, Ogg.\n")
+ffmpeg_info_window_label_2.grid(column=0, row=2, columnspan=4, pady=10, padx=10, sticky=(tkinter.N))
+
+# Create the buttons for the frame
+ffmpeg_info_window_back_button = tkinter.Button(ffmpeg_frame, text = "Back", command = call_seventh_frame_on_top)
+ffmpeg_info_window_back_button.grid(column=1, row=3, padx=30, pady=10, sticky=(tkinter.E, tkinter.N))
+ffmpeg_info_window_finish_button = tkinter.Button(ffmpeg_frame, text = "Next", command = call_ninth_frame_on_top)
+ffmpeg_info_window_finish_button.grid(column=2, row=3, padx=30, pady=10, sticky=(tkinter.W, tkinter.N))
 
 
 ###########################################################################################################
@@ -4389,6 +4475,7 @@ showstopper_error_window_label.grid(column=0, row=0, columnspan=4, pady=10, padx
 showstopper_error_window_finish_button = tkinter.Button(showstopper_frame, text = "Quit", command = quit_program)
 showstopper_error_window_finish_button.grid(column=2, row=1, padx=30, pady=10, sticky=(tkinter.W, tkinter.S))
 
+
 ##################################
 # Window definitions end here :) #
 ##################################
@@ -4399,6 +4486,7 @@ set_directory_names_according_to_language()
 # Hide all frames in reverse order, but leave first frame visible (unhidden).
 showstopper_frame.grid_forget()
 ninth_frame.grid_forget()
+ffmpeg_frame.grid_forget()
 eigth_frame.grid_forget()
 seventh_frame.grid_forget()
 sixth_frame.grid_forget()
