@@ -1,3 +1,11 @@
+Documentation
+--------------
+- Made some corrections.
+- Added sections about TruePeak metering and what Linux distributions will be
+supported in the FAQ.
+- Changed the wording "EBU R128 standard" to "EBU R128 recommendation".
+- Made a change to the raid section: it is better to use the UUID to identify your raid disk in /etc/fstab since the raid device name may change after kernel updates.
+
 Installer 055
 --------------
 - Installer no longer installs FFmpeg automatically, but shows user how to do it.

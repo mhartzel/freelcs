@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html dir="ltr" lang="en">
   <head>
-    <title>FreeLCS FAQ</title>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+    <title>FreeLCS FAQ</title>
     <meta content="Mikael Hartzell" name="author">
     <meta content="FreeLCS FAQ" name="description">
     <meta content="FreeLCS FAQ" name="keywords">
@@ -30,6 +30,9 @@
     <br>
     <a href="#What%20happens%20to%20the%20files%20when%20they%20are%20processed%20?">What
       happens to the files when they are processed ?</a><br>
+    <br>
+    <a href="#Is%20TruePeak%20measurement%20supported%20?">Is TruePeak
+      measurement supported ?</a><br>
     <br>
     <a href="#Is%20peak%20limiting%20used%20when%20adjusting%20volume%20up%20?"></a><a
       href="#Is%20peak%20limiting%20used%20when%20loudness%20correction%20adjusts%20volume%20up%20?">Is
@@ -62,7 +65,8 @@
     <a href="#How%20can%20I%20test%20multichannel%20behaviour%20of%20my%20loudness%20meter%20?">How
       can I test multichannel behaviour of my loudness meter ?</a><br>
     <br>
-    <br>
+    <a href="#What%20Linux%20distributions%20are%20supported%20?">What Linux
+      distributions are supported ?</a><br>
     <br>
     <br>
     <br>
@@ -70,11 +74,11 @@
     <h2><a id="What is FreeLCS  ?">What is FreeLCS&nbsp; ?</a></h2>
     <ul>
       <li>FreeLCS is a tool to automatically adjust loudness of files according
-        to the EBU R128 standard.<br>
+        to the EBU R128 recommendation.<br>
       </li>
-      <li>The R128 standard is mainly designed for professional broadcasters to
-        help eliminate loudness jumps between broadcasted programs.</li>
-      <li>Files adjusted according to the standard will have the same loudness.</li>
+      <li>EBU R128 is designed for professional broadcasters to help eliminate
+        loudness jumps between broadcasted programs.</li>
+      <li>Files adjusted according to R128 will at the same loudness level.</li>
       <li>FreeLCS is a Linux server where users can drop in files through the
         network for loudness correction.</li>
       <li>FreeLCS corrects the loudness of each file dropped in. It also
@@ -83,9 +87,7 @@
       <li>FreeLCS is open source and free software. You don't have to pay
         anything to use it :)<br>
       </li>
-      <li>FreeLCS site is here:
-        <meta http-equiv="content-type" content="text/html; charset=utf-8">
-        <a href="http://freelcs.sourceforge.net/">http://freelcs.sourceforge.net/</a></li>
+      <li>FreeLCS site is here: <a href="http://freelcs.sourceforge.net/">http://freelcs.sourceforge.net/</a></li>
     </ul>
     <br>
     <h2> <a id="What programs are used to process audio files ?">What programs
@@ -172,7 +174,15 @@
       </li>
       <li>Then a new loudness adjusted file is created with sox.</li>
       <li>The resulting corrected file loudness will be at -23.0 LUFS.</li>
+      <li>All files will be automatically deleted after a delay defined during
+        FreeLCS installation, it is by default 8 hours.</li>
     </ul>
+    <p><br>
+    </p>
+    <h2><a id="Is TruePeak measurement supported ?">Is TruePeak measurement
+        supported ?</a></h2>
+    <p>Yes :) When you install the software you can choose which method of peak
+      measurement is used: sample peak or TruePeak.</p>
     <p><br>
     </p>
     <h2><a id="Is peak limiting used when loudness correction adjusts volume up ?">Is
@@ -212,14 +222,15 @@
       <li>5.0 = L, R, C, LS, RS.</li>
       <li>5.1 = L, R, C, LFE, LS, RS.</li>
     </ul>
-    Ebu R128 standard (or to be more precise ITU 1770 that R128 refers to) does
-    not support any specific channel order, it only defines how the loudness
-    calculation of: <strong>Front</strong>, <strong>Surround</strong> and <strong>LFE</strong>
-    channels differs from each other. Surround channels are weighted differently
-    from front channels and LFE channel is always discarded and not taken into
-    account in loudness calculation. This means that for example in the case of
-    3.0 any channel order is supported since all of the channels L, R, C are
-    front channels and weighted equally in loudness calculation.<br>
+    Ebu R128 recommendation (or to be more precise ITU 1770 that R128 refers to)
+    does not support any specific channel order, it only defines how the
+    loudness calculation of: <strong>Front</strong>, <strong>Surround</strong>
+    and <strong>LFE</strong> channels differs from each other. Surround
+    channels are weighted differently from front channels and LFE channel is
+    always discarded and not taken into account in loudness calculation. This
+    means that for example in the case of 3.0 any channel order is supported
+    since all of the channels L, R, C are front channels and weighted equally in
+    loudness calculation.<br>
     <p>All channels of one mix must be in the same file. If your 5.1 mix
       consists of 6 files, then you must combine them before dropping the mix
       into loudness correction.</p>
@@ -271,9 +282,9 @@
         size of a separate channel would also go over the 4 GB limit then
         FreeLCS saves all channels of the file in a single flac file. Flac -
         format supports very large files.</li>
-      <li>There are new revisions of the wav format (BWF, RF64) that can store
-        files larger than 4 GB, but I have not tested these formats. BWF and
-        RF64 are not yet very widely supported.<br>
+      <li>There are new revisions of the wav format (RF64, W64) that can store
+        files larger than 4 GB, but I have not tested these formats.&nbsp; RF64
+        and W64 are not yet very widely supported.<br>
       </li>
     </ul>
     <br>
@@ -302,24 +313,36 @@
       <li>If your audio tools don't support flac then you can use Audacity to
         manipulate files in this format. Audacity is a free simple multitrack
         audio tool and it supports Mac, Linux and windows.</li>
-      <li>Audacity site is here:
-        <meta http-equiv="content-type" content="text/html; charset=utf-8">
-        <a href="http://audacity.sourceforge.net/?lang=en">http://audacity.sourceforge.net/?lang=en</a></li>
+      <li>Audacity site is here: <a href="http://audacity.sourceforge.net/?lang=en">http://audacity.sourceforge.net/?lang=en</a></li>
     </ul>
     <p><br>
     </p>
     <h2><a id="How can I test multichannel behaviour of my loudness meter ?">How
         can I test multichannel behavior of my loudness meter ?</a></h2>
     <ul>
-      <li>You can download multichannel test files here:
-        <meta http-equiv="content-type" content="text/html; charset=utf-8">
-        <a href="http://sourceforge.net/projects/freelcs/files/">http://sourceforge.net/projects/freelcs/files/</a></li>
+      <li>You can download multichannel test files here: <a href="http://sourceforge.net/projects/freelcs/files/">http://sourceforge.net/projects/freelcs/files/</a></li>
       <li>The zip file comes with a text document with expected integrated
         loudness results for all files.<br>
       </li>
       <li>Zip name is '<strong>EBU_R128_Test_Files_For_Channels_Counts_From_1_to_6.zip</strong>'<br>
       </li>
     </ul>
+    <br>
+    <h2><a id="What Linux distributions are supported ?">What Linux
+        distributions are supported ?</a></h2>
+    <p>The plan is to support all Ubuntu <strong>LTS</strong> releases (LTS
+      stands for <strong>L</strong>ong <strong>T</strong>erm <strong>S</strong>upport).
+      The current one is Ubuntu 12.04 LTS that was released on April 2012.
+      Ubuntu 12.04 LTS will receive security updates for 5 years meaning until
+      April 2017.</p>
+    <p>Canonical releases a new Ubuntu LTS version every 2 years. If you install
+      FreeLCS on Ubuntu 12.04 then you will need to upgrade the software not
+      sooner than 2017. The supported version of Ubuntu at that time will be
+      16.04 LTS.</p>
+    <p>Other Debian based Linux releases and non LTS Ubuntu releases will
+      probably work fine but I will not be testing my software on them.</p>
+    <p><br>
+    </p>
     <p><br>
     </p>
   </body>

@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html dir="ltr" lang="en">
   <head>
-    <title>FreeLCS User Manual</title>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+    <title>FreeLCS User Manual</title>
     <meta content="Mikael Hartzell" name="author">
   </head>
   <body>
@@ -62,13 +62,14 @@
     FreeLCS stands for <strong>Free Loudness Correction Server</strong>. The
     software lets you easily set up a server that shares one of it's folders to
     the network where users can drop audio files to be loudness corrected
-    according to the EBU R128 loudness standard. The server also creates a
+    according to the EBU R128 loudness recommendation. The server also creates a
     loudness history graphics file which gives visual feedback of the internal
     loudness variations in a file.<br>
     <br>
-    The software is very fast even on modest hardware giving 20 times faster
-    than realtime processing (stereo files) on a server with one Intel Core 2
-    Duo processor, 2 GB Ram, 3 internal Sata disks in software RAID 0. <br>
+    The software is very fast even on modest hardware giving 15 times faster
+    than realtime processing (16 bit stereo files, TruePeak measurement turned
+    on) on a server with one Intel Core 2 Duo processor, 2 GB Ram, 3 internal
+    Sata disks in software RAID 0. <br>
     <br>
     FreeLCS uses other open source programs to get the job done (Linux,
     libebur128, gnuplot, FFmpeg, sox, mediainfo).<br>
@@ -424,9 +425,9 @@
       <li>The "<strong>Toggle</strong>" button can be used to force
         reinstallation of all programs. You might need this if for example
         libebur128 has just released an updated version which implements latest
-        changes in EBU R128 standard and you want this version right away. The
-        Toggle - button changes the state of all programs to "Not Installed" and
-        clicking it again changes the state back.<br>
+        changes in EBU R128 recommendation and you want this version right away.
+        The Toggle - button changes the state of all programs to "Not Installed"
+        and clicking it again changes the state back.<br>
       </li>
       <li>The installation takes a couple of minutes and the window freezes
         while the installer launches external programs to do the actual
@@ -610,7 +611,7 @@
       <li>The dark green horizontal line shows the integrated loudness of your
         file. It averages the loudness across the length of your whole file into
         a single number. This is the loudness of the file and it must be at -23
-        LUFS to be at the target level according to the EBU R128 standard.</li>
+        LUFS to be at the target level according to the EBU R128 recommendation.</li>
       <li>All files will be loudness corrected to have integrated loudness of
         -23 LUFS.<br>
       </li>
@@ -1014,19 +1015,32 @@
     </blockquote>
     <ul>
       <li>Next make a directory for mounting the raid:<strong> mkdir&nbsp;
-          /mountpoint/raid-disk</strong>&nbsp;&nbsp;&nbsp; and make it readable
-        and writable for everyone:<strong> chmod -R 777 &nbsp;</strong><strong>
+          -p&nbsp; /mountpoint/raid-disk</strong>&nbsp;&nbsp;&nbsp; and make it
+        readable and writable for everyone:<strong> chmod -R 777 &nbsp;</strong><strong>
           /mountpoint</strong></li>
+      <li>Get the <strong>universally unique identifier</strong> (UUID) for the
+        raid disk with command: <strong>blkid /dev/md0</strong> &nbsp;&nbsp;
+        &nbsp; &nbsp; the command will show output like below:<strong></strong></li>
+    </ul>
+    <p style="margin-left: 80px;"><strong>/dev/</strong><strong>md0</strong><strong>:
+        UUID="229f0670-c8c2-4145-b2f4-b1100d9cb918" TYPE="jfs"</strong></p>
+    <ul>
       <li>Add the device to your <strong>/etc/fstab</strong> so that it gets
-        automatically mounted next time the computer starts up. Add the
-        following line in <strong> /etc/fstab</strong>: <br>
+        automatically mounted next time the computer starts up. It is important
+        to use the <strong>UUID</strong> instead of the device name to identify
+        your raid disk in fstab. When Ubuntu kernel gets updated then your raid
+        device number may change after a reboot and stop the disk from mounting.
+        The UUID of a device will never change and it can be used to identify
+        the disk instead of its device name. </li>
+      <li>Add the following line in <strong> /etc/fstab </strong>(change the
+        UUID to match your disk): <br>
       </li>
     </ul>
     <blockquote>
       <blockquote>
-        <p><strong>/dev/md0 &nbsp;&nbsp; /mountpoint/raid-disk &nbsp;&nbsp;
-            &nbsp;&nbsp;&nbsp; auto&nbsp;&nbsp;&nbsp; defaults&nbsp;&nbsp;&nbsp;
-            0 0</strong></p>
+        <p><strong>UUID=229f0670-c8c2-4145-b2f4-b1100d9cb918&nbsp;&nbsp;&nbsp;
+            /mountpoint/raid-disk &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+            auto&nbsp;&nbsp;&nbsp; defaults&nbsp;&nbsp;&nbsp; 0 0</strong></p>
       </blockquote>
     </blockquote>
     <ul>
@@ -1034,9 +1048,6 @@
         then make the directory structure on the raid-device readable and
         writable for everyone: <strong>chmod -R 777 &nbsp;</strong><strong>
           /mountpoint</strong></li>
-      <li>In case of trouble this command tells about active raid-devices and
-        disks that belong to them (check that the name of the active raid
-        matches the name you used on the /etc/fstab): <strong>cat /proc/mdstat</strong></li>
     </ul>
     <br>
     <h2> <a id="Notes on loudness correction usage">Notes on loudness
@@ -1064,9 +1075,9 @@
         after loudness correction. Correction only adjusts the 'main level' of a
         file. If integrated loudness of a file is -19 LUFS, loudness correction
         will make all parts of the file 4 dBs quieter and relative loudness
-        variations inside the file will remain the same. This is how EBU R128
-        standard is designed to work, you can still have loud and soft parts in
-        your mix, but it is your responsibility to use them wisely :)<br>
+        variations inside the file will remain the same. This is how EBU R128 is
+        designed to work, you can still have loud and soft parts in your mix,
+        but it is your responsibility to use them wisely :)<br>
       </li>
       <li>FFmpeg seems to support MXF - files also, but processing MXF might be
         problematic. Inside an MXF - file audio channels of a mix might be
@@ -1273,9 +1284,7 @@
           here to see how a program can be manually run in the Terminal</a>.<br>
       </li>
     </ul>
-    Report bugs here (requires creating an free account):
-    <meta http-equiv="content-type" content="text/html; charset=utf-8">
-    <a href="https://sourceforge.net/p/freelcs/tickets/">https://sourceforge.net/p/freelcs/tickets/</a><br>
+    Report bugs here (requires creating an free account): <a href="https://sourceforge.net/p/freelcs/tickets/">https://sourceforge.net/p/freelcs/tickets/</a><br>
     When you have logged in navigate to the link above and click the "<strong>Create
       Ticket</strong>" - button on the left. When you create a ticket, the
     developer gets the bugreport in email.<br>
@@ -1373,9 +1382,7 @@
     <br>
     <h2><a id="FreeLCS development">FreeLCS development</a></h2>
     <br>
-    FreeLCS development happens on Github (
-    <meta http-equiv="content-type" content="text/html; charset=utf-8">
-    <a href="https://github.com/mhartzel/freelcs">https://github.com/mhartzel/freelcs</a>).
+    FreeLCS development happens on Github ( <a href="https://github.com/mhartzel/freelcs">https://github.com/mhartzel/freelcs</a>).
     All new versions of software are uploaded there before official release.
     Unreleased versions are untested so it is recommended that normal users do
     not use these versions on their production servers. The reason for this is
