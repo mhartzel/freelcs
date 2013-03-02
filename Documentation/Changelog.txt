@@ -1,5 +1,9 @@
 Documentation
 --------------
+- Added a chapter about how to synchronize server clock to a NTP time server.
+
+Documentation
+--------------
 - Made some corrections.
 - Added sections about TruePeak metering and what Linux distributions will be
 supported in the FAQ.
