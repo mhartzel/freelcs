@@ -1,3 +1,7 @@
+LoudnessCorrection Version 217
+------------------------------
+- Debug information about each file processing is now saved only for the last 100 files, not 8 hours like it was previously. 8 hours of debug data consumes too much Ram on 64 bit operating systems.
+
 Documentation
 --------------
 These updates happened in the previous commit, but I forgot to mention them :)

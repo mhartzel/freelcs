@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-version = '215'
+version = '217'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -3588,9 +3588,9 @@ def debug_write_loudness_calculation_info_to_a_logfile(filename, integrated_loud
 def debug_manage_file_processing_information_thread():
 	
 	# This subprocess is started in its own thread.
-	# This subroutine handles file processing debug information. LoudnessCorrection holds a couple of hours of debug data in memory (default 8 hours) and deletes info older than that.
+	# This subroutine handles file processing debug information. LoudnessCorrection holds some debug data in memory (default 100 last files) and deletes info older than that.
 	# If debug_file_processing = True, then this subroutine periodically saves debug info to disk as a pickle.
-	# If debug mode is activated by sending a signal to LoudnessCorrection, then the program saves info of the last 8 hours to disk and continues saving info until debug is cancelled by sending the same signal again.
+	# If debug mode is activated by sending a signal to LoudnessCorrection, then the program saves info of the last 100 files to disk and continues saving info until debug is cancelled by sending the same signal again.
 
 	try:
 		global debug_complete_final_information_for_all_file_processing_dict
@@ -3598,7 +3598,6 @@ def debug_manage_file_processing_information_thread():
 		global english
 		global finnish
 
-		debug_info_expiry_time = 8 * 60 * 60 # How old debug data will be automatically deleted when debug mode is off. Default = Keep processing data of last 8 hours.
 		debug_information_save_interval = 10 * 60 # How often do we save debug information to disk. Default 10 minutes.
 		real_time_string = get_realtime(english, finnish)[1]
 		filename_for_processing_debug_info = 'debug-file_processing_info-' + real_time_string + '.pickle'
@@ -3611,11 +3610,12 @@ def debug_manage_file_processing_information_thread():
 			if debug_file_processing == False:
 
 				# Find debug data that is too old and delete it.
-				list_of_dictionary_keys = list(debug_complete_final_information_for_all_file_processing_dict)
+				# A list of 100 last processed files is gathered for printing the filenames on the html progress report. We use the names on that list here also.
+				# Delete debug data about all other files, but leave those that are on the 100 list.
+				copy_of_completed_files_list = copy.deepcopy(completed_files_list)
 
-				for filename in list_of_dictionary_keys:
-					info_timestamp = debug_complete_final_information_for_all_file_processing_dict[filename][1]
-					if int(time.time()) >= int(info_timestamp + debug_info_expiry_time):
+				for filename in debug_complete_final_information_for_all_file_processing_dict:
+					if filename not in copy_of_completed_files_list:
 						del debug_complete_final_information_for_all_file_processing_dict[filename]
 
 			else:
@@ -4121,7 +4121,7 @@ try:
 	debug_lists_process = threading.Thread(target=debug_lists_and_dictionaries_thread, args=()) # Create a process instance.
 	thread_object = debug_lists_process.start() # Start the process in it'own thread.
 
-	# Start the silent debugger process that gathers file processing debug data for the last couple of hours (default 8 hours).
+	# Start the silent debugger process that gathers file processing debug data for the last 100 files.
 	# This gathered info can be written to disk by sending LoudnessCorrection a signal.
 	debug_file_processing_process = threading.Thread(target=debug_manage_file_processing_information_thread, args=()) # Create a process instance.
 	thread_object = debug_file_processing_process.start() # Start the process in it'own thread.
