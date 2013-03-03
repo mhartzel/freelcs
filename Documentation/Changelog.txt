@@ -1,3 +1,11 @@
+Documentation
+--------------
+These updates happened in the previous commit, but I forgot to mention them :)
+
+- Updated User Manual and FAQ to current situation where FreeLCS can be installed without FFmpeg.
+- Clarified how bit depths are manipulated when FFmpeg is installed and when it's not.
+- Added a section to the FAQ about FFmpeg and patents.
+
 LoudnessCorrection Version 215
 ------------------------------
 - Bugfix: Bit depths under 8 and over 32 were not discarded as they should have been.
