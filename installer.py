@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '055'
+version = '057'
 
 ###################################
 # Function definitions start here #
@@ -911,11 +911,31 @@ def install_init_scripts_and_config_files(*args):
 	'#############################################################################################', \
 	'', \
 	'exec >> /var/log/LoudnessCorrection.log 2>&1', \
-	"# set -x   # Uncomment this if you wan't every command in this script written to the logfile.", \
+	"# set -x   # Uncomment this if you want every command in this script written to the logfile.", \
 	'', \
-	'case "$1" in', \
+	'if [ "$1"=="stop" ] || [ "$1"=="restart"  ] ; then', \
 	'', \
-	'	start)', \
+	'		#############################################################################################', \
+	'		#                   Stop LoudnessCorrection.py and HeartBeat_Checker.py                     #', \
+	'		#############################################################################################', \
+	'', \
+	'		echo `date`": Shutting down LoudnessCorrection and HeartBeat_Checker"', \
+	'', \
+	'		# Get LoudnessCorrection and HeartBEat_Checker PIDs', \
+	'		LOUDNESSCORRECTION_PID=`pgrep -f "$PYTHON3_PATH $LOUDNESSCORRECTION_SCRIPT_PATH -configfile $CONFIGFILE_PATH"`', \
+	'		HEARTBEATCHECKER_PID=`pgrep -f "$PYTHON3_PATH $HEARTBEAT_PATH -configfile $CONFIGFILE_PATH"`', \
+	'', \
+	'		if [ "$LOUDNESSCORRECTION_PID"!=""  ] ; then', \
+	'			kill -HUP $LOUDNESSCORRECTION_PID', \
+	'		fi', \
+	'', \
+	'		if [ "$HEARTBEATCHECKER_PID"!=""  ] ; then', \
+	'			kill -HUP $HEARTBEATCHECKER_PID', \
+	'		fi', \
+	'', \
+	'fi', \
+	'', \
+	'if [ "$1"=="start" ] || [ "$1"=="restart"  ] ; then', \
 	'', \
 	'		#############################################################################################', \
 	'		# Wait for the os startup process to finish, so that all services are available', \
@@ -932,7 +952,8 @@ def install_init_scripts_and_config_files(*args):
 	'		mkdir -p "$TARGET_PATH/00-Error_Logs"', \
 	'		mkdir -p "$TARGET_PATH/00-Loudness_Calculation_Temporary_Files"', \
 	'']
-	
+
+
 	ram_disk_mount_commands = ['		#############################################################################################', \
 	'		# Create a Ram-Disk and mount it. LoudnessCorrecion.py writes the html-page on the ram disk,', \
 	'		# because it speeds up html updating when the machine is under heavy load.', \
@@ -944,7 +965,8 @@ def install_init_scripts_and_config_files(*args):
 	'		mke2fs -q -m 0 $RAM_DEVICE_NAME 1024', \
 	'		mount $RAM_DEVICE_NAME "$TARGET_PATH/$HOTFOLDER_NAME/$WEB_PAGE_PATH"', \
 	'']
-	
+
+
 	loudness_correction_init_script_content_part_2_with_heartbeat = [
 	'		#############################################################################################', \
 	'		# Change directory ownerships and permissions so that network users can not delete important', \
@@ -985,21 +1007,9 @@ def install_init_scripts_and_config_files(*args):
 	'', \
 	'		echo `date`": HeartBeat_Checker Started, Pid: "`pgrep -f "$PYTHON3_PATH $HEARTBEAT_PATH -configfile $CONFIGFILE_PATH"`', \
 	'', \
-	'	;;', \
-	'', \
-	'	stop)', \
-	'', \
-	'		echo `date`": Shutting down LoudnessCorrection and HeartBeat_Checker"', \
-	'		kill -HUP `pgrep -f "$PYTHON3_PATH $LOUDNESSCORRECTION_SCRIPT_PATH -configfile $CONFIGFILE_PATH"`', \
-	'		kill -HUP `pgrep -f "$PYTHON3_PATH $HEARTBEAT_PATH -configfile $CONFIGFILE_PATH"`', \
-	'', \
-	'	;;', \
-	'', \
-	'', \
-	'	*)', \
-	'		echo "Usage: $0 {start|stop|restart|status}"', \
-	'		exit 1', \
-	'	esac']
+	'fi', \
+	'']
+
 
 	loudness_correction_init_script_content_part_2_without_heartbeat = ['		#############################################################################################', \
 	'		# Change directory ownerships and permissions so that network users can not delete important', \
@@ -1034,20 +1044,8 @@ def install_init_scripts_and_config_files(*args):
 	'', \
 	'		echo `date`": LoudnessCorrection Started, Pid: "`pgrep -f "$PYTHON3_PATH $LOUDNESSCORRECTION_SCRIPT_PATH -configfile $CONFIGFILE_PATH"`', \
 	'', \
-	'	;;', \
-	'', \
-	'	stop)', \
-	'', \
-	'		echo `date`": Shutting down LoudnessCorrection and HeartBeat_Checker"', \
-	'		kill -HUP `pgrep -f "$PYTHON3_PATH $LOUDNESSCORRECTION_SCRIPT_PATH -configfile $CONFIGFILE_PATH"`', \
-	'', \
-	'	;;', \
-	'', \
-	'', \
-	'	*)', \
-	'		echo "Usage: $0 {start|stop|restart|status}"', \
-	'		exit 1', \
-	'	esac']
+	'fi', \
+	'']
 
 	# Compile init script to one list from separate lists.
 	# Add first part of the init script commands.
@@ -4404,10 +4402,10 @@ eigth_window_back_button.grid(column=2, row=1, padx=30, pady=10, sticky=(tkinter
 ninth_window_label_1 = tkinter.ttk.Label(ninth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text="Everything was installed successfully :)\n\nLoudnessCorrection will be started when you boot up your computer, or you can start it now manually running the following commands:\n")
 ninth_window_label_1.grid(column=0, row=0, columnspan=4, pady=10, padx=10, sticky=(tkinter.N))
 
-loudness_correction_manual_startup_commands = "sudo   -b   /etc/init.d/loudnesscorrection_init_script   stop && \nsudo   -b   /etc/init.d/loudnesscorrection_init_script   start"
+loudness_correction_manual_startup_commands = "sudo   -b   /etc/init.d/loudnesscorrection_init_script   restart"
 
 # Create a text widget to display text that can be copy pasted.
-startup_commands_text_widget = tkinter.Text(ninth_frame_child_frame_1, width=70, height=2, wrap='none', undo=False)
+startup_commands_text_widget = tkinter.Text(ninth_frame_child_frame_1, width=70, height=1, wrap='none', undo=False)
 startup_commands_text_widget.insert('1.0', loudness_correction_manual_startup_commands)
 startup_commands_text_widget.columnconfigure(0, weight=1)
 startup_commands_text_widget.rowconfigure(0, weight=1)
@@ -4419,7 +4417,7 @@ startup_commands_text_widget.focus()
 
 startup_commands_text_widget.grid(column=0, row=1, columnspan=4, sticky=(tkinter.N, tkinter.S))
 
-ninth_window_label_2 = tkinter.ttk.Label(ninth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text="\nCopy both lines in a terminal window in one go and press enter to run.\n\nNote that there will be 90 seconds delay before LoudnessCorrection starts, HearBeat_Checker will start 60 seconds after LoudnessCorrection.")
+ninth_window_label_2 = tkinter.ttk.Label(ninth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text="\nCopy the command in a terminal window and press enter to run.\n\nNote that there will be 90 seconds delay before LoudnessCorrection starts, HearBeat_Checker will start 60 seconds after LoudnessCorrection.")
 ninth_window_label_2.grid(column=0, row=2, columnspan=4, pady=10, padx=10, sticky=(tkinter.N))
 
 # Create the buttons for the frame
@@ -4452,7 +4450,7 @@ ffmpeg_info_window_text_widget.focus()
 
 ffmpeg_info_window_text_widget.grid(column=0, row=1, columnspan=4, sticky=(tkinter.N, tkinter.S))
 
-ffmpeg_info_window_label_2 = tkinter.ttk.Label(ffmpeg_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text="\nDecompressing patented formats with FFmpeg may require a license from the rights holders. However FFmpeg may also be used to process free formats (MXF, MKV, WebM and others) or formats with possibly expired patents (Mpeg1 Layer1, Mpeg 1 Layer2) without aquiring licenses. (Disclaimer: This is not legal advice, if in doubt ask a lawyer).\n\nFFmpeg is used to process files if it's installed before starting LoudnessCorrection. So you can always install it later and reboot your server to take advantage of FFmpeg.\n\nSupported formats without FFmpeg are: Wav, Flac, Ogg.\n")
+ffmpeg_info_window_label_2 = tkinter.ttk.Label(ffmpeg_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text="\nDecompressing patented formats with FFmpeg may require a license from the rights holders. However FFmpeg may also be used to process free formats (MXF, MKV, WebM and others) or formats with possibly expired patents (Mpeg1 Layer1, Mpeg 1 Layer2) without aquiring licenses. (Disclaimer: This is not legal advice, if in doubt ask a lawyer).\n\nFFmpeg is used to process files if it's installed before starting LoudnessCorrection. So you can always install it later and reboot your server to take advantage of FFmpeg.\n\nSupported formats without FFmpeg are: Wav, Flac, Ogg.\n\nThe command to uninstall FFmpeg is: sudo apt-get remove ffmpeg libav-tools")
 ffmpeg_info_window_label_2.grid(column=0, row=2, columnspan=4, pady=10, padx=10, sticky=(tkinter.N))
 
 # Create the buttons for the frame
