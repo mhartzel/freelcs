@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-version = '217'
+version = '218'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -738,46 +738,61 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 			plotfile_x_axis_divider = 1 # Define how many time slices there are between each printed x-axis time number.
 			plotfile_x_axis_time = 3 # Define the steps of increasing x-axis time numbers.
 			plotfile_x_axis_name = 'Seconds' * english + 'Sekunnit' * finnish # X-axis time name (seconds / minutes hours).
+
 		if (audio_duration_rounded_to_seconds > 60) and (audio_duration_rounded_to_seconds <= 180): # File duration is between 1 and 3 minutes.
 			plotfile_x_axis_divider = 5
 			plotfile_x_axis_time = 15
 			plotfile_x_axis_name = 'Seconds' * english + 'Sekunnit' * finnish
+
 		if (audio_duration_rounded_to_seconds > 180) and (audio_duration_rounded_to_seconds < 1800): # File duration is between 3 minutes and 30 minutes.
 			plotfile_x_axis_divider = 20
 			plotfile_x_axis_time = 1
 			plotfile_x_axis_name = 'Minutes' * english + 'Minuutit' * finnish
+
 		if (audio_duration_rounded_to_seconds >= 1800) and (audio_duration_rounded_to_seconds < 3600): # File duration is between 30 minutes and 1 hour.
 			plotfile_x_axis_divider = 60
 			plotfile_x_axis_time = 3
 			plotfile_x_axis_name = 'Minutes' * english + 'Minuutit' * finnish
+
 		if (audio_duration_rounded_to_seconds >= 3600) and (audio_duration_rounded_to_seconds < 7200): # File duration is between 1 and 2 hours.
 			plotfile_x_axis_divider = 100
 			plotfile_x_axis_time = 5
 			plotfile_x_axis_name = 'Minutes' * english + 'Minuutit' * finnish
+
 		if (audio_duration_rounded_to_seconds >= 7200) and (audio_duration_rounded_to_seconds < 21600): # File duration is between 2 and 6 hours.
 			plotfile_x_axis_divider = 300
 			plotfile_x_axis_time = 15
 			plotfile_x_axis_name = 'Minutes' * english + 'Minuutit' * finnish
+
 		if (audio_duration_rounded_to_seconds >= 21600) and (audio_duration_rounded_to_seconds < 43200): # File duration is between 6 and 12 hours.
 			plotfile_x_axis_divider = 600
 			plotfile_x_axis_time = 30
 			plotfile_x_axis_name = 'Minutes' * english + 'Minuutit' * finnish
+
 		if (audio_duration_rounded_to_seconds >= 43200) and (audio_duration_rounded_to_seconds < 86400): # File duration is between 12 and 24 hours.
 			plotfile_x_axis_divider = 1200
 			plotfile_x_axis_time = 1
 			plotfile_x_axis_name = 'Hours' * english + 'Tunnit' * finnish
+
 		if (audio_duration_rounded_to_seconds >= 86400) and (audio_duration_rounded_to_seconds < 172800): # File duration is between 24 and 48 hours.
 			plotfile_x_axis_divider = 2400
 			plotfile_x_axis_time = 2
 			plotfile_x_axis_name = 'Hours' * english + 'Tunnit' * finnish
+
 		if (audio_duration_rounded_to_seconds >= 172800) and (audio_duration_rounded_to_seconds < 345600): # File duration is between 48 and 96 hours.
 			plotfile_x_axis_divider = 4800
 			plotfile_x_axis_time = 4
 			plotfile_x_axis_name = 'Hours' * english + 'Tunnit' * finnish
+
 		if (audio_duration_rounded_to_seconds >= 345600) and (audio_duration_rounded_to_seconds < 691200): # File duration is between 96 and 192 hours.
 			plotfile_x_axis_divider = 9600
 			plotfile_x_axis_time = 8
 			plotfile_x_axis_name = 'Hours' * english + 'Tunnit' * finnish
+
+		if audio_duration_rounded_to_seconds >= 691200: # File duration is over 192 hours.
+			plotfile_x_axis_divider = 28800
+			plotfile_x_axis_time = 1
+			plotfile_x_axis_name = 'Days' * english + 'Päiviä' * finnish
 
 		# Generate x-axis texts needed for gnuplot and store them in a list.
 		plotfile_x_axis_time_information=[]

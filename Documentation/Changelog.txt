@@ -1,3 +1,7 @@
+LoudnessCorrection Version 218
+------------------------------
+- Changed loudness history graphics file scale for files longer than 192 hours (8 days) to display graphics at 1 day resolution.
+
 LoudnessCorrection Version 217
 ------------------------------
 - Debug information about each file processing is now saved only for the last 100 files, not 8 hours like it was previously. 8 hours of debug data consumes too much Ram on 64 bit operating systems.
