@@ -1,3 +1,7 @@
+LoudnessCorrection Version 219
+------------------------------
+- Bugfix: corrected a crash bug I created when writing version 217.
+
 LoudnessCorrection Version 218
 ------------------------------
 - Changed loudness history graphics file scale for files longer than 192 hours (8 days) to display graphics at 1 day resolution.

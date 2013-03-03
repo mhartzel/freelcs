@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-version = '218'
+version = '219'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -3628,8 +3628,9 @@ def debug_manage_file_processing_information_thread():
 				# A list of 100 last processed files is gathered for printing the filenames on the html progress report. We use the names on that list here also.
 				# Delete debug data about all other files, but leave those that are on the 100 list.
 				copy_of_completed_files_list = copy.deepcopy(completed_files_list)
+				list_of_dictionary_keys = list(debug_complete_final_information_for_all_file_processing_dict)
 
-				for filename in debug_complete_final_information_for_all_file_processing_dict:
+				for filename in list_of_dictionary_keys:
 					if filename not in copy_of_completed_files_list:
 						del debug_complete_final_information_for_all_file_processing_dict[filename]
 
