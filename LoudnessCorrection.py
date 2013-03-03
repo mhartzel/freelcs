@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-version = '214'
+version = '215'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -683,6 +683,8 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 		loudness_calculation_table = directory_for_temporary_files + os.sep + filename + '-loudness_calculation_table'
 		gnuplot_temporary_output_graphicsfile = directory_for_temporary_files + os.sep + filename + '-Loudness_Results_Graphics.jpg' * english + '-Aanekkyyslaskennan_Tulokset.jpg' * finnish
 		warning_message = ''
+		sox_encountered_an_error = False
+		sox_error_message = ''
 		
 		global debug_temporary_dict_for_all_file_processing_information
 
@@ -794,7 +796,7 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 		debug_information_list.append('Calling subroutine: get_audiofile_info_with_sox_and_determine_output_format')
 		
 		# Get technical info from audio file and determine what the ouput format will be
-		channel_count, sample_rate, bit_depth, sample_count, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, audio_channels_will_be_split_to_separate_mono_files, audio_duration, output_file_too_big_to_split_to_separate_wav_channels = get_audiofile_info_with_sox_and_determine_output_format(directory_for_temporary_files, hotfolder_path, filename)
+		channel_count, sample_rate, bit_depth, sample_count, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, audio_channels_will_be_split_to_separate_mono_files, audio_duration, output_file_too_big_to_split_to_separate_wav_channels, sox_encountered_an_error, sox_error_message = get_audiofile_info_with_sox_and_determine_output_format(directory_for_temporary_files, hotfolder_path, filename)
 
 		# Write details of loudness measurement of the file to a logfile.
 		if save_measurement_results_to_a_file == True:
@@ -814,7 +816,7 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 			warning_message = warning_message + '\\nWarning: file size exceeds wav format max limit 4 GB, file will be stored in flac - format' * english + '\\nVaroitus: tiedoston koko ylittää wav - formaatin maksimin (4 GB), tiedosto tallennetaan flac - formaattiin' * finnish
 		
 		# Generate gnuplot commands needed for plotting the graphics file and store commands in a list.
-		if (integrated_loudness_calculation_error == True) or (timeslice_calculation_error == True):
+		if (integrated_loudness_calculation_error == True) or (timeslice_calculation_error == True) or (sox_encountered_an_error == True):
 			# Loudness calculation encountered an error, generate gnuplot commands for plotting default graphics with the error message.
 			error_message_to_print_with_gnuplot = ''
 			
@@ -835,6 +837,9 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 				error_message = 'ERROR !!! in libebur128 timeslice calculation: ' * english + 'VIRHE !!! libebur128:n aanekkyystaulukon laskennassa: ' * finnish +  timeslice_calculation_error_message
 				send_error_messages_to_screen_logfile_email(error_message + ': ' + filename, [])
 				error_message_to_print_with_gnuplot = error_message_to_print_with_gnuplot + timeslice_calculation_error_message + '\\n'
+
+			if sox_encountered_an_error == True:
+				error_message_to_print_with_gnuplot = error_message_to_print_with_gnuplot + sox_error_message + '\\n'
 			
 			# Save some debug information.
 			debug_information_list.append('gnuplot_commands')
@@ -1668,6 +1673,8 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 		flac_compression_level = ['-C', '1']
 		output_format_for_intermediate_files = 'wav'
 		output_format_for_final_file = 'wav'
+		sox_encountered_an_error = False
+		sox_error_message = ''
 		
 		global debug_temporary_dict_for_all_file_processing_information
 		debug_information_list = []
@@ -1740,11 +1747,18 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 				sample_count_string = text_line.split('=')[1].strip().split(' ')[0]
 
 		# Convert audio technical information from string to integer and assign to variables.
+		channel_count = 0
+		sample_rate = 0
+		bit_depth = 0
+		sample_count = 0
+		
 		if channel_count_string.isnumeric() == True:
 			channel_count = int(channel_count_string)
 		else:
 			error_message = 'ERROR !!! I could not parse sox channel count string: ' * english + 'VIRHE !!! En osannut tulkita sox:in antamaa tietoa kanavamäärästä: ' * finnish + '\'' + channel_count_string + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
 			# Save some debug information.
+			sox_encountered_an_error = True
+			sox_error_message = error_message
 			debug_information_list.append('error_message')
 			debug_information_list.append(error_message)
 			send_error_messages_to_screen_logfile_email(error_message, [])
@@ -1754,6 +1768,8 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 		else:
 			error_message = 'ERROR !!! I could not parse sox sample rate string: ' * english + 'VIRHE !!! En osannut tulkita sox:in antamaa tietoa näyteenottotaajuudesta: ' * finnish + '\'' + sample_rate_string + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
 			# Save some debug information.
+			sox_encountered_an_error = True
+			sox_error_message = error_message
 			debug_information_list.append('error_message')
 			debug_information_list.append(error_message)
 			send_error_messages_to_screen_logfile_email(error_message, [])
@@ -1763,6 +1779,8 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 		else:
 			error_message = 'ERROR !!! I could not parse sox bit depth string: ' * english + 'VIRHE !!! En osannut tulkita sox:in antamaa tietoa bittisyvyydestä: ' * finnish + '\'' + bit_depth_string + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
 			# Save some debug information.
+			sox_encountered_an_error = True
+			sox_error_message = error_message
 			debug_information_list.append('error_message')
 			debug_information_list.append(error_message)
 			send_error_messages_to_screen_logfile_email(error_message, [])
@@ -1772,12 +1790,20 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 		else:
 			error_message = 'ERROR !!! I could not parse sox sample count string: ' * english + 'VIRHE !!! En osannut tulkita sox:in antamaa tietoa näytteiden lukumäärästä: ' * finnish + '\'' + sample_count_string + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
 			# Save some debug information.
+			sox_encountered_an_error = True
+			sox_error_message = error_message
 			debug_information_list.append('error_message')
 			debug_information_list.append(error_message)
 			send_error_messages_to_screen_logfile_email(error_message, [])
 
-		# Calculate file duration from sample count.
-		audio_duration = int(sample_count / sample_rate)
+		audio_duration = 0
+
+		# Prevent 'division by zero' error by only doing the calculation if both values are greater than zero.
+		if (sample_count != 0) and (sample_rate != 0):
+			# Calculate file duration from sample count.
+			audio_duration = int(sample_count / sample_rate)
+
+
 
 
 
@@ -1830,6 +1856,10 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 		debug_information_list.append(sample_count_string)
 		debug_information_list.append('audio_duration')
 		debug_information_list.append(audio_duration)
+		debug_information_list.append('sox_encountered_an_error')
+		debug_information_list.append(sox_encountered_an_error)
+		debug_information_list.append('sox_error_message')
+		debug_information_list.append(sox_error_message)
 		debug_information_list.append('wav_format_maximum_file_size')
 		debug_information_list.append(wav_format_maximum_file_size)
 		debug_information_list.append('estimated_uncompressed_size_for_single_mono_file')
@@ -1855,7 +1885,7 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
                 subroutine_name = 'get_audiofile_info_with_sox_and_determine_output_format'
                 catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 
-	return(channel_count, sample_rate, bit_depth, sample_count, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, audio_channels_will_be_split_to_separate_mono_files, audio_duration, output_file_too_big_to_split_to_separate_wav_channels)
+	return(channel_count, sample_rate, bit_depth, sample_count, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, audio_channels_will_be_split_to_separate_mono_files, audio_duration, output_file_too_big_to_split_to_separate_wav_channels, sox_encountered_an_error, sox_error_message)
 
 def get_realtime(english, finnish):
 
@@ -3473,7 +3503,7 @@ def get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, h
 			natively_supported_file_format = False
 			mediainfo_error_message =  'Format: \'' * english + 'Formaatti: \'' * finnish + str(sample_format) + '\' is not supported in wav container' * english + '\' wav - paketissa ei ole tuettu' * finnish
 		
-		if (bit_depth < 8) and (bit_depth > 32):
+		if (bit_depth < 8) or (bit_depth > 32):
 			natively_supported_file_format = False
 			mediainfo_error_message =  'Audio bit depth: ' * english + 'Tiedoston bittisyvyys: ' * finnish + str(bit_depth) + ' bits is not supported' * english + ' bittiä ei ole tuettu' * finnish
 			

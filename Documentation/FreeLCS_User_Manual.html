@@ -75,7 +75,7 @@
     Sata disks in software RAID 0. <br>
     <br>
     FreeLCS uses other open source programs to get the job done (Linux,
-    libebur128, gnuplot, FFmpeg, sox, mediainfo).<br>
+    libebur128, gnuplot, FFmpeg (optional), sox, mediainfo).<br>
     <br>
     <br>
     <h2> <a id="Features">Features</a></h2>
@@ -86,8 +86,11 @@
         visual feedback of the loudness variations in the file.</li>
       <li>Creates loudness corrected versions of each file dropped in the
         servers HotFolder.</li>
-      <li>Uses FFmpeg to pre-process files and supports the huge number of file
-        formats FFmpeg supports.<br>
+      <li>Natively supports <strong>wav</strong>, <strong>flac</strong> and <strong>ogg</strong>
+        formats.<br>
+      </li>
+      <li>If user installs FFmpeg then all formats supported by it can be
+        processed. FFmpeg supports a large number of formats.<br>
       </li>
       <li> Supports files with several audio streams. Each stream is demuxed to
         a separate file and loudness corrected.</li>

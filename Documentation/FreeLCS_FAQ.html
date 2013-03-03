@@ -19,6 +19,8 @@
     <a href="#What%20filetypes%20are%20supported%20?"></a><a href="#What%20formats%20are%20supported%20?">What
       formats are supported ?</a><br>
     <br>
+    <a href="#FFmpeg%20and%20patents">FFmpeg and patents</a><br>
+    <br>
     <a href="#How%20many%20audio%20streams%20in%20a%20file%20are%20supported%20?">How
       many audio streams in a file are supported ?</a><br>
     <br>
@@ -93,8 +95,10 @@
     <h2> <a id="What programs are used to process audio files ?">What programs
         are used to process audio files ?</a></h2>
     <ul>
-      <li>FFmpeg extracts and converts audio to natively supported formats (wav,
-        flac).</li>
+      <li>Natively supported formats are <strong>wav</strong>, <strong>flac</strong>
+        and <strong>ogg</strong>. If FFmpeg is installed then it's used to
+        extract and convert audio from unsupported formats to wav and flac.<br>
+      </li>
       <li>Mediainfo gets duration info from mpeg transport stream files.<br>
       </li>
       <li>libebur128 measures integrated and momentary loudness.</li>
@@ -107,15 +111,16 @@
     <br>
     <h2><a id="What formats are supported ?">What formats are supported ?</a></h2>
     <ul>
-      <li><strong>Wav</strong> and <strong>flac</strong> are natively supported
-        by libebur128 that is responsible for loudness measurement. Other
-        formats are converted with FFmpeg to supported formats before
-        processing. FFmpeg supports a vast amount of formats: <strong>mp4</strong>,
-        <strong>mp3</strong>, <strong>mp2</strong>, <strong>avi</strong>, <strong>mov</strong>,
-        <strong>aac</strong>, <strong>h264</strong>, <strong>vob</strong>, <strong>mkv</strong>
-        to name a few. Just drop in your file to the HotFolder of FreeLCS to see
-        if audio can be extracted from it. You can drop in video files also and
-        let FreeLCS extract all audio streams from them.</li>
+      <li><strong>Wav</strong>, <strong>flac</strong> and <strong>ogg</strong>
+        are natively supported.</li>
+      <li>If FFmpeg is installed then it is used to convert other formats to
+        supported formats before processing. FFmpeg supports a large number of
+        formats: <strong>mp4</strong>, <strong>mp3</strong>, <strong>mp2</strong>,
+        <strong>avi</strong>, <strong>mov</strong>, <strong>aac</strong>, <strong>h264</strong>,
+        <strong>vob</strong>, <strong>mkv</strong> to name a few. FFmpeg is
+        able to extract all audio streams from supported file types including
+        video files. <br>
+      </li>
       <li>Note that all channels of one mix must be in the same file. If your
         5.1 mix consists of 6 files, then you must combine them before dropping
         the mix into loudness correction.<br>
@@ -123,13 +128,46 @@
     </ul>
     <p><br>
     </p>
+    <h2><a id="FFmpeg and patents">FFmpeg and patents</a><br>
+    </h2>
+    <ul>
+      <li>Most audio post production is done in <strong>Wav</strong> format
+        because it is very widely supported and can be used without paying
+        license fees for the use of the format (source:
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
+        <a href="http://www.digitalpreservation.gov/formats/fdd/fdd000025.shtml">http://www.digitalpreservation.gov/formats/fdd/fdd000025.shtml</a>,&nbsp;
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
+        <a href="http://www.digitalpreservation.gov/formats/fdd/fdd000001.shtml">http://www.digitalpreservation.gov/formats/fdd/fdd000001.shtml</a>).
+        FreeLCS supports wav and two royalty / patent free formats <strong>flac</strong>
+        and <strong>ogg </strong>(license:
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
+        <a href="http://flac.sourceforge.net/license.html">http://flac.sourceforge.net/license.html</a>).
+        If your post production is done in wav then you don't ever need to
+        install FFmpeg.</li>
+      <li>FFmpeg is a video and audio conversion tool that can be used to
+        convert media to many different formats. Using FFmpeg to decompress
+        audio from patented formats may require a license from the rights
+        holders. However FFmpeg may also be used to process free formats (MXF,
+        MKV, WebM and others) or formats with possibly expired patents (Mpeg1
+        Layer1, Mpeg 1 Layer2) without aquiring licenses. To more complicate
+        things some patented formats may be patented in some countries but not
+        in others. Also the expiration dates for these patents may vary between
+        countries.</li>
+      <li>FreeLCS uses FFmpeg if it's installed but works fine without it with
+        wav, flac and ogg formats.<br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
     <h2> <a id="How many audio streams in a file are supported ?">How many
         audio streams in a file are supported ?</a></h2>
     <ul>
-      <li>The limit for the number of audio streams in a single file has not
-        been tested. I personally have tested files with 16 streams with no
-        problems. Upper limit is propably set by a possible limit in FFmpeg or
-        file format in question.<br>
+      <li>When FFmpeg is not installed: 1 audio stream.<br>
+      </li>
+      <li>When FFmpeg is installed: the limit for the number of audio streams in
+        a single file has not been tested. I personally have tested files with
+        16 streams with no problems. Upper limit is propably set by a possible
+        limit in FFmpeg or file format in question.<br>
       </li>
     </ul>
     <br>
@@ -139,7 +177,7 @@
       <li>The shortest supported file duration is exactly 1 second.</li>
       <li>The longest supported file duration should in theory be unlimited, but
         no tests have been made to find out the limit. The longest file I have
-        tested was 18 hours (mp2 compressed stereo audio).<br>
+        tested was 33 hours of Flac compressed 24 bit stereo audio.<br>
       </li>
     </ul>
     <br>
@@ -157,9 +195,11 @@
         to the files when they are processed ?</a></h2>
     <ul>
       <li>First incoming files are searched for supported audio streams.</li>
-      <li>If a file has several audio streams or streams that are not natively
-        supported by libebur128 then files are handed over to FFmpeg to extract
-        audio streams and convert them to supported formats (wav, flac).</li>
+      <li>FreeLCS natively supports wav, flac and ogg formats and one audio
+        stream per file. If there are more streams or the audio format is
+        unsupported then FFmpeg is used (only if FFmpeg is installed) to convert
+        streams to a supported format.<br>
+      </li>
       <li>FFmpeg places extracted streams back to FreeLCS HotFolder so that they
         are seen as new files coming into processing. When all streams have been
         extracted then the original file is deleted as it is no longer needed.<br>
@@ -175,7 +215,7 @@
       <li>Then a new loudness adjusted file is created with sox.</li>
       <li>The resulting corrected file loudness will be at -23.0 LUFS.</li>
       <li>All files will be automatically deleted after a delay defined during
-        FreeLCS installation, it is by default 8 hours.</li>
+        FreeLCS installation, that is 8 hours by default.</li>
     </ul>
     <p><br>
     </p>
@@ -244,7 +284,8 @@
         precision ?</a></h2>
     <ul>
       <li>Audio gain adjustment is done with sox and it uses 32 bits by default
-        for all calculations.</li>
+        for all calculations.<br>
+      </li>
       <li>If output file bit depth is not 32 bits, then sox uses dithering by
         default. The output file has the same bit depth as the input file in
         most cases.</li>
@@ -252,11 +293,26 @@
     <br>
     <h2><a id="Is bit depth and sample rate preserved ?">Is bit depth and sample
         rate preserved ?</a></h2>
-    Sample rate should always be preserved.<br>
+    Sample rate should be preserved in all cases. <br>
     <br>
-    (The following rules for bit depth conversion come from internal limitations
-    in FFmpeg and sox).<br>
-    <u><strong></strong></u><br>
+    The following rules for bit depth conversion comes from internal limitations
+    in sox and FFmpeg.<br>
+    <br>
+    <u><strong>When FFmpeg is not installed:</strong></u><br>
+    <ul>
+      <li>64 bit audio is not supported.</li>
+      <li>If audio is in uncompressed PCM - format, then bit depth will be
+        preserved.<br>
+      </li>
+      <li>If audio has been compressed with ogg then the audio has no real bit
+        depth anymore and audio will be extracted using bit depth of 16 bits.<br>
+      </li>
+      <li>If audio is in flac format then bit depth is preserved except that 8
+        bit audio is converted to 16 bits. Flac supports bit depths up to 24
+        bits.<br>
+      </li>
+    </ul>
+    <u><strong>When FFmpeg is installed:</strong></u><br>
     <ul>
       <li>If audio is in uncompressed PCM - format, then bit depth will be
         preserved except that 64 bit audio will be converted to 32 bits because
@@ -267,11 +323,11 @@
       <li>If output file size would exceed 4 GBs then FreeLCS must store the
         audio in flac format when processing it. Bit depths bigger than 16 will
         be converted to 16 bits. This is caused by internal limitation in
-        FFmpeg, it always uses 16 bits when storing in flac format.<br>
+        FFmpeg, it always uses 16 bits when storing in flac format. Also 8 bit
+        audio stored in flac format will be converted to 16 bits.<br>
       </li>
     </ul>
     <u><strong></strong></u><br>
-    <br>
     <h2><a id="What happens if output file size exceeds wav format 4 GB size limit ?">What
         happens if output file size exceeds wav format 4 GB size limit ?</a></h2>
     <ul>
