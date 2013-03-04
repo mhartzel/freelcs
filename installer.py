@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '057'
+version = '058'
 
 ###################################
 # Function definitions start here #
@@ -913,7 +913,7 @@ def install_init_scripts_and_config_files(*args):
 	'exec >> /var/log/LoudnessCorrection.log 2>&1', \
 	"# set -x   # Uncomment this if you want every command in this script written to the logfile.", \
 	'', \
-	'if [ "$1"=="stop" ] || [ "$1"=="restart"  ] ; then', \
+	'if [ "$1" = "stop" ] || [ "$1" = "restart"  ] ; then', \
 	'', \
 	'		#############################################################################################', \
 	'		#                   Stop LoudnessCorrection.py and HeartBeat_Checker.py                     #', \
@@ -925,17 +925,17 @@ def install_init_scripts_and_config_files(*args):
 	'		LOUDNESSCORRECTION_PID=`pgrep -f "$PYTHON3_PATH $LOUDNESSCORRECTION_SCRIPT_PATH -configfile $CONFIGFILE_PATH"`', \
 	'		HEARTBEATCHECKER_PID=`pgrep -f "$PYTHON3_PATH $HEARTBEAT_PATH -configfile $CONFIGFILE_PATH"`', \
 	'', \
-	'		if [ "$LOUDNESSCORRECTION_PID"!=""  ] ; then', \
+	'		if [ "$LOUDNESSCORRECTION_PID" != ""  ] ; then', \
 	'			kill -HUP $LOUDNESSCORRECTION_PID', \
 	'		fi', \
 	'', \
-	'		if [ "$HEARTBEATCHECKER_PID"!=""  ] ; then', \
+	'		if [ "$HEARTBEATCHECKER_PID" != ""  ] ; then', \
 	'			kill -HUP $HEARTBEATCHECKER_PID', \
 	'		fi', \
 	'', \
 	'fi', \
 	'', \
-	'if [ "$1"=="start" ] || [ "$1"=="restart"  ] ; then', \
+	'if [ "$1" = "start" ] || [ "$1" = "restart"  ] ; then', \
 	'', \
 	'		#############################################################################################', \
 	'		# Wait for the os startup process to finish, so that all services are available', \

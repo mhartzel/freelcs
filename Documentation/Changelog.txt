@@ -1,3 +1,7 @@
+Installer 058
+--------------
+- Bugfix: options start and stop did not work anymore on init script 'loudnesscorrection_init_script' after making the 'restart' option for it.
+
 Documentation
 --------------
 - Changed 4 installer pictures on user manual and made a small addition to the FAQ.
