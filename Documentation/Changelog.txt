@@ -1,6 +1,10 @@
+Documentation
+--------------
+- Changed 4 installer pictures on user manual and made a small addition to the FAQ.
+
 Installer 057
 --------------
-- LoudnessCorrection script can now be stopped and then started with the following command: sudo -b /etc/init.d/loudnesscorrection_init_script restart
+- LoudnessCorrection script can now be stopped and started with the following command: sudo -b /etc/init.d/loudnesscorrection_init_script restart
 
 LoudnessCorrection Version 219
 ------------------------------

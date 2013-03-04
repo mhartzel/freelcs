@@ -4399,7 +4399,7 @@ eigth_window_back_button.grid(column=2, row=1, padx=30, pady=10, sticky=(tkinter
 ###########################################################################################################
 
 # Create the label for the frame
-ninth_window_label_1 = tkinter.ttk.Label(ninth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text="Everything was installed successfully :)\n\nLoudnessCorrection will be started when you boot up your computer, or you can start it now manually running the following commands:\n")
+ninth_window_label_1 = tkinter.ttk.Label(ninth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text="Everything was installed successfully :)\n\nLoudnessCorrection will be started when you boot up your computer, or you can start it now manually running the following command:\n")
 ninth_window_label_1.grid(column=0, row=0, columnspan=4, pady=10, padx=10, sticky=(tkinter.N))
 
 loudness_correction_manual_startup_commands = "sudo   -b   /etc/init.d/loudnesscorrection_init_script   restart"
