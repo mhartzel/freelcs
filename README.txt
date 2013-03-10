@@ -18,9 +18,9 @@ Features:
 - Calculates loudness according to EBU R128 for files dropped into the HotFolder.
 - For each file it creates an loudness history graphics file which gives visual feedback of the loudness variations in the file.
 - Creates loudness corrected versions of each file dropped in the servers HotFolder.
-- Uses FFmpeg to pre-process files and supports the huge number of file formats FFmpeg supports.
+- If user installs FFmpeg, then it is used to convert files unsupported formats to supported. FFmpeg supports a huge number of file formats.
 - Supports files with several audio streams. Each stream is demuxed to a separate file and loudness corrected.
-- Even video files can dropped in for processing. Audio streams are demuxed from the file and processed.
+- If FFmpeg is installed then even video files can dropped in for processing. Audio streams are demuxed from the file and processed.
 - Supports channel counts from mono to 5.1.
 - Takes advantage of multiple processor cores to run calculations simultaneously.
 - Uses a protective limiter to prevent clipping in cases where volume must be increased.

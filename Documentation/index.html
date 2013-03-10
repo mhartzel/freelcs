@@ -22,8 +22,26 @@
     <br>
     FreeLCS uses other open source programs to get the job done (Linux,
     libebur128, gnuplot, FFmpeg, sox, mediainfo).<br>
-    <h3><strong>News:</strong></h3>
-    <h2>2012.10.11 FreeLCS 2.1 released.</h2>
+    <h2><strong>News:</strong></h2>
+    <h2>2013.03.10 FreeLCS 2.2 released.</h2>
+    <ul>
+      <li>This is a maintenance bug fix release. This version fixes a couple of
+        bugs that sometimes caused file processing to hang. This release also
+        adds code that catches possible Python error messages and sends them to
+        the user. This helps to identify what situation caused the error.<br>
+      </li>
+      <li>Addition to the manual "<a href="FreeLCS_User_Manual.html#Synchronizing%20clock%20to%20a%20NTP%20time%20server">How
+          to synchronize server clock to a NTP server</a>".</li>
+      <li>Correction to manual: "<a href="FreeLCS_User_Manual.html#Configuring%20software%20Raid">Use
+          UUID as the device name when configuring software raid</a>". This
+        solves the problem where raid device number sometimes changes when a
+        kernel update is installed.<br>
+      </li>
+      <li><a href="FreeLCS_FAQ.html#What%20formats%20are%20supported%20?">The
+          installer no longer installs FFmpeg</a>, but if the user does, then
+        FFmpeg is used for file processing.</li>
+    </ul>
+    2012.10.11 FreeLCS 2.1 released.
     <ul>
       <li>This release fixes a bug: bit depth was not preserved if input file
         had many audio streams with uncompressed audio in it.</li>
