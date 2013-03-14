@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-version = '221'
+version = '222'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -1292,7 +1292,7 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 					
 					# Save some debug information.
 					debug_information_list.append('list_of_sox_commandlines')
-					debug_information_list.append(list_of_sox_commandlines)
+					debug_information_list.append(''.join(str(list_of_sox_commandlines)))
 					
 					# Run several sox commands in parallel threads, this speeds up splitting the file to separate mono files.	
 					sox_encountered_an_error = run_sox_commands_in_parallel_threads(directory_for_temporary_files, directory_for_results, filename, list_of_sox_commandlines, english, finnish)
@@ -1442,7 +1442,7 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 								list_of_filenames.append(split_channel_targetfile_name)
 								
 							debug_information_list.append('list_of_sox_commandlines')
-							debug_information_list.append(list_of_sox_commandlines)
+							debug_information_list.append(''.join(str(list_of_sox_commandlines)))
 
 							# Run several sox commands in parallel threads, this speeds up splitting the file to separate mono files.	
 							sox_encountered_an_error = run_sox_commands_in_parallel_threads(directory_for_temporary_files, directory_for_results, filename, list_of_sox_commandlines, english, finnish)
@@ -1497,7 +1497,7 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 						
 						# Save some debug information.
 						debug_information_list.append('list_of_sox_commandlines')
-						debug_information_list.append(list_of_sox_commandlines)
+						debug_information_list.append(''.join(str(list_of_sox_commandlines)))
 						
 						# Run several sox commands in parallel threads, this speeds up splitting the file to separate mono files.	
 						sox_encountered_an_error = run_sox_commands_in_parallel_threads(directory_for_temporary_files, directory_for_results, filename, list_of_sox_commandlines, english, finnish)
