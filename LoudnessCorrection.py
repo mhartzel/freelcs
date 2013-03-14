@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-version = '220'
+version = '221'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -1542,7 +1542,7 @@ def run_sox_commands_in_parallel_threads(directory_for_temporary_files, director
 		events_for_sox_commands_currently_running = {}
 		list_of_finished_processes = []
 		sox_encountered_an_error = False
-		
+
 		while True:
 			
 			# If processing of all sox commands is ready then exit the loop.
@@ -1585,11 +1585,11 @@ def run_sox_commands_in_parallel_threads(directory_for_temporary_files, director
 
 				if sox_process_is_ready.is_set(): # Check if event is set.
 					list_of_finished_processes.append(sox_process_is_ready) # Add event of finished thread to a list.
-				sox_event_for_error = events_for_sox_commands_currently_running[sox_process_is_ready]
+					sox_event_for_error = events_for_sox_commands_currently_running[sox_process_is_ready]
 
-				# If running sox was not succesful then the other event is not set, test for it.
-				if not sox_event_for_error.is_set():
-					sox_encountered_an_error = True
+					# If running sox was not succesful then the other event is not set, test for it.
+					if not sox_event_for_error.is_set():
+						sox_encountered_an_error = True
 
 			# If a thread has finished, remove it's event from the dictionary of files being processed.
 			for item in list_of_finished_processes: # Get events who's processing threads have completed.
@@ -1914,7 +1914,7 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 
 
 		if not os.path.exists(file_to_process): # Check if the audio file still exists, user may have deleted it. If True start loudness calculation.
-			error_message = 'Error accessing file: ' * english + 'Tiedoston lukemisessa tapahtui virhe: ' * finnish 
+			error_message = 'Sox: Error accessing file' * english + 'Sox: Tiedoston lukemisessa tapahtui virhe' * finnish 
 			# Save some debug information.
 			sox_encountered_an_error = True
 			sox_error_message = error_message

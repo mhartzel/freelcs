@@ -1,3 +1,9 @@
+LoudnessCorrection Version 221
+------------------------------
+- Bugfix: Fixed a regression in handling outputfiles bigger than 4 GB that appeared in version 220. Splitting output to separate mono files did not work correctly.
+- Bugfix: In case running sox was not successful, the error message printed on the result graphics was empty.
+
+
 #####################################
 # Released FreeLCS 2.2 with:        #
 # ----------------------------      #
