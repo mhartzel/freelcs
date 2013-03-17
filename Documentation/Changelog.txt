@@ -1,3 +1,7 @@
+LoudnessCorrection Version 223
+------------------------------
+- Bugfix: LoudnessCorrection could be crashed by copying many files to HotFolder and then deleting a file that was in the queue waiting for a processing slot to open.
+
 LoudnessCorrection Version 222
 ------------------------------
 - Bugfix: debug information for sox commandlines was not recorded correctly when file was too big and and needed to be split to separate mono files.

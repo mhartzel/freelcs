@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-version = '222'
+version = '223'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -499,11 +499,12 @@ def calculate_integrated_loudness(event_for_integrated_loudness_calculation, fil
 		exc_type, exc_value, exc_traceback = sys.exc_info()
 		error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
 		subroutine_name = 'calculate_integrated_loudness'
+		event_for_integrated_loudness_calculation.set()
 		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 
 	return()
 
-def calculate_loudness_timeslices(filename, hotfolder_path, libebur128_commands_for_time_slice_calculation, directory_for_temporary_files, directory_for_results, english, finnish, expected_number_of_time_slices, expected_file_size):
+def calculate_loudness_timeslices(filename, hotfolder_path, libebur128_commands_for_time_slice_calculation, directory_for_temporary_files, directory_for_results, english, finnish, expected_number_of_time_slices, expected_file_size, event_for_timeslice_loudness_calculation, event_for_integrated_loudness_calculation):
 
 	"""This subroutine uses libebur128 loudness-executable to calculate file loudness segmenting the file in time slices and calculating loudness of each slice."""
 
@@ -522,6 +523,7 @@ def calculate_loudness_timeslices(filename, hotfolder_path, libebur128_commands_
 		timeslice_loudness_calculation_result_list = []
 		file_to_process = hotfolder_path + os.sep + filename
 		number_of_timeslices = 0
+		time_slice_duration_string = 3 # Set a default value that will be overwritten with a value sent from the main routine.
 		timeslice_calculation_error = False
 		timeslice_calculation_error_message =''
 
@@ -629,7 +631,6 @@ def calculate_loudness_timeslices(filename, hotfolder_path, libebur128_commands_
 
 			# Wait for the other loudness calculation thread to end since it's results are needed in the next step of the process.
 			integrated_loudness_calculation_is_ready = False
-			event_for_timeslice_loudness_calculation, event_for_integrated_loudness_calculation = loudness_calculation_queue[filename] # Take events for both of the loudness calculation threads from the dictionary.
 			
 			while integrated_loudness_calculation_is_ready == False: # Wait until the other thread has finished. event = set, means thread has finished.
 				if event_for_integrated_loudness_calculation.is_set():
@@ -683,6 +684,7 @@ def calculate_loudness_timeslices(filename, hotfolder_path, libebur128_commands_
 		exc_type, exc_value, exc_traceback = sys.exc_info()
 		error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
 		subroutine_name = 'calculate_loudness_timeslices'
+		event_for_timeslice_loudness_calculation.set()
 		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 
 def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_string, timeslice_calculation_error, timeslice_calculation_error_message, timeslice_loudness_calculation_stdout, hotfolder_path, directory_for_temporary_files, directory_for_results, english, finnish):
@@ -701,7 +703,17 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 	try:
 		global integrated_loudness_calculation_results
 		global silent
-		integrated_loudness_calculation_results_list = []
+
+		# Set default values for integrated loudness calculation results. Defaults will be overwritten by real results if integrated loudness calculation is successful. Defaults are used if calculation fails.
+		integrated_loudness_calculation_results_list = [0, 0, 0, True, 'Integrated loudness calculation failed to finish', -120, False] 
+		integrated_loudness = integrated_loudness_calculation_results_list[0]
+		difference_from_target_loudness = integrated_loudness_calculation_results_list[1]
+		loudness_range = integrated_loudness_calculation_results_list[2]
+		integrated_loudness_calculation_error = integrated_loudness_calculation_results_list[3]
+		integrated_loudness_calculation_error_message = integrated_loudness_calculation_results_list[4]
+		highest_peak_db = integrated_loudness_calculation_results_list[5]
+		integrated_loudness_is_below_measurement_threshold = integrated_loudness_calculation_results_list[6]
+
 		commandfile_for_gnuplot = directory_for_temporary_files + os.sep + filename + '-gnuplot_commands'
 		loudness_calculation_table = directory_for_temporary_files + os.sep + filename + '-loudness_calculation_table'
 		gnuplot_temporary_output_graphicsfile = directory_for_temporary_files + os.sep + filename + '-Loudness_Results_Graphics.jpg' * english + '-Aanekkyyslaskennan_Tulokset.jpg' * finnish
@@ -726,14 +738,15 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 		debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 		
 		# Get loudness calculation results from the integrated loudness calculation process. Results are in list format in dictionary 'integrated_loudness_calculation_results', assing results to variables.
-		integrated_loudness_calculation_results_list = integrated_loudness_calculation_results.pop(filename)# Get loudness results for the file and remove this information from dictionary.
-		integrated_loudness = integrated_loudness_calculation_results_list[0]
-		difference_from_target_loudness = integrated_loudness_calculation_results_list[1]
-		loudness_range = integrated_loudness_calculation_results_list[2]
-		integrated_loudness_calculation_error = integrated_loudness_calculation_results_list[3]
-		integrated_loudness_calculation_error_message = integrated_loudness_calculation_results_list[4]
-		highest_peak_db = integrated_loudness_calculation_results_list[5]
-		integrated_loudness_is_below_measurement_threshold = integrated_loudness_calculation_results_list[6]
+		if filename in integrated_loudness_calculation_results:
+			integrated_loudness_calculation_results_list = integrated_loudness_calculation_results.pop(filename)# Get loudness results for the file and remove this information from dictionary.
+			integrated_loudness = integrated_loudness_calculation_results_list[0]
+			difference_from_target_loudness = integrated_loudness_calculation_results_list[1]
+			loudness_range = integrated_loudness_calculation_results_list[2]
+			integrated_loudness_calculation_error = integrated_loudness_calculation_results_list[3]
+			integrated_loudness_calculation_error_message = integrated_loudness_calculation_results_list[4]
+			highest_peak_db = integrated_loudness_calculation_results_list[5]
+			integrated_loudness_is_below_measurement_threshold = integrated_loudness_calculation_results_list[6]
 
 		# If TruePeak method was used to determine the highest peak, then it can be above 0 dBFS, add a plus sign if this is the case.
 		if highest_peak_db > 0:
@@ -2411,7 +2424,9 @@ def write_html_progress_report_thread(english, finnish):
 			'<hr style="width: 100%; height: 2px;"><font color="#000000"><br>']
 			
 			# Generate the list of files that has gone through loudness calculation and insert names in the html-code.
-			for filename in completed_files_list:
+			copy_of_completed_files_list = copy.deepcopy(completed_files_list)
+
+			for filename in copy_of_completed_files_list:
 				# Append information generated above to the html-code.
 				completion_time = completed_files_dict[filename]
 				filename = filename.replace('ä', '&auml;').replace('Ä', '&Auml;').replace('ö', '&ouml;').replace('Ö', '&Ouml;').replace('å', '&aring;').replace('Å', '&Aring;') # Special Finnish characters in filename won't print correctly unless they are replaced with proper html-codes.
@@ -3697,6 +3712,7 @@ def debug_manage_file_processing_information_thread():
 	try:
 		global debug_complete_final_information_for_all_file_processing_dict
 		global debug_file_processing
+		global completed_files_list
 		global english
 		global finnish
 
@@ -4598,6 +4614,13 @@ try:
 			
 			# Check if there are less processing threads going on than allowed, if true start some more.
 			if (len(loudness_calculation_queue) * 2) < number_of_processor_cores:
+
+				# If user has deleted a file from HotFolder that was already queued for loudness calculation, remove it's name from the queue.
+				copy_of_files_queued_to_loudness_calculation = copy.deepcopy(files_queued_to_loudness_calculation)
+
+				for removed_file in copy_of_files_queued_to_loudness_calculation:
+					if removed_file not in old_hotfolder_filelist_dict:
+						files_queued_to_loudness_calculation.remove(removed_file)
 				
 				if len(files_queued_to_loudness_calculation) > 0: # Check if there are files queued for processing waiting in the queue.
 					filename = files_queued_to_loudness_calculation.pop(0) # Remove the first file from the queue and put it in a variable.
@@ -4630,7 +4653,7 @@ try:
 						# Add file name and both the calculation process events to the dictionary of files that are currently being calculated upon.
 						loudness_calculation_queue[filename] = [event_for_timeslice_loudness_calculation, event_for_integrated_loudness_calculation]
 						# Create threads for both processes, the threads are not started yet.
-						process_1 = threading.Thread(target=calculate_loudness_timeslices, args=(filename, hotfolder_path, libebur128_commands_for_time_slice_calculation, directory_for_temporary_files, directory_for_results, english, finnish, expected_number_of_time_slices, expected_file_size)) # Create a process instance.
+						process_1 = threading.Thread(target=calculate_loudness_timeslices, args=(filename, hotfolder_path, libebur128_commands_for_time_slice_calculation, directory_for_temporary_files, directory_for_results, english, finnish, expected_number_of_time_slices, expected_file_size, event_for_timeslice_loudness_calculation, event_for_integrated_loudness_calculation)) # Create a process instance.
 						process_2 = threading.Thread(target=calculate_integrated_loudness, args=(event_for_integrated_loudness_calculation, filename, hotfolder_path, libebur128_commands_for_integrated_loudness_calculation, english, finnish)) # Create a process instance.
 						
 						# Start both calculation threads.
@@ -4701,8 +4724,12 @@ try:
 				
 				realtime = get_realtime(english, finnish)[1].replace('_', ' ')
 				del loudness_calculation_queue[filename] # Remove file name from the list of files currently being calculated upon.
-				completed_files_list.insert(0, filename) # Add filename at the beginning of the list of completed files. This list stores only the order in which the files were completed.
-				completed_files_dict[filename] = realtime # This dictionary stores the time processing each file was completed.
+
+				# Add filename at the beginning of the list of completed files, but if the user has dropped the same file in HotFolder before, then first remove the name from list. This moves the name to the top of the completed files list.
+				if filename in completed_files_list:
+					completed_files_list.remove(filename)
+				completed_files_list.insert(0, filename) # This list stores only the order in which the files were completed.
+				completed_files_dict[filename] = realtime # This dictionary stores the time processing each file was completed. If user drops the same file in HotFolder again, tha latest one will replace the previous one in the dictionry and that is ok.
 				
 				if silent == False:
 					print('\r' + 'File' * english + 'Tiedoston' * finnish, '"' + filename + '"', 'processing finished' * english + 'käsittely valmistui' * finnish, realtime)
