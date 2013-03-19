@@ -1,3 +1,7 @@
+LoudnessCorrection Version 224
+------------------------------
+- Bugfix: File processing information for unsupported audio streams was left over in a debug gathering dictionary although it was supposed to be deleted for unsupported streams.
+
 LoudnessCorrection Version 223
 ------------------------------
 - Bugfix: LoudnessCorrection could be crashed by copying many files to HotFolder and then deleting a file that was in the queue waiting for a processing slot to open.

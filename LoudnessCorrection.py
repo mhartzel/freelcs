@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-version = '223'
+version = '224'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -3190,6 +3190,11 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				
 				# Create the result graphics file with an error message telling stream is not supported.
 				create_gnuplot_commands_for_error_message(error_message, unsupported_stream_name, directory_for_temporary_files, directory_for_results, english, finnish)
+
+				# Printing error message in history graphics file adds the stream name to a debug processing information dictionary.
+				# Since the stream is unsupported and will not be processed, remove it's name from the debug dictionary.
+				if unsupported_stream_name in debug_temporary_dict_for_all_file_processing_information:
+					del debug_temporary_dict_for_all_file_processing_information[unsupported_stream_name]
 			
 				# Save some debug information.
 				debug_information_list.append('Stream Filename')
@@ -3236,6 +3241,8 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		file_format_support_information = [natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames]	
 		
 		# Save some debug information.
+		debug_information_list.append('Support information for main file: ')
+		debug_information_list.append(filename)
 		debug_information_list.append('ffmpeg_supported_fileformat')
 		debug_information_list.append(ffmpeg_supported_fileformat)
 		debug_information_list.append('natively_supported_file_format')
