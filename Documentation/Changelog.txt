@@ -1,3 +1,15 @@
+LoudnessCorrection Version 225
+-----------------------------
+- Bugfix: Stopped some more ways that LoudnessCorrection could be crashed by deleting files it was currently processing.
+
+Backup_FreeLCS_configuration
+----------------------------
+- Bugfix: corrected a typo in loudnesscorrection_init_script link name.
+
+Documentation
+-------------
+- Corrected typo in filename: loudnesscorrection_init_script.
+
 LoudnessCorrection Version 224
 ------------------------------
 - Bugfix: File processing information for unsupported audio streams was left over in a debug gathering dictionary although it was supposed to be deleted for unsupported streams.
@@ -5,6 +17,10 @@ LoudnessCorrection Version 224
 LoudnessCorrection Version 223
 ------------------------------
 - Bugfix: LoudnessCorrection could be crashed by copying many files to HotFolder and then deleting a file that was in the queue waiting for a processing slot to open.
+
+Backup_FreeLCS_configuration
+----------------------------
+- Added a separate script that can be used to clone FreeLCS installation to another machine. The restoration process does not need X, so it can be automated or run over a ssh - connection.
 
 LoudnessCorrection Version 222
 ------------------------------

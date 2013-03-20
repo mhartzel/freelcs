@@ -190,7 +190,7 @@ SAMBA_CONF_NAME="smb.conf"
 
 # Define paths for copy targets.
 INIT_SCRIPT_PATH="/etc/init.d/loudnesscorrection_init_script"
-INIT_SCRIPT_LINK_PATH="/etc/rc2.d/S99loudness_correction_init_script"
+INIT_SCRIPT_LINK_PATH="/etc/rc2.d/S99loudnesscorrection_init_script"
 LOUDNESSCORRECTION_PATH="/usr/bin/LoudnessCorrection.py"
 HEARTBEAT_CHECKER_PATH="/usr/bin/HeartBeat_Checker.py"
 SETTINGS_FILE_PATH="/etc/Loudness_Correction_Settings.pickle"

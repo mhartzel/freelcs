@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-version = '224'
+version = '225'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -850,8 +850,9 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 		channel_count, sample_rate, bit_depth, sample_count, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, audio_channels_will_be_split_to_separate_mono_files, audio_duration, output_file_too_big_to_split_to_separate_wav_channels, sox_encountered_an_error, sox_error_message = get_audiofile_info_with_sox_and_determine_output_format(directory_for_temporary_files, hotfolder_path, filename)
 
 		# Write details of loudness measurement of the file to a logfile.
-		if save_measurement_results_to_a_file == True:
-			debug_write_loudness_calculation_info_to_a_logfile(filename, integrated_loudness, loudness_range, highest_peak_db, channel_count, sample_rate, bit_depth, audio_duration)
+		if (integrated_loudness_calculation_error == False) and (timeslice_calculation_error == False):
+			if save_measurement_results_to_a_file == True:
+				debug_write_loudness_calculation_info_to_a_logfile(filename, integrated_loudness, loudness_range, highest_peak_db, channel_count, sample_rate, bit_depth, audio_duration)
 
 		# Save some debug information.
 		debug_information_list.append('Message')
@@ -4293,25 +4294,44 @@ try:
 		# The files in 'unsupported_ignored_files_dict' are files that ffmpeg was not able to find any audiostreams from, or streams were found but the duration is less than 1 second or file transfer ended prematurely.
 		# Check if files in the unsupported files dictionary have vanished from the HotFolder. If a name has disappeared from HotFolder, remove it also from the list of unsupported files.
 		# Check if files in the unsupported files dictionary have been there longer than the expiry time allows, queue expired files for deletion.
+
 		unsupported_ignored_files_list = list(unsupported_ignored_files_dict) # Copy filesnames from dictionary to a list to use as for - loop iterable, since we can't use the dictionary directly because we are going to delete values from it. The for loop - iterable is forbidden to change.
+
 		for filename in unsupported_ignored_files_list:
 			if not filename in list_of_files:
 				unsupported_ignored_files_dict.pop(filename) # If unsupported file that previously was in HotFolder has vanished, remove its name from the unsupported files list.
 				continue
 			if int(time.time()) - unsupported_ignored_files_dict[filename] >= file_expiry_time: # If file has expired then queue it for deletion.
 				files_queued_for_deletion.append(filename)
+
 		# If user has deleted a file that did already make it to the 'list_of_growing_files' remove it from list.
+		filenames_to_remove = []
+
 		for filename in list_of_growing_files:
 			if not filename in list_of_files:
-				list_of_growing_files.remove(filename) # If file that previously was in HotFolder has vanished, remove its name from the list_of_growing_files.
-				continue
-		
+				filenames_to_remove.append(filename)
+		for filename in filenames_to_remove:
+			list_of_growing_files.remove(filename) # If file that previously was in HotFolder has vanished, remove its name from the list_of_growing_files.
+
+		# If user has deleted a file that did already make it to the 'debug_temporary_dict_for_all_file_processing_information' remove it from list.
+		filenames_to_remove = []
+
+		for filename in debug_temporary_dict_for_all_file_processing_information:
+			if not filename in list_of_files:
+				filenames_to_remove.append(filename)
+		for filename in filenames_to_remove:
+			del debug_temporary_dict_for_all_file_processing_information[filename] # If file that previously was in HotFolder has vanished, remove its name from the dictionary used to collect debug data.
+
+		filenames_to_remove = []
+
 		# Process filenames found in the directory
 		try:
 			for filename in list_of_files:
+
 				if filename.startswith('.'): # If filename starts with an '.' queue the file for deletion and continue to process next filename.
 					files_queued_for_deletion.append(filename)
 					continue
+
 				file_metadata=os.lstat(hotfolder_path + os.sep + filename) # Get file information (size, date, etc)
 				file_information_to_save=[file_metadata.st_size, int(time.time()), file_metadata.st_mtime] # Put in a list: file size, time the file was first seen in HotFolder and file modification time.
 
@@ -4328,6 +4348,7 @@ try:
 				# Add information about a file to dictionary.
 				# This statement also guarantees that files put in deletion queue by subprocess 'decompress_audio_streams_with_ffmpeg' running in separate thread, are not processed here further. That would sometimes cause files being used by one thread to be deleted by the other.
 				if (filename not in files_queued_for_deletion) and (filename not in unsupported_ignored_files_dict):
+
 					# Save information about new files into a dictionary: filename, file size, time file was first seen in HotFolder.
 					if not filename in old_hotfolder_filelist_dict:
 						# The file has just appeared to the HotFolder and it has not been analyzed yet.
@@ -4370,14 +4391,19 @@ try:
 		try:
 			for path, list_of_directories, list_of_files in os.walk(directory_for_results):
 				break
+
 			for filename in list_of_files:
+
 				if filename == web_page_name:
 					continue # Skip loudness calculation web - page we have created, we don't wan't to delete that.
+
 				partial_path=os.path.relpath(path + os.sep + filename, hotfolder_path) # Truncate file path by removing the preceding 'HotFolder' path.
 				time_file_was_first_seen = 0
+
 				if partial_path in old_results_directory_filelist_dict:
 					# If the file was there in poll previous to this one, the time the file was first seen is in dictionary 'old_results_directory_filelist_dict' get it and put in a variable.
 					time_file_was_first_seen = old_results_directory_filelist_dict[partial_path]
+
 					if int(time.time()) - time_file_was_first_seen > file_expiry_time: # Check if file has been there longer than the expiry time, if true queue file for deletion.
 						files_queued_for_deletion.append(partial_path)
 					else:
@@ -4408,9 +4434,11 @@ try:
 			files_to_delete = copy.deepcopy(files_queued_for_deletion) # Copy file list to a new list, since we are going to modify the original list it can not be used as the iterator for the for-loop.
 			for filename in files_to_delete:
 				realtime = get_realtime(english, finnish)[1]
+
 				if os.path.exists(hotfolder_path + os.sep + filename):
 					os.remove(hotfolder_path + os.sep + filename)
 					files_queued_for_deletion.remove(filename)
+
 					if silent == False:
 						print('\r' + adjust_line_printout, ' Deleted file' * english + ' Poistin tiedoston' * finnish, '"' + str(filename) + '"', realtime)
 		except KeyboardInterrupt:
@@ -4708,27 +4736,40 @@ try:
 			# If both threads processing the file have finished, remove file from the queue of files being processed.
 			for filename in finished_processes: # Get names of files who's processing threads have completed and print message to user.
 				
-				# Move debugging information from process specific dictionaries to one main information gathering dictionary.
-				# If both events are equal (pointing to the same event object) then audiostreams was extracted with ffmpeg from the file. 
-				# When loudness processing is ready then events are not equal (events point to different event objects).
 				event_for_process_1, event_for_process_2 = loudness_calculation_queue[filename]
 				temporary_gathering_list = []
 				
-				if event_for_process_1 != event_for_process_2:
-					# Loudness processing of the file is ready, move debugging information to the main debugging dictionary.
-					# We get here only if both integrated and time slice loudness calculation are ready.
-					temporary_gathering_list = debug_temporary_dict_for_timeslice_calculation_information.pop(filename)
-					temporary_gathering_list.extend(debug_temporary_dict_for_integrated_loudness_calculation_information.pop(filename))
-					temporary_gathering_list.extend(debug_temporary_dict_for_all_file_processing_information.pop(filename))
-					debug_complete_final_information_for_all_file_processing_dict[filename] = temporary_gathering_list
+				# If filename exists in 'debug_temporary_dict_for_all_file_processing_information' then move file processing debug info to the final gathering dictionary.
+				# If filename is missing from 'debug_temporary_dict_for_all_file_processing_information' then user has deleted the file before processing finished. In this case delete all file processing debug information for the file.
+				if filename in debug_temporary_dict_for_all_file_processing_information:
+
+					# If both events are equal (pointing to the same event object) then audiostreams was extracted with ffmpeg from the file. 
+					# When loudness processing is ready then events are not equal (events point to different event objects).
+
+					if event_for_process_1 != event_for_process_2:
+						# Loudness processing of the file is ready, move debugging information to the main debugging dictionary.
+						# We get here only if both integrated and time slice loudness calculation are ready.
+						temporary_gathering_list = debug_temporary_dict_for_timeslice_calculation_information.pop(filename)
+						temporary_gathering_list.extend(debug_temporary_dict_for_integrated_loudness_calculation_information.pop(filename))
+						temporary_gathering_list.extend(debug_temporary_dict_for_all_file_processing_information.pop(filename))
+						debug_complete_final_information_for_all_file_processing_dict[filename] = temporary_gathering_list
+					else:
+						# We get here only when the process that has finished is function: decompress_audio_streams_with_ffmpeg. 
+						# Move debug processing info from temp dictionary to the main debug dictionary.
+						# The decompressed file will enter processing queue, but the decompressed file has different name than the compressed,
+						# So we have to remove the debug info about compressed version from the dictionary, as it is no longer used for anything.
+
+						temporary_gathering_list = debug_temporary_dict_for_all_file_processing_information.pop(filename)
+						debug_complete_final_information_for_all_file_processing_dict[filename] = temporary_gathering_list
 				else:
-					# We get here only when the process that has finished is function: decompress_audio_streams_with_ffmpeg. 
-					# Move debug processing info from temp dictionary to the main debug dictionary.
-					# The decompressed file will enter processing queue, but the decompressed file has different name than the compressed,
-					# So we have to remove the debug info about compressed version from the dictionary, as it is no longer used for anything.
-					temporary_gathering_list = debug_temporary_dict_for_all_file_processing_information.pop(filename)
-					debug_complete_final_information_for_all_file_processing_dict[filename] = temporary_gathering_list
-				
+					# User has deleted the file before processing was ready, delete all file processing debug information.
+
+					if filename in debug_temporary_dict_for_timeslice_calculation_information:
+						del debug_temporary_dict_for_timeslice_calculation_information[filename]
+					if filename in debug_temporary_dict_for_integrated_loudness_calculation_information:
+						del debug_temporary_dict_for_integrated_loudness_calculation_information[filename]
+			
+
 				realtime = get_realtime(english, finnish)[1].replace('_', ' ')
 				del loudness_calculation_queue[filename] # Remove file name from the list of files currently being calculated upon.
 
