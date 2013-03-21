@@ -1,3 +1,7 @@
+Documentation
+-------------
+- Added info about the new backup / restoration functionality.
+
 Installer 059
 --------------
 - Bugfix: when debug mode was on the installer crashed due to addressing wrong dictionary on line 3577.

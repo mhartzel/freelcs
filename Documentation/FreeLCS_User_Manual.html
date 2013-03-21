@@ -36,7 +36,9 @@
     <h3><a href="#Setting%20up%20automatic%20security%20updates">Setting up
         automatic security updates</a></h3>
     <h3><a href="#Synchronizing%20clock%20to%20a%20NTP%20time%20server">Synchronizing
-        clock to a NTP time server</a><br>
+        clock to a NTP time server</a></h3>
+    <h3><a href="#Cloning%20a%20FreeLCS%20installation%20to%20another%20machine%20%28without%20a%20display%29">Cloning
+        a FreeLCS installation to another machine (without a display)</a><br>
     </h3>
     <h3><a href="#How%20to%20report%20a%20bug">How to report a bug</a></h3>
     <h3><a href="#Run%20FreeLCS%20programs%20so%20that%20possible%20error%20messages%20can%20be%20seen">Run
@@ -61,7 +63,6 @@
     <br>
     <br>
     <h2> <a id="Introduction">Introduction</a></h2>
-    <br>
     FreeLCS stands for <strong>Free Loudness Correction Server</strong>. The
     software lets you easily set up a server that shares one of it's folders to
     the network where users can drop audio files to be loudness corrected
@@ -118,7 +119,6 @@
     <img title="Example: Loudness history graphics" src="Pictures/Beethoven-Coriolan_Overture_Op_62.wav-Loudness_Results_Graphics.jpg"><br>
     <br>
     <h2> <a id="Requirements">Requirements</a></h2>
-    <br>
     <ul>
       <li>You need a computer with at least 2 processor cores.</li>
       <li>2 GB of RAM&nbsp; (there probably is not much advantage in having
@@ -208,7 +208,8 @@
       <li>Now that python3 is installed you can start the FreeLCS installation
         program, it will ask you some details about how you would like the
         loudness correction server to work and installs the rest of the programs
-        FreeLCS needs.</li>
+        FreeLCS needs.<br>
+      </li>
       <li>Next unzip the FreeLCS - package by clicking it with the right mouse
         button and selecting " <strong>Extract Here</strong>". A new directory
         will be created and all FreeLCS files will be unzipped there.<br>
@@ -500,7 +501,6 @@
     <br>
     <h2><a id="Files that FreeLCS creates in your system">Files that FreeLCS
         creates in your system</a></h2>
-    <br>
     FreeLCS is made up of these files:<br>
     <br>
     <strong>/etc/init.d/loudnesscorrection_init_script</strong><br>
@@ -650,7 +650,6 @@
     <br>
     <h2> <a id="Mounting the server HotFolder from OS X">Mounting the server
         HotFolder from OS X</a></h2>
-    <br>
     <ul>
       <li>First click an empty spot on your desktop, this activates the Finder -
         program.</li>
@@ -733,7 +732,6 @@
     <h2><a id="Mounting the server HotFolder from windows 7">Mounting the server
         HotFolder from windows 7</a><br>
     </h2>
-    <br>
     <ul>
       <li>Click on the "<strong>Start</strong>" - button and click on the
         entrybox on the bottom of the window.<br>
@@ -812,7 +810,6 @@
     <br>
     <h2> <a id="Html Progress report">Html Progress Report</a><br>
     </h2>
-    <br>
     If you selected "<strong>Write html progress report</strong>" = "<strong>yes</strong>"
     in the installer then an html file will appear in "<strong>HotFolder /
       00-Calculation_Queue_Information / 00-Calculation_Queue_Information.html</strong>".
@@ -843,7 +840,6 @@
     <br>
     <h2> <a id="Static ip - address for the server">Static ip - address for the
         server</a></h2>
-    <br>
     The server needs to have an address that does not change. You network
     administrator can give you an static ip-address to use.<br>
     <br>
@@ -912,7 +908,6 @@
     <br>
     <br>
     <h2><a id=" Optimizing processing speed"> Optimizing processing speed</a></h2>
-    <br>
     If you have a fast enough processor, for example 1 x Intel Core 2 Duo, then
     the processor is able to process files much quicker than a single hard disk
     is able to serve it. When multiple files are processed at the same time,
@@ -994,7 +989,6 @@
     </p>
     <br>
     <h2> <a id="Configuring software Raid">Configuring software Raid</a></h2>
-    <br>
     Linux software raid configuration is a bit out of the scope of this document
     and I don't have much experience with it :) Here are the steps that were
     required to get our server's raid set up. The steps I followed were mostly
@@ -1054,12 +1048,13 @@
       <li>Add the device to your <strong>/etc/fstab</strong> so that it gets
         automatically mounted next time the computer starts up. It is important
         to use the <strong>UUID</strong> instead of the device name (/dev/md0)
-        to identify your raid disk in fstab. Your disk gets a randomly selected
-        new UUID every time it is reformatted. When the kernel gets updated then
+        to identify your raid disk in fstab. When the kernel gets updated then
         your raid device number may change (for example from: <strong>/dev/md0</strong>&nbsp;
-        to&nbsp; <strong>/dev/md127</strong>) and the disk won't mount anymore.
-        The UUID of a device will not change and it can be used to identify the
-        disk instead of its device name. </li>
+        to&nbsp; <strong>/dev/md127</strong>) and if you used the device name +
+        number in fstab then the disk won't mount anymore. The UUID of a device
+        will not change and it can be used to identify the disk instead of its
+        device name. (Your disk gets a randomly selected new UUID every time it
+        is reformatted).</li>
       <li>Add the following line in <strong> /etc/fstab </strong>(change the
         UUID to match your disk): <br>
       </li>
@@ -1118,9 +1113,7 @@
     <br>
     <h2><a id="Setting up automatic security updates">Setting up automatic
         security updates</a></h2>
-    <br>
     The server can be made quite maintenance free by:<br>
-    <br>
     <ul>
       <li>Making the server boot automatically after an power outage.</li>
       <li>Making the server install all security updates automatically.</li>
@@ -1132,7 +1125,6 @@
     To make the server boot automatically after an power outage you need to find
     an option in the computers <strong>bios</strong> that says something like:
     "Restart after power failure".<br>
-    <br>
     <ul>
       <li>Then tell Ubuntu to install security updates without human
         intervention.</li>
@@ -1290,8 +1282,42 @@
     <strong>25 06 * * * /usr/sbin/ntpdate 192.168.1.110</strong><br>
     <br>
     <br>
-    <h2><a id="How to report a bug">How to report a bug</a></h2>
+    <h2><a id="Cloning a FreeLCS installation to another machine (without a display)">Cloning
+        a FreeLCS installation to another machine (without a display)</a></h2>
+    The 2.3 release of FreeLCS introduces a tool that can be used to backup and
+    restore a FreeLCS installation. This functionality can be used to clone a
+    installation to any number of Ubuntu machines. Neither the backup nor the
+    restore scripts requires a graphical desktop and both can be run over a ssh
+    - connection on a 'headless machine' .<br>
     <br>
+    This functionality is targeted at advanced users who know their way around
+    Linux and the Terminal. The backup script can be found in directory '<strong>Backup_FreeLCS_configuration</strong>'
+    of the FreeLCS installer zip.<br>
+    <h3>Usage</h3>
+    <ol>
+      <li>Install FreeLCS with the normal graphical installer and adjust
+        settings the way you want.</li>
+      <li>Then run '<strong>00-backup_freelcs_configuration.sh</strong>' to make
+        a backup of the installation settings. Files needed for restoration and
+        a restoration script will be created in directory '<strong>freelcs_backup</strong>'.</li>
+      <li>Copy the contents of dir '<strong>freelcs_backup</strong>' to all
+        machines that you want to have the same configuration and run the
+        restoration script '<strong>00-restore_freelcs_configuration.sh</strong>'
+        on each. </li>
+      <li>The restoration script will install all programs and scripts that
+        FreeLCS needs to function. After restoration all machines will have
+        identical FreeLCS installation. </li>
+      <li>Reboot the machines or start loudness correction scripts manually
+        (restoration script displays the startup command at the end of the run).<br>
+      </li>
+    </ol>
+    Result: The FreeLCS installation has been cloned to several machines.<br>
+    <br>
+    Note: Internet connection is required during restoration, since all needed
+    programs are downloaded and installed from the net<br>
+    <br>
+    <br>
+    <h2><a id="How to report a bug">How to report a bug</a></h2>
     If you have found an error in FreeLCS software or documentation please
     report it so that it can be corrected.<br>
     <br>
@@ -1337,8 +1363,6 @@
     <br>
     <h2><a id="Run FreeLCS programs so that possible error messages can be seen">Run
         FreeLCS programs so that possible error messages can be seen</a></h2>
-    <h3><br>
-    </h3>
     <h3>LoudnessCorrection.py</h3>
     <br>
     LoudnessCorrection.py is the program that is responsible for processing the
@@ -1404,7 +1428,6 @@
     </p>
     <br>
     <h3>Typical Python error message</h3>
-    <br>
     If a program crashes then the Python3 interpreter displays an error message
     telling what went wrong. A typical Python error message looks like this:<br>
     <br>
@@ -1423,7 +1446,6 @@
     <br>
     <br>
     <h2><a id="FreeLCS development">FreeLCS development</a></h2>
-    <br>
     FreeLCS development happens on Github ( <a href="https://github.com/mhartzel/freelcs">https://github.com/mhartzel/freelcs</a>).
     All new versions of software are uploaded there before official release.
     Unreleased versions are untested so it is recommended that normal users do
