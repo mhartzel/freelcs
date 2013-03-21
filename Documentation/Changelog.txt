@@ -1,3 +1,16 @@
+Installer 059
+--------------
+- Bugfix: when debug mode was on the installer crashed due to addressing wrong dictionary on line 3577.
+- Added a license agreement window.
+
+Documentation
+-------------
+- Added screenshot of the license agreement window.
+
+All programs
+------------
+- The path to Gnu GPL 3 license has changes on gnu.org website, updated the new path to all programs.
+
 LoudnessCorrection Version 225
 -----------------------------
 - Bugfix: Stopped some more ways that LoudnessCorrection could be crashed by deleting files it was currently processing.

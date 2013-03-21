@@ -5,7 +5,7 @@
 #
 # This program is distributed under the GNU General Public License, version 3 (GPLv3)
 #
-# Check the license here: http://www.gnu.org/licenses/gpl.html
+# Check the license here: http://www.gnu.org/licenses/gpl.txt
 # Basically this license gives you full freedom to do what ever you wan't with this program. You are free to use, modify, distribute it any way you like.
 # The only restriction is that if you make derivate works of this program AND distribute those, the derivate works must also be licensed under GPL 3.
 # This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
@@ -20,7 +20,6 @@ import email.mime
 import email.mime.text
 import email.mime.multipart
 import pickle
-import subprocess
 
 version = '020'
 
