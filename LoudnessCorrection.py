@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-version = '225'
+version = '227'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -298,8 +298,8 @@ def calculate_integrated_loudness(event_for_integrated_loudness_calculation, fil
 		global integrated_loudness_calculation_results
 		global debug_temporary_dict_for_integrated_loudness_calculation_information
 		debug_information_list = []
-		integrated_loudness_calculation_stdout = ''
-		integrated_loudness_calculation_stderr = ''
+		integrated_loudness_calculation_stdout = b''
+		integrated_loudness_calculation_stderr = b''
 		file_to_process = hotfolder_path + os.sep + filename
 		integrated_loudness = 0
 		loudness_range = 0
@@ -499,7 +499,10 @@ def calculate_integrated_loudness(event_for_integrated_loudness_calculation, fil
 		exc_type, exc_value, exc_traceback = sys.exc_info()
 		error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
 		subroutine_name = 'calculate_integrated_loudness'
+
+		# Set the event for this calculation thread. The main program checks the events and sees that this calculation thread is ready.
 		event_for_integrated_loudness_calculation.set()
+
 		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 
 	return()
@@ -517,8 +520,8 @@ def calculate_loudness_timeslices(filename, hotfolder_path, libebur128_commands_
 	# This routine then starts the loudness graphics plotting subroutine giving it loudness results from both calculation processes.
 
 	try:
-		timeslice_loudness_calculation_stdout = ''
-		timeslice_loudness_calculation_stderr = ''
+		timeslice_loudness_calculation_stdout = b''
+		timeslice_loudness_calculation_stderr = b''
 		timeslice_loudness_calculation_stderr_string = ''
 		timeslice_loudness_calculation_result_list = []
 		file_to_process = hotfolder_path + os.sep + filename
@@ -684,7 +687,10 @@ def calculate_loudness_timeslices(filename, hotfolder_path, libebur128_commands_
 		exc_type, exc_value, exc_traceback = sys.exc_info()
 		error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
 		subroutine_name = 'calculate_loudness_timeslices'
+
+		# Set the event for this calculation thread. 
 		event_for_timeslice_loudness_calculation.set()
+
 		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 
 def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_string, timeslice_calculation_error, timeslice_calculation_error_message, timeslice_loudness_calculation_stdout, hotfolder_path, directory_for_temporary_files, directory_for_results, english, finnish):
@@ -1075,6 +1081,7 @@ def run_gnuplot(filename, directory_for_temporary_files, directory_for_results, 
 
 	# This subroutine runs Gnuplot and generates a graphics file.
 	# Gnuplot output is searched for error messages.
+	results_from_gnuplot_run = b''
 
 	try:
 		commandfile_for_gnuplot = directory_for_temporary_files + os.sep + filename + '-gnuplot_commands'
@@ -1785,6 +1792,7 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 		output_format_for_final_file = 'wav'
 		sox_encountered_an_error = False
 		sox_error_message = ''
+		results_from_sox_run = b''
 		
 		global debug_temporary_dict_for_all_file_processing_information
 		debug_information_list = []
@@ -2041,6 +2049,8 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 	# The resulting files are moved to the HotFolder so the program sees them as new files and queues them for loudness calculation.
 	# The original file is queued for deletion.
 
+	ffmpeg_run_output = b''
+
 	try:
 		global files_queued_for_deletion
 		global silent
@@ -2147,10 +2157,15 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 		event_2_for_ffmpeg_audiostream_conversion.set()
 
 	except Exception:
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
-                subroutine_name = 'decompress_audio_streams_with_ffmpeg'
-                catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
+		exc_type, exc_value, exc_traceback = sys.exc_info()
+		error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
+		subroutine_name = 'decompress_audio_streams_with_ffmpeg'
+
+		# Set the events so that the main program can see that extracting audio streams from file is ready.
+		event_1_for_ffmpeg_audiostream_conversion.set()
+		event_2_for_ffmpeg_audiostream_conversion.set()
+
+		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 
 def send_error_messages_to_screen_logfile_email(error_message, send_error_messages_to_these_destinations):
 	
@@ -2215,6 +2230,8 @@ def send_error_messages_by_email_thread(email_sending_details, english, finnish)
 	global loudness_correction_pid
 	global version
 	global critical_python_error_has_happened
+	unix_time_in_ticks =float(0)
+	realtime = ''
 	
 	error_messages_to_send = [] # Error messages are moved from the global list above to this local list.
 	reason_for_failed_send = [] # If sending fails we store the reason for error in this variable and print it to the logfile.
@@ -2269,6 +2286,7 @@ def send_error_messages_by_email_thread(email_sending_details, english, finnish)
 
 			# Start communication with the smtp-server.
 			try:
+				unix_time_in_ticks, realtime = get_realtime(english, finnish)
 				mailServer = smtplib.SMTP(email_sending_details['smtp_server_name'], email_sending_details['smtp_server_port'], 'localhost', 15) # Timeout is set to 15 seconds.
 				mailServer.ehlo()
 				  
@@ -2287,25 +2305,25 @@ def send_error_messages_by_email_thread(email_sending_details, english, finnish)
 				mailServer.close()
 				
 			except smtplib.socket.timeout as reason_for_error:
-				reason_for_failed_send.append('Error, Timeout error: ' + str(reason_for_error))
+				reason_for_failed_send.append(realtime + '   Error sending email, Timeout error: ' + str(reason_for_error))
 			except smtplib.socket.error as reason_for_error:
-				reason_for_failed_send.append('Error, Socket error: ' + str(reason_for_error))
+				reason_for_failed_send.append(realtime + '   Error sending email, Socket error: ' + str(reason_for_error))
 			except smtplib.SMTPRecipientsRefused as reason_for_error:
-				reason_for_failed_send.append('Error, All recipients were refused: ' + str(reason_for_error))
+				reason_for_failed_send.append(realtime + '   Error sending email, All recipients were refused: ' + str(reason_for_error))
 			except smtplib.SMTPHeloError as reason_for_error:
-				reason_for_failed_send.append('Error, The server didn’t reply properly to the HELO greeting: ' + str(reason_for_error))
+				reason_for_failed_send.append(realtime + '   Error sending email, The server didn’t reply properly to the HELO greeting: ' + str(reason_for_error))
 			except smtplib.SMTPSenderRefused as reason_for_error:
-				reason_for_failed_send.append('Error, The server didn’t accept the sender address: ' + str(reason_for_error))
+				reason_for_failed_send.append(realtime + '   Error sending email, The server didn’t accept the sender address: ' + str(reason_for_error))
 			except smtplib.SMTPDataError as reason_for_error:
-				reason_for_failed_send.append('Error, The server replied with an unexpected error code or The SMTP server refused to accept the message data: ' + str(reason_for_error))
+				reason_for_failed_send.append(realtime + '   Error sending email, The server replied with an unexpected error code or The SMTP server refused to accept the message data: ' + str(reason_for_error))
 			except smtplib.SMTPException as reason_for_error:
-				reason_for_failed_send.append('Error, The server does not support the STARTTLS extension or No suitable authentication method was found: ' + str(reason_for_error))
+				reason_for_failed_send.append(realtime + '   Error sending email, The server does not support the STARTTLS extension or No suitable authentication method was found: ' + str(reason_for_error))
 			except smtplib.SMTPAuthenticationError as reason_for_error:
-				reason_for_failed_send.append('Error, The server didn’t accept the username/password combination: ' + str(reason_for_error))
+				reason_for_failed_send.append(realtime + '   Error sending email, The server didn’t accept the username/password combination: ' + str(reason_for_error))
 			except smtplib.SMTPConnectError as reason_for_error:
-				reason_for_failed_send.append('Error, Error occurred during establishment of a connection with the server: ' + str(reason_for_error))
+				reason_for_failed_send.append(realtime + '   Error sending email, Error occurred during establishment of a connection with the server: ' + str(reason_for_error))
 			except RuntimeError as reason_for_error:
-				reason_for_failed_send.append('Error, SSL/TLS support is not available to your Python interpreter: ' + str(reason_for_error))
+				reason_for_failed_send.append(realtime + '   Error sending email, SSL/TLS support is not available to your Python interpreter: ' + str(reason_for_error))
 			# If sending the email failed, print the reason for error to screen and logfile, but only if user has allowed printing to screen and logfile.
 			if len(reason_for_failed_send) > 0:
 				if silent == False:
@@ -2560,12 +2578,13 @@ def debug_lists_and_dictionaries_thread():
 	global debug_temporary_dict_for_timeslice_calculation_information
 	global debug_temporary_dict_for_all_file_processing_information
 	global debug_complete_final_information_for_all_file_processing_dict
+	global all_settings_dict
 
 	list_printouts = []
 	list_printouts_old_values = []
 	time_to_start_writing_to_a_new_file = int(time.time() + 86400) # Write debug info to a new file every 24 hours (starting from LoudnessCorrection startup time).
 	real_time_string = get_realtime(english, finnish)[1]
-	debug_messages_file = 'debug-variables_lists_and_dictionaries-' + real_time_string + '.txt' # Debug messages filename is 'debug_messages-' + current date + time
+	debug_messages_file = 'debug-variables_lists_and_dictionaries-' + real_time_string + '.txt'
 	values_read_from_configfile = []
 	
 	# If LoudnessCorrection read config values from a file, then all_settings_dict is not empty.
@@ -2666,7 +2685,7 @@ def debug_lists_and_dictionaries_thread():
 				if int(time.time()) >= time_to_start_writing_to_a_new_file:
 					time_to_start_writing_to_a_new_file = int(time.time() + 86400) # Write debug info to a new file every 24 hours (starting from LoudnessCorrection startup time).
 					real_time_string = get_realtime(english, finnish)[1]
-					debug_messages_file = 'debug_messages-' + real_time_string + '.txt' # Debug messages filename is 'debug_messages-' + current date + time
+					debug_messages_file = 'debug-variables_lists_and_dictionaries-' + real_time_string + '.txt'
 					first_write_to_a_new_logfile = True
 				else:
 					first_write_to_a_new_logfile = False
@@ -2711,6 +2730,9 @@ def debug_lists_and_dictionaries_thread():
 def get_ip_addresses_of_the_host_machine():
 
 	try:
+		stdout = b''
+		stderr = b''
+
 		global all_ip_addresses_of_the_machine
 		global directory_for_temporary_files
 		
@@ -2802,6 +2824,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		audio_duration_rounded_to_seconds = 0
 		audio_duration_fractions = 0
 		ffmpeg_error_message = ''
+		ffmpeg_run_output = b''
 		time_slice_duration_string = '3' # Set the default value to use in timeslice loudness calculation.
 		file_to_process = hotfolder_path + os.sep + filename
 		filename_and_extension = os.path.splitext(filename)
@@ -3242,7 +3265,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		file_format_support_information = [natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames]	
 		
 		# Save some debug information.
-		debug_information_list.append('Support information for main file: ')
+		debug_information_list.append('Support information for main file')
 		debug_information_list.append(filename)
 		debug_information_list.append('ffmpeg_supported_fileformat')
 		debug_information_list.append(ffmpeg_supported_fileformat)
@@ -3286,7 +3309,7 @@ def get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, h
 		
 		file_to_process = hotfolder_path + os.sep + filename
 
-		mediainfo_output = ''
+		mediainfo_output = b''
 		mediainfo_output_decoded = ''
 		natively_supported_file_format = False
 		mediainfo_error_message = ''
@@ -3861,6 +3884,8 @@ def check_samba_file_locks(filename):
 		global silent
 		global directory_for_temporary_files
 		file_is_locked_by_samba = False
+		stdout = b''
+		stderr = b''
 
 		# Create the commandline we need to run.
 		commands_to_run = ['smbstatus', '-L']
@@ -4354,7 +4379,7 @@ try:
 						# The file has just appeared to the HotFolder and it has not been analyzed yet.
 						# However some dummy data for the file needs to be filled, so we create that data here.
 						# This dummy data is replaced with real data when the file stops growing and gets analyzed.
-						dummy_information = [False, False, 0, [], '3'] # This dummy information will be replaced by info from FFmpeg later.
+						dummy_information = [False, False, 0, [], '3', 0, [], []] # This dummy information will be replaced by info from FFmpeg later.
 						file_information_to_save.append(dummy_information)
 
 						# Append time the file size or timestamp was last updated.
@@ -4368,8 +4393,21 @@ try:
 					# 0 = file size
 					# 1 = time file was first seen in HotFolder
 					# 2 = file modification time
-					# 3 = [False, False, 0, [], '3'] # This is dummy information that will later be replaced by data from FFmpeg.
+					# 3 = [False, False, 0, [], '3', 0, [], []] # This is dummy information that will later be replaced by data from FFmpeg. See comment below for item identification.
 					# 4 = Time the file size or timestamp was last updated. At this point this is the same as the time the file was first seen in HotFolder.
+					#
+					# The item 3 above is a list of dummy information that later will be replaced by real file information reported by FFmpeg.
+					# The data that FFmpeg fills later in this list is (with item numbers):
+					# ---------------------------------------------------------------------------------------------------------------
+					#
+					# 0 = natively_supported_file_format
+					# 1 = ffmpeg_supported_fileformat
+					# 2 = number_of_ffmpeg_supported_audiostreams
+					# 3 = details_of_ffmpeg_supported_audiostreams
+					# 4 = time_slice_duration_string
+					# 5 = audio_duration_rounded_to_seconds
+					# 6 = ffmpeg_commandline
+					# 7 = target_filenames
 					#
 					new_hotfolder_filelist_dict[filename] = file_information_to_save
 
@@ -4635,7 +4673,8 @@ try:
 				new_hotfolder_filelist_dict[filename] = [new_filesize, time_file_was_first_seen, new_modification_time, file_format_support_information, file_last_update_time]
 			else:
 				# If we get here the file was not there in the directory poll before this one. We need to wait for another poll to see if the file is still growing. Add file name to the list of growing files.
-				list_of_growing_files.append(filename)
+				if (filename not in files_queued_to_loudness_calculation) and (filename not in loudness_calculation_queue): # This line prevents LoudnessCorrection.py from crashing if the user repeatedly copies and deletes the same file from the HotFolder. Filenames already in the processing queue can not enter again.
+					list_of_growing_files.append(filename)
 
 		# Save latest directory poll information for the next round.
 		old_hotfolder_filelist_dict = new_hotfolder_filelist_dict
@@ -4658,7 +4697,7 @@ try:
 						files_queued_to_loudness_calculation.remove(removed_file)
 				
 				if len(files_queued_to_loudness_calculation) > 0: # Check if there are files queued for processing waiting in the queue.
-					filename = files_queued_to_loudness_calculation.pop(0) # Remove the first file from the queue and put it in a variable.
+					filename = files_queued_to_loudness_calculation[0] # Get the first filename from the queue and put it in a variable.
 					file_format_support_information = old_hotfolder_filelist_dict[filename][3] # The information about the file format is stored in a list in the dictionary, get it and store in a list.
 					natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames = file_format_support_information # Save file format information to separate variables.
 
@@ -4699,18 +4738,23 @@ try:
 						
 						# Fileformat is not natively supported by libebur128 and sox, or it has more than one audio streams.
 						# Start a process that extracts all audio streams from the file and converts them to wav or flac and moves resulting files back to the HotFolder for loudness calculation.
-						if silent == False:
-							print ('\r' + 'File' * english + 'Tiedoston' * finnish, '"' + filename + '"' + ' conversion started ' * english + '  muunnos    alkoi  ' * finnish, realtime)
-							print('\r' + adjust_line_printout, ' Extracting' * english + ' Puran' * finnish, str(number_of_ffmpeg_supported_audiostreams), 'audio streams from file' * english + 'miksausta tiedostosta' * finnish, filename)
+						if ffmpeg_supported_fileformat == True:
+
+							if silent == False:
+								print ('\r' + 'File' * english + 'Tiedoston' * finnish, '"' + filename + '"' + ' conversion started ' * english + '  muunnos    alkoi  ' * finnish, realtime)
+								print('\r' + adjust_line_printout, ' Extracting' * english + ' Puran' * finnish, str(number_of_ffmpeg_supported_audiostreams), 'audio streams from file' * english + 'miksausta tiedostosta' * finnish, filename)
+								
+								for counter in range(0, number_of_ffmpeg_supported_audiostreams): # Print information about all the audio streams we are going to extract.
+									print('\r' + adjust_line_printout, ' ' + details_of_ffmpeg_supported_audiostreams[counter][0])
 							
-							for counter in range(0, number_of_ffmpeg_supported_audiostreams): # Print information about all the audio streams we are going to extract.
-								print('\r' + adjust_line_printout, ' ' + details_of_ffmpeg_supported_audiostreams[counter][0])
-						
-						event_1_for_ffmpeg_audiostream_conversion = threading.Event() # Create events for the process. The events are being used to signal other threads that this process has finished. 
-						event_2_for_ffmpeg_audiostream_conversion = event_1_for_ffmpeg_audiostream_conversion 
-						process_3 = threading.Thread(target = decompress_audio_streams_with_ffmpeg, args=(event_1_for_ffmpeg_audiostream_conversion, event_2_for_ffmpeg_audiostream_conversion, filename, file_format_support_information, hotfolder_path, directory_for_temporary_files, english, finnish)) # Create a process instance.
-						thread_object = process_3.start() # Start the process in it'own thread.
-						loudness_calculation_queue[filename] = [event_1_for_ffmpeg_audiostream_conversion, event_2_for_ffmpeg_audiostream_conversion] # Add file name and both process events to the dictionary of files that are currently being calculated upon.
+							event_1_for_ffmpeg_audiostream_conversion = threading.Event() # Create events for the process. The events are being used to signal other threads that this process has finished. 
+							event_2_for_ffmpeg_audiostream_conversion = event_1_for_ffmpeg_audiostream_conversion 
+							process_3 = threading.Thread(target = decompress_audio_streams_with_ffmpeg, args=(event_1_for_ffmpeg_audiostream_conversion, event_2_for_ffmpeg_audiostream_conversion, filename, file_format_support_information, hotfolder_path, directory_for_temporary_files, english, finnish)) # Create a process instance.
+							thread_object = process_3.start() # Start the process in it'own thread.
+							loudness_calculation_queue[filename] = [event_1_for_ffmpeg_audiostream_conversion, event_2_for_ffmpeg_audiostream_conversion] # Add file name and both process events to the dictionary of files that are currently being calculated upon.
+
+					# Remove the filename from the queue.
+					files_queued_to_loudness_calculation.pop(0) 
 
 			######################################################################################
 			# Tell user how many files are being processed and how many are waiting in the queue #

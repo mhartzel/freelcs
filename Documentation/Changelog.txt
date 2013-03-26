@@ -1,3 +1,13 @@
+LoudnessCorrection Version 227
+------------------------------
+- I wrote a 'torture test' script that continuously copies files to loudness correction and deletes them while LoudnessCorrection is processing them. This allowed me to find more situations where LoudnessCorrection could be crashed (cases below)  by deleting files that are already being processed upon.
+- Bugfix: When debug mode is on then LoudnessCorrection changes 'debug-variables_lists_and_dictionaries' filename every 24 hours. The new filename was incorrect.
+- Bugfix: When debug mode was on then LoudnessCorrection should have printed all variables read from configfile to logfile 'debug-variables_lists_and_dictionaries' but it didn't.
+- Bugfix: Some stdout and stderr files used by 'subprocess.Popen' on several subroutines of LoudnessCorrection.py were not defined in the beginning of the subroutine, causing a crash when a file was deleted in the middle of processing it leaving the stdout or stderr file undefined.
+- Bugfix: If email sending failed, then the error message printed in error_log did not have timestamp and other vital information on it.
+- Bugfix: If user repeatedly copies the same file to the HotFolder and deletes it, then the file went multiple times in the processing queue.
+- Bugfix: If user repeatedly copies same files to the HotFolder and deletes them, then sometimes it happend that as the file was just enetering ffmpeg extractiion, the file entered the first stage of processing again and the default dummy file info that is used before we really know file properties overwrote info for the file entering ffmpeg extraction.
+
 Documentation
 -------------
 - Added info about the new backup / restoration functionality.
@@ -16,7 +26,7 @@ All programs
 - The path to Gnu GPL 3 license has changes on gnu.org website, updated the new path to all programs.
 
 LoudnessCorrection Version 225
------------------------------
+------------------------------
 - Bugfix: Stopped some more ways that LoudnessCorrection could be crashed by deleting files it was currently processing.
 
 Backup_FreeLCS_configuration
