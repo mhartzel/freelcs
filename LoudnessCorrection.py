@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-version = '227'
+version = '228'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -2579,20 +2579,22 @@ def debug_lists_and_dictionaries_thread():
 	global debug_temporary_dict_for_all_file_processing_information
 	global debug_complete_final_information_for_all_file_processing_dict
 	global all_settings_dict
+	global version
 
 	list_printouts = []
 	list_printouts_old_values = []
-	time_to_start_writing_to_a_new_file = int(time.time() + 86400) # Write debug info to a new file every 24 hours (starting from LoudnessCorrection startup time).
+	time_to_start_writing_to_a_new_file = int(time.time())
 	real_time_string = get_realtime(english, finnish)[1]
 	debug_messages_file = 'debug-variables_lists_and_dictionaries-' + real_time_string + '.txt'
 	values_read_from_configfile = []
+	file_name_expiry_time = 24 * 60 * 60 # This variable defines how often we change the log file name. By default it is changed every 24 hours (24 hours * 60 minutes * 60 seconds = 86400 seconds).
 	
 	# If LoudnessCorrection read config values from a file, then all_settings_dict is not empty.
 	# Store values read from configfile to a list, so that the values can be saved at the beginning of the list and dictionary debug info file.
 	if all_settings_dict != {}:
 
 		# Store variables read from the configfile. This is useful for debugging settings previously saved in a file.
-		title_text = 'Local variable values after reading the configfile: ' + configfile_path + ' are:'
+		title_text = 'LoudnessCorrection version: ' + version + '\n\nffmpeg_executable_found = ' + str(ffmpeg_executable_found) + '\n\n\n\nLocal variable values after reading the configfile: ' + configfile_path + ' are:'
 		values_read_from_configfile.append(str((len(title_text) + 1) * '-'))
 		values_read_from_configfile.append(title_text)
 		values_read_from_configfile.append('')
@@ -2683,7 +2685,7 @@ def debug_lists_and_dictionaries_thread():
 				
 				# If it has been 24 hours since starting to write to the file, then start writing to a new file.
 				if int(time.time()) >= time_to_start_writing_to_a_new_file:
-					time_to_start_writing_to_a_new_file = int(time.time() + 86400) # Write debug info to a new file every 24 hours (starting from LoudnessCorrection startup time).
+					time_to_start_writing_to_a_new_file = int(time.time() + file_name_expiry_time) # Write debug info to a file only a preset time and then change the file name. (Default time 24 hours).
 					real_time_string = get_realtime(english, finnish)[1]
 					debug_messages_file = 'debug-variables_lists_and_dictionaries-' + real_time_string + '.txt'
 					first_write_to_a_new_logfile = True
