@@ -1,15 +1,19 @@
 #####################################
 # Released FreeLCS 2.3 with:        #
 # ----------------------------      #
-# - LoudnessCorrection version 228  #
+# - LoudnessCorrection version 229  #
 # - HeartBeat_Checker version 020   #
 # - Installer version 059           #
 # - Latest Documentation            #
 #####################################
 
+LoudnessCorrection Version 229
+------------------------------
+- Bugfix: Two threads 'write_to_heartbeat_file_thread' and 'debug_manage_file_processing_information_thread' writes information gathered in a dictionary to disk in pickle format. Other threads update information in these dictionaries and if the update happend at the same time when these dictionaries were written to disk then the disk writing thread crashed. The timing for this to happen had to be very precise.
+
 Documentation
 -------------
-- Corrected links in 'FreeLCS_old_News.html' from absolute to relative :)
+- Corrected links in 'FreeLCS_Old_News.html' from absolute to relative :)
 
 Documentation
 -------------

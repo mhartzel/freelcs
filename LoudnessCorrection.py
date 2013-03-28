@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-version = '228'
+version = '229'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -2516,6 +2516,7 @@ def write_to_heartbeat_file_thread():
 					heartbeat_commandfile_handler.flush() # Flushes written data to os cache
 					os.fsync(heartbeat_commandfile_handler.fileno()) # Flushes os cache to disk
 					shutil.move(web_page_path + os.sep + '.temporary_files' + os.sep + heartbeat_file_name, web_page_path + os.sep + heartbeat_file_name)
+
 			except KeyboardInterrupt:
 				if silent == False:
 					print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
@@ -2526,6 +2527,10 @@ def write_to_heartbeat_file_thread():
 			except OSError as reason_for_error:
 				error_message = 'Error opening HeartBeat commandfile for writing ' * english + 'HeartBeat - tiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
 				send_error_messages_to_screen_logfile_email(error_message, [])
+			except RuntimeError:
+				# If the 'loudness_correction_program_info_and_timestamps' dictionary is changed by another thread in the middle of this thread writing it to disk, then a RuntimeError is raised and the save fails.
+				# If save fails ignore it and try again after the wait period.
+				pass
 
 	except Exception:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -3749,7 +3754,8 @@ def debug_manage_file_processing_information_thread():
 		global english
 		global finnish
 
-		debug_information_save_interval = 10 * 60 # How often do we save debug information to disk. Default 10 minutes.
+		default_sleep_time_until_next_file_save = 10 * 60 # How often do we save debug information to disk. Default time is 10 minutes (10 * 60 seconds).
+		sleep_time_until_next_file_save = default_sleep_time_until_next_file_save
 		real_time_string = get_realtime(english, finnish)[1]
 		filename_for_processing_debug_info = 'debug-file_processing_info-' + real_time_string + '.pickle'
 		filename_change_interval = 24 * 60 * 60 # Periodically change filename where to save to. Default 24 hours starting from LoudnessCorrection startup.
@@ -3781,6 +3787,9 @@ def debug_manage_file_processing_information_thread():
 							filehandler.flush() # Flushes written data to os cache
 							os.fsync(filehandler.fileno()) # Flushes os cache to disk
 
+						# If file save succeeds wait the default time period before saving again.
+						sleep_time_until_next_file_save = default_sleep_time_until_next_file_save
+
 					except KeyboardInterrupt:
 						print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
 						sys.exit(0)
@@ -3790,6 +3799,10 @@ def debug_manage_file_processing_information_thread():
 					except OSError as reason_for_error:
 						error_message = 'Error opening debug file processing pickle - file  for writing ' * english + 'Tiedostoprosessoinnin debug - tiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
 						send_error_messages_to_screen_logfile_email(error_message, [])
+					except RuntimeError:
+						# If the debug dictionary is changed by another thread in the middle of this thread writing it to disk, then a RuntimeError is raised and the save fails.
+						# If save fails then try again in 10 seconds.
+						sleep_time_until_next_file_save = 10
 				
 				# Check if we have saved too long to the same file and need to change the filename.
 				if int(time.time()) >= int(filename_last_change_time + filename_change_interval):
@@ -3798,13 +3811,13 @@ def debug_manage_file_processing_information_thread():
 					filename_for_processing_debug_info = 'debug-file_processing_info-' + real_time_string + '.pickle'
 					filename_last_change_time = int(time.time())
 					
-					# We have changed the filename, delete all debug data that is older than file save interval + 1 minute and delete it.
+					# We have changed the filename, delete all debug data that is older than file save interval + 1 minute.
 					# This takes care that each file saved don't have too much duplicate data in them.
 					list_of_dictionary_keys = list(debug_complete_final_information_for_all_file_processing_dict)
 					
 					for filename in list_of_dictionary_keys:
 						info_timestamp = debug_complete_final_information_for_all_file_processing_dict[filename][1]
-						if int(time.time()) >= int(info_timestamp + debug_information_save_interval + 60):
+						if int(time.time()) >= int(info_timestamp + default_sleep_time_until_next_file_save + 60):
 							del debug_complete_final_information_for_all_file_processing_dict[filename]
 
 			# Wait a couple of minutes before processing data again.
@@ -3814,7 +3827,7 @@ def debug_manage_file_processing_information_thread():
 			counter = 0
 			sleep_time = 10
 
-			while counter < debug_information_save_interval:
+			while counter < sleep_time_until_next_file_save:
 				time.sleep(sleep_time)
 
 				if debug_file_processing != old_value_of_debug_file_processing:
