@@ -9,6 +9,10 @@
 
 Documentation
 -------------
+- Corrected some links that the html - editor on it's own decided to change from relative to absolute :)
+
+Documentation
+-------------
 - Added release information for FreeLCS 2.3.
 
 LoudnessCorrection Version 228
