@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="en">
+  <head>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type">
+    <title>FreeLCS-Old_News</title>
+  </head>
+  <body>
+    <h2><strong>Old news:</strong> </h2>
+    <strong>2012.10.11</strong> FreeLCS 2.1 released.
+    <ul>
+      <li>This release fixes a bug: bit depth was not preserved if input file
+        had many audio streams with uncompressed audio in it.</li>
+    </ul>
+    <strong>2012.10.01:</strong> FreeLCS 2.0 released :)
+    <ul>
+      <li>This is an important bug fix release and everybody should upgrade.</li>
+      <li>Fixes a large number of bugs and undesired behaviors in FreeLCS and
+        includes several enhancements.<br>
+      </li>
+      <li>Fixes a couple of problems in helper programs libebur128 and sox. The
+        sox version 14.3.2 that comes with Ubuntu 12.04 is not able to handle
+        bigger than 4 GB files correctly. FreeLCS installer now downloads sox
+        source code and compiles and installs version 14.4.0 that fixes the
+        problem.</li>
+      <li>Supported channel orders are now defined (<a href="file:///home/mika/freelcs/Documentation/FreeLCS_FAQ.html#What%20channel%20orders%20are%20supported%20?">see
+          FAQ</a>).<br>
+      </li>
+      <li>Libebur128 is patched to support channel orders: 4.0 (L, R, LS, RS)
+        and 5.0 (L, R, C, LFE, LS, RS). These were previously not supported.</li>
+      <li>Libebur128 developer fixed a bug that caused loudness calculation to
+        hang when processing lots of very short files.<br>
+      </li>
+      <li>Behaviour for files bigger than 4 GB is now defined (<a href="file:///home/mika/freelcs/Documentation/FreeLCS_FAQ.html#What%20happens%20if%20output%20file%20size%20exceeds%20wav%20format%204%20GB%20size%20limit%20?">see
+          FAQ</a>).</li>
+      <li>Complete log of all changes is in the <a href="file:///home/mika/freelcs/Documentation/Changelog.txt">changelog</a>.<a
+          href="file:///home/mika/freelcs/Documentation/Changelog.txt"></a></li>
+    </ul>
+    <strong>2012.07.16:</strong> Bugfix release 1.01. Also added the possibility
+    to select between sample peak and TruePeak measurement in the installer.<strong><br>
+      2012.07.08:</strong> First public release of FreeLCS 1.00.
+    <p></p>
+  </body>
+</html>

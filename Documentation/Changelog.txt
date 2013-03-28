@@ -1,6 +1,19 @@
+#####################################
+# Released FreeLCS 2.3 with:        #
+# ----------------------------      #
+# - LoudnessCorrection version 228  #
+# - HeartBeat_Checker version 020   #
+# - Installer version 059           #
+# - Latest Documentation            #
+#####################################
+
+Documentation
+-------------
+- Added release information for FreeLCS 2.3.
+
 LoudnessCorrection Version 228
 ------------------------------
-- Bugfix: Debug mode: The variables read from configfile were not still written at the beginning of 'debug-variables_lists_and_dictionaries'.
+- Bugfix: Debug mode: The variables read from configfile were not still written at the beginning of logfile 'debug-variables_lists_and_dictionaries'.
 
 LoudnessCorrection Version 227
 ------------------------------
