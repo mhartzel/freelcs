@@ -9,6 +9,10 @@
 
 Documentation
 -------------
+- Corrected links in 'FreeLCS_old_News.html' from absolute to relative :)
+
+Documentation
+-------------
 - Corrected some links that the html - editor on it's own decided to change from relative to absolute :)
 
 Documentation
