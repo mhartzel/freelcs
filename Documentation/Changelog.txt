@@ -1,3 +1,7 @@
+LoudnessCorrection Version 230
+------------------------------
+- Started work on experimental support for remixing audio in mxf to required mixes before loudness processing. Warning !!!!!!! Lots of untested code here :)
+
 #####################################
 # Released FreeLCS 2.3 with:        #
 # ----------------------------      #

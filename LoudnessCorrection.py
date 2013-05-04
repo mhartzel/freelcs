@@ -14,7 +14,7 @@
 #
 # This program calculates loudness according to EBU R128 standard for each file it finds in the HotFolder.
 #
-# System requirements, Linux (preferably Ubuntu), gnuplot, python3, ffmpeg, sox v14.3.2 or later.
+# System requirements, Linux (preferably Ubuntu), gnuplot, python3, ffmpeg, sox v14.4.0 or later.
 #
 
 '''This program polls the HotFolder for new files and calculates loudness from each file using libebur128'''
@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-version = '229'
+version = '230'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -277,6 +277,20 @@ wav_format_maximum_file_size = 4294967296 # Define wav max file size. Theoretica
 # This variable is used when some of our python code caused a crash. The variable (when True) causes all error messages waiting to be sent by email to be sent immediately.
 critical_python_error_has_happened = False
 list_of_critical_python_errors = []
+
+# Define the default channel map for remixing audio files found inside a mx - file.
+# A map of [2, 6, 2, 2] means: if audio files with enough audio channels are found, then remix files to create the following mixes: stereo, 5.1, stereo, stereo.
+# Files left over after creating the remixes are discarded.
+# If mxf - channel map has been defined, then first remixes are created and after that the remixes are loudness corrected,
+# This global mxf remix map can be overwritten by a file specific remix map. If there is a text file with the same name as the source file but ending with '.remix_map', the the info inside this file is used for remixing just that specific mxf file.
+global_mxf_audio_remix_channel_map = []
+mxf_audio_remixing = False # This defines if we wan't to remix audio found inside and mxf - file or not.
+
+# If FFmpeg is installed, then define what ffmpeg formats are allowed to be processed.
+# This helps to limit processing to patent free formats (mxf, mkv, ogg)
+# The values can be either ['mxf', 'mkv', 'ogg']  or  ['all']. The last one means allow all ffmpeg supported format to be processed.
+ffmpeg_allowed_formats = ['mxf', 'mkv', 'ogg']
+
 
 ###############################################################################################################################################################################
 # Default value definitions end here :)                                                                                                                                       #
@@ -2057,6 +2071,7 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 		global debug_temporary_dict_for_all_file_processing_information
 		debug_information_list = []
 		error_message = ''
+		#filename_and_extension = os.path.splitext(filename)
 		
 		# Save some debug information. Items are always saved in pairs (Title, value) so that the list is easy to parse later.
 		if filename in debug_temporary_dict_for_all_file_processing_information:
@@ -2069,7 +2084,7 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 		debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 		
 		# In list 'file_format_support_information' we already have all the information FFmpeg was able to find about the valid audio streams in the file, assign all info to variables.
-		natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames = file_format_support_information
+		natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames, mxf_audio_remixing, filenames_and_channel_counts_for_mxf_audio_remixing, audio_remix_channel_map = file_format_support_information
 		
 		try:
 			# Define filename for the temporary file that we are going to use as stdout for the external command.
@@ -2127,6 +2142,35 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 		except OSError as reason_for_error:
 			error_message = 'Error deleting ffmpeg (audio stream demux) stdout - file ' * english + 'FFmpeg (audio streamien demux) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
 			send_error_messages_to_screen_logfile_email(error_message, [])
+
+		# If the audio streams we extracted came from a mxf - file and need to be remixed before processing, then call the remixing subroutine.
+
+		# Save some debug information.
+		debug_information_list.append('Message')
+		debug_information_list.append('Calling subroutine: remix_files_according_to_channel_map')
+		
+		if (mxf_audio_remixing == True) and (len(filenames_and_channel_counts_for_mxf_audio_remixing) > 0) and (len(audio_remix_channel_map) > 0):
+			list_of_files_to_move_to_loudness_processing = remix_files_according_to_channel_map(directory_for_temporary_files, hotfolder_path, filename, filenames_and_channel_counts_for_mxf_audio_remixing, audio_remix_channel_map, english, finnish)
+
+			# Save some debug information.
+			debug_information_list.append('Message')
+			debug_information_list.append('Returned from subroutine: remix_files_according_to_channel_map')
+
+			# Delete all source files that are now remixed to new files, since the original files are not needed any more.
+			try:
+				for item in target_filenames:
+
+					if os.path.exists(directory_for_temporary_files + os.sep + item):
+						os.remove(directory_for_temporary_files + os.sep + item)
+
+			except IOError as reason_for_error:
+				error_message = 'Error deleting file from temporary directory  ' * english + 'Tiedoston poistaminen väliaikaisten tiedostojen hakemistosta epäonnistui ' * finnish + str(reason_for_error)
+				send_error_messages_to_screen_logfile_email(error_message, [])
+			except OSError as reason_for_error:
+				error_message = 'Error deleting file from temporary directory  ' * english + 'Tiedoston poistaminen väliaikaisten tiedostojen hakemistosta epäonnistui ' * finnish + str(reason_for_error)
+				send_error_messages_to_screen_logfile_email(error_message, [])
+
+			target_filenames = list_of_files_to_move_to_loudness_processing
 
 		# Move each audio file we created from temporary directory to results directory.
 		for item in target_filenames:
@@ -2807,7 +2851,7 @@ def get_ip_addresses_of_the_host_machine():
 	return(all_ip_addresses_of_the_machine)
 	
 		
-def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(filename, hotfolder_path, directory_for_temporary_files, ffmpeg_output_format, english, finnish):
+def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(filename, hotfolder_path, directory_for_temporary_files, ffmpeg_output_format, english, finnish, mxf_audio_remixing):
 	
 	# This subprocess works like this:
 	# ---------------------------------
@@ -2849,6 +2893,8 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		global wav_format_maximum_file_size
 		file_type = ''
 		list_of_error_messages_for_unsupported_streams = []
+		filenames_and_channel_counts_for_mxf_audio_remixing = []
+		audio_remix_channel_map = []
 		
 		# Save some debug information. Items are always saved in pairs (Title, value) so that the list is easy to parse later.
 		global debug_temporary_dict_for_all_file_processing_information
@@ -2926,6 +2972,12 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		
 		for item in ffmpeg_run_output_result_list:
 			
+			skip_this_audio_stream = False
+
+			if 'Input #0' in item:
+				# Get the type of the file.
+				file_type = str(item).split('from')[0].split(',')[1].strip()
+
 			if 'Audio:' in item: # There is the string 'Audio' for each audio stream that ffmpeg finds. Count how many 'Audio' strings is found and put the strings in a list. The string holds detailed information about the stream and we print it later.
 				
 				number_of_audio_channels = '0'
@@ -2975,9 +3027,16 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 					debug_information_list.append(error_message)
 					send_error_messages_to_screen_logfile_email(error_message, [])
 				
-				# Channel counts bigger than 6 are not supported, get the stream name and error message to a list and skip the stream.
+				# Channel counts bigger than 6 channels are only supported for mxf - files and only if mxf audio remixing is enabled.
+				# For all other filetypes with channel counts more than 6, store the stream name and error message to a list and skip the stream.
 				if int(number_of_audio_channels) > 6:
-					
+					if file_type != 'mxf':
+						skip_this_audio_stream = True
+
+					if (file_type == 'mxf') and (mxf_audio_remixing == False):
+						skip_this_audio_stream = True
+				
+				if skip_this_audio_stream == True:
 					unsupported_stream_name = filename_and_extension[0] + '-AudioStream-' * english + '-Miksaus-' * finnish + str(audio_stream_number) + '-ChannelCount-' * english + '-AaniKanavia-' * finnish  + number_of_audio_channels
 					error_message = 'There are ' * english + 'Miksauksessa ' * finnish  + str(audio_stream_number) * finnish + ' on ' * finnish + str(number_of_audio_channels) + ' channels in stream ' * english + str(audio_stream_number) * english + ', only channel counts from one to six are supported' * english + ' äänikanavaa, vain kanavamäärät yhdestä kuuteen ovat tuettuja' * finnish
 					list_of_error_messages_for_unsupported_streams.append([unsupported_stream_name, error_message])			
@@ -3109,9 +3168,6 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 					debug_information_list.append('error_message')
 					debug_information_list.append(error_message)
 					send_error_messages_to_screen_logfile_email(error_message, [])
-			if 'Input #0' in item:
-				# Get the type of the file, if it is 'mpegts' then we later need to do some tricks to get the correct duration from the file.
-				file_type = str(item).split('from')[0].split(',')[1].strip()
 			if filename + ':' in item: # Try to recognize some ffmpeg error messages, these always start with the filename + ':'
 				ffmpeg_error_message = 'FFmpeg Error: ' * english + 'FFmpeg Virhe: ' * finnish + item.split(':')[1] # Get the reason for error from ffmpeg output.
 				
@@ -3123,6 +3179,20 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				audio_duration = audio_duration_according_to_mediainfo
 				audio_duration_rounded_to_seconds = int(audio_duration_according_to_mediainfo)
 		
+		# File is a mxf - file. Check if user has written a text file on disk holding a file specific audio remix channel map.
+		if file_type == 'mxf':
+
+			# Save some debug information.
+			debug_information_list.append('Message')
+			debug_information_list.append('Calling subroutine: read_audio_remix_map_file')
+
+			audio_remix_channel_map = read_audio_remix_map_file(hotfolder_path, filename, english, finnish)
+
+			# Save some debug information.
+			debug_information_list.append('Message')
+			debug_information_list.append('Returned from subroutine: read_audio_remix_map_file')
+
+
 		###################################################################################################
 		# Generate the commandline that will later be used to extract all valid audio streams with FFmpeg #
 		###################################################################################################
@@ -3150,8 +3220,19 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			if len(ffmpeg_commandline) == 0:
 				ffmpeg_commandline = ['ffmpeg', '-y', '-i', file_to_process, '-vn']
 			
-			# Compile the name of the audiostream to an list of all audio stream filenames.
-			target_filenames.append(filename_and_extension[0] + '-AudioStream-' * english + '-Miksaus-' * finnish + audio_stream_number + '-ChannelCount-' * english + '-AaniKanavia-' * finnish  + number_of_audio_channels + '.' + ffmpeg_output_format)
+			# Compile the name of output files to an list.
+			# If we are going to remix audio from a mxf - file before processing it, then the output files are temporary and needs to have names that don't conflict with the final names.
+			# Also if mxf - audio needs to be remixed, then gather file names and channel counts to a list that is needed for doing the remixes.
+			if (file_type == 'mxf') and (mxf_audio_remixing == True):
+				# Define names for temporary output files demuxed from a mxf - file.
+				target_filenames.append(filename_and_extension[0] + '-TempOutputFile-' + audio_stream_number + '.' + ffmpeg_output_format)
+
+				# Gather output filenames and channel counts to a list, that is later used to remix mxf audio files to mixes defined in list 'mxf_audio_remix_channel_map'.
+				filenames_and_channel_counts_for_mxf_audio_remixing.append([filename_and_extension[0] + '-TempOutputFile-' + audio_stream_number + '.' + ffmpeg_output_format, number_of_audio_channels])
+
+			else:
+				# File is not mxf, define names for the final output files.
+				target_filenames.append(filename_and_extension[0] + '-AudioStream-' * english + '-Miksaus-' * finnish + audio_stream_number + '-ChannelCount-' * english + '-AaniKanavia-' * finnish + number_of_audio_channels + '.' + ffmpeg_output_format)
 
 			# Save some debug information.
 			debug_information_list.append('Stream Filename')
@@ -3182,6 +3263,12 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			debug_information_list.append(output_audiostream_format)
 			debug_information_list.append('ffmpeg_output_format')
 			debug_information_list.append(ffmpeg_output_format)
+			debug_information_list.append('mxf_audio_remixing')
+			debug_information_list.append(mxf_audio_remixing)
+			debug_information_list.append('filenames_and_channel_counts_for_mxf_audio_remixing')
+			debug_information_list.append(filenames_and_channel_counts_for_mxf_audio_remixing)
+			debug_information_list.append('audio_remix_channel_map')
+			debug_information_list.append(audio_remix_channel_map)
 			debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 
 			# Generate FFmpeg extract options for audio stream.
@@ -3269,7 +3356,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			# Bit depth is bigger than 32 bits the file must be converted before processing because sox only support up to 32 bits.
 			natively_supported_file_format = False
 		
-		file_format_support_information = [natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames]	
+		file_format_support_information = [natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames, mxf_audio_remixing, filenames_and_channel_counts_for_mxf_audio_remixing, audio_remix_channel_map]
 		
 		# Save some debug information.
 		debug_information_list.append('Support information for main file')
@@ -3985,6 +4072,241 @@ def catch_python_interpreter_errors(error_message_as_a_list, subroutine_name):
 		list_of_critical_python_errors.append(error_message)
 		send_error_messages_to_screen_logfile_email(error_message, [])
 
+def read_audio_remix_map_file(hotfolder_path, audio_file_name, english, finnish):
+
+	'''This subroutine checks if there is file specific text file on disk holding a audio remix channel map for the file. If a file specific remix map is found then it is retyrned, otherwise the global remix channel map is returned'''
+	try:
+
+		remix_mapfile_name = hotfolder_path + os.sep + os.path.splitext(audio_file_name)[0] + '.remix_map'
+		text_lines_list = []
+		global global_mxf_audio_remix_channel_map
+		audio_remix_channel_map = global_mxf_audio_remix_channel_map
+
+		 # Read logfile from disk and append its contents to the list after the lines we just generated. This is done to get the latest info always on top of the logfile, not in the end.
+		if (os.path.exists(remix_mapfile_name)):
+			try:
+				with open(remix_mapfile_name, 'rt') as remix_mapfile_handler: # Open logfile, the 'with' method closes files when execution exits the with - block
+					remix_mapfile_handler.seek(0) # Make sure that the 'read' - pointer is in the beginning of the source file
+					text_lines_list.extend(remix_mapfile_handler.readlines())                                                                                                             
+
+			except IOError as reason_for_error:
+				error_message = 'A mxf - file remix channel map file was found, but it can not be read: ' * english + 'Mxf - tiedoston uudelleenmiksauksen ohjetiedosto löytyi, mutta sitä ei voi lukea: ' * finnish + str(reason_for_error)
+				send_error_messages_to_screen_logfile_email(error_message, [])
+			except OSError as reason_for_error:
+				error_message = 'A mxf - file remix channel map file was found, but it can not be read: ' * english + 'Mxf - tiedoston uudelleenmiksauksen ohjetiedosto löytyi, mutta sitä ei voi lukea: ' * finnish + str(reason_for_error)
+				send_error_messages_to_screen_logfile_email(error_message, [])
+
+			# Find comma separated numbers in text file.
+			for item in text_lines_list:
+
+				# Strip line ending and tab - characters.
+				item = item.strip('\n')
+				item = item.strip('\t')
+
+				# If the first charecter on the text line is '#' (a comment line), or the line is empty, then skip the line.
+				if item.strip() == '':
+					continue
+				if item.strip()[0] == '#':
+					continue
+				temporary_remix_map_list =  item.split(',')
+
+				# Convert numbers in string format to integer.
+				for number_in_str_format in temporary_remix_map_list:
+
+					if (number_in_str_format.isnumeric() == True) and (int(number_in_str_format) >0):
+						number = int(number_in_str_format)
+						audio_remix_channel_map.append(number)
+
+				# If some numbers were already found, then stop processing the input text file.
+				if len(audio_remix_channel_map) > 0:
+					break
+	except Exception:
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
+                subroutine_name = 'read_audio_remix_map_file'
+                catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
+
+	return(audio_remix_channel_map)
+
+def remix_files_according_to_channel_map(directory_for_temporary_files, hotfolder_path, original_input_file_name, filenames_and_channel_counts_for_mxf_audio_remixing, audio_remix_channel_map, english, finnish):
+
+	try:
+		list_of_files_to_move_to_loudness_processing = []
+		list_of_sox_commandlines = []
+		list_of_files_that_match_exactly_a_channel_map = []
+
+		# Call a subroutine that parses remix channel maps and creates sox commands needed to create those new mixes.
+		list_of_sox_commandlines, list_of_files_that_match_exactly_a_channel_map, list_of_files_to_move_to_loudness_processing  = create_sox_commands_to_remix_audio(original_input_file_name, filenames_and_channel_counts_for_mxf_audio_remixing, audio_remix_channel_map, english, finnish)
+
+		if len(list_of_files_that_match_exactly_a_channel_map) > 0:
+
+			# if there are some source files that don't need to be combined for other files, but can be used directly, then rename them with the final output names.
+			for item in list_of_files_that_match_exactly_a_channel_map:
+
+				source_file_name = item[0]
+				target_file_name = item[1]
+
+				try:
+					shutil.move(directory_for_temporary_files + os.sep + source_file_name, directory_for_temporary_files + os.sep + target_file_name)
+
+				except IOError as reason_for_error:
+					error_message = 'Error renaming a file in temp directory ' * english + 'Väliaikaisten tiedostojen hakemistossa olevan tiedoston uudelleen nimeäminen epäonnistui ' * finnish + str(reason_for_error)
+					send_error_messages_to_screen_logfile_email(error_message, [])
+				except OSError as reason_for_error:
+					error_message = 'Error renaming a file in temp directory ' * english + 'Väliaikaisten tiedostojen hakemistossa olevan tiedoston uudelleen nimeäminen epäonnistui ' * finnish + str(reason_for_error)
+					send_error_messages_to_screen_logfile_email(error_message, [])
+
+				# Filenames that were not remixed with other files, but were used as they is needs to be added to the list of files that needs to be moved back to hotfolder for loudness processing.
+				for item in list_of_files_that_match_exactly_a_channel_map:
+					list_of_files_to_move_to_loudness_processing.append(item[1])
+
+		# Run sox commands to create the mixes defined in channel maps.
+		if len(list_of_sox_commandlines) > 0:
+			run_sox_commands_in_parallel_threads(directory_for_temporary_files, hotfolder_path, original_input_file_name, list_of_sox_commandlines, english, finnish)
+
+	except Exception:
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
+                subroutine_name = 'remix_files_according_to_channel_map'
+                catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
+
+	return(list_of_files_to_move_to_loudness_processing)
+
+def create_sox_commands_to_remix_audio(original_input_file_name, filenames_and_channel_counts_for_mxf_audio_remixing, audio_remix_channel_map, english, finnish):
+
+	try:
+		available_source_channels_list = []
+		sox_file_combination_command_base = ['sox', '-M']
+		current_sox_command = []
+		list_of_sox_commandlines = []
+		list_of_filenames_to_combine = []
+		list_of_channels_to_extract = []
+		list_of_files_that_match_exactly_a_channel_map = [] # A list of files that need not be combined with other files, but can be processed as it is.
+		dont_create_sox_commands_for_this_mix = False
+		source_file_name = ''
+		filename_and_extension = os.path.splitext(original_input_file_name)
+		output_filename = ''
+		target_filenames = []
+		remix_number = 0
+		flac_compression_level = ['-C', '1']
+
+		# Save some debug information. Items are always saved in pairs (Title, value) so that the list is easy to parse later.
+		global debug_temporary_dict_for_all_file_processing_information
+		debug_information_list = []
+		unix_time_in_ticks, realtime = get_realtime(english, finnish)
+		debug_information_list.append('Start Time')
+		debug_information_list.append(unix_time_in_ticks)
+		debug_information_list.append('Subprocess Name')
+		debug_information_list.append('create_sox_commands_to_remix_audio')
+		debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
+
+		# Create a list with all source audiofile channels layed out as a flat list. Add also number of channels in file and source channel number to each source_file_name.
+		for item in filenames_and_channel_counts_for_mxf_audio_remixing:
+
+			# Skip invalid items if found.
+			if item == []:
+				continue
+
+			source_file_name = item[0]
+			number_of_channels_in_file = item[1]
+
+			# Skip invalid items if found.
+			if (source_file_name == '') or (int(number_of_channels_in_file) <1):
+				continue
+
+			for source_channel_number in range(0, number_of_channels_in_file):
+				available_source_channels_list.append([source_file_name, number_of_channels_in_file, source_channel_number + 1])
+
+		# Create sox commands to combine audiofiles and channels that fulfill the mixes defined in channel maps.
+		# The sox commands simultaneously combine needed source files and extract the channels needed from them to create a mixes defined in channel maps.
+		if len(available_source_channels_list) > 0:
+
+			for number_of_channels_in_a_map_item in audio_remix_channel_map: # Get a channel map. This is a number that tells how many channels there are in the mix.
+
+				list_of_filenames_to_combine = []
+				list_of_channels_to_extract = []
+				current_sox_command = []
+				channel_counter = 0
+				dont_create_sox_commands_for_this_mix = False
+				current_sox_command.extend(sox_file_combination_command_base)
+				remix_number = remix_number + 1
+
+				# Pop out items in the flat audiofile channel list and gather needed filenames and channel numbers to create a sox command needed to create the mix defined in a channel map.
+				for channel in range(0, number_of_channels_in_a_map_item):
+
+					if len(available_source_channels_list) < 1:
+						break
+
+					source_file_name, channel_count, channel_number = available_source_channels_list.pop(0)
+
+					# Use the first channel number we get from the flat audiofile channel list as the basis for sox channel extraction command channel number and count channels up from there.
+					# This ensures that channels in a file possibly used creating the previous mix in channel map are not used again in creating the next mix in the channel map.
+					if channel_counter == 0:
+						channel_counter = channel_number
+
+						# If the file channel count is equal to the number of channel needed to create a mix, then we don't need to remix the file, it can be processed as it is.
+						if (channel_number == 1) and (channel_count == number_of_channels_in_a_map_item):
+
+							# Create a name for the ouput file.
+							output_filename  = filename_and_extension[0] + '-AudioStream-' * english + '-Miksaus-' * finnish + remix_number + '-ChannelCount-' * english + '-AaniKanavia-' * finnish + number_of_channels_in_a_map_item + '.' + os.path.splitext(source_file_name)[1]
+							list_of_files_that_match_exactly_a_channel_map.append([source_file_name, output_filename])
+
+							dont_create_sox_commands_for_this_mix = True
+
+				
+					# Gather all file names needed in creating a mix to a list.
+					if source_file_name not in list_of_filenames_to_combine:
+						list_of_filenames_to_combine.append(source_file_name)
+
+					# Gather all channel numbers needed in creating a mix to list.
+					list_of_channels_to_extract.append(channel_counter)
+					channel_counter = channel_counter + 1
+
+				# If all input files were not found then this mix can't be created, skip item.
+				if len(list_of_channels_to_extract) != number_of_channels_in_a_map_item:
+					dont_create_sox_commands_for_this_mix = True
+
+				# Create sox commands to combine files and extract channels from the combined file to fullfill the mixes defined in audio_remix_channel_map.
+				# Outputfile is always in flac - format.
+				if dont_create_sox_commands_for_this_mix == False:
+					# Create a name for the output file.
+					output_filename  = filename_and_extension[0] + '-AudioStream-' * english + '-Miksaus-' * finnish + remix_number + '-ChannelCount-' * english + '-AaniKanavia-' * finnish + number_of_channels_in_a_map_item + '.flac'
+
+					# Add output filenames to a list so that they can later easily be moved from temporary directory to the target directory.
+					target_filenames.append(output_filename)
+
+					# Create sox command to remix this channel map item.
+					current_sox_command.extend(list_of_filenames_to_combine)
+					current_sox_command.extend(flac_compression_level)
+					current_sox_command.append(output_filename)
+					current_sox_command.append('remix')
+					current_sox_command.extend(list_of_channels_to_extract)
+
+					# Gather all sox commands to a list.
+					list_of_sox_commandlines.append(current_sox_command)
+
+				# Stop if all available audio channels in source files have been assigned to ouput files based on channel_maps.
+				if len(available_source_channels_list) < 1:
+					break
+		
+		debug_information_list.append('list_of_sox_commandlines')
+		debug_information_list.append(list_of_sox_commandlines)
+		debug_information_list.append('list_of_files_that_match_exactly_a_channel_map')
+		debug_information_list.append(list_of_files_that_match_exactly_a_channel_map)
+		unix_time_in_ticks, realtime = get_realtime(english, finnish)
+		debug_information_list.append('Stop Time')
+		debug_information_list.append(unix_time_in_ticks)
+		debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
+
+	except Exception:
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
+                subroutine_name = 'create_sox_commands_to_remix_audio'
+                catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
+
+	return(list_of_sox_commandlines, list_of_files_that_match_exactly_a_channel_map, target_filenames)
+
+
 
 ##############################################################################################
 #                                The main program starts here:)                              #
@@ -4248,6 +4570,13 @@ try:
 			send_error_messages_to_screen_logfile_email(error_message, [])
 			sys.exit(1)
 
+	# Mxf audio remixing can only be used if FFmpeg is installed.
+	if (ffmpeg_executable_found == False) and (mxf_audio_remixing == True):
+		mxf_audio_remixing = False
+		# The user wanted mxf audio remixing, but FFmpeg is not installed, so mxf - files can not be processed. Inform the user about this problem.
+		error_message = 'Error: Mxf audio remixing is turned on but FFmpeg is not installed. Cannot process mxf - files.' * english + 'Virhe: Mxf tiedostojen audiokanavien remixaus on päällä, mutta FFmpeg:iä ei ole asennettu. Mxf - tiedostoja ei voida käsitellä.' * finnish
+		send_error_messages_to_screen_logfile_email(error_message, [])
+
 	# Define the name of the error logfile.
 	error_logfile_path = directory_for_error_logs + os.sep + 'error_log-' + str(get_realtime(english, finnish)[1]) + '.txt' # Error log filename is 'error_log' + current date + time
 
@@ -4394,7 +4723,7 @@ try:
 						# The file has just appeared to the HotFolder and it has not been analyzed yet.
 						# However some dummy data for the file needs to be filled, so we create that data here.
 						# This dummy data is replaced with real data when the file stops growing and gets analyzed.
-						dummy_information = [False, False, 0, [], '3', 0, [], []] # This dummy information will be replaced by info from FFmpeg later.
+						dummy_information = [False, False, 0, [], '3', 0, [], [], False, [], []] # This dummy information will be replaced by info from FFmpeg later.
 						file_information_to_save.append(dummy_information)
 
 						# Append time the file size or timestamp was last updated.
@@ -4408,21 +4737,24 @@ try:
 					# 0 = file size
 					# 1 = time file was first seen in HotFolder
 					# 2 = file modification time
-					# 3 = [False, False, 0, [], '3', 0, [], []] # This is dummy information that will later be replaced by data from FFmpeg. See comment below for item identification.
+					# 3 = [False, False, 0, [], '3', 0, [], [], False, [], []] # This is dummy information that will later be replaced by data from FFmpeg. See comment below for item identification.
 					# 4 = Time the file size or timestamp was last updated. At this point this is the same as the time the file was first seen in HotFolder.
 					#
 					# The item 3 above is a list of dummy information that later will be replaced by real file information reported by FFmpeg.
 					# The data that FFmpeg fills later in this list is (with item numbers):
 					# ---------------------------------------------------------------------------------------------------------------
 					#
-					# 0 = natively_supported_file_format
-					# 1 = ffmpeg_supported_fileformat
-					# 2 = number_of_ffmpeg_supported_audiostreams
-					# 3 = details_of_ffmpeg_supported_audiostreams
-					# 4 = time_slice_duration_string
-					# 5 = audio_duration_rounded_to_seconds
-					# 6 = ffmpeg_commandline
-					# 7 = target_filenames
+					# 00 = natively_supported_file_format
+					# 01 = ffmpeg_supported_fileformat
+					# 02 = number_of_ffmpeg_supported_audiostreams
+					# 03 = details_of_ffmpeg_supported_audiostreams
+					# 04 = time_slice_duration_string
+					# 05 = audio_duration_rounded_to_seconds
+					# 06 = ffmpeg_commandline
+					# 07 = target_filenames
+					# 08 = mxf_audio_remixing
+					# 09 = filenames_and_channel_counts_for_mxf_audio_remixing
+					# 10 = audio_remix_channel_map
 					#
 					new_hotfolder_filelist_dict[filename] = file_information_to_save
 
@@ -4598,9 +4930,9 @@ try:
 							if ffmpeg_executable_found == True:
 								
 								# Call a subroutine to inspect file with FFmpeg to get audio stream information.
-								ffmpeg_parsed_audio_stream_information, ffmpeg_error_message, send_ffmpeg_error_message_by_email = get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(filename, hotfolder_path, directory_for_temporary_files, ffmpeg_output_format, english, finnish)
+								ffmpeg_parsed_audio_stream_information, ffmpeg_error_message, send_ffmpeg_error_message_by_email = get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(filename, hotfolder_path, directory_for_temporary_files, ffmpeg_output_format, english, finnish, mxf_audio_remixing)
 								# Assign audio stream information to variables.
-								natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames = ffmpeg_parsed_audio_stream_information
+								natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames, mxf_audio_remixing, filenames_and_channel_counts_for_mxf_audio_remixing, audio_remix_channel_map = ffmpeg_parsed_audio_stream_information
 							else:
 								# FFmpeg is not installed, test input file with mediainfo
 								audiostream_count, channel_count, bit_depth, sample_format, audio_duration_rounded_to_seconds, natively_supported_file_format, mediainfo_error_message = get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish, save_debug_information = True)
@@ -4619,6 +4951,8 @@ try:
 								target_filenames = []
 								details_of_ffmpeg_supported_audiostreams = []
 								send_ffmpeg_error_message_by_email = False
+								filenames_and_channel_counts_for_mxf_audio_remixing = []
+								audio_remix_channel_map = []
 								
 							if (ffmpeg_supported_fileformat == False) and (filename not in unsupported_ignored_files_dict):
 								# No audiostreams were found in the file, plot an error graphics file to tell the user about it and add the filename and the time it was first seen to the list of files we will ignore.
@@ -4677,7 +5011,7 @@ try:
 
 							# If ffmpeg found audiostreams in the file, queue it for loudness calculation and print message to user.
 							if filename not in unsupported_ignored_files_dict:
-								file_format_support_information = [natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames]
+								file_format_support_information = [natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames, mxf_audio_remixing, filenames_and_channel_counts_for_mxf_audio_remixing, audio_remix_channel_map]
 								files_queued_to_loudness_calculation.append(filename)
 								if silent == False:
 									print('\r' + adjust_line_printout, '"' + str(filename) + '"', 'is in the job queue as number' * english + 'on laskentajonossa numerolla' * finnish, len(files_queued_to_loudness_calculation))
@@ -4714,7 +5048,7 @@ try:
 				if len(files_queued_to_loudness_calculation) > 0: # Check if there are files queued for processing waiting in the queue.
 					filename = files_queued_to_loudness_calculation[0] # Get the first filename from the queue and put it in a variable.
 					file_format_support_information = old_hotfolder_filelist_dict[filename][3] # The information about the file format is stored in a list in the dictionary, get it and store in a list.
-					natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames = file_format_support_information # Save file format information to separate variables.
+					natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames, mxf_audio_remixing, filenames_and_channel_counts_for_mxf_audio_remixing, audio_remix_channel_map = file_format_support_information # Save file format information to separate variables.
 
 					# Calculate the number of time slices we expect to get from loudness calculation.
 					expected_number_of_time_slices = int(audio_duration_rounded_to_seconds / float(time_slice_duration_string)) 
