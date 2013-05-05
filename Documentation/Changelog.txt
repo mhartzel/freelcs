@@ -1,3 +1,7 @@
+LoudnessCorrection Version 231
+------------------------------
+- Corrected bugs in the new mxf audio remixing code.
+
 LoudnessCorrection Version 230
 ------------------------------
 - Started work on experimental support for remixing audio in mxf to required mixes before loudness processing. Warning !!!!!!! Lots of untested code here :)
