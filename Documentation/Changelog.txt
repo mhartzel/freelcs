@@ -1,3 +1,7 @@
+LoudnessCorrection Version 233
+------------------------------
+- Corrected bugs made in version 232.
+
 LoudnessCorrection Version 232
 ------------------------------
 - Added the option to write loudness calculation results of each file to a separate text file in results directory. This and mxf audio remixing needs to be implemented in the installer before it is available to the user.

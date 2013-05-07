@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-version = '232'
+version = '233'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -884,10 +884,8 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 
 				global loudness_calculation_logfile_path
 
-				if loudness_calculation_logfile_path != '':
-					target_file1 = loudness_calculation_logfile_path
-				else:
-					target_file1 = directory_for_error_logs + os.sep + 'loudness_calculation_log-' + str(get_realtime(english, finnish)[1]) + '.txt'
+				if loudness_calculation_logfile_path == '':
+					loudness_calculation_logfile_path = directory_for_error_logs + os.sep + 'loudness_calculation_log-' + str(get_realtime(english, finnish)[1]) + '.txt'
 
 				target_file2 = ''
 
@@ -898,32 +896,32 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 				debug_information_list.append('Message')
 				debug_information_list.append('Calling subroutine: debug_write_loudness_calculation_info_to_a_logfile')
 
-				debug_write_loudness_calculation_info_to_a_logfile(loudness_calculation_data, target_file1, target_file2, output_file_write_mode)
+				debug_write_loudness_calculation_info_to_a_logfile(loudness_calculation_data, loudness_calculation_logfile_path, target_file2, output_file_write_mode)
 
 				# Save some debug information.
 				debug_information_list.append('Message')
 				debug_information_list.append('Returned from subroutine: debug_write_loudness_calculation_info_to_a_logfile')
 
 
-		# Write loudness calculation results of each file to separate text files in results directory.
-		if write_loudness_calculation_results_of_each_file_to_results_directory == True:
+			# Write loudness calculation results of each file to separate text files in results directory.
+			if write_loudness_calculation_results_of_each_file_to_results_directory == True:
 
-			loudness_calculations_results_file = filename + '-loudness_calculation_results.txt'
-			target_file1 = directory_for_temporary_files + os.sep + loudness_calculations_results_file # The file is first written to temp dir,
-			target_file2 = directory_for_results + os.sep + loudness_calculations_results_file # and then moved to the results dir.
-		
-			loudness_calculation_data = str(integrated_loudness) + ',' + str(loudness_range) + ',' + str(highest_peak_db) + ',' + str(channel_count) + ',' + str(sample_rate) + ',' + str(bit_depth) + ',' + str(int(audio_duration)) + '\n'
-			output_file_write_mode = 'wt'
+				loudness_calculations_results_file = filename + '-loudness_calculation_results.txt'
+				target_file1 = directory_for_temporary_files + os.sep + loudness_calculations_results_file # The file is first written to temp dir,
+				target_file2 = directory_for_results + os.sep + loudness_calculations_results_file # and then moved to the results dir.
+			
+				loudness_calculation_data = str(integrated_loudness) + ',' + str(loudness_range) + ',' + str(highest_peak_db) + ',' + str(channel_count) + ',' + str(sample_rate) + ',' + str(bit_depth) + ',' + str(int(audio_duration)) + '\n'
+				output_file_write_mode = 'wt'
 
-			# Save some debug information.
-			debug_information_list.append('Message')
-			debug_information_list.append('Calling subroutine: debug_write_loudness_calculation_info_to_a_logfile')
+				# Save some debug information.
+				debug_information_list.append('Message')
+				debug_information_list.append('Calling subroutine: debug_write_loudness_calculation_info_to_a_logfile')
 
-			debug_write_loudness_calculation_info_to_a_logfile(loudness_calculation_data, target_file1, target_file2, output_file_write_mode)
+				debug_write_loudness_calculation_info_to_a_logfile(loudness_calculation_data, target_file1, target_file2, output_file_write_mode)
 
-			# Save some debug information.
-			debug_information_list.append('Message')
-			debug_information_list.append('Returned from subroutine: debug_write_loudness_calculation_info_to_a_logfile')
+				# Save some debug information.
+				debug_information_list.append('Message')
+				debug_information_list.append('Returned from subroutine: debug_write_loudness_calculation_info_to_a_logfile')
 
 		# If file size exceeds 4 GB, a warning message must be displayed informing the user that the
 		# outputfile will either be split to separate mono channels or stored in flac - format.
@@ -3855,7 +3853,7 @@ def debug_write_loudness_calculation_info_to_a_logfile(loudness_calculation_data
 		# When changes are made to critical parts of the program or external helper programs then it can be
 		# confirmed that the results from the new version are the same as in the earlier saved file.
 		#
-		# If 'target_file1'   and   'target_file2' point to a different path, them we are supposed to write the file to the first path and after that move the file to the second.
+		# If 'target_file1'   and   'target_file2' point to a different path, then we are supposed to write the file to the first path and after that move the file to the second.
 
 		global silent
 		
@@ -4792,8 +4790,9 @@ try:
 
 				# Don't try to find audio in mxf - remix map files that are text files.
 				if os.path.splitext(filename)[1] == remix_map_file_extension:
-					unsupported_ignored_files_dict[filename] = int(time.time())
-					continue
+					if filename not in unsupported_ignored_files_dict:
+						unsupported_ignored_files_dict[filename] = int(time.time())
+						continue
 
 
 				file_metadata=os.lstat(hotfolder_path + os.sep + filename) # Get file information (size, date, etc)
