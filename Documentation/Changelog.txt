@@ -1,3 +1,9 @@
+LoudnessCorrection Version 234
+------------------------------
+- Add error number and error message at the end of loudness calculation results written to the results directory.
+- Errors happening in various subroutines now print error number and error message to the results text file if user has turned this option on.
+- Its now possible to define if the user doesn't want to create loudness corrected audio files or loudness history graphics files. This might be needed if LoudnessCorrection.py is used as part of audio processing automation.
+
 LoudnessCorrection Version 233
 ------------------------------
 - Corrected bugs made in version 232.

@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-version = '233'
+version = '234'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -77,7 +77,7 @@ debug_complete_final_information_for_all_file_processing_dict = {}
 debug_all = False
 debug_lists_and_dictionaries  = False
 debug_file_processing = False
-save_measurement_results_to_a_file = False
+save_all_measurement_results_to_a_single_debug_file = False
 configfile_path = ''
 configfile_found = False
 target_path = ''
@@ -113,8 +113,8 @@ for argument in sys.argv[1:]:
 		arguments_remaining.pop(arguments_remaining.index(argument))
 		continue
 
-	if argument.lower() == '-save_measurement_results_to_a_file':
-		save_measurement_results_to_a_file = True
+	if argument.lower() == '-save_all_measurement_results_to_a_single_debug_file':
+		save_all_measurement_results_to_a_single_debug_file = True
 		arguments_remaining.pop(arguments_remaining.index(argument))
 		continue
 	
@@ -150,7 +150,7 @@ if (configfile_path == '') and (target_path == ''):
 	print()
 	print(error_message)
 	print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)
-	print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file' * finnish )
+	print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_all_measurement_results_to_a_single_debug_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_all_measurement_results_to_a_single_debug_file' * finnish )
 	print()
 
 	sys.exit(1)
@@ -163,7 +163,7 @@ if configfile_path != '':
 		print()
 		print(error_message)
 		print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)	
-		print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file' * finnish )
+		print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_all_measurement_results_to_a_single_debug_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_all_measurement_results_to_a_single_debug_file' * finnish )
 		print()
 
 		sys.exit(1)
@@ -174,7 +174,7 @@ if configfile_path != '':
 		print()
 		print(error_message)
 		print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)	
-		print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file' * finnish )
+		print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_all_measurement_results_to_a_single_debug_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_all_measurement_results_to_a_single_debug_file' * finnish )
 		print()
 
 		sys.exit(1)
@@ -188,7 +188,7 @@ else:
 			print()
 			print(error_message)
 			print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)	
-			print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file' * finnish )
+			print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_all_measurement_results_to_a_single_debug_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_all_measurement_results_to_a_single_debug_file' * finnish )
 			print()
 
 			sys.exit(1)
@@ -198,7 +198,7 @@ else:
 		print()
 		print(error_message)
 		print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)	
-		print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_measurement_results_to_a_file' * finnish )
+		print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_all_measurement_results_to_a_single_debug_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_all_measurement_results_to_a_single_debug_file' * finnish )
 		print()
 
 		sys.exit(1)
@@ -206,7 +206,7 @@ else:
 if debug_all == True:
 	debug_lists_and_dictionaries = True
 	debug_file_processing = True
-	save_measurement_results_to_a_file = True
+	save_all_measurement_results_to_a_single_debug_file = True
 
 # Define folder names according to the language selected above.
 if language == 'en':
@@ -293,7 +293,36 @@ remix_map_file_extension = '.remix_map'
 ffmpeg_allowed_formats = ['mxf', 'mkv', 'ogg']
 
 # This variable defines, if we should write loudness calculation results to individual text files to the target directory.
-write_loudness_calculation_results_of_each_file_to_results_directory = False
+#
+# Items written to the results file are:                                                                                                                               
+#                                                                                                                                                                      
+# 01 Integrated Loudness (If loudness is below measurement threshhold, then this value is 'inf').                                                                      
+# 02 Loudness Range.                                                                                                                                                   
+# 03 Highest Peak (dBFS or dBTP depending what user selected during installation).                                                                                     
+# 04 Number Of Channels.                                                                                                                                               
+# 05 Sample Rate.                                                                                                                                                      
+# 06 Bit Depth.                                                                                                                                                        
+# 07 Duration rounded to seconds.                                                                                                                                      
+# 08 Loudness calculation error code                                                                                                                                   
+# 09 Reason for error (text string)                                                                                                                                    
+#                                                                                                                                                                      
+# The item number 8 error codes are (name of subroutine that reports this error):
+#                                                                                                                                                                      
+# 0 = No Errors                                                                                                                                                        
+# 1 = Loudness is below measurement threshold (-70 LUFS)   (create_gnuplot_commands)
+# 2 = Error in integrated loudness calculation   (create_gnuplot_commands)
+# 3 = File transfer failed   (main)
+# 4 = Audio duration less than 1 second   (main)
+# 5 = Zero channels in audio stream   (get_audio_stream_information_with_ffmpeg)
+# 6 = Channel count bigger than 6 is unsupported   (get_audio_stream_information_with_ffmpeg)
+# 7 = No Audio Streams Found In File   (main)
+# 100 = Unknown Error
+
+write_loudness_calculation_results_to_separate_text_files = False
+
+# If LoudnessCorrection is used as part of a automation system, then we might not want to create loudness corrected audio files or result graphics.
+create_loudness_corrected_files = True
+create_loudness_history_graphics_files = True
 
 
 ###############################################################################################################################################################################
@@ -746,6 +775,8 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 		sox_error_message = ''
 		
 		global debug_temporary_dict_for_all_file_processing_information
+		global create_loudness_history_graphics_files
+		global create_loudness_corrected_files
 
 		debug_information_list = []
 		error_message = ''
@@ -777,110 +808,115 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 			highest_peak_db_string = '+' + str(highest_peak_db)
 		else:
 			highest_peak_db_string = str(highest_peak_db)
-		# If calculated loudness difference from target -23 LUFS loudness is a positive number, create a string with a plus sign and the difference number in it.
-		if difference_from_target_loudness > 0:
-			difference_from_target_loudness_string = '+' + str(difference_from_target_loudness)
-		else:
-			difference_from_target_loudness_string = str(difference_from_target_loudness) # The loudness difference from target loudness is negative, just create a string with the negative result number in it.
 
-		# Scale loudness graphics x-axis time information according to file duration.
-		# Loudness calculation is done in 3 second slices when audio duration is 12 seconds or longer.
-		# If file duration is shorter than 12 seconds then slices are 0.5 seconds each.
-		audio_duration_rounded_to_seconds = int(number_of_timeslices * float(time_slice_duration_string))
-			
-		# If file duration is shorter than 12 seconds. Time slices are 0.5 seconds each.
-		if audio_duration_rounded_to_seconds < 12:
-			plotfile_x_axis_divider = 2 # Define how many time slices there are between each printed x-axis time number.
-			plotfile_x_axis_time = 1 # Define the steps of increasing x-axis time numbers.
-			plotfile_x_axis_name = 'Seconds' * english + 'Sekunnit' * finnish
-		# File duration is 10 seconds or longer. Time slices are 3 seconds each.
-		if (audio_duration_rounded_to_seconds >= 12) and (audio_duration_rounded_to_seconds <= 60): # File duration is between 10 seconds and 1 minute.
-			plotfile_x_axis_divider = 1 # Define how many time slices there are between each printed x-axis time number.
-			plotfile_x_axis_time = 3 # Define the steps of increasing x-axis time numbers.
-			plotfile_x_axis_name = 'Seconds' * english + 'Sekunnit' * finnish # X-axis time name (seconds / minutes hours).
 
-		if (audio_duration_rounded_to_seconds > 60) and (audio_duration_rounded_to_seconds <= 180): # File duration is between 1 and 3 minutes.
-			plotfile_x_axis_divider = 5
-			plotfile_x_axis_time = 15
-			plotfile_x_axis_name = 'Seconds' * english + 'Sekunnit' * finnish
+		if create_loudness_history_graphics_files == True:
 
-		if (audio_duration_rounded_to_seconds > 180) and (audio_duration_rounded_to_seconds < 1800): # File duration is between 3 minutes and 30 minutes.
-			plotfile_x_axis_divider = 20
-			plotfile_x_axis_time = 1
-			plotfile_x_axis_name = 'Minutes' * english + 'Minuutit' * finnish
+			# If calculated loudness difference from target -23 LUFS loudness is a positive number, create a string with a plus sign and the difference number in it.
+			if difference_from_target_loudness > 0:
+				difference_from_target_loudness_string = '+' + str(difference_from_target_loudness)
+			else:
+				difference_from_target_loudness_string = str(difference_from_target_loudness) # The loudness difference from target loudness is negative, just create a string with the negative result number in it.
 
-		if (audio_duration_rounded_to_seconds >= 1800) and (audio_duration_rounded_to_seconds < 3600): # File duration is between 30 minutes and 1 hour.
-			plotfile_x_axis_divider = 60
-			plotfile_x_axis_time = 3
-			plotfile_x_axis_name = 'Minutes' * english + 'Minuutit' * finnish
+			# Scale loudness graphics x-axis time information according to file duration.
+			# Loudness calculation is done in 3 second slices when audio duration is 12 seconds or longer.
+			# If file duration is shorter than 12 seconds then slices are 0.5 seconds each.
+			audio_duration_rounded_to_seconds = int(number_of_timeslices * float(time_slice_duration_string))
+				
+			# If file duration is shorter than 12 seconds. Time slices are 0.5 seconds each.
+			if audio_duration_rounded_to_seconds < 12:
+				plotfile_x_axis_divider = 2 # Define how many time slices there are between each printed x-axis time number.
+				plotfile_x_axis_time = 1 # Define the steps of increasing x-axis time numbers.
+				plotfile_x_axis_name = 'Seconds' * english + 'Sekunnit' * finnish
+			# File duration is 10 seconds or longer. Time slices are 3 seconds each.
+			if (audio_duration_rounded_to_seconds >= 12) and (audio_duration_rounded_to_seconds <= 60): # File duration is between 10 seconds and 1 minute.
+				plotfile_x_axis_divider = 1 # Define how many time slices there are between each printed x-axis time number.
+				plotfile_x_axis_time = 3 # Define the steps of increasing x-axis time numbers.
+				plotfile_x_axis_name = 'Seconds' * english + 'Sekunnit' * finnish # X-axis time name (seconds / minutes hours).
 
-		if (audio_duration_rounded_to_seconds >= 3600) and (audio_duration_rounded_to_seconds < 7200): # File duration is between 1 and 2 hours.
-			plotfile_x_axis_divider = 100
-			plotfile_x_axis_time = 5
-			plotfile_x_axis_name = 'Minutes' * english + 'Minuutit' * finnish
+			if (audio_duration_rounded_to_seconds > 60) and (audio_duration_rounded_to_seconds <= 180): # File duration is between 1 and 3 minutes.
+				plotfile_x_axis_divider = 5
+				plotfile_x_axis_time = 15
+				plotfile_x_axis_name = 'Seconds' * english + 'Sekunnit' * finnish
 
-		if (audio_duration_rounded_to_seconds >= 7200) and (audio_duration_rounded_to_seconds < 21600): # File duration is between 2 and 6 hours.
-			plotfile_x_axis_divider = 300
-			plotfile_x_axis_time = 15
-			plotfile_x_axis_name = 'Minutes' * english + 'Minuutit' * finnish
+			if (audio_duration_rounded_to_seconds > 180) and (audio_duration_rounded_to_seconds < 1800): # File duration is between 3 minutes and 30 minutes.
+				plotfile_x_axis_divider = 20
+				plotfile_x_axis_time = 1
+				plotfile_x_axis_name = 'Minutes' * english + 'Minuutit' * finnish
 
-		if (audio_duration_rounded_to_seconds >= 21600) and (audio_duration_rounded_to_seconds < 43200): # File duration is between 6 and 12 hours.
-			plotfile_x_axis_divider = 600
-			plotfile_x_axis_time = 30
-			plotfile_x_axis_name = 'Minutes' * english + 'Minuutit' * finnish
+			if (audio_duration_rounded_to_seconds >= 1800) and (audio_duration_rounded_to_seconds < 3600): # File duration is between 30 minutes and 1 hour.
+				plotfile_x_axis_divider = 60
+				plotfile_x_axis_time = 3
+				plotfile_x_axis_name = 'Minutes' * english + 'Minuutit' * finnish
 
-		if (audio_duration_rounded_to_seconds >= 43200) and (audio_duration_rounded_to_seconds < 86400): # File duration is between 12 and 24 hours.
-			plotfile_x_axis_divider = 1200
-			plotfile_x_axis_time = 1
-			plotfile_x_axis_name = 'Hours' * english + 'Tunnit' * finnish
+			if (audio_duration_rounded_to_seconds >= 3600) and (audio_duration_rounded_to_seconds < 7200): # File duration is between 1 and 2 hours.
+				plotfile_x_axis_divider = 100
+				plotfile_x_axis_time = 5
+				plotfile_x_axis_name = 'Minutes' * english + 'Minuutit' * finnish
 
-		if (audio_duration_rounded_to_seconds >= 86400) and (audio_duration_rounded_to_seconds < 172800): # File duration is between 24 and 48 hours.
-			plotfile_x_axis_divider = 2400
-			plotfile_x_axis_time = 2
-			plotfile_x_axis_name = 'Hours' * english + 'Tunnit' * finnish
+			if (audio_duration_rounded_to_seconds >= 7200) and (audio_duration_rounded_to_seconds < 21600): # File duration is between 2 and 6 hours.
+				plotfile_x_axis_divider = 300
+				plotfile_x_axis_time = 15
+				plotfile_x_axis_name = 'Minutes' * english + 'Minuutit' * finnish
 
-		if (audio_duration_rounded_to_seconds >= 172800) and (audio_duration_rounded_to_seconds < 345600): # File duration is between 48 and 96 hours.
-			plotfile_x_axis_divider = 4800
-			plotfile_x_axis_time = 4
-			plotfile_x_axis_name = 'Hours' * english + 'Tunnit' * finnish
+			if (audio_duration_rounded_to_seconds >= 21600) and (audio_duration_rounded_to_seconds < 43200): # File duration is between 6 and 12 hours.
+				plotfile_x_axis_divider = 600
+				plotfile_x_axis_time = 30
+				plotfile_x_axis_name = 'Minutes' * english + 'Minuutit' * finnish
 
-		if (audio_duration_rounded_to_seconds >= 345600) and (audio_duration_rounded_to_seconds < 691200): # File duration is between 96 and 192 hours.
-			plotfile_x_axis_divider = 9600
-			plotfile_x_axis_time = 8
-			plotfile_x_axis_name = 'Hours' * english + 'Tunnit' * finnish
+			if (audio_duration_rounded_to_seconds >= 43200) and (audio_duration_rounded_to_seconds < 86400): # File duration is between 12 and 24 hours.
+				plotfile_x_axis_divider = 1200
+				plotfile_x_axis_time = 1
+				plotfile_x_axis_name = 'Hours' * english + 'Tunnit' * finnish
 
-		if audio_duration_rounded_to_seconds >= 691200: # File duration is over 192 hours.
-			plotfile_x_axis_divider = 28800
-			plotfile_x_axis_time = 1
-			plotfile_x_axis_name = 'Days' * english + 'Päiviä' * finnish
+			if (audio_duration_rounded_to_seconds >= 86400) and (audio_duration_rounded_to_seconds < 172800): # File duration is between 24 and 48 hours.
+				plotfile_x_axis_divider = 2400
+				plotfile_x_axis_time = 2
+				plotfile_x_axis_name = 'Hours' * english + 'Tunnit' * finnish
 
-		# Generate x-axis texts needed for gnuplot and store them in a list.
-		plotfile_x_axis_time_information=[]
-		if timeslice_calculation_error == False:
-			plotfile_x_axis_time_information.append('set xtics (')
-			counter=1
-			for counter in range(0, int(number_of_timeslices / (plotfile_x_axis_divider) + 1), 1):
-				plotfile_x_axis_time_information.append('\"' + str(counter * plotfile_x_axis_time) + '\" ' + str(counter * plotfile_x_axis_divider) + ' ')
-				if counter <  int(number_of_timeslices / (plotfile_x_axis_divider)):
-					plotfile_x_axis_time_information.append(', ')
-			plotfile_x_axis_time_information.append(')')
-			plotfile_x_axis_time_information = ''.join(plotfile_x_axis_time_information)
+			if (audio_duration_rounded_to_seconds >= 172800) and (audio_duration_rounded_to_seconds < 345600): # File duration is between 48 and 96 hours.
+				plotfile_x_axis_divider = 4800
+				plotfile_x_axis_time = 4
+				plotfile_x_axis_name = 'Hours' * english + 'Tunnit' * finnish
+
+			if (audio_duration_rounded_to_seconds >= 345600) and (audio_duration_rounded_to_seconds < 691200): # File duration is between 96 and 192 hours.
+				plotfile_x_axis_divider = 9600
+				plotfile_x_axis_time = 8
+				plotfile_x_axis_name = 'Hours' * english + 'Tunnit' * finnish
+
+			if audio_duration_rounded_to_seconds >= 691200: # File duration is over 192 hours.
+				plotfile_x_axis_divider = 28800
+				plotfile_x_axis_time = 1
+				plotfile_x_axis_name = 'Days' * english + 'Päiviä' * finnish
+
+			# Generate x-axis texts needed for gnuplot and store them in a list.
+			plotfile_x_axis_time_information=[]
+			if timeslice_calculation_error == False:
+				plotfile_x_axis_time_information.append('set xtics (')
+				counter=1
+				for counter in range(0, int(number_of_timeslices / (plotfile_x_axis_divider) + 1), 1):
+					plotfile_x_axis_time_information.append('\"' + str(counter * plotfile_x_axis_time) + '\" ' + str(counter * plotfile_x_axis_divider) + ' ')
+					if counter <  int(number_of_timeslices / (plotfile_x_axis_divider)):
+						plotfile_x_axis_time_information.append(', ')
+				plotfile_x_axis_time_information.append(')')
+				plotfile_x_axis_time_information = ''.join(plotfile_x_axis_time_information)
 		
 		# Save some debug information.
 		debug_information_list.append('Message')
 		debug_information_list.append('Calling subroutine: get_audiofile_info_with_sox_and_determine_output_format')
 		
-		# Get technical info from audio file and determine what the ouput format will be
+		# Get technical info from audio file and determine what the output format will be
 		channel_count, sample_rate, bit_depth, sample_count, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, audio_channels_will_be_split_to_separate_mono_files, audio_duration, output_file_too_big_to_split_to_separate_wav_channels, sox_encountered_an_error, sox_error_message = get_audiofile_info_with_sox_and_determine_output_format(directory_for_temporary_files, hotfolder_path, filename)
 
 		# Save some debug information.
 		debug_information_list.append('Message')
 		debug_information_list.append('Returned from subroutine: get_audiofile_info_with_sox_and_determine_output_format')
 
-		# Write details of loudness measurement of the file to a logfile.
+		# Write details of loudness measurement of the file to a debug logfile.
+		# This is a debugging option.
 		if (integrated_loudness_calculation_error == False) and (timeslice_calculation_error == False):
 
-			if save_measurement_results_to_a_file == True:
+			if save_all_measurement_results_to_a_single_debug_file == True:
 
 				global loudness_calculation_logfile_path
 
@@ -903,25 +939,38 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 				debug_information_list.append('Returned from subroutine: debug_write_loudness_calculation_info_to_a_logfile')
 
 
-			# Write loudness calculation results of each file to separate text files in results directory.
-			if write_loudness_calculation_results_of_each_file_to_results_directory == True:
+		# Write loudness calculation results of each file to separate text files in results directory.
+		# This is a user definable option.
+		if write_loudness_calculation_results_to_separate_text_files == True:
 
-				loudness_calculations_results_file = filename + '-loudness_calculation_results.txt'
-				target_file1 = directory_for_temporary_files + os.sep + loudness_calculations_results_file # The file is first written to temp dir,
-				target_file2 = directory_for_results + os.sep + loudness_calculations_results_file # and then moved to the results dir.
-			
-				loudness_calculation_data = str(integrated_loudness) + ',' + str(loudness_range) + ',' + str(highest_peak_db) + ',' + str(channel_count) + ',' + str(sample_rate) + ',' + str(bit_depth) + ',' + str(int(audio_duration)) + '\n'
-				output_file_write_mode = 'wt'
+			loudness_calculations_results_file = filename + '-loudness_calculation_results.txt'
+			target_file1 = directory_for_temporary_files + os.sep + loudness_calculations_results_file # The file is first written to temp dir,
+			target_file2 = directory_for_results + os.sep + loudness_calculations_results_file # and then moved to the results dir.
 
-				# Save some debug information.
-				debug_information_list.append('Message')
-				debug_information_list.append('Calling subroutine: debug_write_loudness_calculation_info_to_a_logfile')
+			error_message = ''
 
-				debug_write_loudness_calculation_info_to_a_logfile(loudness_calculation_data, target_file1, target_file2, output_file_write_mode)
+			error_code = 0
 
-				# Save some debug information.
-				debug_information_list.append('Message')
-				debug_information_list.append('Returned from subroutine: debug_write_loudness_calculation_info_to_a_logfile')
+			if integrated_loudness_calculation_error == True:
+				error_code = 2
+				error_message = 'ERROR !!! in libebur128 integrated loudness calculation: ' * english + 'VIRHE !!! libebur128:n lra laskennassa: ' * finnish + integrated_loudness_calculation_error_message
+		
+			if integrated_loudness_is_below_measurement_threshold == True:
+				error_code = 1
+				# variable 'error_message' is set by the previous if statement for this situation also. In this case it says 'Loudness is below measurement threshold'.
+
+			loudness_calculation_data = str(integrated_loudness) + ',' + str(loudness_range) + ',' + str(highest_peak_db) + ',' + str(channel_count) + ',' + str(sample_rate) + ',' + str(bit_depth) + ',' + str(int(audio_duration)) + ',' + str(error_code) + ',' + error_message
+			output_file_write_mode = 'wt'
+
+			# Save some debug information.
+			debug_information_list.append('Message')
+			debug_information_list.append('Calling subroutine: debug_write_loudness_calculation_info_to_a_logfile')
+
+			debug_write_loudness_calculation_info_to_a_logfile(loudness_calculation_data, target_file1, target_file2, output_file_write_mode)
+
+			# Save some debug information.
+			debug_information_list.append('Message')
+			debug_information_list.append('Returned from subroutine: debug_write_loudness_calculation_info_to_a_logfile')
 
 		# If file size exceeds 4 GB, a warning message must be displayed informing the user that the
 		# outputfile will either be split to separate mono channels or stored in flac - format.
@@ -959,10 +1008,14 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 				error_message_to_print_with_gnuplot = error_message_to_print_with_gnuplot + sox_error_message + '\\n'
 			
 			# Save some debug information.
+			debug_information_list.append('create_loudness_history_graphics_files')
+			debug_information_list.append(create_loudness_history_graphics_files)
 			debug_information_list.append('gnuplot_commands')
 			debug_information_list.append(gnuplot_commands)
 			debug_information_list.append('error_message')
 			debug_information_list.append(error_message)
+			debug_information_list.append('create_loudness_corrected_files')
+			debug_information_list.append(create_loudness_corrected_files)
 			unix_time_in_ticks, realtime = get_realtime(english, finnish)
 			debug_information_list.append('Stop Time')
 			debug_information_list.append(unix_time_in_ticks)
@@ -970,32 +1023,129 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 			
 			create_gnuplot_commands_for_error_message(error_message_to_print_with_gnuplot, filename, directory_for_temporary_files, directory_for_results, english, finnish)		
 		else:
+			
 			# Loudness calculation succeeded.
-			
-			peak_measurement_string_english = '\\nSample peak: '
-			peak_measurement_string_finnish = '\\nHuipputaso: '
-			peak_measurement_unit = 'dBFS'
-			if peak_measurement_method == '--peak=true':
-				peak_measurement_string_english = '\\nTruePeak: '
-				peak_measurement_string_finnish = peak_measurement_string_english
-				peak_measurement_unit = 'dBTP'
-			
-			# Generate gnuplot commands for plotting the graphics. Put all gnuplot commands in a list.
-			gnuplot_commands=['set terminal jpeg size 1280,960 medium font \'arial\'', \
-			'set output ' + '\"' + gnuplot_temporary_output_graphicsfile.replace('"','\\"') + '\"', \
-			'set yrange [ 0 : -60 ] noreverse nowriteback', \
-			'set grid', \
-			'set title ' + '\"\'' + filename.replace('_', ' ').replace('"','\\"') + '\'\\n' + 'Integrated Loudness ' * english + 'Keskimääräinen Äänekkyystaso ' * finnish + str(integrated_loudness) + ' LUFS\\n ' + difference_from_target_loudness_string + ' LU from target loudness (-23 LUFS)\\nLoudness Range (LRA) ' * english + ' LU:ta tavoitetasosta (-23 LUFS)\\nÄänekkyyden vaihteluväli (LRA) '  * finnish + str(loudness_range) + ' LU' + peak_measurement_string_english * english + peak_measurement_string_finnish * finnish + highest_peak_db_string + ' ' + peak_measurement_unit + warning_message + '\"', \
-			'set ylabel ' + '\"Loudness (LUFS)\"' * english + '\"Äänekkyystaso (LUFS)\"' *finnish, \
-			plotfile_x_axis_time_information, \
-			'set xlabel \"' + plotfile_x_axis_name + '\"', \
-			'plot ' + '-23 title \'0 LU (Target Level)\' lw 6 lc rgb \'#99ff00\', ' * english + '-23 title \'0 LU (Tavoitetaso)\' lw 6 lc rgb \'#99ff00\', ' * finnish + '\"' + loudness_calculation_table.replace('"','\\"') + '\"' + ' with lines lw 1 lc rgb \'#c4a45a\' title \'Short-term Loudness\', ' * english + ' with lines lw 1 lc rgb \'#c4a45a\' title \'Tiedoston lyhytaikainen äänekkyystaso\', ' * finnish + str(integrated_loudness) + ' title \'Integrated Loudness\' lw 2 lc rgb \'#008327\'' * english + ' title \'Tiedoston keskimääräinen äänekkyystaso\' lw 2 lc rgb \'#008327\'' * finnish]
 
-			# Write loudness time slice calculation results in a file, gnuplot uses this file for plotting graphics.
+			if create_loudness_history_graphics_files == True:
+
+				peak_measurement_string_english = '\\nSample peak: '
+				peak_measurement_string_finnish = '\\nHuipputaso: '
+
+				peak_measurement_unit = 'dBFS'
+
+				if peak_measurement_method == '--peak=true':
+					peak_measurement_string_english = '\\nTruePeak: '
+					peak_measurement_string_finnish = peak_measurement_string_english
+					peak_measurement_unit = 'dBTP'
+
+				# Generate gnuplot commands for plotting the graphics. Put all gnuplot commands in a list.
+				gnuplot_commands=['set terminal jpeg size 1280,960 medium font \'arial\'', \
+				'set output ' + '\"' + gnuplot_temporary_output_graphicsfile.replace('"','\\"') + '\"', \
+				'set yrange [ 0 : -60 ] noreverse nowriteback', \
+				'set grid', \
+				'set title ' + '\"\'' + filename.replace('_', ' ').replace('"','\\"') + '\'\\n' + 'Integrated Loudness ' * english + 'Keskimääräinen Äänekkyystaso ' * finnish + str(integrated_loudness) + ' LUFS\\n ' + difference_from_target_loudness_string + ' LU from target loudness (-23 LUFS)\\nLoudness Range (LRA) ' * english + ' LU:ta tavoitetasosta (-23 LUFS)\\nÄänekkyyden vaihteluväli (LRA) '  * finnish + str(loudness_range) + ' LU' + peak_measurement_string_english * english + peak_measurement_string_finnish * finnish + highest_peak_db_string + ' ' + peak_measurement_unit + warning_message + '\"', \
+				'set ylabel ' + '\"Loudness (LUFS)\"' * english + '\"Äänekkyystaso (LUFS)\"' *finnish, \
+				plotfile_x_axis_time_information, \
+				'set xlabel \"' + plotfile_x_axis_name + '\"', \
+				'plot ' + '-23 title \'0 LU (Target Level)\' lw 6 lc rgb \'#99ff00\', ' * english + '-23 title \'0 LU (Tavoitetaso)\' lw 6 lc rgb \'#99ff00\', ' * finnish + '\"' + loudness_calculation_table.replace('"','\\"') + '\"' + ' with lines lw 1 lc rgb \'#c4a45a\' title \'Short-term Loudness\', ' * english + ' with lines lw 1 lc rgb \'#c4a45a\' title \'Tiedoston lyhytaikainen äänekkyystaso\', ' * finnish + str(integrated_loudness) + ' title \'Integrated Loudness\' lw 2 lc rgb \'#008327\'' * english + ' title \'Tiedoston keskimääräinen äänekkyystaso\' lw 2 lc rgb \'#008327\'' * finnish]
+
+				# Write loudness time slice calculation results in a file, gnuplot uses this file for plotting graphics.
+				try:
+					with open(loudness_calculation_table, 'wb') as timeslice_file_handler:
+						timeslice_file_handler.write(b'-60\n') # There is no timeslice at the beginning of the audio (at 0 seconds), however graphics plotting needs this. Add a dummy '-60' value at the beginning of the time slice list. This does not affect loudness calculation result, only graphics plotting.
+						timeslice_file_handler.write(timeslice_loudness_calculation_stdout)
+						timeslice_file_handler.flush() # Flushes written data to os cache
+						os.fsync(timeslice_file_handler.fileno()) # Flushes os cache to disk
+				except KeyboardInterrupt:
+					if silent == False:
+						print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
+					sys.exit(0)
+				except IOError as reason_for_error:
+					error_message = 'Error opening timeslice tablefile for writing ' * english + 'Aikaviipaleiden taulukkotiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
+					send_error_messages_to_screen_logfile_email(error_message, [])
+				except OSError as reason_for_error:
+					error_message = 'Error opening timeslice tablefile for writing ' * english + 'Aikaviipaleiden taulukkotiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
+					send_error_messages_to_screen_logfile_email(error_message, [])
+
+				# Write gnuplot commands to a file.
+				try:
+					with open(commandfile_for_gnuplot, 'wt') as gnuplot_commandfile_handler:
+						for item in gnuplot_commands:
+							gnuplot_commandfile_handler.write(item + '\n')
+						gnuplot_commandfile_handler.flush() # Flushes written data to os cache
+						os.fsync(gnuplot_commandfile_handler.fileno()) # Flushes os cache to disk
+				except KeyboardInterrupt:
+					if silent == False:
+						print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
+					sys.exit(0)
+				except IOError as reason_for_error:
+					error_message = 'Error opening Gnuplot commandfile for writing ' * english + 'Gnuplotin komentotiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
+					send_error_messages_to_screen_logfile_email(error_message, [])
+				except OSError as reason_for_error:
+					error_message = 'Error opening Gnuplot commandfile for writing ' * english + 'Gnuplotin komentotiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
+					send_error_messages_to_screen_logfile_email(error_message, [])
+
+			# Save some debug information.
+			debug_information_list.append('create_loudness_history_graphics_files')
+			debug_information_list.append(create_loudness_history_graphics_files)
+			debug_information_list.append('gnuplot_commands')
+			debug_information_list.append(gnuplot_commands)
+			debug_information_list.append('error_message')
+			debug_information_list.append(error_message)
+			debug_information_list.append('create_loudness_corrected_files')
+			debug_information_list.append(create_loudness_corrected_files)
+			unix_time_in_ticks, realtime = get_realtime(english, finnish)
+			debug_information_list.append('Stop Time')
+			debug_information_list.append(unix_time_in_ticks)
+			debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
+
+			# Call a subprocess to run gnuplot
+			if create_loudness_history_graphics_files == True:
+				run_gnuplot(filename, directory_for_temporary_files, directory_for_results, english, finnish)
+
+			# Call a subprocess to create the loudness corrected audio file.
+			if create_loudness_corrected_files == True:
+				create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calculation_error, difference_from_target_loudness, filename, english, finnish, hotfolder_path, directory_for_results, directory_for_temporary_files, highest_peak_db, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, channel_count, audio_channels_will_be_split_to_separate_mono_files, output_file_too_big_to_split_to_separate_wav_channels)
+
+	except Exception:
+		exc_type, exc_value, exc_traceback = sys.exc_info()
+		error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
+		subroutine_name = 'create_gnuplot_commands'
+		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
+
+def create_gnuplot_commands_for_error_message(error_message, filename, directory_for_temporary_files, directory_for_results, english, finnish):
+	
+	# This subroutine is run when there has been some kind of error and the user needs to know about it.
+	# This subroutine creates the gnuplot commands needed to create a graphics file explaining the error to user.
+
+	try:
+		commandfile_for_gnuplot = directory_for_temporary_files + os.sep + filename + '-gnuplot_commands'
+		loudness_calculation_table = directory_for_temporary_files + os.sep + filename + '-loudness_calculation_table'
+		gnuplot_temporary_output_graphicsfile = directory_for_temporary_files + os.sep + filename + '-Loudness_Results_Graphics.jpg' * english + '-Aanekkyyslaskennan_Tulokset.jpg' * finnish
+
+		gnuplot_commands = []
+		global create_loudness_history_graphics_files
+		global debug_temporary_dict_for_all_file_processing_information
+		global silent
+		
+		debug_information_list = []
+
+		# Save some debug information. Items are always saved in pairs (Title, value) so that the list is easy to parse later.
+		if filename in debug_temporary_dict_for_all_file_processing_information:
+			debug_information_list = debug_temporary_dict_for_all_file_processing_information[filename]
+		unix_time_in_ticks, realtime = get_realtime(english, finnish)
+		debug_information_list.append('Start Time')
+		debug_information_list.append(unix_time_in_ticks)
+		debug_information_list.append('Subprocess Name')
+		debug_information_list.append('create_gnuplot_commands_for_error_message')
+		debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
+
+		# Write 4 coordinates to gnuplot data file. These 4 coordinates are used to draw a big red cross on the error graphics file.
+		if create_loudness_history_graphics_files == True:
+
 			try:
-				with open(loudness_calculation_table, 'wb') as timeslice_file_handler:
-					timeslice_file_handler.write(b'-60\n') # There is no timeslice at the beginning of the audio (at 0 seconds), however graphics plotting needs this. Add a dummy '-60' value at the beginning of the time slice list. This does not affect loudness calculation result, only graphics plotting.
-					timeslice_file_handler.write(timeslice_loudness_calculation_stdout)
+				with open(loudness_calculation_table, 'wt') as timeslice_file_handler:
+					timeslice_file_handler.write('1.0\n' + '10\n' + '\n' + '\n' + '10\n' + '1.0\n')
 					timeslice_file_handler.flush() # Flushes written data to os cache
 					os.fsync(timeslice_file_handler.fileno()) # Flushes os cache to disk
 			except KeyboardInterrupt:
@@ -1003,11 +1153,18 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 					print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
 				sys.exit(0)
 			except IOError as reason_for_error:
-				error_message = 'Error opening timeslice tablefile for writing ' * english + 'Aikaviipaleiden taulukkotiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
+				error_message = 'Error opening gnuplot datafile for writing error graphics data ' * english + 'Gnuplotin datatiedoston avaaminen virhegrafiikan datan kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
 				send_error_messages_to_screen_logfile_email(error_message, [])
 			except OSError as reason_for_error:
-				error_message = 'Error opening timeslice tablefile for writing ' * english + 'Aikaviipaleiden taulukkotiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
+				error_message = 'Error opening gnuplot datafile for writing error graphics data ' * english + 'Gnuplotin datatiedoston avaaminen virhegrafiikan datan kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
 				send_error_messages_to_screen_logfile_email(error_message, [])
+
+			# Create gnuplot commands and put then in  a list.
+			gnuplot_commands=['set terminal jpeg size 1280,960 medium font \'arial\'', \
+			'set output ' + '\"' + gnuplot_temporary_output_graphicsfile.replace('"','\\"') + '\"', \
+			'set yrange [ 1 : 10 ]', \
+			'set title ' + '\"\'' + filename.replace('_', ' ').replace('"','\\"') + '\'\\n' + 'Loudness calculation encountered an error\\n\\n' * english + 'Äänekkyyden mittaamisessa tapahtui virhe:\\n\\n' * finnish + 'Error Message: ' * english + 'Virheilmoitus: ' * finnish + str(error_message), \
+			'plot ' + '\"' + loudness_calculation_table.replace('"','\\"') + '\"' + ' with lines lw 2 title \'\'']
 
 			# Write gnuplot commands to a file.
 			try:
@@ -1027,97 +1184,9 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 				error_message = 'Error opening Gnuplot commandfile for writing ' * english + 'Gnuplotin komentotiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
 				send_error_messages_to_screen_logfile_email(error_message, [])
 
-			# Save some debug information.
-			debug_information_list.append('gnuplot_commands')
-			debug_information_list.append(gnuplot_commands)
-			debug_information_list.append('error_message')
-			debug_information_list.append(error_message)
-			unix_time_in_ticks, realtime = get_realtime(english, finnish)
-			debug_information_list.append('Stop Time')
-			debug_information_list.append(unix_time_in_ticks)
-			debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
-
-			# Call a subprocess to run gnuplot
-			run_gnuplot(filename, directory_for_temporary_files, directory_for_results, english, finnish)
-
-			# Call a subprocess to create the loudness corrected audio file.
-			create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calculation_error, difference_from_target_loudness, filename, english, finnish, hotfolder_path, directory_for_results, directory_for_temporary_files, highest_peak_db, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, channel_count, audio_channels_will_be_split_to_separate_mono_files, output_file_too_big_to_split_to_separate_wav_channels)
-
-	except Exception:
-		exc_type, exc_value, exc_traceback = sys.exc_info()
-		error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
-		subroutine_name = 'create_gnuplot_commands'
-		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
-
-def create_gnuplot_commands_for_error_message(error_message, filename, directory_for_temporary_files, directory_for_results, english, finnish):
-	
-	# This subroutine is run when there has been some kind of error and the user needs to know about it.
-	# This subroutine creates the gnuplot commands needed to create a graphics file explaining the error to user.
-
-	try:
-		commandfile_for_gnuplot = directory_for_temporary_files + os.sep + filename + '-gnuplot_commands'
-		loudness_calculation_table = directory_for_temporary_files + os.sep + filename + '-loudness_calculation_table'
-		gnuplot_temporary_output_graphicsfile = directory_for_temporary_files + os.sep + filename + '-Loudness_Results_Graphics.jpg' * english + '-Aanekkyyslaskennan_Tulokset.jpg' * finnish
-
-		gnuplot_commands = []
-		global debug_temporary_dict_for_all_file_processing_information
-		global silent
-		
-		debug_information_list = []
-
-		# Save some debug information. Items are always saved in pairs (Title, value) so that the list is easy to parse later.
-		if filename in debug_temporary_dict_for_all_file_processing_information:
-			debug_information_list = debug_temporary_dict_for_all_file_processing_information[filename]
-		unix_time_in_ticks, realtime = get_realtime(english, finnish)
-		debug_information_list.append('Start Time')
-		debug_information_list.append(unix_time_in_ticks)
-		debug_information_list.append('Subprocess Name')
-		debug_information_list.append('create_gnuplot_commands_for_error_message')
-		debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
-
-		# Write 4 coordinates to gnuplot data file. These 4 coordinates are used to draw a big red cross on the error graphics file.
-		try:
-			with open(loudness_calculation_table, 'wt') as timeslice_file_handler:
-				timeslice_file_handler.write('1.0\n' + '10\n' + '\n' + '\n' + '10\n' + '1.0\n')
-				timeslice_file_handler.flush() # Flushes written data to os cache
-				os.fsync(timeslice_file_handler.fileno()) # Flushes os cache to disk
-		except KeyboardInterrupt:
-			if silent == False:
-				print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
-			sys.exit(0)
-		except IOError as reason_for_error:
-			error_message = 'Error opening gnuplot datafile for writing error graphics data ' * english + 'Gnuplotin datatiedoston avaaminen virhegrafiikan datan kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
-			send_error_messages_to_screen_logfile_email(error_message, [])
-		except OSError as reason_for_error:
-			error_message = 'Error opening gnuplot datafile for writing error graphics data ' * english + 'Gnuplotin datatiedoston avaaminen virhegrafiikan datan kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
-			send_error_messages_to_screen_logfile_email(error_message, [])
-
-		# Create gnuplot commands and put then in  a list.
-		gnuplot_commands=['set terminal jpeg size 1280,960 medium font \'arial\'', \
-		'set output ' + '\"' + gnuplot_temporary_output_graphicsfile.replace('"','\\"') + '\"', \
-		'set yrange [ 1 : 10 ]', \
-		'set title ' + '\"\'' + filename.replace('_', ' ').replace('"','\\"') + '\'\\n' + 'Loudness calculation encountered an error\\n\\n' * english + 'Äänekkyyden mittaamisessa tapahtui virhe:\\n\\n' * finnish + 'Error Message: ' * english + 'Virheilmoitus: ' * finnish + str(error_message), \
-		'plot ' + '\"' + loudness_calculation_table.replace('"','\\"') + '\"' + ' with lines lw 2 title \'\'']
-
-		# Write gnuplot commands to a file.
-		try:
-			with open(commandfile_for_gnuplot, 'wt') as gnuplot_commandfile_handler:
-				for item in gnuplot_commands:
-					gnuplot_commandfile_handler.write(item + '\n')
-				gnuplot_commandfile_handler.flush() # Flushes written data to os cache
-				os.fsync(gnuplot_commandfile_handler.fileno()) # Flushes os cache to disk
-		except KeyboardInterrupt:
-			if silent == False:
-				print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
-			sys.exit(0)
-		except IOError as reason_for_error:
-			error_message = 'Error opening Gnuplot commandfile for writing ' * english + 'Gnuplotin komentotiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
-			send_error_messages_to_screen_logfile_email(error_message, [])
-		except OSError as reason_for_error:
-			error_message = 'Error opening Gnuplot commandfile for writing ' * english + 'Gnuplotin komentotiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
-			send_error_messages_to_screen_logfile_email(error_message, [])
-
 		# Save some debug information.
+		debug_information_list.append('create_loudness_history_graphics_files')
+		debug_information_list.append(create_loudness_history_graphics_files)
 		debug_information_list.append('gnuplot_commands')
 		debug_information_list.append(gnuplot_commands)
 		debug_information_list.append('error_message')
@@ -1128,7 +1197,8 @@ def create_gnuplot_commands_for_error_message(error_message, filename, directory
 		debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 
 		# Call a subprocess to run gnuplot
-		run_gnuplot(filename, directory_for_temporary_files, directory_for_results, english, finnish)
+		if create_loudness_history_graphics_files == True:
+			run_gnuplot(filename, directory_for_temporary_files, directory_for_results, english, finnish)
 
 	except Exception:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -2914,6 +2984,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		global directory_for_results
 		global where_to_send_error_messages
 		global debug
+		global write_loudness_calculation_results_to_separate_text_files
 		
 		audio_duration_string = ''
 		audio_duration_fractions_string = ''
@@ -2941,6 +3012,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		global wav_format_maximum_file_size
 		file_type = ''
 		list_of_error_messages_for_unsupported_streams = []
+		error_code = 0
 		filenames_and_channel_counts_for_mxf_audio_remixing = []
 		audio_remix_channel_map = []
 		mxf_audio_remixing = False
@@ -3057,7 +3129,8 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 						# Create error message to the results graphics file and skip the stream.
 						unsupported_stream_name = filename_and_extension[0] + '-AudioStream-' * english + '-Miksaus-' * finnish + str(audio_stream_number) + '-ChannelCount-' * english + '-AaniKanavia-' * finnish  + '0'
 						error_message = 'There are ' * english + 'Miksauksessa numero ' * finnish + str(audio_stream_number) * finnish + 'zero' * english + ' audio channels in stream number ' * english + ' on nolla äänikanavaa' * finnish + str(audio_stream_number) * english
-						list_of_error_messages_for_unsupported_streams.append([unsupported_stream_name, error_message])
+						error_code = 5
+						list_of_error_messages_for_unsupported_streams.append([unsupported_stream_name, error_message, error_code])
 						continue
 				
 				# Create names for audio streams found in the file.
@@ -3107,7 +3180,8 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				if skip_this_audio_stream == True:
 					unsupported_stream_name = filename_and_extension[0] + '-AudioStream-' * english + '-Miksaus-' * finnish + str(audio_stream_number) + '-ChannelCount-' * english + '-AaniKanavia-' * finnish  + number_of_audio_channels
 					error_message = 'There are ' * english + 'Miksauksessa ' * finnish  + str(audio_stream_number) * finnish + ' on ' * finnish + str(number_of_audio_channels) + ' channels in stream ' * english + str(audio_stream_number) * english + ', only channel counts from one to six are supported' * english + ' äänikanavaa, vain kanavamäärät yhdestä kuuteen ovat tuettuja' * finnish
-					list_of_error_messages_for_unsupported_streams.append([unsupported_stream_name, error_message])			
+					error_code = 6
+					list_of_error_messages_for_unsupported_streams.append([unsupported_stream_name, error_message, error_code])
 					continue
 				
 				# Find audio stream format information
@@ -3352,7 +3426,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		# If there were supported and unsupported streams in the file then print error messages we gathered for the unsupported streams earlier.
 		if (ffmpeg_supported_fileformat == True) and (len(list_of_error_messages_for_unsupported_streams) > 0):
 			
-			for unsupported_stream_name, error_message in list_of_error_messages_for_unsupported_streams:
+			for unsupported_stream_name, error_message, error_code in list_of_error_messages_for_unsupported_streams:
 				
 				# This error message is not very important so don't send it by email, only send it to other possible destinations (screen, logfile).
 				error_message_destinations = copy.deepcopy(where_to_send_error_messages)
@@ -3362,6 +3436,18 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				
 				# Create the result graphics file with an error message telling stream is not supported.
 				create_gnuplot_commands_for_error_message(error_message, unsupported_stream_name, directory_for_temporary_files, directory_for_results, english, finnish)
+
+				# Write error_code and error message to the file specific loudness calculation results file.
+				if write_loudness_calculation_results_to_separate_text_files == True:
+
+					loudness_calculations_results_file = unsupported_stream_name + '-loudness_calculation_results.txt'
+					target_file1 = directory_for_temporary_files + os.sep + loudness_calculations_results_file # The file is first written to temp dir,
+					target_file2 = directory_for_results + os.sep + loudness_calculations_results_file # and then moved to the results dir.
+
+					loudness_calculation_data = '0,0,0,0,0,0,0' + ',' + str(error_code) + ',' + error_message
+					output_file_write_mode = 'wt'
+					
+					debug_write_loudness_calculation_info_to_a_logfile(loudness_calculation_data, target_file1, target_file2, output_file_write_mode)
 
 				# Printing error message in history graphics file adds the stream name to a debug processing information dictionary.
 				# Since the stream is unsupported and will not be processed, remove it's name from the debug dictionary.
@@ -4015,7 +4101,7 @@ def signal_handler_routine(signal_number, stack_frame):
 		global debug_all
 		global debug_lists_and_dictionaries
 		global debug_file_processing
-		global save_measurement_results_to_a_file
+		global save_all_measurement_results_to_a_single_debug_file
 
 		# Handle SIGUSR1
 		if signal_number == 10:
@@ -4032,12 +4118,12 @@ def signal_handler_routine(signal_number, stack_frame):
 				debug_all = True
 				debug_lists_and_dictionaries  = True
 				debug_file_processing = True
-				save_measurement_results_to_a_file = True
+				save_all_measurement_results_to_a_single_debug_file = True
 			else:
 				debug_all = False
 				debug_lists_and_dictionaries  = False 
 				debug_file_processing = False
-				save_measurement_results_to_a_file = False
+				save_all_measurement_results_to_a_single_debug_file = False
 
 	except Exception:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -5018,6 +5104,20 @@ try:
 									create_gnuplot_commands_for_error_message(error_message, filename, directory_for_temporary_files, directory_for_results, english, finnish)
 									unsupported_ignored_files_dict[filename] = int(time.time())
 
+									# Write error_code and error message to the file specific loudness calculation results file.
+									if write_loudness_calculation_results_to_separate_text_files == True:
+
+										loudness_calculations_results_file = filename + '-loudness_calculation_results.txt'
+										target_file1 = directory_for_temporary_files + os.sep + loudness_calculations_results_file # The file is first written to temp dir,
+										target_file2 = directory_for_results + os.sep + loudness_calculations_results_file # and then moved to the results dir.
+
+										error_code = 3
+
+										loudness_calculation_data = '0,0,0,0,0,0,0' + ',' + str(error_code) + ',' + error_message
+										output_file_write_mode = 'wt'
+										
+										debug_write_loudness_calculation_info_to_a_logfile(loudness_calculation_data, target_file1, target_file2, output_file_write_mode)
+
 						if we_have_true_read_access_to_the_file == True:
 
 							# Test if FFmpeg is installed.
@@ -5060,11 +5160,25 @@ try:
 									if 'email' in error_message_destinations:
 										error_message_destinations.remove('email')
 									send_error_messages_to_screen_logfile_email(error_message + ': ' + filename, error_message_destinations)
+
+									# Write error_code and error message to the file specific loudness calculation results file.
+									if write_loudness_calculation_results_to_separate_text_files == True:
+
+										loudness_calculations_results_file = filename + '-loudness_calculation_results.txt'
+										target_file1 = directory_for_temporary_files + os.sep + loudness_calculations_results_file # The file is first written to temp dir,
+										target_file2 = directory_for_results + os.sep + loudness_calculations_results_file # and then moved to the results dir.
+
+										error_code = 7
+
+										loudness_calculation_data = '0,0,0,0,0,0,0' + ',' + str(error_code) + ',' + error_message
+										output_file_write_mode = 'wt'
+										
+										debug_write_loudness_calculation_info_to_a_logfile(loudness_calculation_data, target_file1, target_file2, output_file_write_mode)
 									
 								else:
 									
 									# FFmpeg error message was found tell the user about it.
-									error_message = ffmpeg_error_message
+									error_message = ffmpeg_error_message.replace('\\n', ' ').replace('\n',' ').replace('\t',' ').strip()
 									
 									error_message_destinations = copy.deepcopy(where_to_send_error_messages)
 									if send_ffmpeg_error_message_by_email == False:
@@ -5072,6 +5186,25 @@ try:
 											error_message_destinations.remove('email')
 									send_error_messages_to_screen_logfile_email(error_message + ': ' + filename, error_message_destinations)
 									
+									# Write error_code and error message to the file specific loudness calculation results file.
+									if write_loudness_calculation_results_to_separate_text_files == True:
+
+										loudness_calculations_results_file = filename + '-loudness_calculation_results.txt'
+										target_file1 = directory_for_temporary_files + os.sep + loudness_calculations_results_file # The file is first written to temp dir,
+										target_file2 = directory_for_results + os.sep + loudness_calculations_results_file # and then moved to the results dir.
+
+										error_code = 100
+
+										if 'only channel counts from 1 to 6 are supported' in error_message:
+											error_code = 6
+										if 'vain kanavamäärät välillä 1 ja 6 ovat tuettuja' in error_message:
+											error_code = 6
+
+										loudness_calculation_data = '0,0,0,0,0,0,0' + ',' + str(error_code) + ',' + error_message
+										output_file_write_mode = 'wt'
+										
+										debug_write_loudness_calculation_info_to_a_logfile(loudness_calculation_data, target_file1, target_file2, output_file_write_mode)
+
 								create_gnuplot_commands_for_error_message(error_message, filename, directory_for_temporary_files, directory_for_results, english, finnish)
 								unsupported_ignored_files_dict[filename] = int(time.time())
 								
@@ -5096,6 +5229,20 @@ try:
 								# Remove file processing information from temporary debug dictionary, as file is not supported, it will not be processed and this info is no longer needed.
 								temporary_gathering_list = debug_temporary_dict_for_all_file_processing_information.pop(filename)
 								debug_complete_final_information_for_all_file_processing_dict[filename] = temporary_gathering_list
+
+								# Write error_code and error message to the file specific loudness calculation results file.
+								if write_loudness_calculation_results_to_separate_text_files == True:
+
+									loudness_calculations_results_file = filename + '-loudness_calculation_results.txt'
+									target_file1 = directory_for_temporary_files + os.sep + loudness_calculations_results_file # The file is first written to temp dir,
+									target_file2 = directory_for_results + os.sep + loudness_calculations_results_file # and then moved to the results dir.
+
+									error_code = 4
+
+									loudness_calculation_data = '0,0,0,0,0,0,0' + ',' + str(error_code) + ',' + error_message
+									output_file_write_mode = 'wt'
+									
+									debug_write_loudness_calculation_info_to_a_logfile(loudness_calculation_data, target_file1, target_file2, output_file_write_mode)
 
 							# The time slice value used in loudness calculation is normally 3 seconds. When we calculate short files <12 seconds, it's more convenient to use a smaller value of 0.5 seconds to get more detailed loudness graphics.
 							if  (audio_duration_rounded_to_seconds > 0) and (audio_duration_rounded_to_seconds < 12):
