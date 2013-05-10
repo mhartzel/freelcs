@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-version = '234'
+version = '235'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -278,6 +278,13 @@ wav_format_maximum_file_size = 4294967296 # Define wav max file size. Theoretica
 critical_python_error_has_happened = False
 list_of_critical_python_errors = []
 
+# Define lists of supported pcm bit depths
+pcm_8_bit_formats = ['pcm_s8', 'pcm_s8_planar', 'pcm_u8']
+pcm_16_bit_formats = ['pcm_s16be', 'pcm_s16le', 'pcm_s16le_planar', 'pcm_u16be', 'pcm_u16le']
+pcm_24_bit_formats = ['pcm_dvd', 'pcm_lxf', 'pcm_s24be', 'pcm_s24daud', 'pcm_s24le', 'pcm_u24be', 'pcm_u24le']
+pcm_32_bit_formats = ['pcm_f32be', 'pcm_f32le', 'pcm_s32be', 'pcm_s32le', 'pcm_u32be', 'pcm_u32le']
+pcm_64_bit_formats = ['pcm_f64be', 'pcm_f64le']
+
 # Define the default channel map for remixing audio files found inside a mxf - file.
 # A map of [2, 6, 2, 2] means: if audio files with enough audio channels are found, then remix files to create the following mixes: stereo, 5.1, stereo, stereo.
 # Files left over after creating the remixes are discarded.
@@ -287,10 +294,26 @@ list_of_critical_python_errors = []
 global_mxf_audio_remix_channel_map = []
 remix_map_file_extension = '.remix_map'
 
-# If FFmpeg is installed, then define what ffmpeg formats are allowed to be processed.
-# This helps to limit processing to patent free formats (mxf, mkv, ogg)
-# The values can be either ['mxf', 'mkv', 'ogg']  or  ['all']. The last one means allow all ffmpeg supported formats to be processed.
-ffmpeg_allowed_formats = ['mxf', 'mkv', 'ogg']
+# If FFmpeg is installed, then define what wrapper formats are allowed to be processed.
+# This helps to limit processing to patent free formats (mxf, mkv (matroska), webm, ogg, wav, flac) if needed.
+# The value of ['all'] means allow all ffmpeg supported formats to be processed.
+# Use only lower case characters for the format names.
+ffmpeg_allowed_wrapper_formats = ['mxf', 'mkv', 'matroska', 'webm', 'ogg', 'wav', 'flac']
+
+# Define what codec formats are allowed to be processed with FFmpeg.
+# The value of ['all'] means allow all ffmpeg supported formats to be processed.
+# The value of [] means allow all uncompressed pcm formats, flac and ogg vorbis.
+# Use only lower case characters for the format names.
+ffmpeg_allowed_codec_formats = []
+
+if ffmpeg_allowed_codec_formats == []:
+	ffmpeg_allowed_codec_formats.extend(pcm_8_bit_formats)
+	ffmpeg_allowed_codec_formats.extend(pcm_16_bit_formats)
+	ffmpeg_allowed_codec_formats.extend(pcm_24_bit_formats)
+	ffmpeg_allowed_codec_formats.extend(pcm_32_bit_formats)
+	ffmpeg_allowed_codec_formats.extend(pcm_64_bit_formats)
+	ffmpeg_allowed_codec_formats.append('flac')
+	ffmpeg_allowed_codec_formats.append('vorbis')
 
 # This variable defines, if we should write loudness calculation results to individual text files to the target directory.
 #
@@ -314,8 +337,9 @@ ffmpeg_allowed_formats = ['mxf', 'mkv', 'ogg']
 # 3 = File transfer failed   (main)
 # 4 = Audio duration less than 1 second   (main)
 # 5 = Zero channels in audio stream   (get_audio_stream_information_with_ffmpeg)
-# 6 = Channel count bigger than 6 is unsupported   (get_audio_stream_information_with_ffmpeg)
+# 6 = Channel count bigger than 6 is unsupported   (get_audio_stream_information_with_ffmpeg, main)
 # 7 = No Audio Streams Found In File   (main)
+# 8 = Audio compression codec is not supported   (get_audio_stream_information_with_ffmpeg, main)
 # 100 = Unknown Error
 
 write_loudness_calculation_results_to_separate_text_files = False
@@ -3028,11 +3052,15 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 
 		# Define lists of supported pcm bit depths
-		pcm_8_bit_formats = ['pcm_s8', 'pcm_s8_planar', 'pcm_u8']
-		pcm_16_bit_formats = ['pcm_s16be', 'pcm_s16le', 'pcm_s16le_planar', 'pcm_u16be', 'pcm_u16le']
-		pcm_24_bit_formats = ['pcm_dvd', 'pcm_lxf', 'pcm_s24be', 'pcm_s24daud', 'pcm_s24le', 'pcm_u24be', 'pcm_u24le']
-		pcm_32_bit_formats = ['pcm_f32be', 'pcm_f32le', 'pcm_s32be', 'pcm_s32le', 'pcm_u32be', 'pcm_u32le']
-		pcm_64_bit_formats = ['pcm_f64be', 'pcm_f64le']
+		global pcm_8_bit_formats
+		global pcm_16_bit_formats
+		global pcm_24_bit_formats
+		global pcm_32_bit_formats
+		global pcm_64_bit_formats
+
+		global ffmpeg_allowed_wrapper_formats
+		global ffmpeg_allowed_codec_formats
+		wrapper_format_is_in_allowed_formats_list = True
 		
 		try:
 			# Define filename for the temporary file that we are going to use as stdout for the external command.
@@ -3098,6 +3126,12 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			if 'Input #0' in item:
 				# Get the type of the file.
 				file_type = str(item).split('from')[0].split(',')[1].strip()
+
+				# If allowed wrapper format is 'all' then process all formats that FFmpeg supports, otherwise limit processing to user defined wrapper formats.
+				if 'all' not in ffmpeg_allowed_wrapper_formats:
+					if file_type not in ffmpeg_allowed_wrapper_formats:
+						wrapper_format_is_in_allowed_formats_list = False
+						break
 
 				# File is a mxf - file. Check if user has written a text file on disk holding a file specific audio remix channel map.
 				# If not the subroutine returns the global audio mixing channel map.dio mixing channel map.
@@ -3189,6 +3223,16 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				output_audiostream_format = 'pcm_s16le' # Default audio extraction bit depth is 16 bits if input file bit depth is not known.
 				bit_depth = 16 # Default bit depth.
 				
+				# If allowed audio codec format is 'all' then process all formats that FFmpeg supports, otherwise limit processing to user defined codec formats.
+				if 'all' not in ffmpeg_allowed_codec_formats:
+					if input_audiostream_format not in ffmpeg_allowed_codec_formats:
+						# Create error message to the results graphics file and skip the stream.
+						unsupported_stream_name = filename_and_extension[0] + '-AudioStream-' * english + '-Miksaus-' * finnish + str(audio_stream_number) + '-ChannelCount-' * english + '-AaniKanavia-' * finnish + number_of_audio_channels
+						error_message = 'Audio compression codec ' * english + 'Audion kompressioformaatti ' * finnish + str(input_audiostream_format) + ' is not supported' * english + ' ei ole tuettu' * finnish
+						error_code = 8
+						list_of_error_messages_for_unsupported_streams.append([unsupported_stream_name, error_message, error_code])
+						continue
+
 				# Check if the stream format is a supported PCM - format and assign output format and bit depth according to input bit depth.
 				if input_audiostream_format in pcm_8_bit_formats:
 					output_audiostream_format = 'pcm_u8'
@@ -3241,7 +3285,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 					if bit_depth == 32:
 						output_audiostream_format = 'pcm_s24le'
 						bit_depth = 24
-					
+
 				# Find out what is FFmpegs map number for the audio stream.
 				map_number = ''
 				for map_number_counter in range(item.find('#') + 1, len(item)):
@@ -3314,7 +3358,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				ffmpeg_error_message = 'FFmpeg Error: ' * english + 'FFmpeg Virhe: ' * finnish + item.split(':')[1] # Get the reason for error from ffmpeg output.
 				
 		# Test if file type is mpegts. FFmpeg can not always extract file duration correctly from mpegts so in this case get file duration with the mediainfo - command.
-		if file_type == 'mpegts':
+		if (wrapper_format_is_in_allowed_formats_list == True) and (file_type == 'mpegts'):
 			not_used, not_used, not_used, not_used, audio_duration_according_to_mediainfo, not_used, not_used = get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish, save_debug_information = False)
 
 			if audio_duration_according_to_mediainfo != 0:
@@ -5199,6 +5243,11 @@ try:
 											error_code = 6
 										if 'vain kanavamäärät välillä 1 ja 6 ovat tuettuja' in error_message:
 											error_code = 6
+
+										if 'Audio compression codec' in error_message:
+											error_code = 8
+										if 'Audion kompressioformaatti' in error_message:
+											error_code = 8
 
 										loudness_calculation_data = '0,0,0,0,0,0,0' + ',' + str(error_code) + ',' + error_message
 										output_file_write_mode = 'wt'

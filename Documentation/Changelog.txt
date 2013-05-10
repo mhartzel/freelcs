@@ -1,3 +1,7 @@
+LoudnessCorrection Version 235
+------------------------------
+- It is now possible to limit FFmpeg processing to free wrappers and codecs, or allow all formats.
+
 LoudnessCorrection Version 234
 ------------------------------
 - Add error number and error message at the end of loudness calculation results written to the results directory.
