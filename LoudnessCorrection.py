@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-version = '235'
+version = '237'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -298,13 +298,19 @@ remix_map_file_extension = '.remix_map'
 # This helps to limit processing to patent free formats (mxf, mkv (matroska), webm, ogg, wav, flac) if needed.
 # The value of ['all'] means allow all ffmpeg supported formats to be processed.
 # Use only lower case characters for the format names.
-ffmpeg_allowed_wrapper_formats = ['mxf', 'mkv', 'matroska', 'webm', 'ogg', 'wav', 'flac']
+
+# FIXME
+#ffmpeg_allowed_wrapper_formats = ['mxf', 'mkv', 'matroska', 'webm', 'ogg', 'wav', 'flac']
+ffmpeg_allowed_wrapper_formats = ['all']
 
 # Define what codec formats are allowed to be processed with FFmpeg.
 # The value of ['all'] means allow all ffmpeg supported formats to be processed.
 # The value of [] means allow all uncompressed pcm formats, flac and ogg vorbis.
 # Use only lower case characters for the format names.
-ffmpeg_allowed_codec_formats = []
+
+#FIXME
+#ffmpeg_allowed_codec_formats = []
+ffmpeg_allowed_codec_formats = ['all']
 
 if ffmpeg_allowed_codec_formats == []:
 	ffmpeg_allowed_codec_formats.extend(pcm_8_bit_formats)
@@ -342,7 +348,10 @@ if ffmpeg_allowed_codec_formats == []:
 # 8 = Audio compression codec is not supported   (get_audio_stream_information_with_ffmpeg, main)
 # 100 = Unknown Error
 
-write_loudness_calculation_results_to_separate_text_files = False
+
+# FIXME
+#write_loudness_calculation_results_to_a_machine_readable_file = False
+write_loudness_calculation_results_to_a_machine_readable_file = True
 
 # If LoudnessCorrection is used as part of a automation system, then we might not want to create loudness corrected audio files or result graphics.
 create_loudness_corrected_files = True
@@ -943,11 +952,10 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 			if save_all_measurement_results_to_a_single_debug_file == True:
 
 				global loudness_calculation_logfile_path
+				target_file2 = loudness_calculation_logfile_path
 
 				if loudness_calculation_logfile_path == '':
 					loudness_calculation_logfile_path = directory_for_error_logs + os.sep + 'loudness_calculation_log-' + str(get_realtime(english, finnish)[1]) + '.txt'
-
-				target_file2 = ''
 
 				loudness_calculation_data = filename + ',EndOFFileName,' + str(integrated_loudness) + ',' + str(loudness_range) + ',' + str(highest_peak_db) + ',' + str(channel_count) + ',' + str(sample_rate) + ',' + str(bit_depth) + ',' + str(int(audio_duration)) + '\n'
 				output_file_write_mode = 'at'
@@ -965,13 +973,13 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 
 		# Write loudness calculation results of each file to separate text files in results directory.
 		# This is a user definable option.
-		if write_loudness_calculation_results_to_separate_text_files == True:
+		if write_loudness_calculation_results_to_a_machine_readable_file == True:
 
 			loudness_calculations_results_file = filename + '-loudness_calculation_results.txt'
 			target_file1 = directory_for_temporary_files + os.sep + loudness_calculations_results_file # The file is first written to temp dir,
 			target_file2 = directory_for_results + os.sep + loudness_calculations_results_file # and then moved to the results dir.
 
-			error_message = ''
+			error_message = ' '
 
 			error_code = 0
 
@@ -2185,10 +2193,10 @@ def get_realtime(english, finnish):
 
 	# The length of each time string is either 1 or 2. Subtract the string length from number 2 and use the result to count how many zeroes needs to be before the time string.
 	year = str(year)
-	month = str('0' *( 2 - len(str(month))) + str(month))
+	month = str('0' * ( 2 - len(str(month))) + str(month))
 	day = str('0' * (2 - len(str(day))) + str(day))
 	hours = str('0' * (2 - len(str(hours))) + str(hours))
-	minutes = str('0' *( 2 - len(str(minutes))) + str(minutes))
+	minutes = str('0' * ( 2 - len(str(minutes))) + str(minutes))
 	seconds = str('0' * (2 - len(str(seconds))) + str(seconds))
 
 	# Return the time string.                                                                                                                                     
@@ -2267,6 +2275,7 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 			ffmpeg_run_output_decoded = ffmpeg_run_output.decode('ISO-8859-15') # Convert ffmpeg output from binary to text.
 		
 		ffmpeg_run_output_result_list = str(ffmpeg_run_output_decoded).split('\n')
+
 		for item in ffmpeg_run_output_result_list:
 			if 'error:' in item.lower(): # If there is the string 'error' in ffmpeg's output, there has been an error.
 				error_message = 'ERROR !!! Extracting audio streams with ffmpeg, ' * english + 'VIRHE !!! Audio streamien purkamisessa ffmpeg:illä, ' * finnish + ' ' + filename + ' : ' + item
@@ -2771,6 +2780,8 @@ def debug_lists_and_dictionaries_thread():
 	global debug_complete_final_information_for_all_file_processing_dict
 	global all_settings_dict
 	global version
+	global temp_loudness_results_for_automation
+	global final_loudness_results_for_automation
 
 	list_printouts = []
 	list_printouts_old_values = []
@@ -2835,6 +2846,8 @@ def debug_lists_and_dictionaries_thread():
 			keys_of_debug_temporary_dict_for_timeslice_calculation_information = set(debug_temporary_dict_for_timeslice_calculation_information)
 			keys_of_debug_temporary_dict_for_all_file_processing_information = set(debug_temporary_dict_for_all_file_processing_information)
 			keys_of_debug_complete_final_information_for_all_file_processing_dict = set(debug_complete_final_information_for_all_file_processing_dict)
+			keys_of_temp_loudness_results_for_automation = set(temp_loudness_results_for_automation)
+			keys_of_final_loudness_results_for_automation = set(final_loudness_results_for_automation)
 
 			list_printouts = []
 			list_printouts.append('len(list_of_growing_files)= ' + str(len(list_of_growing_files)) + ' list_of_growing_files = ' + str(list_of_growing_files))
@@ -2870,6 +2883,11 @@ def debug_lists_and_dictionaries_thread():
 			list_printouts.append('len(debug_temporary_dict_for_all_file_processing_information)= ' + str(len(debug_temporary_dict_for_all_file_processing_information)) + ' keys_of_debug_temporary_dict_for_all_file_processing_information = ' + str(keys_of_debug_temporary_dict_for_all_file_processing_information))
 			list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
 			list_printouts.append('len(debug_complete_final_information_for_all_file_processing_dict)= ' + str(len(debug_complete_final_information_for_all_file_processing_dict)) + ' keys_of_debug_complete_final_information_for_all_file_processing_dict = ' + str(keys_of_debug_complete_final_information_for_all_file_processing_dict))
+			list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
+			list_printouts.append('len(temp_loudness_results_for_automation)= ' + str(len(temp_loudness_results_for_automation)) + ' keys_of_temp_loudness_results_for_automation = ' + str(keys_of_temp_loudness_results_for_automation))
+			list_printouts.append('-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------')
+			list_printouts.append('len(final_loudness_results_for_automation)= ' + str(len(final_loudness_results_for_automation)) + ' keys_of_final_loudness_results_for_automation = ' + str(keys_of_final_loudness_results_for_automation))
+
 
 			# Only write list and dictionary debug info to file if the information has changed.
 			if list_printouts != list_printouts_old_values:
@@ -3008,7 +3026,8 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		global directory_for_results
 		global where_to_send_error_messages
 		global debug
-		global write_loudness_calculation_results_to_separate_text_files
+		global write_loudness_calculation_results_to_a_machine_readable_file
+		global temp_loudness_results_for_automation 
 		
 		audio_duration_string = ''
 		audio_duration_fractions_string = ''
@@ -3040,6 +3059,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		filenames_and_channel_counts_for_mxf_audio_remixing = []
 		audio_remix_channel_map = []
 		mxf_audio_remixing = False
+		supported_file_name = ''
 		
 		# Save some debug information. Items are always saved in pairs (Title, value) so that the list is easy to parse later.
 		global debug_temporary_dict_for_all_file_processing_information
@@ -3153,7 +3173,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 					debug_information_list.append('Returned from subroutine: read_audio_remix_map_file')
 
 			if 'Audio:' in item: # There is the string 'Audio' for each audio stream that ffmpeg finds. Count how many 'Audio' strings is found and put the strings in a list. The string holds detailed information about the stream and we print it later.
-				
+			
 				number_of_audio_channels = '0'
 				audio_stream_number = audio_stream_number + 1
 				
@@ -3164,7 +3184,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 						unsupported_stream_name = filename_and_extension[0] + '-AudioStream-' * english + '-Miksaus-' * finnish + str(audio_stream_number) + '-ChannelCount-' * english + '-AaniKanavia-' * finnish  + '0'
 						error_message = 'There are ' * english + 'Miksauksessa numero ' * finnish + str(audio_stream_number) * finnish + 'zero' * english + ' audio channels in stream number ' * english + ' on nolla äänikanavaa' * finnish + str(audio_stream_number) * english
 						error_code = 5
-						list_of_error_messages_for_unsupported_streams.append([unsupported_stream_name, error_message, error_code])
+						list_of_error_messages_for_unsupported_streams.append([unsupported_stream_name, error_message, error_code, audio_stream_number])
 						continue
 				
 				# Create names for audio streams found in the file.
@@ -3215,7 +3235,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 					unsupported_stream_name = filename_and_extension[0] + '-AudioStream-' * english + '-Miksaus-' * finnish + str(audio_stream_number) + '-ChannelCount-' * english + '-AaniKanavia-' * finnish  + number_of_audio_channels
 					error_message = 'There are ' * english + 'Miksauksessa ' * finnish  + str(audio_stream_number) * finnish + ' on ' * finnish + str(number_of_audio_channels) + ' channels in stream ' * english + str(audio_stream_number) * english + ', only channel counts from one to six are supported' * english + ' äänikanavaa, vain kanavamäärät yhdestä kuuteen ovat tuettuja' * finnish
 					error_code = 6
-					list_of_error_messages_for_unsupported_streams.append([unsupported_stream_name, error_message, error_code])
+					list_of_error_messages_for_unsupported_streams.append([unsupported_stream_name, error_message, error_code, audio_stream_number])
 					continue
 				
 				# Find audio stream format information
@@ -3225,12 +3245,14 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				
 				# If allowed audio codec format is 'all' then process all formats that FFmpeg supports, otherwise limit processing to user defined codec formats.
 				if 'all' not in ffmpeg_allowed_codec_formats:
+
 					if input_audiostream_format not in ffmpeg_allowed_codec_formats:
+
 						# Create error message to the results graphics file and skip the stream.
 						unsupported_stream_name = filename_and_extension[0] + '-AudioStream-' * english + '-Miksaus-' * finnish + str(audio_stream_number) + '-ChannelCount-' * english + '-AaniKanavia-' * finnish + number_of_audio_channels
 						error_message = 'Audio compression codec ' * english + 'Audion kompressioformaatti ' * finnish + str(input_audiostream_format) + ' is not supported' * english + ' ei ole tuettu' * finnish
 						error_code = 8
-						list_of_error_messages_for_unsupported_streams.append([unsupported_stream_name, error_message, error_code])
+						list_of_error_messages_for_unsupported_streams.append([unsupported_stream_name, error_message, error_code, audio_stream_number])
 						continue
 
 				# Check if the stream format is a supported PCM - format and assign output format and bit depth according to input bit depth.
@@ -3368,6 +3390,9 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		###################################################################################################
 		# Generate the commandline that will later be used to extract all valid audio streams with FFmpeg #
 		###################################################################################################
+
+		error_code = 0
+		error_message = ''
 		
 		for counter in range(0, number_of_ffmpeg_supported_audiostreams):
 			
@@ -3397,14 +3422,28 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			# Also if mxf - audio needs to be remixed, then gather file names and channel counts to a list that is needed for doing the remixes.
 			if (file_type == 'mxf') and (mxf_audio_remixing == True):
 				# Define names for temporary output files demuxed from a mxf - file.
-				target_filenames.append(filename_and_extension[0] + '-TempOutputFile-' + audio_stream_number + '.' + ffmpeg_output_format)
+				supported_file_name = filename_and_extension[0] + '-TempOutputFile-' + audio_stream_number + '.' + ffmpeg_output_format
+				target_filenames.append(supported_file_name)
 
 				# Gather output filenames and channel counts to a list, that is later used to remix mxf audio files to mixes defined in list 'mxf_audio_remix_channel_map'.
-				filenames_and_channel_counts_for_mxf_audio_remixing.append([filename_and_extension[0] + '-TempOutputFile-' + audio_stream_number + '.' + ffmpeg_output_format, number_of_audio_channels])
+				filenames_and_channel_counts_for_mxf_audio_remixing.append([supported_file_name, number_of_audio_channels])
 
 			else:
 				# File is not mxf, define names for the final output files.
-				target_filenames.append(filename_and_extension[0] + '-AudioStream-' * english + '-Miksaus-' * finnish + audio_stream_number + '-ChannelCount-' * english + '-AaniKanavia-' * finnish + number_of_audio_channels + '.' + ffmpeg_output_format)
+				supported_file_name = filename_and_extension[0] + '-AudioStream-' * english + '-Miksaus-' * finnish + audio_stream_number + '-ChannelCount-' * english + '-AaniKanavia-' * finnish + number_of_audio_channels + '.' + ffmpeg_output_format
+				target_filenames.append(supported_file_name)
+
+				# Add info for all mixes found in the file to dictionary that is used to write the machine readable results file.
+				if write_loudness_calculation_results_to_a_machine_readable_file == True:
+
+					# If the filename for the file we are inspecting with FFmpeg is already stored to 'temp_loudness_results_for_automation' then it means,
+					# we are processing an audiostream extracted from a original multistream file. This in turn means that we already have all the information needed for
+					# machine readable results file and we don't want to store it again.
+
+					if filename not in temp_loudness_results_for_automation:
+
+						temp_loudness_results_for_automation[supported_file_name] = [filename, [audio_stream_number, -1, True, -1, 0, 0, 0, 0, 0, 0, 0, error_code, error_message]]
+
 
 			# Save some debug information.
 			debug_information_list.append('Stream Filename')
@@ -3470,7 +3509,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		# If there were supported and unsupported streams in the file then print error messages we gathered for the unsupported streams earlier.
 		if (ffmpeg_supported_fileformat == True) and (len(list_of_error_messages_for_unsupported_streams) > 0):
 			
-			for unsupported_stream_name, error_message, error_code in list_of_error_messages_for_unsupported_streams:
+			for unsupported_stream_name, error_message, error_code, audio_stream_number in list_of_error_messages_for_unsupported_streams:
 				
 				# This error message is not very important so don't send it by email, only send it to other possible destinations (screen, logfile).
 				error_message_destinations = copy.deepcopy(where_to_send_error_messages)
@@ -3481,17 +3520,9 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				# Create the result graphics file with an error message telling stream is not supported.
 				create_gnuplot_commands_for_error_message(error_message, unsupported_stream_name, directory_for_temporary_files, directory_for_results, english, finnish)
 
-				# Write error_code and error message to the file specific loudness calculation results file.
-				if write_loudness_calculation_results_to_separate_text_files == True:
-
-					loudness_calculations_results_file = unsupported_stream_name + '-loudness_calculation_results.txt'
-					target_file1 = directory_for_temporary_files + os.sep + loudness_calculations_results_file # The file is first written to temp dir,
-					target_file2 = directory_for_results + os.sep + loudness_calculations_results_file # and then moved to the results dir.
-
-					loudness_calculation_data = '0,0,0,0,0,0,0' + ',' + str(error_code) + ',' + error_message
-					output_file_write_mode = 'wt'
-					
-					debug_write_loudness_calculation_info_to_a_logfile(loudness_calculation_data, target_file1, target_file2, output_file_write_mode)
+				# Add info for all mixes found in the file to dictionary that is used to write the machine readable results file.
+				if write_loudness_calculation_results_to_a_machine_readable_file == True:
+					temp_loudness_results_for_automation[unsupported_stream_name] = [filename, [audio_stream_number, -1, True, -1, 0, 0, 0, 0, 0, 0, 0, error_code, error_message]]
 
 				# Printing error message in history graphics file adds the stream name to a debug processing information dictionary.
 				# Since the stream is unsupported and will not be processed, remove it's name from the debug dictionary.
@@ -3504,7 +3535,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				debug_information_list.append('Stream Is Supported')
 				debug_information_list.append('False')
 				debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
-				
+
 		# If there are only unsupported audio streams in the file then assign an error message that gets printed on the results graphics file.
 		# Currently the only known unsupported streams in a file are streams with channel counts of zero and more than 6 channels.
 		send_ffmpeg_error_message_by_email = True
@@ -4340,9 +4371,12 @@ def remix_files_according_to_channel_map(directory_for_temporary_files, original
 		list_of_files_to_move_to_loudness_processing = []
 		list_of_sox_commandlines = []
 		list_of_files_that_match_exactly_a_channel_map = []
+
 		global directory_for_results
 		global silent
 		global adjust_line_printout
+		global write_loudness_calculation_results_to_a_machine_readable_file
+		global temp_loudness_results_for_automation
 
 		list_of_sox_commandlines, list_of_files_that_match_exactly_a_channel_map, list_of_files_to_move_to_loudness_processing  = create_sox_commands_to_remix_audio(directory_for_temporary_files, original_input_file_name, filenames_and_channel_counts_for_mxf_audio_remixing, audio_remix_channel_map, english, finnish)
 
@@ -4354,8 +4388,17 @@ def remix_files_according_to_channel_map(directory_for_temporary_files, original
 				source_file_name = item[0]
 				target_file_name = item[1]
 
+				# Add info about the mix to dictionary that is used to write the machine readable results file.
+				if write_loudness_calculation_results_to_a_machine_readable_file == True:
+
+					audio_stream_number = source_file_name.split('-TempOutputFile-')[1].split('.')[0]
+					temp_loudness_results_for_automation[target_file_name] = [original_input_file_name, [int(audio_stream_number), -1, True, -1, 0, 0, 0, 0, 0, 0, 0, 0, ' ']]
+
 				try:
 					shutil.move(directory_for_temporary_files + os.sep + source_file_name, directory_for_temporary_files + os.sep + target_file_name)
+
+					# Filenames that were not remixed with other files, but were used as they is needs to be added to the list of files that needs to be moved back to hotfolder for loudness processing.
+					list_of_files_to_move_to_loudness_processing.append(target_file_name)
 
 				except IOError as reason_for_error:
 					error_message = 'Error renaming a file in temp directory ' * english + 'Väliaikaisten tiedostojen hakemistossa olevan tiedoston uudelleen nimeäminen epäonnistui ' * finnish + str(reason_for_error)
@@ -4364,9 +4407,19 @@ def remix_files_according_to_channel_map(directory_for_temporary_files, original
 					error_message = 'Error renaming a file in temp directory ' * english + 'Väliaikaisten tiedostojen hakemistossa olevan tiedoston uudelleen nimeäminen epäonnistui ' * finnish + str(reason_for_error)
 					send_error_messages_to_screen_logfile_email(error_message, [])
 
-			# Filenames that were not remixed with other files, but were used as they is needs to be added to the list of files that needs to be moved back to hotfolder for loudness processing.
-			for item in list_of_files_that_match_exactly_a_channel_map:
-				list_of_files_to_move_to_loudness_processing.append(item[1])
+		# Add info about the mix to dictionary that is used to write the machine readable results file.
+		if write_loudness_calculation_results_to_a_machine_readable_file == True:
+
+			for item in list_of_files_to_move_to_loudness_processing:
+
+				if '-AudioStream-' in item:
+					audio_stream_number = item.split('-AudioStream-')[1].split('-')[0]
+
+				if '-Miksaus-' in item:
+					audio_stream_number = item.split('-Miksaus-')[1].split('-')[0]
+
+				temp_loudness_results_for_automation[item] = [original_input_file_name, [int(audio_stream_number), -1, True, -1, 0, 0, 0, 0, 0, 0, 0, 0, ' ']]
+
 
 		# Run sox commands to create the mixes defined in channel maps.
 		if len(list_of_sox_commandlines) > 0:
@@ -4597,6 +4650,8 @@ try:
 	html_progress_report_counter = 0 # This variable is used to count the seconds between writing loudness calculation queue information to a html - page on disk
 	loudness_correction_pid = os.getpid() # Get the PID of this program.
 	all_ip_addresses_of_the_machine = [] # This variable stores in a list all IP-Addresses this machine has. This info is inserted into error emails.
+	temp_loudness_results_for_automation = {} # Loudness results and file info is gathered to this temp dictionary if this option is turned on. This temp dictionary helps us to find the name of the original source file that a particular mix belonges to.
+	final_loudness_results_for_automation = {}  # Loudness results and file info is gathered to this dictionary if this option is turned on. This dictionary stores all results under the original source file name, even for separate mixes that were extracted from the original file.
 
 
 	###############################################################################################################################################################################
@@ -4733,6 +4788,9 @@ try:
 			if silent == False:
 				print('Created directory' * english + 'Loin hakemiston' * finnish, str(web_page_path + os.sep + '.temporary_files'))
 
+	# Define the name of the error logfile.
+	error_logfile_path = directory_for_error_logs + os.sep + 'error_log-' + str(get_realtime(english, finnish)[1]) + '.txt' # Error log filename is 'error_log' + current date + time
+
 	# Test that programs gnuplot, sox, ffmpeg, mediainfo, libebur128, smbstatus and loudness-executable can be found in the path and that they have executable permissions on.
 	gnuplot_executable_found = False
 	sox_executable_found = False
@@ -4793,9 +4851,6 @@ try:
 			error_message = '\n!!!!!!! libebur128 loudness-executable does not have \'executable\' permissions on !!!!!!!\n' * english + '\n!!!!!!! libebur128:n loudness-ohjelmalla ei ole käynnistyksen mahdollistava \'executable\' oikeudet päällä !!!!!!!\n' * finnish
 			send_error_messages_to_screen_logfile_email(error_message, [])
 			sys.exit(1)
-
-	# Define the name of the error logfile.
-	error_logfile_path = directory_for_error_logs + os.sep + 'error_log-' + str(get_realtime(english, finnish)[1]) + '.txt' # Error log filename is 'error_log' + current date + time
 
 	# Define the name of the loudness calculation logfile.
 	loudness_calculation_logfile_path = '' 
@@ -5148,19 +5203,15 @@ try:
 									create_gnuplot_commands_for_error_message(error_message, filename, directory_for_temporary_files, directory_for_results, english, finnish)
 									unsupported_ignored_files_dict[filename] = int(time.time())
 
-									# Write error_code and error message to the file specific loudness calculation results file.
-									if write_loudness_calculation_results_to_separate_text_files == True:
-
-										loudness_calculations_results_file = filename + '-loudness_calculation_results.txt'
-										target_file1 = directory_for_temporary_files + os.sep + loudness_calculations_results_file # The file is first written to temp dir,
-										target_file2 = directory_for_results + os.sep + loudness_calculations_results_file # and then moved to the results dir.
+									# Add info for all mixes found in the file to dictionary that is used to write the machine readable results file.
+									if write_loudness_calculation_results_to_a_machine_readable_file == True:
 
 										error_code = 3
 
-										loudness_calculation_data = '0,0,0,0,0,0,0' + ',' + str(error_code) + ',' + error_message
-										output_file_write_mode = 'wt'
-										
-										debug_write_loudness_calculation_info_to_a_logfile(loudness_calculation_data, target_file1, target_file2, output_file_write_mode)
+										# Store results to the final results dict used for writing machine readable results.
+										final_loudness_results_for_automation[filename] = [0, 0, create_loudness_corrected_files, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message]
+
+										# FIXME Tästä pitää lähteä kutsu rutiinille, joka kirjoittaa koneluettavan tulostiedoston.
 
 						if we_have_true_read_access_to_the_file == True:
 
@@ -5181,6 +5232,7 @@ try:
 									ffmpeg_supported_fileformat = True
 									number_of_ffmpeg_supported_audiostreams = 1
 									ffmpeg_error_message = ''
+									temp_loudness_results_for_automation[filename] = [filename, [1, 1, create_loudness_corrected_files, -1, 0, 0, 0, 0, 0, 0, 0, 0, ' ']]
 								else:
 									ffmpeg_supported_fileformat = False
 									number_of_ffmpeg_supported_audiostreams = 0
@@ -5205,20 +5257,16 @@ try:
 										error_message_destinations.remove('email')
 									send_error_messages_to_screen_logfile_email(error_message + ': ' + filename, error_message_destinations)
 
-									# Write error_code and error message to the file specific loudness calculation results file.
-									if write_loudness_calculation_results_to_separate_text_files == True:
-
-										loudness_calculations_results_file = filename + '-loudness_calculation_results.txt'
-										target_file1 = directory_for_temporary_files + os.sep + loudness_calculations_results_file # The file is first written to temp dir,
-										target_file2 = directory_for_results + os.sep + loudness_calculations_results_file # and then moved to the results dir.
+									# Add info for all mixes found in the file to dictionary that is used to write the machine readable results file.
+									if write_loudness_calculation_results_to_a_machine_readable_file == True:
 
 										error_code = 7
 
-										loudness_calculation_data = '0,0,0,0,0,0,0' + ',' + str(error_code) + ',' + error_message
-										output_file_write_mode = 'wt'
-										
-										debug_write_loudness_calculation_info_to_a_logfile(loudness_calculation_data, target_file1, target_file2, output_file_write_mode)
-									
+										# Store results to the final results dict used for writing machine readable results.
+										final_loudness_results_for_automation[filename] = [0, 0, create_loudness_corrected_files, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message]
+
+										# FIXME Tästä pitää lähteä kutsu rutiinille, joka kirjoittaa koneluettavan tulostiedoston.
+
 								else:
 									
 									# FFmpeg error message was found tell the user about it.
@@ -5230,12 +5278,8 @@ try:
 											error_message_destinations.remove('email')
 									send_error_messages_to_screen_logfile_email(error_message + ': ' + filename, error_message_destinations)
 									
-									# Write error_code and error message to the file specific loudness calculation results file.
-									if write_loudness_calculation_results_to_separate_text_files == True:
-
-										loudness_calculations_results_file = filename + '-loudness_calculation_results.txt'
-										target_file1 = directory_for_temporary_files + os.sep + loudness_calculations_results_file # The file is first written to temp dir,
-										target_file2 = directory_for_results + os.sep + loudness_calculations_results_file # and then moved to the results dir.
+									# Add info for all mixes found in the file to dictionary that is used to write the machine readable results file.
+									if write_loudness_calculation_results_to_a_machine_readable_file == True:
 
 										error_code = 100
 
@@ -5249,10 +5293,10 @@ try:
 										if 'Audion kompressioformaatti' in error_message:
 											error_code = 8
 
-										loudness_calculation_data = '0,0,0,0,0,0,0' + ',' + str(error_code) + ',' + error_message
-										output_file_write_mode = 'wt'
-										
-										debug_write_loudness_calculation_info_to_a_logfile(loudness_calculation_data, target_file1, target_file2, output_file_write_mode)
+										# Store results to the final results dict used for writing machine readable results.
+										final_loudness_results_for_automation[filename] = [0, 0, create_loudness_corrected_files, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message]
+
+										# FIXME Tästä pitää lähteä kutsu rutiinille, joka kirjoittaa koneluettavan tulostiedoston.
 
 								create_gnuplot_commands_for_error_message(error_message, filename, directory_for_temporary_files, directory_for_results, english, finnish)
 								unsupported_ignored_files_dict[filename] = int(time.time())
@@ -5279,19 +5323,15 @@ try:
 								temporary_gathering_list = debug_temporary_dict_for_all_file_processing_information.pop(filename)
 								debug_complete_final_information_for_all_file_processing_dict[filename] = temporary_gathering_list
 
-								# Write error_code and error message to the file specific loudness calculation results file.
-								if write_loudness_calculation_results_to_separate_text_files == True:
-
-									loudness_calculations_results_file = filename + '-loudness_calculation_results.txt'
-									target_file1 = directory_for_temporary_files + os.sep + loudness_calculations_results_file # The file is first written to temp dir,
-									target_file2 = directory_for_results + os.sep + loudness_calculations_results_file # and then moved to the results dir.
+								# Add info for all mixes found in the file to dictionary that is used to write the machine readable results file.
+								if write_loudness_calculation_results_to_a_machine_readable_file == True:
 
 									error_code = 4
 
-									loudness_calculation_data = '0,0,0,0,0,0,0' + ',' + str(error_code) + ',' + error_message
-									output_file_write_mode = 'wt'
-									
-									debug_write_loudness_calculation_info_to_a_logfile(loudness_calculation_data, target_file1, target_file2, output_file_write_mode)
+									# Store results to the final results dict used for writing machine readable results.
+									final_loudness_results_for_automation[filename] = [0, 0, create_loudness_corrected_files, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message]
+
+									# FIXME Tästä pitää lähteä kutsu rutiinille, joka kirjoittaa koneluettavan tulostiedoston.
 
 							# The time slice value used in loudness calculation is normally 3 seconds. When we calculate short files <12 seconds, it's more convenient to use a smaller value of 0.5 seconds to get more detailed loudness graphics.
 							if  (audio_duration_rounded_to_seconds > 0) and (audio_duration_rounded_to_seconds < 12):
@@ -5409,24 +5449,50 @@ try:
 			###################################
 			# Find threads that have finished #
 			###################################
+
 			finished_processes=[]
+
 			for filename in loudness_calculation_queue:
 				event_for_process_1, event_for_process_2 = loudness_calculation_queue[filename] # Take both events for the file from the dictionary.
 				
 				if (event_for_process_1.is_set()) and (event_for_process_2.is_set()): # Check if both events are set (= both threads have finished), if true add the file name to the list of finished processes.
 					finished_processes.append(filename)
 
+				# If user wants us to write loudness results to a machine readable file,
+				# Then find the name of the original file that this mix was extracted from and store results under the original file name.
+				if write_loudness_calculation_results_to_a_machine_readable_file == True:
+
+					if filename in temp_loudness_results_for_automation:
+
+						mix_result_lists = []
+
+						original_file_name = temp_loudness_results_for_automation[filename][0]
+
+						if original_file_name in final_loudness_results_for_automation:
+							mix_result_lists = final_loudness_results_for_automation[original_file_name]
+
+						loudness_results_for_machine_readable_file = temp_loudness_results_for_automation[filename][1]
+						loudness_results_for_machine_readable_file.append(filename)
+
+						mix_result_lists.append(loudness_results_for_machine_readable_file)
+
+						final_loudness_results_for_automation[original_file_name] = mix_result_lists
+
+						# Now that results have been moved to the final dictionary, the values stored in the temp dictionary can be removed.
+						del temp_loudness_results_for_automation[filename]
+
+
 			# If both threads processing the file have finished, remove file from the queue of files being processed.
 			for filename in finished_processes: # Get names of files who's processing threads have completed and print message to user.
 				
 				event_for_process_1, event_for_process_2 = loudness_calculation_queue[filename]
 				temporary_gathering_list = []
-				
+
 				# If filename exists in 'debug_temporary_dict_for_all_file_processing_information' then move file processing debug info to the final gathering dictionary.
 				# If filename is missing from 'debug_temporary_dict_for_all_file_processing_information' then user has deleted the file before processing finished. In this case delete all file processing debug information for the file.
 				if filename in debug_temporary_dict_for_all_file_processing_information:
 
-					# If both events are equal (pointing to the same event object) then audiostreams was extracted with ffmpeg from the file. 
+					# If both events are equal (pointing to the same event object) then audiostreams were extracted with ffmpeg from the file. 
 					# When loudness processing is ready then events are not equal (events point to different event objects).
 
 					if event_for_process_1 != event_for_process_2:
@@ -5481,8 +5547,35 @@ try:
 			loop_counter = 0
 
 
+
+
+		# FIXME
+
+		#print()
+
+		#for item1 in final_loudness_results_for_automation:
+
+		#	print('Originaali tiedosto:', item1)
+		#	print('-----------------------------------------------------------------------------')
+
+		#	results_lists = final_loudness_results_for_automation[item1]
+
+		#	if 'list' in str(type(results_lists[0])):
+
+		#		results_lists.sort()
+
+		#		for results_for_mix in results_lists:
+		#			print(results_for_mix)
+		#	else:
+		#		print(results_lists)
+		#	print()
+
+
+
+
 except Exception:
         exc_type, exc_value, exc_traceback = sys.exc_info()
         error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
         subroutine_name = 'Main'
         catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
+
