@@ -1,3 +1,7 @@
+LoudnessCorrection Version 238
+------------------------------
+- Still work in progress: Redesigning how loudness calculation results are saved to a machine readable file.
+
 LoudnessCorrection Version 237
 ------------------------------
 - Work in progress: Redesigning how loudness calculation results are saved to a machine readable file. The new system knows what was the original multistream file that the mixes were extracted from, and stores results for all its mixes to a file named like the original multistream file.  This makes it easier to integrate FreeLCS into an automated audio processing system.
