@@ -1,3 +1,7 @@
+LoudnessCorrection Version 239
+------------------------------
+- Still work in progress: Redesigning how loudness calculation results are saved to a machine readable file. Features are ready but untested.
+
 LoudnessCorrection Version 238
 ------------------------------
 - Still work in progress: Redesigning how loudness calculation results are saved to a machine readable file.

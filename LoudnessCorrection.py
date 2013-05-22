@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-version = '238'
+version = '239'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -321,42 +321,8 @@ if ffmpeg_allowed_codec_formats == []:
 	ffmpeg_allowed_codec_formats.append('flac')
 	ffmpeg_allowed_codec_formats.append('vorbis')
 
-# The variable 'write_loudness_calculation_results_to_a_machine_readable_file' defines, if we should write loudness calculation results to individual text files to the target directory.
-#
-# Items written to the results file are:                                                                                                                               
-#	
-# 00 = The number of this mix.
-# 01 = Total number of supported mixes in the original file.
-# 02 = Total number of mixes in the original file.
-# 03 = Create Loudness Corrected Files (True / False).
-# 04 = Number of files in this mix (This is usually 1, except when a file would exceed wav limit 4 GB and the output is split to separate single channel files).
-
-# 05 = Integrated Loudness (If loudness is below measurement threshhold, then this value is 'inf').
-# 06 = Loudness Range.
-# 07 = Highest Peak (dBFS or dBTP depending what user selected during installation).
-# 08 = Number Of Channels.
-# 09 = Sample Rate.
-# 10 = Bit Depth.
-# 11 = Duration rounded to seconds.
-# 12 = Loudness calculation error code.
-# 13 = Reason for error (text string).
-# 14 = List of filesnames for the mix. The list always contains one filename except when output file size exceeds 4GB and output will be split to one file per channel.
-#
-# The item number 12 error codes are (name of subroutine that reports this error):
-
-# Note: Error numbers greater than 0 means that the loudness corrected file could not be created.
-#
-# 0 = No Errors
-# 1 = Loudness is below measurement threshold (-70 LUFS)   (create_gnuplot_commands)
-# 2 = Error in integrated loudness calculation   (create_gnuplot_commands)
-# 3 = File transfer failed   (main)
-# 4 = Audio duration less than 1 second   (main)
-# 5 = Zero channels in audio stream   (get_audio_stream_information_with_ffmpeg)
-# 6 = Channel count bigger than 6 is unsupported   (get_audio_stream_information_with_ffmpeg, main)
-# 7 = No Audio Streams Found In File   (main)
-# 100 = Unknown Error
-
 # FIXME
+# The variable 'write_loudness_calculation_results_to_a_machine_readable_file' defines, if we should write loudness calculation results to individual text files to the target directory.
 #write_loudness_calculation_results_to_a_machine_readable_file = False
 write_loudness_calculation_results_to_a_machine_readable_file = True
 
@@ -1022,8 +988,8 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 					original_file_name, list_of_values =  temp_loudness_results_for_automation[filename]
 
 					number_of_this_mix = list_of_values[0]
-					total_number_of_mixes_in_original_file = list_of_values[1]
-					total_number_of_supported_mixes_in_original_file = list_of_values[2]
+					total_number_of_supported_mixes_in_original_file = list_of_values[1]
+					total_number_of_mixes_in_original_file = list_of_values[2]
 
 					list_of_values[0] = number_of_this_mix
 					list_of_values[1] = total_number_of_supported_mixes_in_original_file
@@ -3492,8 +3458,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 					# machine readable results file and we don't want to store it again.
 
 					if filename not in temp_loudness_results_for_automation:
-						dummy_initial_data_for_machine_readable_results_file[supported_file_name] = [filename, [audio_stream_number, -1, -1, True, -1, 0, 0, 0, 0, 0, 0, 0, error_code, error_message,[supported_file_name]]]
-
+						dummy_initial_data_for_machine_readable_results_file[supported_file_name] = [filename, [int(audio_stream_number), 0, 0, True, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message,[supported_file_name]]]
 
 
 			# Save some debug information.
@@ -3556,6 +3521,8 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			ffmpeg_supported_fileformat = True
 		else:
 			ffmpeg_supported_fileformat = False
+
+		total_number_of_streams_in_the_file = len(dummy_initial_data_for_machine_readable_results_file) + len(list_of_error_messages_for_unsupported_streams) # This is equal to total number of audiostreams in file.
 		
 		# If there were supported and unsupported streams in the file then print error messages we gathered for the unsupported streams earlier.
 		if (ffmpeg_supported_fileformat == True) and (len(list_of_error_messages_for_unsupported_streams) > 0):
@@ -3574,12 +3541,16 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				# Add info for all mixes found in the file to dictionary that is used to write the machine readable results file.
 				if write_loudness_calculation_results_to_a_machine_readable_file == True:
 					
-					# If the filename for the file we are inspecting with FFmpeg is already stored to 'temp_loudness_results_for_automation' then it means,
-					# we are processing an audiostream extracted from a original multistream file. This in turn means that we already have all the information needed for
-					# machine readable results file and we don't want to store it again.
+					# If there are results already stored for this oroginal file, then append this streams results.
+					if filename in final_loudness_results_for_automation:
 
-					if filename not in temp_loudness_results_for_automation:
-						dummy_initial_data_for_machine_readable_results_file[unsupported_stream_name] = [filename, [audio_stream_number, -1, -1, True, -1, 0, 0, 0, 0, 0, 0, 0, error_code, error_message,[]]]
+						mix_result_lists = final_loudness_results_for_automation[filename]
+						mix_result_lists.append([audio_stream_number, number_of_ffmpeg_supported_audiostreams, total_number_of_streams_in_the_file, True, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message,[]])
+
+					else:
+						mix_result_lists = [[audio_stream_number, number_of_ffmpeg_supported_audiostreams, total_number_of_streams_in_the_file, True, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message,[]]]
+
+					final_loudness_results_for_automation[filename] = mix_result_lists
 
 				# Printing error message in history graphics file adds the stream name to a debug processing information dictionary.
 				# Since the stream is unsupported and will not be processed, remove it's name from the debug dictionary.
@@ -3598,7 +3569,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 
 			for item in dummy_initial_data_for_machine_readable_results_file:
 				dummy_initial_data_for_machine_readable_results_file[item][1][1] = number_of_ffmpeg_supported_audiostreams
-				dummy_initial_data_for_machine_readable_results_file[item][1][2] = len(dummy_initial_data_for_machine_readable_results_file) # This is equal to total number of audiostreams in file.
+				dummy_initial_data_for_machine_readable_results_file[item][1][2] = total_number_of_streams_in_the_file
 
 				temp_loudness_results_for_automation[item] = dummy_initial_data_for_machine_readable_results_file[item]
 
@@ -4082,6 +4053,8 @@ def debug_write_loudness_calculation_info_to_a_logfile(loudness_calculation_data
 		#
 
 		global silent
+		global english
+		global finnish
 		
 		try:
 			with open(target_file, 'at') as loudness_calculation_logfile_handler:
@@ -4445,7 +4418,7 @@ def remix_files_according_to_channel_map(directory_for_temporary_files, original
 				if write_loudness_calculation_results_to_a_machine_readable_file == True:
 
 					# Store initial data for the mix.
-					initial_data_for_machine_readable_results_file[target_file_name] = [original_input_file_name, [-1, -1, -1, True, -1, 0, 0, 0, 0, 0, 0, 0, 0, ' ', [target_file_name]]]
+					initial_data_for_machine_readable_results_file[target_file_name] = [original_input_file_name, [0, 0, 0, True, 0, 0, 0, 0, 0, 0, 0, 0, 0, ' ', [target_file_name]]]
 
 				try:
 					shutil.move(directory_for_temporary_files + os.sep + source_file_name, directory_for_temporary_files + os.sep + target_file_name)
@@ -4466,7 +4439,7 @@ def remix_files_according_to_channel_map(directory_for_temporary_files, original
 			for item in list_of_files_to_move_to_loudness_processing:
 
 				# Store initial data for the mix.
-				initial_data_for_machine_readable_results_file[item] = [original_input_file_name, [-1, -1, -1, True, -1, 0, 0, 0, 0, 0, 0, 0, 0, ' ', [item]]]
+				initial_data_for_machine_readable_results_file[item] = [original_input_file_name, [0, 0, 0, True, 0, 0, 0, 0, 0, 0, 0, 0, 0, ' ', [item]]]
 
 			# Now we know how many audiomixes there will be after remixing, so fill in the information.
 			keys_for_dummy_initial_data_for_machine_readable_results_file = list(initial_data_for_machine_readable_results_file)
@@ -4645,6 +4618,100 @@ def create_sox_commands_to_remix_audio(directory_for_temporary_files, original_i
 
 	return(list_of_sox_commandlines, list_of_files_that_match_exactly_a_channel_map, target_filenames)
 
+def write_loudness_results_and_file_info_to_a_machine_readable_file(filename, data_for_machine_readable_results_file):
+
+	try:
+		# This subroutine can be used to write loudness calculation data and techinal data about processed files into a machine readable file.
+
+		global silent
+		global english
+		global finnish
+		global directory_for_temporary_files
+		global directory_for_results
+
+		data_for_machine_readable_results_file.sort() # Sort data according to stream numbers, so that the file will be more easily read.
+
+		unit_separator = chr(31) # This non printable ascii character is used to separate individual values for a mix.
+		record_separator = chr(13) + chr(10) # This non printable ascii character (or string) that is used to separate info for different mixes. This is by default the carrage return character followed by the line feed character. This sequence is used in windows to separate lines of text.
+
+		machine_readable_data = ''
+
+		output_filename_extension = '-machine_readable_results.txt'
+		temp_file_path = directory_for_temporary_files + os.sep + filename + output_filename_extension
+		final_file_path = directory_for_results + os.sep + filename + output_filename_extension
+
+		for data_for_one_mix in data_for_machine_readable_results_file:
+
+			data_converted_to_a_string = ''
+
+			for counter1 in range(0, len(data_for_one_mix)):
+
+				one_value = data_for_one_mix[counter1]
+
+				#########################################################################################################################
+				# If the item is a list, then it is a list of output filenames and we need to add them separately to the data string.
+				if 'list' in str(type(one_value)):
+
+					for counter2 in range(0, len(one_value)):
+
+						file_name = one_value[counter2]
+						data_converted_to_a_string = data_converted_to_a_string + str(file_name)
+
+						# Only append the unit separator character if this item is not the last item.
+						if counter2 < len(one_value) -1:
+							data_converted_to_a_string = data_converted_to_a_string + unit_separator
+
+					# Add the record separator character / string at the end of a data line.
+					data_converted_to_a_string = data_converted_to_a_string + record_separator
+					continue
+
+				#########################################################################################################################
+
+				data_converted_to_a_string = data_converted_to_a_string + str(one_value)
+
+				# Only append the unit separator character if this item is not the last item.
+				if counter1 < len(data_for_one_mix) -1:
+					data_converted_to_a_string = data_converted_to_a_string + unit_separator
+
+			machine_readable_data = machine_readable_data + data_converted_to_a_string
+
+		try:
+			with open(temp_file_path, 'wt') as machine_readable_results_file_handler:
+				machine_readable_results_file_handler.write(machine_readable_data)
+				machine_readable_results_file_handler.flush() # Flushes written data to os cache
+				os.fsync(machine_readable_results_file_handler.fileno()) # Flushes os cache to disk
+
+		except KeyboardInterrupt:
+			if silent == False:
+				print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
+			sys.exit(0)
+		except IOError as reason_for_error:
+			error_message = 'Error opening machine readable results file for writing ' * english + 'Koneluettavan äänekkyyslogitiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message, [])
+		except OSError as reason_for_error:
+			error_message = 'Error opening machine readable results file for writing ' * english + 'Koneluettavan äänekkyyslogitiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message, [])
+
+		# Move the results file from the temp dir to the results dir.
+
+		try:
+			shutil.move(temp_file_path, final_file_path)
+		except KeyboardInterrupt:
+			if silent == False:
+				print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
+			sys.exit(0)
+		except IOError as reason_for_error:
+			error_message = 'Error moving machine readable results file to results directory ' * english + 'Koneluettavan äänekkyyslogitiedoston siirtäminen tulosten hakemistoon epäonnistui ' * finnish + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message, [])
+		except OSError as reason_for_error:
+			error_message = 'Error moving gnuplot graphics file ' * english + 'Gnuplotin grafiikkatiedoston siirtäminen epäonnistui ' * finnish + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message, [])
+
+	except Exception:
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
+                subroutine_name = 'write_loudness_results_and_file_info_to_a_machine_readable_file'
+                catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 
 
 ##############################################################################################
@@ -4674,16 +4741,110 @@ def create_sox_commands_to_remix_audio(directory_for_temporary_files, original_i
 # 		'completed_files_dict'
 # The list holds the names of 100 last files that has gone through loudness calculation, and the order processing them was completed. The dictionary holds the time processing each file was completed. The list and dictionary are only used when printing loudness calculation progress information to a web page on disk.
 #
-# The main procedure works like this:
-# ------------------------------------
-# - Read 'HotFolder' and get filenames, then check against previous directory read to see if new files have appeared.
-# - If there are new files then start monitoring if their size changes between directory polls. Also record the time the file was first seen in the HotFolder.
-# - Check if files have stayed longer in the HotFolder and Results Folder than the expiry time. Delete all files expired.
-# - When a file stops growing, check if ffmpeg can find any audiostreams in the file. If not create a graphics file telling the user about the error, otherwise record the number of streams found.
-# - Check if file format is natively supported by libebur128 and sox shipped with Ubuntu (wav, flac, ogg).
-# - If format is not natively supported extract audiostreams (max 8) from the file with ffmpeg and move the resulting files to HotFolder and delete the original file.
-# - Check to see if there is already the maximum allowed number of loudness calculations going on. If two free processor cores are available then start calculating the next file.
-# - The loudnes calculation, graphics plotting and creation of loudness corrected wavs is handled by subroutines, their operation is documented in their comments.
+#
+##############################################################################################
+#
+#
+# Dictionary 'temp_loudness_results_for_automation'
+# -------------------------------------------------
+#
+#	If the variable 'write_loudness_calculation_results_to_a_machine_readable_file' = True, then data needed to write a machine readble results file is gathered to this dictionary.
+#
+# 
+#	The items saved in this dictionary are:
+#	---------------------------------------
+#	key = the file name of a audiostream extracted from the original file, or in case of a one stream file, just the name of the file.
+#
+#
+#	The items stored for each key are:
+#	----------------------------------
+#	[original_file_name, [technical information about the mix and loudness results, [list_of_output_filenames_for_the_mix]]]
+#
+#	- The 'original_file_name' means the name of the original file that this mix was extracted from. This item helps us later to write loudness results for all mixes extracted from a file in a single results file.
+#	- 'list_of_output_filenames_for_the_mix' is a list of output files that make up this mix. The list contains one file name in case the output file size wont exceed wav max limit of 4 GB and multiple names if this size is exceeded and the output is split to one file per audio channel.
+#
+#
+#	The list item named above as 'technical information about the mix and loudness results' consists of several values which are:
+#	-----------------------------------------------------------------------------------------------------------------------------
+#
+#	00 = The number of this mix.
+#	01 = Total number of supported mixes in the original file.
+#	02 = Total number of mixes in the original file.
+#	03 = Create Loudness Corrected Files (True / False).
+#	04 = Number of files in this mix (This is usually 1, except when a file would exceed wav limit 4 GB and the output is split to separate single channel files).
+#
+#	05 = Integrated Loudness (If loudness is below measurement threshhold, then this value is 'inf').
+#	06 = Loudness Range.
+#	07 = Highest Peak (dBFS or dBTP depending what user selected during installation).
+#	08 = Number Of Channels in the mix.
+#	09 = Sample Rate.
+#	10 = Bit Depth.
+#	11 = Duration rounded to seconds.
+#	12 = Loudness calculation error code.
+#	13 = Reason for error (text string).
+#	14 = List of output filenames for the mix. The list always contains one filename except when output file size exceeds 4GB and output will be split to one audio file per channel.
+#
+#
+#	The item number 12 above holds an error code that is explained below (name of subroutine that reports this error is in parenthesis):
+#	------------------------------------------------------------------------------------------------------------------------------------------------
+#
+#	Note: Error numbers greater than 0 means that the loudness corrected output file could not be created.
+#	
+#	0 = No Errors
+#	1 = Loudness is below measurement threshold (-70 LUFS)   (create_gnuplot_commands)
+#	2 = Error in integrated loudness calculation   (create_gnuplot_commands)
+#	3 = File transfer failed   (main)
+#	4 = Audio duration less than 1 second   (main)
+#	5 = Zero channels in audio stream   (get_audio_stream_information_with_ffmpeg)
+#	6 = Channel count bigger than 6 is unsupported   (get_audio_stream_information_with_ffmpeg, main)
+#	7 = No Audio Streams Found In File   (main)
+#	100 = Unknown Error
+#
+# Dictionary 'final_loudness_results_for_automation'
+# --------------------------------------------------
+#
+#	If the variable 'write_loudness_calculation_results_to_a_machine_readable_file' = True, then data needed to write a machine readble results file is gathered to this dictionary.
+#
+#	Items from dictionary 'temp_loudness_results_for_automation' are moved to this dictionary when loudness results of all mixes extracted from a file a ready.
+#	This means that this dictionary holds loudness results and techninal info for all mixes extracted from a (single or) multistream file.
+#	Data in this dictionary is used when results are written to machine readable results file.
+#
+#	- The key is the original file name that the mixes were extracted from.
+#	- The value for a key is a list of lists, each list holds information for one mix and as the data is copied from dictionary 'temp_loudness_results_for_automation' the items are laid out as explained above.
+#
+#
+#	Example: original file 'inputfile.mxf' contained three mixes. The information stored in the dictionary is:
+#
+#	key = filename.mxf
+#
+#	The item stored for the key is a list of lists meaning a list that holds three lists inside it, one list for each mix extracted from the original file.
+#
+#	Each of these lists is taken from the dictionary 'temp_loudness_results_for_automation' and therefore the order of items in the list is the same as described above.
+#
+#	The data stored for the key in this example is a list that contains three lists:
+#
+#	[[technical information about the mix and loudness results, [filename-AudioStream-1-ChannelCount-2.wav]], 
+#	[technical information about the mix and loudness results, [filename-AudioStream-2-ChannelCount-6.wav]],
+#	[technical information about the mix and loudness results, [filename-AudioStream-3-ChannelCount-2.wav]]]
+#
+#
+#
+########################################################################################################################################################
+#	
+#	
+#	The main procedure works like this:
+#	------------------------------------
+#	- Read 'HotFolder' and get filenames, then check against previous directory read to see if new files have appeared.
+#	- If there are new files then start monitoring if their size changes between directory polls. Also record the time the file was first seen in the HotFolder.
+#	- Check if files have stayed longer in the HotFolder and Results Folder than the expiry time. Delete all files expired.
+#	- When a file stops growing, check if ffmpeg can find any audiostreams in the file. If not create a graphics file telling the user about the error, otherwise record the number of streams found.
+#	- Check if file format is natively supported by libebur128 and sox shipped with Ubuntu (wav, flac, ogg).
+#	- If format is not natively supported extract audiostreams (max 8) from the file with ffmpeg and move the resulting files to HotFolder and delete the original file.
+#	- Check to see if there is already the maximum allowed number of loudness calculations going on. If two free processor cores are available then start calculating the next file.
+#	- The loudnes calculation, graphics plotting and creation of loudness corrected wavs is handled by subroutines, their operation is documented in their comments.
+#
+#
+########################################################################################################################################################
 
 try:
 
@@ -4712,7 +4873,7 @@ try:
 	html_progress_report_counter = 0 # This variable is used to count the seconds between writing loudness calculation queue information to a html - page on disk
 	loudness_correction_pid = os.getpid() # Get the PID of this program.
 	all_ip_addresses_of_the_machine = [] # This variable stores in a list all IP-Addresses this machine has. This info is inserted into error emails.
-	temp_loudness_results_for_automation = {} # Loudness results and file info is gathered to this temp dictionary if this option is turned on. This temp dictionary helps us to find the name of the original source file that a particular mix belonges to.
+	temp_loudness_results_for_automation = {}
 	final_loudness_results_for_automation = {}  # Loudness results and file info is gathered to this dictionary if this option is turned on. This dictionary stores all results under the original source file name, even for separate mixes that were extracted from the original file.
 
 
@@ -5270,10 +5431,8 @@ try:
 
 										error_code = 3
 
-										# Store results to the final results dict used for writing machine readable results.
-										final_loudness_results_for_automation[filename] = [0, 0, create_loudness_corrected_files, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message, []]
-
-										# FIXME Tästä pitää lähteä kutsu rutiinille, joka kirjoittaa koneluettavan tulostiedoston.
+										# Write results to the machine readable results file.
+										write_loudness_results_and_file_info_to_a_machine_readable_file(filename, [0, 0, create_loudness_corrected_files, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message, []])
 
 						if we_have_true_read_access_to_the_file == True:
 
@@ -5294,7 +5453,7 @@ try:
 									ffmpeg_supported_fileformat = True
 									number_of_ffmpeg_supported_audiostreams = 1
 									ffmpeg_error_message = ''
-									temp_loudness_results_for_automation[filename] = [filename, [1, 1, number_of_ffmpeg_supported_audiostreams, create_loudness_corrected_files, -1, 0, 0, 0, 0, 0, 0, 0, 0, ' ', []]]
+									temp_loudness_results_for_automation[filename] = [filename, [1, 1, number_of_ffmpeg_supported_audiostreams, create_loudness_corrected_files, 0, 0, 0, 0, 0, 0, 0, 0, 0, ' ', []]]
 								else:
 									ffmpeg_supported_fileformat = False
 									number_of_ffmpeg_supported_audiostreams = 0
@@ -5324,10 +5483,11 @@ try:
 
 										error_code = 7
 
-										# Store results to the final results dict used for writing machine readable results.
-										final_loudness_results_for_automation[filename] = [0, 0, create_loudness_corrected_files, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message, []]
+										# Write results to the machine readable results file.
+										write_loudness_results_and_file_info_to_a_machine_readable_file(filename, [0, 0, create_loudness_corrected_files, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message, []])
 
-										# FIXME Tästä pitää lähteä kutsu rutiinille, joka kirjoittaa koneluettavan tulostiedoston.
+										if filename in final_loudness_results_for_automation:
+											del final_loudness_results_for_automation[filename]
 
 								else:
 									
@@ -5355,10 +5515,11 @@ try:
 										if 'Audion kompressioformaatti' in error_message:
 											error_code = 8
 
-										# Store results to the final results dict used for writing machine readable results.
-										final_loudness_results_for_automation[filename] = [0, 0, create_loudness_corrected_files, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message, []]
+										# Write results to the machine readable results file.
+										write_loudness_results_and_file_info_to_a_machine_readable_file(filename, [0, 0, create_loudness_corrected_files, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message, []])
 
-										# FIXME Tästä pitää lähteä kutsu rutiinille, joka kirjoittaa koneluettavan tulostiedoston.
+										if filename in final_loudness_results_for_automation:
+											del final_loudness_results_for_automation[filename]
 
 								create_gnuplot_commands_for_error_message(error_message, filename, directory_for_temporary_files, directory_for_results, english, finnish)
 								unsupported_ignored_files_dict[filename] = int(time.time())
@@ -5390,10 +5551,11 @@ try:
 
 									error_code = 4
 
-									# Store results to the final results dict used for writing machine readable results.
-									final_loudness_results_for_automation[filename] = [0, 0, create_loudness_corrected_files, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message, []]
+									# Write results to the machine readable results file.
+									write_loudness_results_and_file_info_to_a_machine_readable_file(filename, [0, 0, create_loudness_corrected_files, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message, []])
 
-									# FIXME Tästä pitää lähteä kutsu rutiinille, joka kirjoittaa koneluettavan tulostiedoston.
+									if filename in final_loudness_results_for_automation:
+										del final_loudness_results_for_automation[filename]
 
 							# The time slice value used in loudness calculation is normally 3 seconds. When we calculate short files <12 seconds, it's more convenient to use a smaller value of 0.5 seconds to get more detailed loudness graphics.
 							if  (audio_duration_rounded_to_seconds > 0) and (audio_duration_rounded_to_seconds < 12):
@@ -5530,7 +5692,7 @@ try:
 					if filename in temp_loudness_results_for_automation:
 
 						original_file_name = temp_loudness_results_for_automation[filename][0]
-						total_number_of_supported_mixes_in_original_file = temp_loudness_results_for_automation[filename][1][1]
+						
 						total_number_of_mixes_in_original_file = temp_loudness_results_for_automation[filename][1][2]
 
 						mix_result_lists = []
@@ -5540,12 +5702,21 @@ try:
 						if original_file_name in final_loudness_results_for_automation:
 							mix_result_lists = final_loudness_results_for_automation[original_file_name]
 
-						loudness_results_for_machine_readable_file = temp_loudness_results_for_automation[filename][1]
-						mix_result_lists.append(loudness_results_for_machine_readable_file)
+						loudness_results_for_one_mix = temp_loudness_results_for_automation[filename][1]
+						mix_result_lists.append(loudness_results_for_one_mix)
 						final_loudness_results_for_automation[original_file_name] = mix_result_lists
 
 						# Now that results have been moved to the final dictionary, the values stored in the temp dictionary can be removed.
 						del temp_loudness_results_for_automation[filename]
+
+						# If all results for mixes extracted from a file are ready, then print the results to machine readable results file.
+						if len(final_loudness_results_for_automation[original_file_name]) == total_number_of_mixes_in_original_file:
+
+							# Call the subroutine that writes results to the machine readable file.
+							write_loudness_results_and_file_info_to_a_machine_readable_file(original_file_name, final_loudness_results_for_automation[original_file_name])
+
+							# The results have been written to a file now and can be deleted from the dictionary.
+							del final_loudness_results_for_automation[original_file_name]
 
 				event_for_process_1, event_for_process_2 = loudness_calculation_queue[filename]
 				temporary_gathering_list = []
@@ -5603,37 +5774,10 @@ try:
 			# Wait one second before checking if processor cores have become free and more calculation processes can be started.
 			time.sleep(1)
 			loop_counter = loop_counter + 1
-						
+
 		# Check if the time between directory polls has expired and a new poll needs to be made. One advacement of the counter is approximately one second. Default time between directory polls is 5 seconds.
 		if loop_counter >= delay_between_directory_reads:
 			loop_counter = 0
-
-
-
-
-		# FIXME
-
-		#print()
-
-		#for item1 in final_loudness_results_for_automation:
-
-		#	print('Originaali tiedosto:', item1)
-		#	print('-----------------------------------------------------------------------------')
-
-		#	results_lists = final_loudness_results_for_automation[item1]
-
-		#	if 'list' in str(type(results_lists[0])):
-
-		#		results_lists.sort()
-
-		#		for results_for_mix in results_lists:
-		#			print(results_for_mix)
-		#	else:
-		#		print(results_lists)
-		#	print()
-
-
-
 
 except Exception:
         exc_type, exc_value, exc_traceback = sys.exc_info()
