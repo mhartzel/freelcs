@@ -1,3 +1,7 @@
+LoudnessCorrection Version 240
+------------------------------
+- Many bugfixes for the new functionality. Still more tests are needed to confirm that the new code functions correctly.
+
 LoudnessCorrection Version 239
 ------------------------------
 - Still work in progress: Redesigning how loudness calculation results are saved to a machine readable file. Features are ready but untested.

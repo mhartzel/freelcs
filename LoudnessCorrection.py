@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-version = '239'
+version = '240'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -973,14 +973,15 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 				filename_and_extension = os.path.splitext(filename)
 
 				# The combined channels in final output file exceeds the max file size and the file needs to be split to separate mono files.
-				# Create commandlines for extracting each channel to its own file.
+				# Create output filenames for the machine readable readable results file.
 				if number_of_files_in_this_mix > 1:
 				
 					for counter in range(1, channel_count + 1):
 						split_channel_targetfile_name = filename_and_extension[0] + '-Channel-' * english + '-Kanava-' * finnish + str(counter) + '_-23_LUFS.' + output_format_for_final_file
 						list_of_filenames.append(split_channel_targetfile_name)
 				else:
-					list_of_filenames.append(filename)
+					# Create output filename for the machine readable readable results file.
+					list_of_filenames.append(str(filename_and_extension[0] + '_-23_LUFS.' + output_format_for_final_file))
 
 				# Get values stored for machine readable results file, and complete information for the file.
 				if filename in temp_loudness_results_for_automation:
@@ -1007,7 +1008,7 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 					list_of_values[13] = error_message
 					list_of_values[14] = list_of_filenames
 
-					temp_loudness_results_for_automation[filename] = original_file_name, list_of_values
+					temp_loudness_results_for_automation[filename] = [original_file_name, list_of_values]
 
 			else:
 				# An error has happened in the loudness caculation, so there are no results, we leave the default dymmy values as they are and insert error number and message and append an empty list of filenames to the results.
@@ -3458,7 +3459,9 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 					# machine readable results file and we don't want to store it again.
 
 					if filename not in temp_loudness_results_for_automation:
-						dummy_initial_data_for_machine_readable_results_file[supported_file_name] = [filename, [int(audio_stream_number), 0, 0, True, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message,[supported_file_name]]]
+						# FIXME Delete the follofing line when it's clear it is not needed.
+						#dummy_initial_data_for_machine_readable_results_file[supported_file_name] = [filename, [int(audio_stream_number), 0, 0, True, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message,[supported_file_name]]]
+						dummy_initial_data_for_machine_readable_results_file[supported_file_name] = [filename, [int(audio_stream_number), 0, 0, True, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message,[]]]
 
 
 			# Save some debug information.
@@ -3564,15 +3567,6 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				debug_information_list.append('False')
 				debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 
-		# Now we now the number of supported audio streams and total number of audio streams in the file. Move all data gathered for machine readable results file from the local dict to the global temp dict.
-		if write_loudness_calculation_results_to_a_machine_readable_file == True:
-
-			for item in dummy_initial_data_for_machine_readable_results_file:
-				dummy_initial_data_for_machine_readable_results_file[item][1][1] = number_of_ffmpeg_supported_audiostreams
-				dummy_initial_data_for_machine_readable_results_file[item][1][2] = total_number_of_streams_in_the_file
-
-				temp_loudness_results_for_automation[item] = dummy_initial_data_for_machine_readable_results_file[item]
-
 		# If there are only unsupported audio streams in the file then assign an error message that gets printed on the results graphics file.
 		# Currently the only known unsupported streams in a file are streams with channel counts of zero and more than 6 channels.
 		send_ffmpeg_error_message_by_email = True
@@ -3605,9 +3599,33 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			natively_supported_file_format = False
 		
 		if input_audiostream_format in pcm_64_bit_formats:
-			# Bit depth is bigger than 32 bits the file must be converted before processing because sox only support up to 32 bits.
+			# Bit depth is bigger than 32 bits the file must be converted before processing because sox only supports up to 32 bits.
 			natively_supported_file_format = False
 		
+		# Now we now the number of supported audio streams and total number of audio streams in the file. Move all data gathered for machine readable results file from the local dict to the global temp dict.
+		if write_loudness_calculation_results_to_a_machine_readable_file == True:
+
+			if (natively_supported_file_format == True) and (number_of_ffmpeg_supported_audiostreams == 1):
+
+				# In this case the file is a supported single stream file.
+				# Replace the stream name with the correct name and add number of supported streams and total number of streams.
+				for item in dummy_initial_data_for_machine_readable_results_file:
+					dummy_initial_data_for_machine_readable_results_file[item][1][1] = number_of_ffmpeg_supported_audiostreams
+					dummy_initial_data_for_machine_readable_results_file[item][1][2] = total_number_of_streams_in_the_file
+					# FIXME Delete the following line when it's clear it is not needed.
+					#dummy_initial_data_for_machine_readable_results_file[item][1][14] = [filename]
+
+					temp_loudness_results_for_automation[filename] = dummy_initial_data_for_machine_readable_results_file[item]
+
+			else:
+				# In this case the file is a multistream file, and the streamname we stored proviously is correct.
+				# Add number of supported streams and total number of streams.
+				for item in dummy_initial_data_for_machine_readable_results_file:
+					dummy_initial_data_for_machine_readable_results_file[item][1][1] = number_of_ffmpeg_supported_audiostreams
+					dummy_initial_data_for_machine_readable_results_file[item][1][2] = total_number_of_streams_in_the_file
+
+					temp_loudness_results_for_automation[item] = dummy_initial_data_for_machine_readable_results_file[item]
+
 		file_format_support_information = [natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames, mxf_audio_remixing, filenames_and_channel_counts_for_mxf_audio_remixing, audio_remix_channel_map]
 		
 		# Save some debug information.
@@ -4629,7 +4647,12 @@ def write_loudness_results_and_file_info_to_a_machine_readable_file(filename, da
 		global directory_for_temporary_files
 		global directory_for_results
 
-		data_for_machine_readable_results_file.sort() # Sort data according to stream numbers, so that the file will be more easily read.
+		# Find how many results lists there are. There is one list for each output mix.
+		number_of_results_lists = 1
+		if 'list' in str(type(data_for_machine_readable_results_file[0])):
+
+			number_of_results_lists = len(data_for_machine_readable_results_file)
+			data_for_machine_readable_results_file.sort() # Sort data according to stream numbers, so that the file will be more easily read.
 
 		unit_separator = chr(31) # This non printable ascii character is used to separate individual values for a mix.
 		record_separator = chr(13) + chr(10) # This non printable ascii character (or string) that is used to separate info for different mixes. This is by default the carrage return character followed by the line feed character. This sequence is used in windows to separate lines of text.
@@ -4640,40 +4663,56 @@ def write_loudness_results_and_file_info_to_a_machine_readable_file(filename, da
 		temp_file_path = directory_for_temporary_files + os.sep + filename + output_filename_extension
 		final_file_path = directory_for_results + os.sep + filename + output_filename_extension
 
-		for data_for_one_mix in data_for_machine_readable_results_file:
+		counter1 = 0
+
+		while counter1 < number_of_results_lists:
+
+			# Get one list from the list of lists. The method for getting one list is different in case there is only one list or if there is many.
+			if number_of_results_lists > 1:
+
+				data_for_one_mix = data_for_machine_readable_results_file[counter1]
+			else:
+				data_for_one_mix = data_for_machine_readable_results_file
+
 
 			data_converted_to_a_string = ''
 
-			for counter1 in range(0, len(data_for_one_mix)):
+			# Get item value out of the list.
+			for counter2 in range(0, len(data_for_one_mix)):
 
-				one_value = data_for_one_mix[counter1]
+				one_value = data_for_one_mix[counter2]
 
 				#########################################################################################################################
-				# If the item is a list, then it is a list of output filenames and we need to add them separately to the data string.
+				# If the item is a list, then it is a list of output filenames and we need to add them separately to the data string using the unit separator character.
+
 				if 'list' in str(type(one_value)):
 
-					for counter2 in range(0, len(one_value)):
+					for counter3 in range(0, len(one_value)):
 
-						file_name = one_value[counter2]
+						file_name = one_value[counter3]
+
 						data_converted_to_a_string = data_converted_to_a_string + str(file_name)
 
 						# Only append the unit separator character if this item is not the last item.
-						if counter2 < len(one_value) -1:
+						if counter3 < len(one_value) -1:
 							data_converted_to_a_string = data_converted_to_a_string + unit_separator
 
 					# Add the record separator character / string at the end of a data line.
 					data_converted_to_a_string = data_converted_to_a_string + record_separator
+
+					# The list of output files is always at end of the results list, so there are no more values after that. We jump ahead to process the next results list.
 					continue
 
 				#########################################################################################################################
 
+				# This part of the loop runs only for values before the list of output filenames at the end of each results list.
 				data_converted_to_a_string = data_converted_to_a_string + str(one_value)
 
-				# Only append the unit separator character if this item is not the last item.
-				if counter1 < len(data_for_one_mix) -1:
-					data_converted_to_a_string = data_converted_to_a_string + unit_separator
+				data_converted_to_a_string = data_converted_to_a_string + unit_separator
 
 			machine_readable_data = machine_readable_data + data_converted_to_a_string
+
+			counter1 = counter1 + 1
 
 		try:
 			with open(temp_file_path, 'wt') as machine_readable_results_file_handler:
@@ -5703,14 +5742,29 @@ try:
 							mix_result_lists = final_loudness_results_for_automation[original_file_name]
 
 						loudness_results_for_one_mix = temp_loudness_results_for_automation[filename][1]
-						mix_result_lists.append(loudness_results_for_one_mix)
+
+						if mix_result_lists == []:
+
+							mix_result_lists = loudness_results_for_one_mix
+						else:
+							mix_result_lists.append(loudness_results_for_one_mix)
+
 						final_loudness_results_for_automation[original_file_name] = mix_result_lists
+
+
+						# Test if we have one or many lists stored for the file, each list contains results for one mix.
+						if 'list' not in str(type(final_loudness_results_for_automation[original_file_name][0])):
+
+							number_of_mixes_ready = 1
+
+						else:
+							number_of_mixes_ready = len(final_loudness_results_for_automation[original_file_name])
 
 						# Now that results have been moved to the final dictionary, the values stored in the temp dictionary can be removed.
 						del temp_loudness_results_for_automation[filename]
 
 						# If all results for mixes extracted from a file are ready, then print the results to machine readable results file.
-						if len(final_loudness_results_for_automation[original_file_name]) == total_number_of_mixes_in_original_file:
+						if number_of_mixes_ready == total_number_of_mixes_in_original_file:
 
 							# Call the subroutine that writes results to the machine readable file.
 							write_loudness_results_and_file_info_to_a_machine_readable_file(original_file_name, final_loudness_results_for_automation[original_file_name])
@@ -5778,6 +5832,7 @@ try:
 		# Check if the time between directory polls has expired and a new poll needs to be made. One advacement of the counter is approximately one second. Default time between directory polls is 5 seconds.
 		if loop_counter >= delay_between_directory_reads:
 			loop_counter = 0
+
 
 except Exception:
         exc_type, exc_value, exc_traceback = sys.exc_info()
