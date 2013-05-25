@@ -1,3 +1,8 @@
+LoudnessCorrection Version 241
+------------------------------
+- User can now define if the original multistream file will be deleted immediately after extracting all audio streams from it or after the expiration time (default 8 hours).
+- Debug: the commandline option: '-debug_all' now turns on writing results to a machine readable file.
+
 LoudnessCorrection Version 240
 ------------------------------
 - Many bugfixes for the new functionality. Still more tests are needed to confirm that the new code functions correctly.

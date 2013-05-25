@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-version = '240'
+version = '241'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -207,6 +207,7 @@ if debug_all == True:
 	debug_lists_and_dictionaries = True
 	debug_file_processing = True
 	save_all_measurement_results_to_a_single_debug_file = True
+	write_loudness_calculation_results_to_a_machine_readable_file = True
 
 # Define folder names according to the language selected above.
 if language == 'en':
@@ -290,8 +291,7 @@ pcm_64_bit_formats = ['pcm_f64be', 'pcm_f64le']
 # Files left over after creating the remixes are discarded.
 # If mxf - channel map has been defined, then first remixes are created before loudness correction.
 # This global mxf remix map can be overwritten by a file specific remix map. If there is a text file with the same name as the source file but ending with '.remix_map', then the info inside this file is used for remixing just that specific mxf file.
-#global_mxf_audio_remix_channel_map = [] # Example [2, 6, 2, 2]   Create stereo, 5.1, stereo and stereo mixes (if there are enough source audio channels).
-global_mxf_audio_remix_channel_map = []
+global_mxf_audio_remix_channel_map = [] # Example [2, 6, 2, 2]   Create stereo, 5.1, stereo and stereo mixes (if there are enough source audio channels).
 remix_map_file_extension = '.remix_map'
 
 # If FFmpeg is installed, then define what wrapper formats are allowed to be processed.
@@ -322,13 +322,19 @@ if ffmpeg_allowed_codec_formats == []:
 	ffmpeg_allowed_codec_formats.append('vorbis')
 
 # FIXME
-# The variable 'write_loudness_calculation_results_to_a_machine_readable_file' defines, if we should write loudness calculation results to individual text files to the target directory.
+# The variable 'write_loudness_calculation_results_to_a_machine_readable_file' defines if we should write loudness calculation results to individual text files to the target directory.
 #write_loudness_calculation_results_to_a_machine_readable_file = False
 write_loudness_calculation_results_to_a_machine_readable_file = True
 
 # If LoudnessCorrection is used as part of a automation system, then we might not want to create loudness corrected audio files or result graphics.
 create_loudness_corrected_files = True
 create_loudness_history_graphics_files = True
+
+# If the input file is not in a format that is natively supported and one or more audio streams are extracted from it using FFmpeg, then the following
+# variable controls when the original file is deleted.
+# If this variable is 'True', then the original file is deleted immediately after all audio streams have been extracted from it.
+# If it is 'False' then the original file is deleted when the expiration time comes (controlled by the value stored in variable 'file_expiry_time' (default 8 hours)).
+delete_original_file_immediately = True
 
 
 ###############################################################################################################################################################################
@@ -979,22 +985,20 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 					for counter in range(1, channel_count + 1):
 						split_channel_targetfile_name = filename_and_extension[0] + '-Channel-' * english + '-Kanava-' * finnish + str(counter) + '_-23_LUFS.' + output_format_for_final_file
 						list_of_filenames.append(split_channel_targetfile_name)
+
 				else:
+					# In this case the output file will be a single file.
 					# Create output filename for the machine readable readable results file.
 					list_of_filenames.append(str(filename_and_extension[0] + '_-23_LUFS.' + output_format_for_final_file))
 
-				# Get values stored for machine readable results file, and complete information for the file.
+				# Get values stored for machine readable results file, and complete loudness result information for the file.
 				if filename in temp_loudness_results_for_automation:
 
 					original_file_name, list_of_values =  temp_loudness_results_for_automation[filename]
 
-					number_of_this_mix = list_of_values[0]
-					total_number_of_supported_mixes_in_original_file = list_of_values[1]
-					total_number_of_mixes_in_original_file = list_of_values[2]
-
-					list_of_values[0] = number_of_this_mix
-					list_of_values[1] = total_number_of_supported_mixes_in_original_file
-					list_of_values[2] = total_number_of_mixes_in_original_file
+					# list_of_values[0] = number_of_this_mix # This value is already correct and we don't need to change it.
+					# list_of_values[1] = total_number_of_supported_mixes_in_original_file # This value is already correct and we don't need to change it.
+					# list_of_values[2] = total_number_of_mixes_in_original_file # This value is already correct and we don't need to change it.
 					list_of_values[3] = create_loudness_corrected_files
 					list_of_values[4] = number_of_files_in_this_mix
 					list_of_values[5] = integrated_loudness
@@ -1203,7 +1207,7 @@ def create_gnuplot_commands_for_error_message(error_message, filename, directory
 				error_message = 'Error opening gnuplot datafile for writing error graphics data ' * english + 'Gnuplotin datatiedoston avaaminen virhegrafiikan datan kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
 				send_error_messages_to_screen_logfile_email(error_message, [])
 
-			# Create gnuplot commands and put then in  a list.
+			# Create gnuplot commands and put them in  a list.
 			gnuplot_commands=['set terminal jpeg size 1280,960 medium font \'arial\'', \
 			'set output ' + '\"' + gnuplot_temporary_output_graphicsfile.replace('"','\\"') + '\"', \
 			'set yrange [ 1 : 10 ]', \
@@ -2319,7 +2323,7 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 			debug_information_list.append('Message')
 			debug_information_list.append('Returned from subroutine: remix_files_according_to_channel_map')
 
-			# Delete all source files that are now remixed to new files, since the original files are not needed any more.
+			# Delete all source files that are now remixed to new files, the original files are not needed any more.
 			try:
 				for item in target_filenames:
 
@@ -2350,8 +2354,9 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 				error_message = 'Error moving ffmpeg decompressed file ' * english + 'FFmpeg:illä puretun tiedoston siirtäminen epäonnistui ' * finnish + str(reason_for_error)
 				send_error_messages_to_screen_logfile_email(error_message, [])
 		
-		# Queue the original file for deletion. It is no longer needed since we have extracted all audio streams from it.		
-		files_queued_for_deletion.append(filename)
+		# Queue the original file for deletion. It is no longer needed since we have extracted all audio streams from it.
+		if delete_original_file_immediately == True:
+			files_queued_for_deletion.append(filename)
 		
 		# Save some debug information.
 		unix_time_in_ticks, realtime = get_realtime(english, finnish)
@@ -3167,7 +3172,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 						break
 
 				# File is a mxf - file. Check if user has written a text file on disk holding a file specific audio remix channel map.
-				# If not the subroutine returns the global audio mixing channel map.dio mixing channel map.
+				# If not the subroutine returns the global audio mixing channel map.
 				if file_type == 'mxf':
 
 					# Save some debug information.
@@ -3442,7 +3447,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				filenames_and_channel_counts_for_mxf_audio_remixing.append([supported_file_name, number_of_audio_channels])
 
 				# We don't store information about these files to the dictionary used for writing machine readable results, because these files are raw material for mixes that don't exist yet.
-				# The process 'remix_files_according_to_channel_map' fills in the initial idata for the recreated mix after it has created the mixes.
+				# The process 'remix_files_according_to_channel_map' fills in the initial data for the recreated mix after it has created the mixes.
 
 			else:
 				# File is not mxf, define names for the final output files.
@@ -3459,8 +3464,6 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 					# machine readable results file and we don't want to store it again.
 
 					if filename not in temp_loudness_results_for_automation:
-						# FIXME Delete the follofing line when it's clear it is not needed.
-						#dummy_initial_data_for_machine_readable_results_file[supported_file_name] = [filename, [int(audio_stream_number), 0, 0, True, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message,[supported_file_name]]]
 						dummy_initial_data_for_machine_readable_results_file[supported_file_name] = [filename, [int(audio_stream_number), 0, 0, True, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message,[]]]
 
 
@@ -3525,7 +3528,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		else:
 			ffmpeg_supported_fileformat = False
 
-		total_number_of_streams_in_the_file = len(dummy_initial_data_for_machine_readable_results_file) + len(list_of_error_messages_for_unsupported_streams) # This is equal to total number of audiostreams in file.
+		total_number_of_streams_in_the_file = len(dummy_initial_data_for_machine_readable_results_file) + len(list_of_error_messages_for_unsupported_streams) # This is equal to: number of supported + unsupported audiostreams in file = total number of audio streams in the file.
 		
 		# If there were supported and unsupported streams in the file then print error messages we gathered for the unsupported streams earlier.
 		if (ffmpeg_supported_fileformat == True) and (len(list_of_error_messages_for_unsupported_streams) > 0):
@@ -3544,7 +3547,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				# Add info for all mixes found in the file to dictionary that is used to write the machine readable results file.
 				if write_loudness_calculation_results_to_a_machine_readable_file == True:
 					
-					# If there are results already stored for this oroginal file, then append this streams results.
+					# If there are results already stored for this oroginal file, then append this streams results to them.
 					if filename in final_loudness_results_for_automation:
 
 						mix_result_lists = final_loudness_results_for_automation[filename]
@@ -3602,7 +3605,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			# Bit depth is bigger than 32 bits the file must be converted before processing because sox only supports up to 32 bits.
 			natively_supported_file_format = False
 		
-		# Now we now the number of supported audio streams and total number of audio streams in the file. Move all data gathered for machine readable results file from the local dict to the global temp dict.
+		# Now we know the number of supported audio streams and total number of audio streams in the file. Move all data gathered for machine readable results file from the local dict to the global temp dict.
 		if write_loudness_calculation_results_to_a_machine_readable_file == True:
 
 			if (natively_supported_file_format == True) and (number_of_ffmpeg_supported_audiostreams == 1):
@@ -3612,13 +3615,11 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				for item in dummy_initial_data_for_machine_readable_results_file:
 					dummy_initial_data_for_machine_readable_results_file[item][1][1] = number_of_ffmpeg_supported_audiostreams
 					dummy_initial_data_for_machine_readable_results_file[item][1][2] = total_number_of_streams_in_the_file
-					# FIXME Delete the following line when it's clear it is not needed.
-					#dummy_initial_data_for_machine_readable_results_file[item][1][14] = [filename]
 
 					temp_loudness_results_for_automation[filename] = dummy_initial_data_for_machine_readable_results_file[item]
 
 			else:
-				# In this case the file is a multistream file, and the streamname we stored proviously is correct.
+				# In this case the file is a multistream file, and the stream name we stored previously is correct.
 				# Add number of supported streams and total number of streams.
 				for item in dummy_initial_data_for_machine_readable_results_file:
 					dummy_initial_data_for_machine_readable_results_file[item][1][1] = number_of_ffmpeg_supported_audiostreams
@@ -4355,7 +4356,7 @@ def read_audio_remix_map_file(hotfolder_path, audio_file_name, english, finnish)
 		global remix_map_file_extension
 		remix_mapfile_name = hotfolder_path + os.sep + os.path.splitext(audio_file_name)[0] + remix_map_file_extension
 
-		 # Read logfile from disk and append its contents to the list after the lines we just generated. This is done to get the latest info always on top of the logfile, not in the end.
+		# Read remix_map - file from disk.
 		if (os.path.exists(remix_mapfile_name) == True):
 			try:
 				with open(remix_mapfile_name, 'rt') as remix_mapfile_handler: # Open logfile, the 'with' method closes files when execution exits the with - block
@@ -4381,6 +4382,7 @@ def read_audio_remix_map_file(hotfolder_path, audio_file_name, english, finnish)
 					continue
 				if item.strip()[0] == '#':
 					continue
+
 				temporary_remix_map_list =  item.split(',')
 
 				# Convert numbers in string format to integer.
@@ -4390,7 +4392,7 @@ def read_audio_remix_map_file(hotfolder_path, audio_file_name, english, finnish)
 						number = int(number_in_str_format)
 						audio_remix_channel_map.append(number)
 
-				# If some numbers were already found, then stop processing the input text file.
+				# If a text line with some numbers were found, then don't process the lines after that.
 				if len(audio_remix_channel_map) > 0:
 					break
 
@@ -4409,6 +4411,10 @@ def remix_files_according_to_channel_map(directory_for_temporary_files, original
 
 	# This subroutine calls a subroutine that creates sox commands to remix audio channels found in a mxf - file.
 	# Then this routine starts as many sox processess in simultaneous threads as needed to create the mixes.
+	#
+	# The comma separated values in a 'remix_map' - file are used as the basis for how many channels each mix contains.
+	# For example the channel map: 2,6,2,2 instructs us to form four mixes: stereo, 5.1, stereo, stereo.
+	# If there are more channel map values than there are available channels, then only the mixes that we have enough channels are created.
 
 	try:
 		list_of_files_to_move_to_loudness_processing = []
@@ -4426,7 +4432,7 @@ def remix_files_according_to_channel_map(directory_for_temporary_files, original
 
 		if len(list_of_files_that_match_exactly_a_channel_map) > 0:
 
-			# if there are some source files that don't need to be combined for other files, but can be used directly, then rename them with the final output names.
+			# if there are some source files that don't need to be combined with other files, but can be used directly, then rename them with the final output names.
 			for item in list_of_files_that_match_exactly_a_channel_map:
 
 				source_file_name = item[0]
@@ -4436,7 +4442,7 @@ def remix_files_according_to_channel_map(directory_for_temporary_files, original
 				if write_loudness_calculation_results_to_a_machine_readable_file == True:
 
 					# Store initial data for the mix.
-					initial_data_for_machine_readable_results_file[target_file_name] = [original_input_file_name, [0, 0, 0, True, 0, 0, 0, 0, 0, 0, 0, 0, 0, ' ', [target_file_name]]]
+					initial_data_for_machine_readable_results_file[target_file_name] = [original_input_file_name, [0, 0, 0, True, 0, 0, 0, 0, 0, 0, 0, 0, 0, ' ', []]]
 
 				try:
 					shutil.move(directory_for_temporary_files + os.sep + source_file_name, directory_for_temporary_files + os.sep + target_file_name)
@@ -4457,7 +4463,7 @@ def remix_files_according_to_channel_map(directory_for_temporary_files, original
 			for item in list_of_files_to_move_to_loudness_processing:
 
 				# Store initial data for the mix.
-				initial_data_for_machine_readable_results_file[item] = [original_input_file_name, [0, 0, 0, True, 0, 0, 0, 0, 0, 0, 0, 0, 0, ' ', [item]]]
+				initial_data_for_machine_readable_results_file[item] = [original_input_file_name, [0, 0, 0, True, 0, 0, 0, 0, 0, 0, 0, 0, 0, ' ', []]]
 
 			# Now we know how many audiomixes there will be after remixing, so fill in the information.
 			keys_for_dummy_initial_data_for_machine_readable_results_file = list(initial_data_for_machine_readable_results_file)
@@ -4477,7 +4483,6 @@ def remix_files_according_to_channel_map(directory_for_temporary_files, original
 		# Run sox commands to create the mixes defined in channel maps.
 		if len(list_of_sox_commandlines) > 0:
 
-			# Call a subroutine that parses remix channel maps and creates sox commands needed to create those new mixes.
 			if silent == False:
 				print('\r' + adjust_line_printout, ' Remixing audio channels from file: ' * english + ' Yhdistän tiedoston: ' * finnish + original_input_file_name + ' äänikanavat uudestaan kanavakartan mukaan: ' * finnish + ' according to remix map: ' * english, end='')
 				for item in audio_remix_channel_map:
@@ -4542,7 +4547,7 @@ def create_sox_commands_to_remix_audio(directory_for_temporary_files, original_i
 				available_source_channels_list.append([source_file_name, number_of_channels_in_file, source_channel_number + 1])
 
 		# Create sox commands to combine audiofiles and channels that fulfill the mixes defined in channel maps.
-		# The sox commands simultaneously combine needed source files and extract the channels needed from them to create a mixes defined in channel maps.
+		# The sox commands simultaneously combine needed source files and extract the channels needed from them to create mixes defined in channel maps.
 		if len(available_source_channels_list) > 0:
 
 			for number_of_channels_in_a_map_item in audio_remix_channel_map: # Get a channel map. This is a number that tells how many channels there are in the mix.
@@ -4648,14 +4653,16 @@ def write_loudness_results_and_file_info_to_a_machine_readable_file(filename, da
 		global directory_for_results
 
 		# Find how many results lists there are. There is one list for each output mix.
+
 		number_of_results_lists = 1
+
 		if 'list' in str(type(data_for_machine_readable_results_file[0])):
 
 			number_of_results_lists = len(data_for_machine_readable_results_file)
 			data_for_machine_readable_results_file.sort() # Sort data according to stream numbers, so that the file will be more easily read.
 
 		unit_separator = chr(31) # This non printable ascii character is used to separate individual values for a mix.
-		record_separator = chr(13) + chr(10) # This non printable ascii character (or string) that is used to separate info for different mixes. This is by default the carrage return character followed by the line feed character. This sequence is used in windows to separate lines of text.
+		record_separator = chr(13) + chr(10) # This non printable ascii character (or string) is used to separate info for different mixes. This is by default the carriage return character followed by the line feed character. This sequence is used in windows to separate lines of text.
 
 		machine_readable_data = ''
 
@@ -5753,12 +5760,12 @@ try:
 
 
 						# Test if we have one or many lists stored for the file, each list contains results for one mix.
-						if 'list' not in str(type(final_loudness_results_for_automation[original_file_name][0])):
+						if 'list' in str(type(final_loudness_results_for_automation[original_file_name][0])):
 
-							number_of_mixes_ready = 1
+							number_of_mixes_ready = len(final_loudness_results_for_automation[original_file_name])
 
 						else:
-							number_of_mixes_ready = len(final_loudness_results_for_automation[original_file_name])
+							number_of_mixes_ready = 1
 
 						# Now that results have been moved to the final dictionary, the values stored in the temp dictionary can be removed.
 						del temp_loudness_results_for_automation[filename]
