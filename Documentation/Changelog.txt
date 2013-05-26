@@ -1,3 +1,9 @@
+LoudnessCorrection Version 242
+------------------------------
+- Many bugfixes for the new functionality.
+- If the loudness corrected file could not be created due to an error in measuring the peak limited file or error in sox processing, then the error is recorded in the machine readable results file.
+- If MXF - file contains supported and unsupported audio streams and remix function is on, then a warning is recorded in the machine readable results file and loudness history graphics.
+
 LoudnessCorrection Version 241
 ------------------------------
 - User can now define if the original multistream file will be deleted immediately after extracting all audio streams from it or after the expiration time (default 8 hours).

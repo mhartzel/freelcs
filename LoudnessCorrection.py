@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-version = '241'
+version = '242'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -961,7 +961,7 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 
 			if integrated_loudness_calculation_error == True:
 				error_code = 2
-				error_message = 'ERROR !!! in libebur128 integrated loudness calculation: ' * english + 'VIRHE !!! libebur128:n lra laskennassa: ' * finnish + integrated_loudness_calculation_error_message
+				error_message = 'ERROR !!! in libebur128 integrated loudness calculation: ' * english + 'VIRHE !!! libebur128:n keskimääräisen äänekkyyden laskennassa: ' * finnish + integrated_loudness_calculation_error_message
 		
 			if integrated_loudness_is_below_measurement_threshold == True:
 				error_code = 1
@@ -1008,11 +1008,20 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 					list_of_values[9] = sample_rate
 					list_of_values[10] = bit_depth
 					list_of_values[11] = audio_duration
-					list_of_values[12] = error_code
-					list_of_values[13] = error_message
+
+					# If some subprocess has already stored an error_code or error_message, then don't change them.
+					if list_of_values[12] == 0:
+						list_of_values[12] = error_code
+					if list_of_values[13] == '':
+						list_of_values[13] = error_message
+
 					list_of_values[14] = list_of_filenames
 
 					temp_loudness_results_for_automation[filename] = [original_file_name, list_of_values]
+
+					# If there are unsupported mixes in the mxf - file and remixing is on, warn the user about unpredictable results.
+					if list_of_values[12] == 9:
+						warning_message = warning_message + '\\nWarning: ' + list_of_values[13] * english + '\\nVaroitus: Lähdetiedostossa on ei-tuettuja audioraitoja, remix - toiminto voi tuottaa epätoivottuja tuloksia' * finnish
 
 			else:
 				# An error has happened in the loudness caculation, so there are no results, we leave the default dymmy values as they are and insert error number and message and append an empty list of filenames to the results.
@@ -1392,6 +1401,8 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 		global integrated_loudness_calculation_results
 		global libebur128_path
 		global silent
+		global temp_loudness_results_for_automation
+		global write_loudness_calculation_results_to_a_machine_readable_file
 		
 		global debug_temporary_dict_for_all_file_processing_information
 		debug_information_list = []
@@ -1596,9 +1607,22 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 						del debug_temporary_dict_for_integrated_loudness_calculation_information[temporary_peak_limited_targetfile]
 
 						if integrated_loudness_calculation_error == True:
+
 							# Print error message on result graphics file
-							error_message = 'ERROR !!! in libebur128 integrated loudness calculation: ' * english + 'VIRHE !!! libebur128:n lra laskennassa: ' * finnish + integrated_loudness_calculation_error_message
+							error_message = 'ERROR !!! in integrated loudness calculation while measuring the peak limited file: ' * english + 'VIRHE !!! keskimääräisen äänekkyyden laskennassa, kun huippulimitoitua tiedostoa käsiteltiin: ' * finnish + integrated_loudness_calculation_error_message
 							create_gnuplot_commands_for_error_message(error_message, filename, directory_for_temporary_files, directory_for_results, english, finnish)
+
+							if write_loudness_calculation_results_to_a_machine_readable_file == True:
+
+								if filename in temp_loudness_results_for_automation:
+
+									# An error has happened.
+									error_code = 2
+
+									temp_loudness_results_for_automation[filename][1][4] = 0 # number_of_files_in_this_mix
+									temp_loudness_results_for_automation[filename][1][12] = error_code
+									temp_loudness_results_for_automation[filename][1][13] = error_message
+									temp_loudness_results_for_automation[filename][1][14] = []
 
 					# If there has been an error then stop processing this file.
 					if (sox_encountered_an_error == False) and (integrated_loudness_calculation_error == False):
@@ -1814,6 +1838,8 @@ def run_sox(directory_for_temporary_files, directory_for_results, filename, sox_
 		sox_encountered_an_error = False
 		error_message = ''
 		global debug
+		global write_loudness_calculation_results_to_a_machine_readable_file
+		global temp_loudness_results_for_automation
 		
 		# Test if the value in variable is an event or not. If it is an event, then there are other sox threads processing the same file.
 		variable_type_string = str(type(event_for_sox_processing))
@@ -1889,6 +1915,18 @@ def run_sox(directory_for_temporary_files, directory_for_results, filename, sox_
 			# Print sox error message on result graphics file
 			error_message = 'Sox error: ' * english + 'Sox virhe: ' * finnish + ' ' + item
 			create_gnuplot_commands_for_error_message(error_message, filename, directory_for_temporary_files, directory_for_results, english, finnish)
+
+			if write_loudness_calculation_results_to_a_machine_readable_file == True:
+
+				if filename in temp_loudness_results_for_automation:
+
+					# An error has happened in the loudness caculation, so there are no results, add information about the error for the file.
+					error_code = 8
+
+					temp_loudness_results_for_automation[filename][1][4] = 0 # number_of_files_in_this_mix
+					temp_loudness_results_for_automation[filename][1][12] = error_code
+					temp_loudness_results_for_automation[filename][1][13] = error_message
+					temp_loudness_results_for_automation[filename][1][14] = []
 
 				
 		# If we recieved an event from the calling routine, then we need to set that event.
@@ -2236,6 +2274,10 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 		global files_queued_for_deletion
 		global silent
 		global debug_temporary_dict_for_all_file_processing_information
+		global where_to_send_error_messages
+		global directory_for_results
+		global write_loudness_calculation_results_to_a_machine_readable_file
+		global temp_loudness_results_for_automation
 		debug_information_list = []
 		error_message = ''
 		
@@ -2250,7 +2292,7 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 		debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 		
 		# In list 'file_format_support_information' we already have all the information FFmpeg was able to find about the valid audio streams in the file, assign all info to variables.
-		natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames, mxf_audio_remixing, filenames_and_channel_counts_for_mxf_audio_remixing, audio_remix_channel_map = file_format_support_information
+		natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames, mxf_audio_remixing, filenames_and_channel_counts_for_mxf_audio_remixing, audio_remix_channel_map, number_of_unsupported_streams_in_file = file_format_support_information
 		
 		try:
 			# Define filename for the temporary file that we are going to use as stdout for the external command.
@@ -2322,6 +2364,19 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 			# Save some debug information.
 			debug_information_list.append('Message')
 			debug_information_list.append('Returned from subroutine: remix_files_according_to_channel_map')
+
+			# Warn user if mxf - file remixing is on and there are some unsupported streams in the inputfile, since this can create unexpected results.
+			if number_of_unsupported_streams_in_file > 0:
+
+				error_code = 9
+				error_message = 'There are unsupported audio streams in input MXF - file while remix function is on. This may create unwanted results'
+
+				if write_loudness_calculation_results_to_a_machine_readable_file == True:
+
+					for item in list_of_files_to_move_to_loudness_processing:
+
+						temp_loudness_results_for_automation[item][1][12] = error_code
+						temp_loudness_results_for_automation[item][1][13] = error_message
 
 			# Delete all source files that are now remixed to new files, the original files are not needed any more.
 			try:
@@ -3528,7 +3583,8 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		else:
 			ffmpeg_supported_fileformat = False
 
-		total_number_of_streams_in_the_file = len(dummy_initial_data_for_machine_readable_results_file) + len(list_of_error_messages_for_unsupported_streams) # This is equal to: number of supported + unsupported audiostreams in file = total number of audio streams in the file.
+		number_of_unsupported_streams_in_file = len(list_of_error_messages_for_unsupported_streams)
+		total_number_of_streams_in_the_file = number_of_ffmpeg_supported_audiostreams + number_of_unsupported_streams_in_file
 		
 		# If there were supported and unsupported streams in the file then print error messages we gathered for the unsupported streams earlier.
 		if (ffmpeg_supported_fileformat == True) and (len(list_of_error_messages_for_unsupported_streams) > 0):
@@ -3627,7 +3683,8 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 
 					temp_loudness_results_for_automation[item] = dummy_initial_data_for_machine_readable_results_file[item]
 
-		file_format_support_information = [natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames, mxf_audio_remixing, filenames_and_channel_counts_for_mxf_audio_remixing, audio_remix_channel_map]
+		# Store information we gathered about the file so that we can return it to the calling function.
+		file_format_support_information = [natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames, mxf_audio_remixing, filenames_and_channel_counts_for_mxf_audio_remixing, audio_remix_channel_map, number_of_unsupported_streams_in_file]
 		
 		# Save some debug information.
 		debug_information_list.append('Support information for main file')
@@ -4596,7 +4653,8 @@ def create_sox_commands_to_remix_audio(directory_for_temporary_files, original_i
 					dont_create_sox_commands_for_this_mix = True
 
 				# Create sox commands to combine files and extract channels from the combined file to fullfill the mixes defined in audio_remix_channel_map.
-				# Outputfile is always in flac - format.
+				# Outputfile is always in flac - format, since the mix is just an intermediate file, the final file is created after loudness measurement.
+				# The mix size might be over 4 GB, so it is safest to always use flac.
 				if dont_create_sox_commands_for_this_mix == False:
 					# Create a name for the output file.
 					output_filename  = filename_and_extension[0] + '-AudioStream-' * english + '-Miksaus-' * finnish + str(remix_number) + '-ChannelCount-' * english + '-AaniKanavia-' * finnish + str(number_of_channels_in_a_map_item) + '.flac'
@@ -4833,8 +4891,6 @@ def write_loudness_results_and_file_info_to_a_machine_readable_file(filename, da
 #
 #	The item number 12 above holds an error code that is explained below (name of subroutine that reports this error is in parenthesis):
 #	------------------------------------------------------------------------------------------------------------------------------------------------
-#
-#	Note: Error numbers greater than 0 means that the loudness corrected output file could not be created.
 #	
 #	0 = No Errors
 #	1 = Loudness is below measurement threshold (-70 LUFS)   (create_gnuplot_commands)
@@ -4844,6 +4900,8 @@ def write_loudness_results_and_file_info_to_a_machine_readable_file(filename, da
 #	5 = Zero channels in audio stream   (get_audio_stream_information_with_ffmpeg)
 #	6 = Channel count bigger than 6 is unsupported   (get_audio_stream_information_with_ffmpeg, main)
 #	7 = No Audio Streams Found In File   (main)
+#	8 = Sox encountered an error   (create_sox_commands_for_loudness_adjusting_a_file)
+#	9 = There are unsupported streams in input file while MXF - remix function is on. This may create unexpected results
 #	100 = Unknown Error
 #
 # Dictionary 'final_loudness_results_for_automation'
@@ -5271,7 +5329,7 @@ try:
 						# The file has just appeared to the HotFolder and it has not been analyzed yet.
 						# However some dummy data for the file needs to be filled, so we create that data here.
 						# This dummy data is replaced with real data when the file stops growing and gets analyzed.
-						dummy_information = [False, False, 0, [], '3', 0, [], [], False, [], []] # This dummy information will be replaced by info from FFmpeg later.
+						dummy_information = [False, False, 0, [], '3', 0, [], [], False, [], [], 0] # This dummy information will be replaced by info from FFmpeg later.
 						file_information_to_save.append(dummy_information)
 
 						# Append time the file size or timestamp was last updated.
@@ -5285,7 +5343,7 @@ try:
 					# 0 = file size
 					# 1 = time file was first seen in HotFolder
 					# 2 = file modification time
-					# 3 = [False, False, 0, [], '3', 0, [], [], False, [], []] # This is dummy information that will later be replaced by data from FFmpeg. See comment below for item identification.
+					# 3 = [False, False, 0, [], '3', 0, [], [], False, [], [], 0] # This is dummy information that will later be replaced by data from FFmpeg. See comment below for item identification.
 					# 4 = Time the file size or timestamp was last updated. At this point this is the same as the time the file was first seen in HotFolder.
 					#
 					# The item 3 above is a list of dummy information that later will be replaced by real file information reported by FFmpeg.
@@ -5303,6 +5361,7 @@ try:
 					# 08 = mxf_audio_remixing
 					# 09 = filenames_and_channel_counts_for_mxf_audio_remixing
 					# 10 = audio_remix_channel_map
+					# 11 = number_of_unsupported_streams_in_file
 					#
 					new_hotfolder_filelist_dict[filename] = file_information_to_save
 
@@ -5396,7 +5455,7 @@ try:
 		#                                                                                                                                                                                    #
 		# Only if a file was not there during the previous HotFolder poll (filename is not in 'old_hotfolder_filelist_dict'), will the file be added to the 'list_of_growing_files'.         #
 		# Only if a file was in the HotFolder during the last and the previous HotFolder poll (filename is in 'old_hotfolder_filelist_dict' and 'new_hotfolder_filelist_dict'),              #
-		# it will be added to the processing queue.                                                                                                                                          #
+		# will it be moved from 'list_of_growing_files' to the processing queue.                                                                                                                                          #
 		#                                                                                                                                                                                    #
 		######################################################################################################################################################################################
 		
@@ -5488,7 +5547,7 @@ try:
 								# Call a subroutine to inspect file with FFmpeg to get audio stream information.
 								ffmpeg_parsed_audio_stream_information, ffmpeg_error_message, send_ffmpeg_error_message_by_email = get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(filename, hotfolder_path, directory_for_temporary_files, ffmpeg_output_format, english, finnish)
 								# Assign audio stream information to variables.
-								natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames, mxf_audio_remixing, filenames_and_channel_counts_for_mxf_audio_remixing, audio_remix_channel_map = ffmpeg_parsed_audio_stream_information
+								natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames, mxf_audio_remixing, filenames_and_channel_counts_for_mxf_audio_remixing, audio_remix_channel_map, number_of_unsupported_streams_in_file = ffmpeg_parsed_audio_stream_information
 							else:
 								# FFmpeg is not installed, test input file with mediainfo
 								audiostream_count, channel_count, bit_depth, sample_format, audio_duration_rounded_to_seconds, natively_supported_file_format, mediainfo_error_message = get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish, save_debug_information = True)
@@ -5611,7 +5670,7 @@ try:
 
 							# If ffmpeg found audiostreams in the file, queue it for loudness calculation and print message to user.
 							if filename not in unsupported_ignored_files_dict:
-								file_format_support_information = [natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames, mxf_audio_remixing, filenames_and_channel_counts_for_mxf_audio_remixing, audio_remix_channel_map]
+								file_format_support_information = [natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames, mxf_audio_remixing, filenames_and_channel_counts_for_mxf_audio_remixing, audio_remix_channel_map, number_of_unsupported_streams_in_file]
 								files_queued_to_loudness_calculation.append(filename)
 								if silent == False:
 									print('\r' + adjust_line_printout, '"' + str(filename) + '"', 'is in the job queue as number' * english + 'on laskentajonossa numerolla' * finnish, len(files_queued_to_loudness_calculation))
@@ -5648,7 +5707,7 @@ try:
 				if len(files_queued_to_loudness_calculation) > 0: # Check if there are files queued for processing waiting in the queue.
 					filename = files_queued_to_loudness_calculation[0] # Get the first filename from the queue and put it in a variable.
 					file_format_support_information = old_hotfolder_filelist_dict[filename][3] # The information about the file format is stored in a list in the dictionary, get it and store in a list.
-					natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames, mxf_audio_remixing, filenames_and_channel_counts_for_mxf_audio_remixing, audio_remix_channel_map = file_format_support_information # Save file format information to separate variables.
+					natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames, mxf_audio_remixing, filenames_and_channel_counts_for_mxf_audio_remixing, audio_remix_channel_map, number_of_unsupported_streams_in_file = file_format_support_information # Save file format information to separate variables.
 
 					# Calculate the number of time slices we expect to get from loudness calculation.
 					expected_number_of_time_slices = int(audio_duration_rounded_to_seconds / float(time_slice_duration_string)) 
@@ -5752,7 +5811,7 @@ try:
 
 						if mix_result_lists == []:
 
-							mix_result_lists = loudness_results_for_one_mix
+							mix_result_lists = [loudness_results_for_one_mix]
 						else:
 							mix_result_lists.append(loudness_results_for_one_mix)
 
