@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-version = '242'
+version = '243'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -308,7 +308,7 @@ ffmpeg_allowed_wrapper_formats = ['all']
 # The value of [] means allow all uncompressed pcm formats, flac and ogg vorbis.
 # Use only lower case characters for the format names.
 
-#FIXME
+# FIXME
 #ffmpeg_allowed_codec_formats = []
 ffmpeg_allowed_codec_formats = ['all']
 
@@ -4737,8 +4737,7 @@ def write_loudness_results_and_file_info_to_a_machine_readable_file(filename, da
 
 				data_for_one_mix = data_for_machine_readable_results_file[counter1]
 			else:
-				data_for_one_mix = data_for_machine_readable_results_file
-
+				data_for_one_mix = data_for_machine_readable_results_file[0]
 
 			data_converted_to_a_string = ''
 
@@ -4901,7 +4900,7 @@ def write_loudness_results_and_file_info_to_a_machine_readable_file(filename, da
 #	6 = Channel count bigger than 6 is unsupported   (get_audio_stream_information_with_ffmpeg, main)
 #	7 = No Audio Streams Found In File   (main)
 #	8 = Sox encountered an error   (create_sox_commands_for_loudness_adjusting_a_file)
-#	9 = There are unsupported streams in input file while MXF - remix function is on. This may create unexpected results
+#	9 = There are unsupported audio streams in input MXF - file while remix function is on. This may create unwanted results
 #	100 = Unknown Error
 #
 # Dictionary 'final_loudness_results_for_automation'
@@ -5537,7 +5536,7 @@ try:
 										error_code = 3
 
 										# Write results to the machine readable results file.
-										write_loudness_results_and_file_info_to_a_machine_readable_file(filename, [0, 0, create_loudness_corrected_files, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message, []])
+										write_loudness_results_and_file_info_to_a_machine_readable_file(filename, [[0, 0, create_loudness_corrected_files, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message, []]])
 
 						if we_have_true_read_access_to_the_file == True:
 
@@ -5589,10 +5588,13 @@ try:
 										error_code = 7
 
 										# Write results to the machine readable results file.
-										write_loudness_results_and_file_info_to_a_machine_readable_file(filename, [0, 0, create_loudness_corrected_files, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message, []])
+										write_loudness_results_and_file_info_to_a_machine_readable_file(filename, [[0, 0, create_loudness_corrected_files, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message, []]])
 
+										# Delete information about the file we might have stored earlier.
 										if filename in final_loudness_results_for_automation:
 											del final_loudness_results_for_automation[filename]
+										if filename in temp_loudness_results_for_automation:
+											del temp_loudness_results_for_automation[filename]
 
 								else:
 									
@@ -5621,10 +5623,13 @@ try:
 											error_code = 8
 
 										# Write results to the machine readable results file.
-										write_loudness_results_and_file_info_to_a_machine_readable_file(filename, [0, 0, create_loudness_corrected_files, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message, []])
+										write_loudness_results_and_file_info_to_a_machine_readable_file(filename, [[0, 0, create_loudness_corrected_files, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message, []]])
 
+										# Delete information about the file we might have stored earlier.
 										if filename in final_loudness_results_for_automation:
 											del final_loudness_results_for_automation[filename]
+										if filename in temp_loudness_results_for_automation:
+											del temp_loudness_results_for_automation[filename]
 
 								create_gnuplot_commands_for_error_message(error_message, filename, directory_for_temporary_files, directory_for_results, english, finnish)
 								unsupported_ignored_files_dict[filename] = int(time.time())
@@ -5657,10 +5662,13 @@ try:
 									error_code = 4
 
 									# Write results to the machine readable results file.
-									write_loudness_results_and_file_info_to_a_machine_readable_file(filename, [0, 0, create_loudness_corrected_files, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message, []])
+									write_loudness_results_and_file_info_to_a_machine_readable_file(filename, [[0, 0, create_loudness_corrected_files, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message, []]])
 
+									# Delete information about the file we might have stored earlier.
 									if filename in final_loudness_results_for_automation:
 										del final_loudness_results_for_automation[filename]
+									if filename in temp_loudness_results_for_automation:
+										del temp_loudness_results_for_automation[filename]
 
 							# The time slice value used in loudness calculation is normally 3 seconds. When we calculate short files <12 seconds, it's more convenient to use a smaller value of 0.5 seconds to get more detailed loudness graphics.
 							if  (audio_duration_rounded_to_seconds > 0) and (audio_duration_rounded_to_seconds < 12):

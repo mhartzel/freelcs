@@ -1,3 +1,7 @@
+LoudnessCorrection Version 243
+------------------------------
+- Bugfixes to the new functionality.
+
 LoudnessCorrection Version 242
 ------------------------------
 - Many bugfixes for the new functionality.
