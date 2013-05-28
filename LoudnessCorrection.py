@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-version = '243'
+version = '244'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -335,6 +335,18 @@ create_loudness_history_graphics_files = True
 # If this variable is 'True', then the original file is deleted immediately after all audio streams have been extracted from it.
 # If it is 'False' then the original file is deleted when the expiration time comes (controlled by the value stored in variable 'file_expiry_time' (default 8 hours)).
 delete_original_file_immediately = True
+
+# Define the characters used in machine readable results file to separate individual values.
+# Unit_separator is used to separate values for results for one mix.
+# Record separator is used as the separator for different mixes.
+# A separator can be one character or a string.
+# The separators must not exist in file names or error messages, if they do then it becomes impossible to parse the results file correctly.
+# The ASCII and UTF-8 character sets both have values defined just for this purpose (31 and 30).
+# These characters are non-printable and therefore can never exist in file names.
+# However the default chosen for the record separator is not ASCII 30, but the windows 'new line' - string.
+# This makes the machine readable results file, more easy for humans to read, as it separates results for different mixes on their own text lines.
+unit_separator = chr(31) # This non printable ascii character is used to separate individual values for a mix.
+record_separator = chr(13) + chr(10) # This string is used to separate info for different mixes. This is by default the carriage return character followed by the line feed character. This sequence is used in windows to separate lines of text.
 
 
 ###############################################################################################################################################################################
@@ -4709,18 +4721,14 @@ def write_loudness_results_and_file_info_to_a_machine_readable_file(filename, da
 		global finnish
 		global directory_for_temporary_files
 		global directory_for_results
+		global unit_separator
+		global record_separator
 
 		# Find how many results lists there are. There is one list for each output mix.
+		number_of_results_lists = len(data_for_machine_readable_results_file)
 
-		number_of_results_lists = 1
-
-		if 'list' in str(type(data_for_machine_readable_results_file[0])):
-
-			number_of_results_lists = len(data_for_machine_readable_results_file)
+		if number_of_results_lists > 1:
 			data_for_machine_readable_results_file.sort() # Sort data according to stream numbers, so that the file will be more easily read.
-
-		unit_separator = chr(31) # This non printable ascii character is used to separate individual values for a mix.
-		record_separator = chr(13) + chr(10) # This non printable ascii character (or string) is used to separate info for different mixes. This is by default the carriage return character followed by the line feed character. This sequence is used in windows to separate lines of text.
 
 		machine_readable_data = ''
 
@@ -5536,7 +5544,7 @@ try:
 										error_code = 3
 
 										# Write results to the machine readable results file.
-										write_loudness_results_and_file_info_to_a_machine_readable_file(filename, [[0, 0, create_loudness_corrected_files, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message, []]])
+										write_loudness_results_and_file_info_to_a_machine_readable_file(filename, [[0, 0, create_loudness_corrected_files, 0, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message, []]])
 
 						if we_have_true_read_access_to_the_file == True:
 
@@ -5588,7 +5596,7 @@ try:
 										error_code = 7
 
 										# Write results to the machine readable results file.
-										write_loudness_results_and_file_info_to_a_machine_readable_file(filename, [[0, 0, create_loudness_corrected_files, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message, []]])
+										write_loudness_results_and_file_info_to_a_machine_readable_file(filename, [[0, 0, create_loudness_corrected_files, 0, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message, []]])
 
 										# Delete information about the file we might have stored earlier.
 										if filename in final_loudness_results_for_automation:
@@ -5623,7 +5631,7 @@ try:
 											error_code = 8
 
 										# Write results to the machine readable results file.
-										write_loudness_results_and_file_info_to_a_machine_readable_file(filename, [[0, 0, create_loudness_corrected_files, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message, []]])
+										write_loudness_results_and_file_info_to_a_machine_readable_file(filename, [[0, 0, create_loudness_corrected_files, 0, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message, []]])
 
 										# Delete information about the file we might have stored earlier.
 										if filename in final_loudness_results_for_automation:
@@ -5662,7 +5670,7 @@ try:
 									error_code = 4
 
 									# Write results to the machine readable results file.
-									write_loudness_results_and_file_info_to_a_machine_readable_file(filename, [[0, 0, create_loudness_corrected_files, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message, []]])
+									write_loudness_results_and_file_info_to_a_machine_readable_file(filename, [[0, 0, create_loudness_corrected_files, 0, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message, []]])
 
 									# Delete information about the file we might have stored earlier.
 									if filename in final_loudness_results_for_automation:
@@ -5825,14 +5833,7 @@ try:
 
 						final_loudness_results_for_automation[original_file_name] = mix_result_lists
 
-
-						# Test if we have one or many lists stored for the file, each list contains results for one mix.
-						if 'list' in str(type(final_loudness_results_for_automation[original_file_name][0])):
-
-							number_of_mixes_ready = len(final_loudness_results_for_automation[original_file_name])
-
-						else:
-							number_of_mixes_ready = 1
+						number_of_mixes_ready = len(final_loudness_results_for_automation[original_file_name])
 
 						# Now that results have been moved to the final dictionary, the values stored in the temp dictionary can be removed.
 						del temp_loudness_results_for_automation[filename]
