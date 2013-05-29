@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-version = '244'
+version = '245'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -5574,8 +5574,10 @@ try:
 								target_filenames = []
 								details_of_ffmpeg_supported_audiostreams = []
 								send_ffmpeg_error_message_by_email = False
+								mxf_audio_remixing = False
 								filenames_and_channel_counts_for_mxf_audio_remixing = []
 								audio_remix_channel_map = []
+								number_of_unsupported_streams_in_file = 0 # This value is only used for printing a warning is it is >0 and mxf - remixing is on. Since FFmpeg is not installed and mxf - processing is not possible, this value is used for nothing.
 								
 							if (ffmpeg_supported_fileformat == False) and (filename not in unsupported_ignored_files_dict):
 								# No audiostreams were found in the file, plot an error graphics file to tell the user about it and add the filename and the time it was first seen to the list of files we will ignore.
