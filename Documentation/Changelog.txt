@@ -1,3 +1,12 @@
+LoudnessCorrection Version 247
+------------------------------
+- Added some commandline options that are used when running regression tests.  FFmpeg processing can be turned on and off and samplepeak / TruePeak can be controlled using commandline options. Added also a commandline option that causes LoudnessCorrection to stop and exit when idling more than 11 minutes.
+This is needed to run the next regression test.
+
+compare_two_loudness_calculation_logs.py
+----------------------------------------
+- Rewrote the program totally so that it can now compare results from loudness calculation logs or sets of machine readable files. This prepares for the new automatic regression testing functionality that is soon to come.
+
 LoudnessCorrection Version 245
 ------------------------------
 - Bugfixes to the new functionality.

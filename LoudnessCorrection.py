@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-version = '245'
+version = '247'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -81,6 +81,14 @@ save_all_measurement_results_to_a_single_debug_file = False
 configfile_path = ''
 configfile_found = False
 target_path = ''
+force_samplepeak = False
+force_truepeak = False
+force_ffmpeg = False
+force_no_ffmpeg = False
+force_quit_when_idle = False
+quit_when_idle_seconds = 11 * 60 # Default is 11 minutes. This value needs to be bigger than the write interval defined in subprocess 'debug_manage_file_processing_information' which by default is 10 minutes.
+quit_counter = 0
+quit_all_threads_now = False
 
 arguments_remaining = copy.deepcopy(sys.argv[1:])
 number_of_arguments = len(arguments_remaining)
@@ -127,6 +135,31 @@ for argument in sys.argv[1:]:
 
 	if argument.lower() == '-silent':
 		silent = True
+		arguments_remaining.pop(arguments_remaining.index(argument))
+		continue
+
+	if argument.lower() == '-force-samplepeak':
+		force_samplepeak = True
+		arguments_remaining.pop(arguments_remaining.index(argument))
+		continue
+
+	if argument.lower() == '-force-truepeak':
+		force_truepeak = True
+		arguments_remaining.pop(arguments_remaining.index(argument))
+		continue
+
+	if argument.lower() == '-force-ffmpeg':
+		force_ffmpeg = True
+		arguments_remaining.pop(arguments_remaining.index(argument))
+		continue
+
+	if argument.lower() == '-force-no-ffmpeg':
+		force_no_ffmpeg = True
+		arguments_remaining.pop(arguments_remaining.index(argument))
+		continue
+
+	if argument.lower() == '-force-quit-when-idle':
+		force_quit_when_idle = True
 		arguments_remaining.pop(arguments_remaining.index(argument))
 		continue
 
@@ -208,6 +241,8 @@ if debug_all == True:
 	debug_file_processing = True
 	save_all_measurement_results_to_a_single_debug_file = True
 	write_loudness_calculation_results_to_a_machine_readable_file = True
+	ffmpeg_allowed_wrapper_formats = ['all']
+	ffmpeg_allowed_codec_formats = ['all']
 
 # Define folder names according to the language selected above.
 if language == 'en':
@@ -298,19 +333,14 @@ remix_map_file_extension = '.remix_map'
 # This helps to limit processing to patent free formats (mxf, mkv (matroska), webm, ogg, wav, flac) if needed.
 # The value of ['all'] means allow all ffmpeg supported formats to be processed.
 # Use only lower case characters for the format names.
-
-# FIXME
-#ffmpeg_allowed_wrapper_formats = ['mxf', 'mkv', 'matroska', 'webm', 'ogg', 'wav', 'flac']
-ffmpeg_allowed_wrapper_formats = ['all']
+ffmpeg_allowed_wrapper_formats = ['mxf', 'mkv', 'matroska', 'webm', 'ogg', 'wav', 'flac']
 
 # Define what codec formats are allowed to be processed with FFmpeg.
 # The value of ['all'] means allow all ffmpeg supported formats to be processed.
 # The value of [] means allow all uncompressed pcm formats, flac and ogg vorbis.
 # Use only lower case characters for the format names.
 
-# FIXME
-#ffmpeg_allowed_codec_formats = []
-ffmpeg_allowed_codec_formats = ['all']
+ffmpeg_allowed_codec_formats = []
 
 if ffmpeg_allowed_codec_formats == []:
 	ffmpeg_allowed_codec_formats.extend(pcm_8_bit_formats)
@@ -321,10 +351,8 @@ if ffmpeg_allowed_codec_formats == []:
 	ffmpeg_allowed_codec_formats.append('flac')
 	ffmpeg_allowed_codec_formats.append('vorbis')
 
-# FIXME
 # The variable 'write_loudness_calculation_results_to_a_machine_readable_file' defines if we should write loudness calculation results to individual text files to the target directory.
-#write_loudness_calculation_results_to_a_machine_readable_file = False
-write_loudness_calculation_results_to_a_machine_readable_file = True
+write_loudness_calculation_results_to_a_machine_readable_file = False
 
 # If LoudnessCorrection is used as part of a automation system, then we might not want to create loudness corrected audio files or result graphics.
 create_loudness_corrected_files = True
@@ -2509,6 +2537,7 @@ def send_error_messages_by_email_thread(email_sending_details, english, finnish)
 	global loudness_correction_pid
 	global version
 	global critical_python_error_has_happened
+	global quit_all_threads_now
 	unix_time_in_ticks =float(0)
 	realtime = ''
 	
@@ -2529,6 +2558,10 @@ def send_error_messages_by_email_thread(email_sending_details, english, finnish)
 			if critical_python_error_has_happened == True:
 				critical_python_error_has_happened = False
 				break
+
+			# Check if the main routine asks us to exit now. This is used when running regression tests.
+			if quit_all_threads_now == True:
+				return()
 
 		# The wait period is over, check if there are any new error messages in the list.
 		error_messages_to_send = []
@@ -2640,12 +2673,17 @@ def write_html_progress_report_thread(english, finnish):
 		global web_page_name
 		global html_progress_report_write_interval
 		global silent
+		global quit_all_threads_now
 		
 		while True:
 			
 			# Wait user defined number of seconds between updating the html-page.
 			time.sleep(html_progress_report_write_interval)
 			
+			# Check if the main routine asks us to exit now. This is used when running regression tests.
+			if quit_all_threads_now == True:
+				return()
+
 			loudness_correction_program_info_and_timestamps['write_html_progress_report'] = [write_html_progress_report, int(time.time())] # Update the heartbeat timestamp for the html writing thread. This is used to keep track if the thread has crashed.
 			
 			counter = 0
@@ -2781,8 +2819,13 @@ def write_to_heartbeat_file_thread():
 		global english
 		global finnish
 		global silent
+		global quit_all_threads_now
 
 		while True:
+
+			# Check if the main routine asks us to exit now. This is used when running regression tests.
+			if quit_all_threads_now == True:
+				return()
 
 			# Wait user defined number of seconds between writing to the heartbeat file.
 			time.sleep(heartbeat_write_interval)
@@ -2866,6 +2909,7 @@ def debug_lists_and_dictionaries_thread():
 	global version
 	global temp_loudness_results_for_automation
 	global final_loudness_results_for_automation
+	global quit_all_threads_now
 
 	list_printouts = []
 	list_printouts_old_values = []
@@ -2924,6 +2968,10 @@ def debug_lists_and_dictionaries_thread():
 
 	while True:
 	
+		# Check if the main routine asks us to exit now. This is used when running regression tests.
+		if quit_all_threads_now == True:
+			return()
+
 		if debug_lists_and_dictionaries == True:
 
 			keys_of_debug_temporary_dict_for_integrated_loudness_calculation_information = set(debug_temporary_dict_for_integrated_loudness_calculation_information)
@@ -4179,6 +4227,7 @@ def debug_manage_file_processing_information_thread():
 		global completed_files_list
 		global english
 		global finnish
+		global quit_all_threads_now
 
 		default_sleep_time_until_next_file_save = 10 * 60 # How often do we save debug information to disk. Default time is 10 minutes (10 * 60 seconds).
 		sleep_time_until_next_file_save = default_sleep_time_until_next_file_save
@@ -4261,6 +4310,10 @@ def debug_manage_file_processing_information_thread():
 
 					if debug_file_processing == True:
 						break
+
+				# Check if the main routine asks us to exit now. This is used when running regression tests.
+				if quit_all_threads_now == True:
+					return()
 
 				counter = counter + sleep_time
 
@@ -5186,6 +5239,16 @@ try:
 			send_error_messages_to_screen_logfile_email(error_message, [])
 			sys.exit(1)
 
+	# Override some variables, if user gave same debug options on the commandline.
+	if force_samplepeak == True:
+		peak_measurement_method = '--peak=sample'
+
+	if force_truepeak == True:
+		peak_measurement_method = '--peak=true'
+
+	if force_no_ffmpeg == True:
+		ffmpeg_executable_found = False
+
 	# Define the name of the loudness calculation logfile.
 	loudness_calculation_logfile_path = '' 
 	if debug_file_processing == True: 
@@ -5910,6 +5973,19 @@ try:
 		if loop_counter >= delay_between_directory_reads:
 			loop_counter = 0
 
+		# If user gave the option '-force-quit-when-idle' on the commandline, then we are part of a multi cycle regession test and need to exit when test files have been processed so that the next test can run.
+		if force_quit_when_idle == True:
+
+			if len(loudness_calculation_queue) == 0:
+
+				quit_counter = quit_counter + delay_between_directory_reads
+
+			else:
+				quit_counter = 0
+
+			if quit_counter >= quit_when_idle_seconds:
+				quit_all_threads_now = True
+				sys.exit(0)
 
 except Exception:
         exc_type, exc_value, exc_traceback = sys.exc_info()
