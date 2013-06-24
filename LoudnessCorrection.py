@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-version = '248'
+version = '249'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -2910,6 +2910,8 @@ def debug_lists_and_dictionaries_thread():
 	global version
 	global temp_loudness_results_for_automation
 	global final_loudness_results_for_automation
+	global ffmpeg_executable_found
+	global peak_measurement_method
 	global quit_all_threads_now
 
 	list_printouts = []
@@ -2945,7 +2947,9 @@ def debug_lists_and_dictionaries_thread():
 		values_read_from_configfile.append('')
 		values_read_from_configfile.append('natively_supported_file_formats = ' + ', '.join(natively_supported_file_formats))
 		values_read_from_configfile.append('ffmpeg_output_format = ' + ffmpeg_output_format)
-		values_read_from_configfile.append('peak_measurement_method = ' + all_settings_dict['peak_measurement_method'])
+		values_read_from_configfile.append('peak_measurement_method stored to the settings file = ' + all_settings_dict['peak_measurement_method'])
+		if (force_truepeak == True) or (force_samplepeak == True):
+			values_read_from_configfile.append('peak_measurement_method forced with commandline option: ' + peak_measurement_method)
 		values_read_from_configfile.append('')
 		values_read_from_configfile.append('silent = ' + str(silent))
 		values_read_from_configfile.append('')
