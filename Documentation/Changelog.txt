@@ -1,3 +1,13 @@
+LoudnessCorrection Version 248
+------------------------------
+- Bugfix: commandline option '-debug_all' did not turn on all support for all possible formats and writing results to machine readable results files like it should have. 
+- New debug commandline options were missing from help text.
+- When 'debug_all' = True then the default time for idling before exiting is 3 minutes (used to be 11).
+
+Regression_tester
+-----------------
+- Added a new script to help in debugging: regression_test.py. This script runs regression tests on a newly minted version of LoudnessCorrection.py and compares results to a known good set of results and reports findings to the developer by email. I used to run these tests manually, which was time consuming. The script is still work in progress.
+
 LoudnessCorrection Version 247
 ------------------------------
 - Added some commandline options that are used when running regression tests.  FFmpeg processing can be turned on and off and samplepeak / TruePeak can be controlled using commandline options. Added also a commandline option that causes LoudnessCorrection to stop and exit when idling more than 11 minutes.

@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-version = '247'
+version = '248'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -83,10 +83,9 @@ configfile_found = False
 target_path = ''
 force_samplepeak = False
 force_truepeak = False
-force_ffmpeg = False
 force_no_ffmpeg = False
 force_quit_when_idle = False
-quit_when_idle_seconds = 11 * 60 # Default is 11 minutes. This value needs to be bigger than the write interval defined in subprocess 'debug_manage_file_processing_information' which by default is 10 minutes.
+quit_when_idle_seconds = 3 * 60 # If the option to exit when idle is on, then this defines how long we idle before exiting the program. Default is 3 minutes.
 quit_counter = 0
 quit_all_threads_now = False
 
@@ -148,11 +147,6 @@ for argument in sys.argv[1:]:
 		arguments_remaining.pop(arguments_remaining.index(argument))
 		continue
 
-	if argument.lower() == '-force-ffmpeg':
-		force_ffmpeg = True
-		arguments_remaining.pop(arguments_remaining.index(argument))
-		continue
-
 	if argument.lower() == '-force-no-ffmpeg':
 		force_no_ffmpeg = True
 		arguments_remaining.pop(arguments_remaining.index(argument))
@@ -183,7 +177,7 @@ if (configfile_path == '') and (target_path == ''):
 	print()
 	print(error_message)
 	print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)
-	print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_all_measurement_results_to_a_single_debug_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_all_measurement_results_to_a_single_debug_file' * finnish )
+	print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_all_measurement_results_to_a_single_debug_file, -debug_all, -force-samplepeak, -force-truepeak, -force-no-ffmpeg, -force-quit-when-idle' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_all_measurement_results_to_a_single_debug_file, -force-samplepeak, -force-truepeak, -force-no-ffmpeg, -force-quit-when-idle' * finnish )
 	print()
 
 	sys.exit(1)
@@ -196,7 +190,7 @@ if configfile_path != '':
 		print()
 		print(error_message)
 		print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)	
-		print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_all_measurement_results_to_a_single_debug_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_all_measurement_results_to_a_single_debug_file' * finnish )
+		print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_all_measurement_results_to_a_single_debug_file, -debug_all, -force-samplepeak, -force-truepeak, -force-no-ffmpeg, -force-quit-when-idle' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_all_measurement_results_to_a_single_debug_file, -force-samplepeak, -force-truepeak, -force-no-ffmpeg, -force-quit-when-idle' * finnish )
 		print()
 
 		sys.exit(1)
@@ -207,7 +201,7 @@ if configfile_path != '':
 		print()
 		print(error_message)
 		print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)	
-		print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_all_measurement_results_to_a_single_debug_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_all_measurement_results_to_a_single_debug_file' * finnish )
+		print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_all_measurement_results_to_a_single_debug_file, -debug_all, -force-samplepeak, -force-truepeak, -force-no-ffmpeg, -force-quit-when-idle' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_all_measurement_results_to_a_single_debug_file, -force-samplepeak, -force-truepeak, -force-no-ffmpeg, -force-quit-when-idle' * finnish )
 		print()
 
 		sys.exit(1)
@@ -221,7 +215,7 @@ else:
 			print()
 			print(error_message)
 			print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)	
-			print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_all_measurement_results_to_a_single_debug_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_all_measurement_results_to_a_single_debug_file' * finnish )
+			print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_all_measurement_results_to_a_single_debug_file, -debug_all, -force-samplepeak, -force-truepeak, -force-no-ffmpeg, -force-quit-when-idle' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_all_measurement_results_to_a_single_debug_file, -force-samplepeak, -force-truepeak, -force-no-ffmpeg, -force-quit-when-idle' * finnish )
 			print()
 
 			sys.exit(1)
@@ -231,7 +225,7 @@ else:
 		print()
 		print(error_message)
 		print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)	
-		print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_all_measurement_results_to_a_single_debug_file, -debug_all' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_all_measurement_results_to_a_single_debug_file' * finnish )
+		print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_all_measurement_results_to_a_single_debug_file, -debug_all, -force-samplepeak, -force-truepeak, -force-no-ffmpeg, -force-quit-when-idle' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_all_measurement_results_to_a_single_debug_file, -force-samplepeak, -force-truepeak, -force-no-ffmpeg, -force-quit-when-idle' * finnish )
 		print()
 
 		sys.exit(1)
@@ -351,8 +345,15 @@ if ffmpeg_allowed_codec_formats == []:
 	ffmpeg_allowed_codec_formats.append('flac')
 	ffmpeg_allowed_codec_formats.append('vorbis')
 
+if debug_all == True:
+	ffmpeg_allowed_wrapper_formats = ['all']
+	ffmpeg_allowed_codec_formats = ['all']
+
 # The variable 'write_loudness_calculation_results_to_a_machine_readable_file' defines if we should write loudness calculation results to individual text files to the target directory.
 write_loudness_calculation_results_to_a_machine_readable_file = False
+
+if debug_all == True:
+	write_loudness_calculation_results_to_a_machine_readable_file = True
 
 # If LoudnessCorrection is used as part of a automation system, then we might not want to create loudness corrected audio files or result graphics.
 create_loudness_corrected_files = True
@@ -4224,12 +4225,17 @@ def debug_manage_file_processing_information_thread():
 	try:
 		global debug_complete_final_information_for_all_file_processing_dict
 		global debug_file_processing
+		global debug_all
 		global completed_files_list
 		global english
 		global finnish
 		global quit_all_threads_now
 
 		default_sleep_time_until_next_file_save = 10 * 60 # How often do we save debug information to disk. Default time is 10 minutes (10 * 60 seconds).
+
+		if debug_all == True:
+			default_sleep_time_until_next_file_save = 2 * 60 # We are in 'debug_all' mode, save more often.
+
 		sleep_time_until_next_file_save = default_sleep_time_until_next_file_save
 		real_time_string = get_realtime(english, finnish)[1]
 		filename_for_processing_debug_info = 'debug-file_processing_info-' + real_time_string + '.pickle'
