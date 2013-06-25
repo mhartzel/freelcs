@@ -54,19 +54,30 @@ def read_text_lines_in_mediainfo_files_to_dictionary(directory_for_mediainfo_fil
 
 		mediainfo_results_dict[filename] = list_of_text_lines
 
+	return(mediainfo_results_dict)
 
-		# FIXME
-		print()
-		print('Mediainfo for file:', filename)
-		print('-----------------------------------------------------------------------')
-		for item in list_of_text_lines:
-			print(item, end = '')
-		print()
+def assign_results_of_loudness_corrected_files_to_dictionary(list_of_results):
 
+	info_for_one_file = []
+	file_name = ''
+	file_loudness = ''
+	mediainfo_results_dict = {}
+
+	# Get loudness measurement results for loudness correcetd and store them in a dictionary.
+	for text_line in list_of_results:
+
+		if text_line == '':
+			continue
+
+		info_for_one_file = text_line.split()
+		file_name = ' '.join(info_for_one_file[2:])
+		file_loudness = info_for_one_file[0]
+
+		mediainfo_results_dict[file_name] = file_loudness
 
 	return(mediainfo_results_dict)
 
-def find_differences_in_two_sets_of_mediainfo_results(mediainfo_1_dict, mediainfo_2_dict):
+def find_differences_in_two_result_dictionaries(mediainfo_1_dict, mediainfo_2_dict):
 
 	# Make a copy of the dictionaries where filenames that are found in both can be deleted, leaving only filenames that are not in both lists.
 	local_source_dict_1 = copy.deepcopy(mediainfo_1_dict)
@@ -95,7 +106,7 @@ def find_differences_in_two_sets_of_mediainfo_results(mediainfo_1_dict, mediainf
 
 def read_a_text_file(file_name):
 
-	# Read the config variables from a file. The file contains a dictionary with the needed values.
+	# Read the text lines from a file.
 	binary_content_of_file = b''
 	text_content_of_file = ''
 
@@ -103,6 +114,7 @@ def read_a_text_file(file_name):
 		with open(file_name, 'rb') as file_handler:
 			file_handler.seek(0) # Make sure that the 'read' - pointer is in the beginning of the source file 
 			binary_content_of_file = file_handler.read()
+
 	except KeyboardInterrupt:
 		print('\n\nUser cancelled operation.\n')
 		sys.exit(0)
@@ -380,12 +392,6 @@ def run_external_program(commands_to_run):
 	stdout = b''
 	stderr = b''
 
-	# FIXME
-	ticks, aika = get_realtime()
-	print()
-	print('Jepulis :)', aika, commands_to_run)
-	print()
-
 	try:
 		# Define filenames for temporary files that we are going to use as stdout and stderr for the external command
 		stdout_for_external_command = directory_for_temporary_files + os.sep + 'regression_tester_command_stdout.txt'
@@ -570,14 +576,6 @@ list_of_loudnesscorrection_commands_to_run = [[path_to_loudnesscorrection_script
 list_of_loudnesscorrection_commands_to_run.append([path_to_loudnesscorrection_script, '-configfile', path_to_loudnesscorrection_config_file,'-debug_all' , '-force-samplepeak', '-force-quit-when-idle'])
 list_of_loudnesscorrection_commands_to_run.append([path_to_loudnesscorrection_script, '-configfile', path_to_loudnesscorrection_config_file,'-debug_all' , '-force-truepeak', '-force-quit-when-idle','-force-no-ffmpeg'])
 list_of_loudnesscorrection_commands_to_run.append([path_to_loudnesscorrection_script, '-configfile', path_to_loudnesscorrection_config_file,'-debug_all' , '-force-samplepeak', '-force-quit-when-idle', '-force-no-ffmpeg'])
-
-# FIXME
-print()
-for item in list_of_loudnesscorrection_commands_to_run:
-	print(item)
-print()
-
-
 
 list_of_testfile_paths = []
 
@@ -768,11 +766,24 @@ print('directory_for_results =', directory_for_results)
 print('directory_for_error_logs =', directory_for_error_logs)
 print('path_to_known_good_results_dir =', path_to_known_good_results_dir)
 print('regression_test_results_target_dir =', regression_test_results_target_dir)
-print('email_sending_details =', email_sending_details)
+print()
+print('email_sending_details')
+print('----------------------')
+if len(email_sending_details) != 0:
+	for item in email_sending_details:
+		if item == 'smtp_password':
+			continue
+		print(item, '=', email_sending_details[item])
+
 print('len(list_of_testfile_paths) =', len(list_of_testfile_paths))
 print()
-for item in previous_results_filenames:
-	print(item)
+
+print('Previous results filenames')
+print('---------------------------')
+
+for counter in range(0, len(previous_results_filenames)):
+	# list_of_result_file_directories
+	print(list_of_result_file_directories[counter], '=', previous_results_filenames[counter])
 print()
 
 
@@ -786,9 +797,13 @@ for test_counter in range(0,4):
 	new_results_directory = list_of_result_file_directories[test_counter]
 	loudness_correction_test_run_commands = list_of_loudnesscorrection_commands_to_run[test_counter]
 	regression_test_log_file_name = regression_test_results_target_dir + os.sep + new_results_directory + os.sep + '00-regression_test_results_log.txt'
-	korjattujen_tiedostojen_aanekkyys = regression_test_results_target_dir + os.sep + new_results_directory + os.sep + 'korjattujen_tiedostojen_aanekkyys.txt'
+	previous_measured_loudness_of_loudness_corrected_files = path_to_known_good_results_dir + os.sep + new_results_directory + os.sep + 'korjattujen_tiedostojen_aanekkyys.txt'
+	new_measured_loudness_of_loudness_corrected_files = regression_test_results_target_dir + os.sep + new_results_directory + os.sep + 'korjattujen_tiedostojen_aanekkyys.txt'
 	mediainfo_source_dir = path_to_known_good_results_dir + os.sep + new_results_directory + os.sep + 'mediainfo'
 	mediainfo_target_dir = regression_test_results_target_dir + os.sep + new_results_directory + os.sep + 'mediainfo'
+	previous_loudness_calculation_log_name = find_matching_filename(path_to_known_good_results_dir + os.sep + new_results_directory, 'loudness_calculation_log-')
+	previous_loudness_calculation_log = path_to_known_good_results_dir + os.sep + new_results_directory + os.sep + previous_loudness_calculation_log_name
+
 	list_of_files = []
 
 	loudness_scanner_commands = [libebur128_scanner_path, 'scan']
@@ -814,13 +829,6 @@ for test_counter in range(0,4):
 	#############################
 	list_of_command_output, error_happened, list_of_errors = run_external_program(loudness_correction_test_run_commands)
 
-	# FIXME
-	print()
-	print('list_of_command_output =', list_of_command_output)
-	print('error_happened =', error_happened)
-	print('list_of_errors =', list_of_errors)
-	print()
-
 	######################################################################
 	# Move machine readable results files to regression test results dir #
 	######################################################################
@@ -828,23 +836,9 @@ for test_counter in range(0,4):
 	file_names_in_path = []
 	file_names_in_path = read_in_file_names(directory_for_results)
 
-
-	# FIXME
-	print()
-	print('file_names_in_path =', file_names_in_path)
-	print()
-
-
-
 	for item in file_names_in_path:
 		if item.endswith('machine_readable_results.txt'):
 			list_of_files.append(item)
-
-
-	# FIXME
-	print()
-	print('list_of_files =', list_of_files)
-	print()
 
 	move_list_of_files_to_target_directory(list_of_files, regression_test_results_target_dir + os.sep + new_results_directory + os.sep + 'machine_readable_results')
 
@@ -867,10 +861,8 @@ for test_counter in range(0,4):
 	list_of_command_output.sort()
 
 	# Write results to the log.
-	print()
-	print('Writing results to:', korjattujen_tiedostojen_aanekkyys)
-	print()
-	write_a_list_of_text_to_a_file(list_of_command_output, korjattujen_tiedostojen_aanekkyys)
+
+	write_a_list_of_text_to_a_file(list_of_command_output, new_measured_loudness_of_loudness_corrected_files)
 
 	###############################################
 	# Get mediainfo from loudness corrected files #
@@ -881,13 +873,9 @@ for test_counter in range(0,4):
 		command_to_run = []
 		command_to_run.append(mediainfo_path)
 		command_to_run.append('./' + file_name)
-		# FIXME
-		print('Command =', command_to_run)
+
 		list_of_command_output, error_happened, list_of_errors = run_external_program(command_to_run)
 
-		# FIXME
-		print('Saving mediainfo file:', mediainfo_target_dir + os.sep + file_name + '.txt')
-		#write_a_list_of_text_to_a_file(list_of_command_output, mediainfo_target_dir + os.sep + os.path.split(item)[1] + '.txt')
 		write_a_list_of_text_to_a_file(list_of_command_output, mediainfo_target_dir + os.sep + file_name + '.txt')
 
 	################################################################
@@ -905,23 +893,6 @@ for test_counter in range(0,4):
 	###############################################
 	error_happened, error_message = delete_files_from_a_directory('*', directory_for_results)
 
-
-	# FIXME
-	print()
-	print('list_of_command_output')
-	print('-----------------------')
-	for item in list_of_command_output:
-		print(item)
-	print()
-
-	print()
-	print('list_of_errors')
-	print('---------------')
-	for item in list_of_errors:
-		print(item)
-	print()
-
-
 	###########################################################
 	# Check if LoudnessCorrection.py reported critical errors #
 	###########################################################
@@ -936,9 +907,11 @@ for test_counter in range(0,4):
 			print('Error: LoudnessCorrection.py reported critical python errors !!!!!!!')
 			print()
 
-	###################################################################################################################################
-	# Test that info files that mediainfo created about the loudness corrected files match with the good known set of mediainfo files #
-	###################################################################################################################################
+
+	##############################################
+	# Mediainfo: identical and differing results #
+	##############################################
+
 	# Mediainfo records information like: format, channel count, bit depth, sample rate, duration, so comparing mediainfo - files
 	# gives us confidence that all technical aspects of loudness corrected files are as expected
 	mediainfo_results_1_dict = {}
@@ -946,89 +919,88 @@ for test_counter in range(0,4):
 	mediainfo_results_1_dict = read_text_lines_in_mediainfo_files_to_dictionary(mediainfo_source_dir)
 	mediainfo_results_2_dict = read_text_lines_in_mediainfo_files_to_dictionary(mediainfo_target_dir)
 
-	files_with_identical_results_dict = {}
-	files_with_differing_results_dict = {}
-	files_only_in_path_1_dict = {}
-	files_only_in_path_2_dict = {}
-	# Compare results in the two dictionaries and store results in four dictionaries.
-	files_with_identical_results_dict, files_with_differing_results_dict, files_only_in_path_1_dict, files_only_in_path_2_dict = find_differences_in_two_sets_of_mediainfo_results(mediainfo_results_1_dict, mediainfo_results_2_dict) 
+	mediainfo_files_with_identical_results_dict = {}
+	mediainfo_files_with_differing_results_dict = {}
+	mediainfo_files_only_in_path_1_dict = {}
+	mediainfo_files_only_in_path_2_dict = {}
 
-	##############################################
-	# Show the total number of mediainfo results #
-	##############################################
+	# Mediainfo: Compare results in the two dictionaries and store results in four dictionaries.
+	mediainfo_files_with_identical_results_dict, mediainfo_files_with_differing_results_dict, mediainfo_files_only_in_path_1_dict, mediainfo_files_only_in_path_2_dict = find_differences_in_two_result_dictionaries(mediainfo_results_1_dict, mediainfo_results_2_dict) 
 
+	title_string = '# Mediainfo: identical and differing results for: ' + new_results_directory + ' #'
+	print()
+	print('#' * len(title_string))
+	print(title_string)
+	print('#' * len(title_string))
+	print()
+
+	# Mediainfo: Show the total number of mediainfo results
 	print()
 	print('Data for', str(len(mediainfo_results_1_dict)), 'files found in path:', mediainfo_source_dir)
 	print('Data for', str(len(mediainfo_results_2_dict)), 'files found in path:', mediainfo_target_dir)
 
 
-	#############################
-	# Identical mediainfo files #
-	#############################
-
-	if (len(mediainfo_results_1_dict) == len(mediainfo_results_2_dict)) and (len(mediainfo_results_1_dict) == len(files_with_identical_results_dict)):
+	# Mediainfo: Show Identical files
+	if (len(mediainfo_results_1_dict) == len(mediainfo_results_2_dict)) and (len(mediainfo_results_1_dict) == len(mediainfo_files_with_identical_results_dict)):
 
 		print()
-		print('Results for all', str(len(files_with_identical_results_dict)), 'files are identical :)')
+		print('Results for all', str(len(mediainfo_files_with_identical_results_dict)), 'files are identical :)')
 		print()
 	else:
 		print()
-		print('Results for', str(len(files_with_identical_results_dict)), 'files are identical :)')
+		print('Results for', str(len(mediainfo_files_with_identical_results_dict)), 'files are identical :)')
 		print()
 
-
-	##########################################
-	# Mediainfo Files with differing results #
-	##########################################
-
-	if len(files_with_differing_results_dict) != 0:
+	# Mediainfo: Show Files with differing results
+	if len(mediainfo_files_with_differing_results_dict) != 0:
 
 		# Report any mismatch found.
 		print()
-		print(str(len(files_with_differing_results_dict)), "Calculation results don't match")
-		print('-' * len(str(len(files_with_differing_results_dict)) + " Calculation results don't match ") + '-')
+		print(str(len(mediainfo_files_with_differing_results_dict)), "Calculation results don't match")
+		print('-' * len(str(len(mediainfo_files_with_differing_results_dict)) + " Calculation results don't match ") + '-')
 		print()
 
-		list_of_non_matching_filenames = list(files_with_differing_results_dict)
+		list_of_non_matching_filenames = list(mediainfo_files_with_differing_results_dict)
 		list_of_non_matching_filenames.sort(key=str.lower)
 
 		for item in list_of_non_matching_filenames:
 
-			file1_calculation_results = files_with_differing_results_dict[item][0]
-			file2_calculation_results = files_with_differing_results_dict[item][1]
+			file1_results = mediainfo_files_with_differing_results_dict[item][0]
+			file2_results = mediainfo_files_with_differing_results_dict[item][1]
 
-			for value_counter in range(0, len(file1_calculation_results)):
+			print()
+			print(item)
+			print('-' * int(len(item) + 1))
+			print()
 
-				if file1_calculation_results[value_counter] != file2_calculation_results[value_counter]:
-					# integrated_loudness, loudness_range, highest_peak_db, channel_count, sample_rate, bit_depth, audio_duration
-					calculation_result_type = ['\033[7m' + 'integrated_loudness\t' + '\033[0m', 'loudness_range\t\t', 'highest_peak_db\t\t', 'channel_count\t\t', 'sample_rate\t\t', 'bit_depth\t\t', 'audio_duration\t\t'][value_counter]
+
+			for value_counter in range(0, len(file1_results)):
+
+				if file1_results[value_counter] != file2_results[value_counter]:
 					
 					# Make the printout prettier by aligning number values to each other.
-					string_1_to_print = file1_calculation_results[value_counter]
+					string_1_to_print = file1_results[value_counter]
 					string_1_to_print = ' ' * (5 - len(string_1_to_print)) + string_1_to_print
-					string_2_to_print = file2_calculation_results[value_counter]
+					string_2_to_print = file2_results[value_counter]
 					string_2_to_print = ' ' * (5 - len(string_2_to_print)) + string_2_to_print
 					
-					print(calculation_result_type + '   ' +  string_1_to_print + '   |  ' + string_2_to_print + '     ' +  item)
+					print(string_1_to_print + '   |  ' + string_2_to_print + '     ' +  item)
+			print()
 		
 		print()
 
-
-	##################################
-	# Mediainfo Files only in path 1 #
-	##################################
-
-	if len(files_only_in_path_1_dict) != 0:
+	# Mediainfo: Show Files only in path 1
+	if len(mediainfo_files_only_in_path_1_dict) != 0:
 
 		# Report any mismatch found.
 		print()
-		print(str(len(files_only_in_path_1_dict)), "Filenames only in:", mediainfo_source_dir)
-		print('-' * len(str(len(files_only_in_path_1_dict)) + " Filenames only in: " + mediainfo_source_dir) + '-')
+		print(str(len(mediainfo_files_only_in_path_1_dict)), "Filenames only in:", mediainfo_source_dir)
+		print('-' * len(str(len(mediainfo_files_only_in_path_1_dict)) + " Filenames only in: " + mediainfo_source_dir) + '-')
 		print()
 
 		list_of_missing_filenames = []
 
-		list_of_missing_filenames = list(files_only_in_path_1_dict)
+		list_of_missing_filenames = list(mediainfo_files_only_in_path_1_dict)
 		list_of_missing_filenames.sort(key=str.lower)
 
 		for item in list_of_missing_filenames:
@@ -1037,22 +1009,18 @@ for test_counter in range(0,4):
 
 		print()
 
-
-	##################################
-	# Mediainfo Files only in path 2 #
-	##################################
-
-	if len(files_only_in_path_2_dict) != 0:
+	# Mediainfo: Show Files only in path 2
+	if len(mediainfo_files_only_in_path_2_dict) != 0:
 
 		# Report any mismatch found.
 		print()
-		print(str(len(files_only_in_path_2_dict)), "Filenames only in:", mediainfo_target_dir)
-		print('-' * len(str(len(files_only_in_path_2_dict)) + " Filenames only in: " + mediainfo_target_dir) + '-')
+		print(str(len(mediainfo_files_only_in_path_2_dict)), "Filenames only in:", mediainfo_target_dir)
+		print('-' * len(str(len(mediainfo_files_only_in_path_2_dict)) + " Filenames only in: " + mediainfo_target_dir) + '-')
 		print()
 
 		list_of_missing_filenames = []
 
-		list_of_missing_filenames = list(files_only_in_path_2_dict)
+		list_of_missing_filenames = list(mediainfo_files_only_in_path_2_dict)
 		list_of_missing_filenames.sort(key=str.lower)
 
 		for item in list_of_missing_filenames:
@@ -1061,15 +1029,158 @@ for test_counter in range(0,4):
 
 		print()
 
+	#########################################################################
+	# Loudness of loudness corrected files: identical and differing results #
+	#########################################################################
+
+	previous_results_as_text = ''
+	previous_results_as_list = []
+	previous_results_dict = {}
+	new_results_as_text = ''
+	new_results_as_list = []
+	new_results_dict = {}
+
+	previous_results_as_text = read_a_text_file(previous_measured_loudness_of_loudness_corrected_files)
+	new_results_as_text = read_a_text_file(new_measured_loudness_of_loudness_corrected_files)
+
+	previous_results_as_list = previous_results_as_text.split('\n')
+	new_results_as_list = new_results_as_text.split('\n')
+
+	previous_results_dict = assign_results_of_loudness_corrected_files_to_dictionary(previous_results_as_list)
+	new_results_dict = assign_results_of_loudness_corrected_files_to_dictionary(new_results_as_list)
+
+	loudness_corrected_files_with_identical_results_dict = {}
+	loudness_corrected_files_with_differing_results_dict = {}
+	loudness_corrected_files_only_in_path_1_dict = {}
+	loudness_corrected_files_only_in_path_2_dict = {}
+
+	# Loudness of loudness corrected files: Compare results in the two dictionaries and store results in four dictionaries.
+	loudness_corrected_files_with_identical_results_dict, loudness_corrected_files_with_differing_results_dict, loudness_corrected_files_only_in_path_1_dict, loudness_corrected_files_only_in_path_2_dict = find_differences_in_two_result_dictionaries(previous_results_dict, new_results_dict) 
+
+	# Loudness of loudness corrected files: Show the total number of mediainfo results
+
+	title_string = '# Loudness of loudness corrected files: identical and differing results for: ' + new_results_directory + ' #'
+	print()
+	print('#' * len(title_string))
+	print(title_string)
+	print('#' * len(title_string))
+	print()
+
+	print('Data for', str(len(previous_results_dict)), 'files found in path:', previous_measured_loudness_of_loudness_corrected_files)
+	print('Data for', str(len(new_results_dict)), 'files found in path:', new_measured_loudness_of_loudness_corrected_files)
+
+	# Loudness of loudness corrected files: Show Identical files
+	if (len(previous_results_dict) == len(new_results_dict)) and (len(previous_results_dict) == len(loudness_corrected_files_with_identical_results_dict)):
+
+		print()
+		print('Results for all', str(len(loudness_corrected_files_with_identical_results_dict)), 'files are identical :)')
+		print()
+	else:
+		print()
+		print('Results for', str(len(loudness_corrected_files_with_identical_results_dict)), 'files are identical :)')
+		print()
+
+	# Loudness of loudness corrected files: Show Files with differing results
+	if len(loudness_corrected_files_with_differing_results_dict) != 0:
+
+		# Report any mismatch found.
+		print()
+		print(str(len(loudness_corrected_files_with_differing_results_dict)), "Calculation results don't match")
+		print('-' * len(str(len(loudness_corrected_files_with_differing_results_dict)) + " Calculation results don't match ") + '-')
+		print()
+
+		list_of_non_matching_filenames = list(loudness_corrected_files_with_differing_results_dict)
+		list_of_non_matching_filenames.sort(key=str.lower)
+
+		for item in list_of_non_matching_filenames:
+
+			file1_calculation_results = loudness_corrected_files_with_differing_results_dict[item][0]
+			file2_calculation_results = loudness_corrected_files_with_differing_results_dict[item][1]
+
+			# Make the printout prettier by aligning number values to each other.
+			string_1_to_print = file1_calculation_results
+			string_1_to_print = ' ' * (5 - len(string_1_to_print)) + string_1_to_print
+			string_2_to_print = file2_calculation_results
+			string_2_to_print = ' ' * (5 - len(string_2_to_print)) + string_2_to_print
+			calculation_result_type = 'integrated_loudness\t'
+			
+			print(calculation_result_type + '   ' +  string_1_to_print + '   |  ' + string_2_to_print + '     ' +  item)
+		
+		print()
+
+	# Loudness of loudness corrected files: Show Files only in path 1
+	if len(loudness_corrected_files_only_in_path_1_dict) != 0:
+
+		# Report any mismatch found.
+		print()
+		print(str(len(loudness_corrected_files_only_in_path_1_dict)), "Filenames only in:", previous_measured_loudness_of_loudness_corrected_files)
+		print('-' * len(str(len(loudness_corrected_files_only_in_path_1_dict)) + " Filenames only in: " + previous_measured_loudness_of_loudness_corrected_files) + '-')
+		print()
+
+		list_of_missing_filenames = []
+
+		list_of_missing_filenames = list(loudness_corrected_files_only_in_path_1_dict)
+		list_of_missing_filenames.sort(key=str.lower)
+
+		for item in list_of_missing_filenames:
+
+			print(item)
+
+		print()
+
+	# Loudness of loudness corrected files: Show Files only in path 2
+	if len(loudness_corrected_files_only_in_path_2_dict) != 0:
+
+		# Report any mismatch found.
+		print()
+		print(str(len(loudness_corrected_files_only_in_path_2_dict)), "Filenames only in:", new_measured_loudness_of_loudness_corrected_files)
+		print('-' * len(str(len(loudness_corrected_files_only_in_path_2_dict)) + " Filenames only in: " + new_measured_loudness_of_loudness_corrected_files) + '-')
+		print()
+
+		list_of_missing_filenames = []
+
+		list_of_missing_filenames = list(loudness_corrected_files_only_in_path_2_dict)
+		list_of_missing_filenames.sort(key=str.lower)
+
+		for item in list_of_missing_filenames:
+
+			print(item)
+
+		print()
+
+	#############################################################
+	# Loudness Calculation Log: identical and differing results #
+	#############################################################
+
+	title_string = '# Loudness Calculation Log: identical and differing results for: ' + new_results_directory + ' #'
+	print()
+	print('#' * len(title_string))
+	print(title_string)
+	print('#' * len(title_string))
+	print()
+
+	# path_to_results_comparison_script
+	new_loudness_calculation_log_name = find_matching_filename(regression_test_results_target_dir + os.sep + new_results_directory, 'loudness_calculation_log-')
+	new_loudness_calculation_log = regression_test_results_target_dir + os.sep + new_results_directory + os.sep + new_loudness_calculation_log_name
+
+	commands_to_run = [path_to_results_comparison_script, previous_loudness_calculation_log, new_loudness_calculation_log]
+
+	list_of_command_output, error_happened, list_of_errors = run_external_program(commands_to_run)
 
 
+	if len(list_of_command_output) != 0:
+
+		print()
+
+		for item in list_of_command_output:
+			print(item)
 
 
 	#FIXME
-	# Vertaa tekstitiedostoja 'korjattujen_tiedostojen_aanekkyys.txt'
 	# vertaa loudness calculation logia vanhaan hyväksi tiedettyyn
 	# jos vanhat machine readable tiedostot löytyy, niin vertaa uusia niihin
 	# jos vanhat machine readable tiedostot löytyy, niin vertaa niitä loudness calculation logiin.
+	# Vaihda 'korjattujen_tiedostojen_aanekkyys.txt' nimi englanniks.
 	# lähetä tulos sähköpostilla
 	# Muista kerätä virheet ja lähettää nekin ylläpitäjälle / kirjata logiin.
 	# Muista pyytää rootin salasana, jos komentorivillä on optio -shutdown-when-ready

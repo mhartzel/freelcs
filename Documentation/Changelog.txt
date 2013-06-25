@@ -1,3 +1,7 @@
+Regression_tester
+-----------------
+- Added more functionality. Work in progress.
+
 LoudnessCorrection Version 249
 ------------------------------
 - A small cosmetic change to ouput of subroutine 'debug_lists_and_dictionaries_thread'
