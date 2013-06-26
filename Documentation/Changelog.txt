@@ -1,5 +1,9 @@
 Regression_tester
 -----------------
+- Functionality mostly ready.
+
+Regression_tester
+-----------------
 - Added more functionality. Work in progress.
 
 LoudnessCorrection Version 249

@@ -26,6 +26,12 @@ import copy
 def read_text_lines_in_mediainfo_files_to_dictionary(directory_for_mediainfo_files):
 	
 	mediainfo_results_dict = {}
+	global list_of_test_result_text_lines
+	error_happened = False
+	error_message = ''
+	path = ''
+	list_of_directories = []
+	list_of_files = []
 	
 	# Read the mediainfo files and input text lines to a dictionary.
 	try:																																			  
@@ -38,12 +44,10 @@ def read_text_lines_in_mediainfo_files_to_dictionary(directory_for_mediainfo_fil
 		sys.exit(0)
 	except IOError as reason_for_error:
 		error_message = 'Error reading directory listing ' + str(reason_for_error)
-		print(error_message)
-		sys.exit(1)
+		error_happened = True
 	except OSError as reason_for_error:
 		error_message = 'Error reading directory listing ' + str(reason_for_error)
-		print(error_message)
-		sys.exit(1)
+		error_happened = True
 	
 	# Get text lines from mediainfo files and store them in a dictionary.
 	for filename in list_of_files:
@@ -54,7 +58,7 @@ def read_text_lines_in_mediainfo_files_to_dictionary(directory_for_mediainfo_fil
 
 		mediainfo_results_dict[filename] = list_of_text_lines
 
-	return(mediainfo_results_dict)
+	return(mediainfo_results_dict, error_happened, error_message)
 
 def assign_results_of_loudness_corrected_files_to_dictionary(list_of_results):
 
@@ -109,6 +113,8 @@ def read_a_text_file(file_name):
 	# Read the text lines from a file.
 	binary_content_of_file = b''
 	text_content_of_file = ''
+	error_happened = False
+	error_message = ''
 
 	try:
 		with open(file_name, 'rb') as file_handler:
@@ -119,18 +125,18 @@ def read_a_text_file(file_name):
 		print('\n\nUser cancelled operation.\n')
 		sys.exit(0)
 	except IOError as reason_for_error:
-		print('Error reading textfile: ' + str(reason_for_error))
-		sys.exit(1)
+		error_message = 'Error reading textfile: ' + str(reason_for_error)
+		error_happened = True
 	except OSError as reason_for_error:
-		print('Error reading textfile: ' + str(reason_for_error))
-		sys.exit(1)
+		error_message = 'Error reading textfile: ' + str(reason_for_error)
+		error_happened = True
 	except EOFError as reason_for_error:
-		print('Error reading textfile: ' + str(reason_for_error))
-		sys.exit(1)
+		error_message = 'Error reading textfile: ' + str(reason_for_error)
+		error_happened = True
 
 	text_content_of_file = str(binary_content_of_file.decode('UTF-8'))
 
-	return(text_content_of_file)
+	return(text_content_of_file, error_happened, error_message)
 
 def write_a_list_of_text_to_a_file(list_of_data, target_file):
 
@@ -480,6 +486,8 @@ def get_realtime():
 
 def send_email(message_title, message_text_string, message_attachment_path, email_sending_details):
 
+	global list_of_test_result_text_lines
+
 	# Assing email settings read from the configfile to local variables.
 	use_tls = email_sending_details['use_tls']
 	smtp_server_requires_authentication = email_sending_details['smtp_server_requires_authentication']
@@ -522,7 +530,7 @@ def send_email(message_title, message_text_string, message_attachment_path, emai
 			 message_size = len(email_message_content_string) # Get our message size
 			 if message_size > server_max_message_size: # Message is too large for the smtp server to accept, abort sending.
 				 message_size_is_within_limits = False
-				 print('Message_size (', str(message_size), ') is larger than the max supported size (', str(server_max_message_size), ') of server:', smtp_server_name, 'Sending aborted.')
+				 list_of_test_result_text_lines.append('Message_size (' + str(message_size), ') is larger than the max supported size (' + str(server_max_message_size) + ') of server: ' + smtp_server_name + 'Sending aborted.')
 				 sys.exit(1)
 		 if message_size_is_within_limits == True:
 			 # Uncomment the following line if you want to see printed out the final message that is sent to the smtp server
@@ -536,25 +544,62 @@ def send_email(message_title, message_text_string, message_attachment_path, emai
 		 mailServer.close()
 
 	except smtplib.socket.timeout as reason_for_error:
-		 print('Error, Timeout error:', reason_for_error)
+		 list_of_test_result_text_lines.append('Error, Timeout error: ' + reason_for_error)
 	except smtplib.socket.error as reason_for_error:
-		 print('Error, Socket error:', reason_for_error)
+		 list_of_test_result_text_lines.append('Error, Socket error: ' + reason_for_error)
 	except smtplib.SMTPRecipientsRefused as reason_for_error:
-		 print('Error, All recipients were refused:', reason_for_error)
+		 list_of_test_result_text_lines.append('Error, All recipients were refused: ' + reason_for_error)
 	except smtplib.SMTPHeloError as reason_for_error:
-		 print('Error, The server didn’t reply properly to the HELO greeting:', reason_for_error)
+		 list_of_test_result_text_lines.append('Error, The server didn’t reply properly to the HELO greeting: ' + reason_for_error)
 	except smtplib.SMTPSenderRefused as reason_for_error:
-		 print('Error, The server didn’t accept the sender address:', reason_for_error)
+		 list_of_test_result_text_lines.append('Error, The server didn’t accept the sender address: ' + reason_for_error)
 	except smtplib.SMTPDataError as reason_for_error:
-		 print('Error, The server replied with an unexpected error code or The SMTP server refused to accept the message data:', reason_for_error)
+		 list_of_test_result_text_lines.append('Error, The server replied with an unexpected error code or The SMTP server refused to accept the message data: ' + reason_for_error)
 	except smtplib.SMTPException as reason_for_error:
-		 print('Error, The server does not support the STARTTLS extension or No suitable authentication method was found:', reason_for_error)
+		 list_of_test_result_text_lines.append('Error, The server does not support the STARTTLS extension or No suitable authentication method was found: ' + reason_for_error)
 	except smtplib.SMTPAuthenticationError as reason_for_error:
-		 print('Error, The server didn’t accept the username/password combination:', reason_for_error)
+		 list_of_test_result_text_lines.append('Error, The server didn’t accept the username/password combination: ' + reason_for_error)
 	except smtplib.SMTPConnectError as reason_for_error:
-		 print('Error, Error occurred during establishment of a connection with the server:', reason_for_error)
+		 list_of_test_result_text_lines.append('Error, Error occurred during establishment of a connection with the server: '+ reason_for_error)
 	except RuntimeError as reason_for_error:
-		 print('Error, SSL/TLS support is not available to your Python interpreter:', reason_for_error)
+		 list_of_test_result_text_lines.append('Error, SSL/TLS support is not available to your Python interpreter: ' + reason_for_error)
+
+def calculate_duration(start_time, end_time):
+
+	'''This function prints out a progress bar and time estimation and optionally the transfer speed.'''
+
+	time_display_string = '' # This variable holds the estimated time to completion (ETA).
+
+	# Calculate how long it takes to complete the process.
+	time_calculation = end_time - start_time
+
+	if time_calculation > 0:
+
+		days = int(time_calculation / 86400)
+		time_calculation = time_calculation - (days * 84600)
+		hours = int(time_calculation / 3600)
+		time_calculation = time_calculation - (hours * 3600)
+		minutes = int(time_calculation / 60)
+		time_calculation = time_calculation - (minutes * 60)
+		seconds = int(time_calculation)
+
+		# Always use two digits when printing time  (1 becomes 01).
+		days = str(days)
+		temp = 2 - len(days)
+		days = '0' * temp + days
+		hours = str(hours)
+		temp = 2 - len(hours)
+		hours = '0' * temp + hours
+		minutes = str(minutes)
+		temp = 2 - len(minutes)
+		minutes = '0' * temp + minutes
+		seconds = str(seconds)
+		temp = 2 - len(seconds)
+		seconds = '0' * temp + seconds
+
+		time_display_string=days + ' days ' + hours + ' hours ' + minutes + ' minutes ' + seconds + ' seconds'
+
+	return(time_display_string)
 
 
 ########
@@ -562,7 +607,14 @@ def send_email(message_title, message_text_string, message_attachment_path, emai
 ########
 
 list_of_result_file_directories = ['ffmpeg-truepeak', 'ffmpeg-samplepeak', 'native-truepeak', 'native-samplepeak']
-list_of_result_file_names = ['debug-file_processing_info-', 'debug-variables_lists_and_dictionaries-', 'error_log-', 'korjattujen_tiedostojen_aanekkyys.txt', 'loudness_calculation_log-']
+list_of_result_file_names = ['debug-file_processing_info-', 'debug-variables_lists_and_dictionaries-', 'error_log-', 'measured_loudness_of_loudness_corrected_files.txt', 'loudness_calculation_log-']
+list_of_test_result_text_lines = []
+last_printed_test_result_text_line = 0
+
+start_time_for_complete_regression_test = 0
+stop_time_for_complete_regression_test = 0
+start_time_for_individual_test = 0
+stop_time_for_individual_test = 0
 
 previous_results_filenames = []
 new_results_filenames = []
@@ -670,7 +722,12 @@ if os.path.exists(mediainfo_path) == False:
 	print()
 	sys.exit(1)
 
-print()
+list_of_test_result_text_lines.append('')
+
+# Print information gathered so far.
+for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
+	print(list_of_test_result_text_lines[counter])
+last_printed_test_result_text_line = len(list_of_test_result_text_lines)
 
 # If there are some previous regression tests still running, then stop them.
 # Find the processes from ps output, keywords are 'LoudnessCorrection.py', '-force-quit-when-idle', '-debug_all' no other process uses all these commandline options.
@@ -688,7 +745,13 @@ for line in list_of_command_output:
 				command_to_run = []
 				pid_of_program_to_stop = line.split()[1]
 				commandline_of_program_to_stop = ' '.join(line.split()[10:])
-				print('Stopping still running previous regression test PID:', pid_of_program_to_stop, 'Commandline:', commandline_of_program_to_stop)
+				list_of_test_result_text_lines.append('Stopping still running previous regression test PID: ' + str(pid_of_program_to_stop) + ' Commandline: ' + commandline_of_program_to_stop)
+
+				# Print information gathered so far.
+				for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
+					print(list_of_test_result_text_lines[counter])
+				last_printed_test_result_text_line = len(list_of_test_result_text_lines)
+
 				list_of_command_output, error_happened, list_of_errors = run_external_program(['/bin/kill', pid_of_program_to_stop])
 
 # Read in settings from LoudnessCorrection settings file.
@@ -718,8 +781,11 @@ for counter1 in range(0,4):
 	for counter2 in range(0,5):
 
 		file_name = list_of_result_file_names[counter2]
-
 		name_of_matching_file = ''
+
+		if file_name == list_of_result_file_names[3]:
+			if os.path.exists(directory_name + os.sep + 'korjattujen_tiedostojen_aanekkyys.txt') == True: # The file name used to be in finnish, check if a file with the old name can be found.
+				file_name = 'korjattujen_tiedostojen_aanekkyys.txt'
 
 		name_of_matching_file = find_matching_filename(directory_name, file_name)
 
@@ -746,47 +812,64 @@ regression_test_results_target_dir = os.path.split(path_to_known_good_results_di
 if os.path.exists(regression_test_results_target_dir) == True:
 	shutil.rmtree(regression_test_results_target_dir)
 
-print()
+time_in_ticks_and_string_format = get_realtime()
+start_time_for_complete_regression_test = time_in_ticks_and_string_format[0]
+
+list_of_test_result_text_lines.append('')
+list_of_test_result_text_lines.append('Complete Regression Test Started At: ' + time_in_ticks_and_string_format[1])
+list_of_test_result_text_lines.append('')
+
+# Print information gathered so far.
+for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
+	print(list_of_test_result_text_lines[counter])
+last_printed_test_result_text_line = len(list_of_test_result_text_lines)
 
 # Create directories needed to store regression test results
 for path in list_of_result_file_directories:
 	os.makedirs(regression_test_results_target_dir + os.sep + path + os.sep + 'mediainfo')
-	print('Creating dir:', regression_test_results_target_dir + os.sep + path + os.sep + 'mediainfo')
+	list_of_test_result_text_lines.append('Creating dir: ' + regression_test_results_target_dir + os.sep + path + os.sep + 'mediainfo')
 	os.makedirs(regression_test_results_target_dir + os.sep + path + os.sep + 'machine_readable_results')
-	print('Creating dir:', regression_test_results_target_dir + os.sep + path + os.sep + 'machine_readable_results')
+	list_of_test_result_text_lines.append('Creating dir: ' + regression_test_results_target_dir + os.sep + path + os.sep + 'machine_readable_results')
 
+# Print information gathered so far.
+for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
+	print(list_of_test_result_text_lines[counter])
+last_printed_test_result_text_line = len(list_of_test_result_text_lines)
 
-# FIXME
-print()
-print('loudness_correction_version =', loudness_correction_version)
-print('source_and_target_are_on_same_disk =', source_and_target_are_on_same_disk)
-print('home_directory_for_the_current_user =', home_directory_for_the_current_user)
-print('hotfolder_path =', hotfolder_path)
-print('directory_for_results =', directory_for_results)
-print('directory_for_error_logs =', directory_for_error_logs)
-print('path_to_known_good_results_dir =', path_to_known_good_results_dir)
-print('regression_test_results_target_dir =', regression_test_results_target_dir)
-print()
-print('email_sending_details')
-print('----------------------')
+list_of_test_result_text_lines.append('')
+list_of_test_result_text_lines.append('loudness_correction_version = ' + loudness_correction_version)
+list_of_test_result_text_lines.append('source_and_target_are_on_same_disk = ' + str(source_and_target_are_on_same_disk))
+list_of_test_result_text_lines.append('home_directory_for_the_current_user = ' + home_directory_for_the_current_user)
+list_of_test_result_text_lines.append('hotfolder_path = ' + hotfolder_path)
+list_of_test_result_text_lines.append('directory_for_results = ' + directory_for_results)
+list_of_test_result_text_lines.append('directory_for_error_logs = ' + directory_for_error_logs)
+list_of_test_result_text_lines.append('path_to_known_good_results_dir = ' + path_to_known_good_results_dir)
+list_of_test_result_text_lines.append('regression_test_results_target_dir = ' + regression_test_results_target_dir)
+list_of_test_result_text_lines.append('')
+list_of_test_result_text_lines.append('email_sending_details')
+list_of_test_result_text_lines.append('----------------------')
+
 if len(email_sending_details) != 0:
 	for item in email_sending_details:
 		if item == 'smtp_password':
 			continue
-		print(item, '=', email_sending_details[item])
+		list_of_test_result_text_lines.append(item + ' = ' + str(email_sending_details[item]))
 
-print('len(list_of_testfile_paths) =', len(list_of_testfile_paths))
-print()
+list_of_test_result_text_lines.append('len(list_of_testfile_paths) = ' + str(len(list_of_testfile_paths)))
+list_of_test_result_text_lines.append('')
 
-print('Previous results filenames')
-print('---------------------------')
+list_of_test_result_text_lines.append('Previous results filenames')
+list_of_test_result_text_lines.append('---------------------------')
 
 for counter in range(0, len(previous_results_filenames)):
 	# list_of_result_file_directories
-	print(list_of_result_file_directories[counter], '=', previous_results_filenames[counter])
-print()
+	list_of_test_result_text_lines.append(list_of_result_file_directories[counter] + ' = ' + str(previous_results_filenames[counter]))
+list_of_test_result_text_lines.append('')
 
-
+# Print information gathered so far.
+for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
+	print(list_of_test_result_text_lines[counter])
+last_printed_test_result_text_line = len(list_of_test_result_text_lines)
 
 ########################
 # Run regression tests #
@@ -796,15 +879,28 @@ for test_counter in range(0,4):
 
 	new_results_directory = list_of_result_file_directories[test_counter]
 	loudness_correction_test_run_commands = list_of_loudnesscorrection_commands_to_run[test_counter]
-	regression_test_log_file_name = regression_test_results_target_dir + os.sep + new_results_directory + os.sep + '00-regression_test_results_log.txt'
-	previous_measured_loudness_of_loudness_corrected_files = path_to_known_good_results_dir + os.sep + new_results_directory + os.sep + 'korjattujen_tiedostojen_aanekkyys.txt'
-	new_measured_loudness_of_loudness_corrected_files = regression_test_results_target_dir + os.sep + new_results_directory + os.sep + 'korjattujen_tiedostojen_aanekkyys.txt'
+	regression_test_log_file_name = regression_test_results_target_dir + os.sep + '00-regression_test_results_log.txt'
+	previous_measured_loudness_of_loudness_corrected_files = path_to_known_good_results_dir + os.sep + new_results_directory + os.sep + list_of_result_file_names[3]
+
+	if os.path.exists(path_to_known_good_results_dir + os.sep + new_results_directory + os.sep + 'korjattujen_tiedostojen_aanekkyys.txt') == True: # The file name used to be in finnish, check if a file with the old name can be found.
+		previous_measured_loudness_of_loudness_corrected_files = path_to_known_good_results_dir + os.sep + new_results_directory + os.sep + 'korjattujen_tiedostojen_aanekkyys.txt'
+
+	new_measured_loudness_of_loudness_corrected_files = regression_test_results_target_dir + os.sep + new_results_directory + os.sep + list_of_result_file_names[3]
 	mediainfo_source_dir = path_to_known_good_results_dir + os.sep + new_results_directory + os.sep + 'mediainfo'
 	mediainfo_target_dir = regression_test_results_target_dir + os.sep + new_results_directory + os.sep + 'mediainfo'
-	previous_loudness_calculation_log_name = find_matching_filename(path_to_known_good_results_dir + os.sep + new_results_directory, 'loudness_calculation_log-')
-	previous_loudness_calculation_log = path_to_known_good_results_dir + os.sep + new_results_directory + os.sep + previous_loudness_calculation_log_name
-
 	list_of_files = []
+
+	time_in_ticks_and_string_format = get_realtime()
+	start_time_for_individual_test = time_in_ticks_and_string_format[0]
+
+	list_of_test_result_text_lines.append('')
+	list_of_test_result_text_lines.append("'" + new_results_directory +"'" + ' Test Started At: ' + time_in_ticks_and_string_format[1])
+	list_of_test_result_text_lines.append('')
+
+	# Print information gathered so far.
+	for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
+		print(list_of_test_result_text_lines[counter])
+	last_printed_test_result_text_line = len(list_of_test_result_text_lines)
 
 	loudness_scanner_commands = [libebur128_scanner_path, 'scan']
 
@@ -813,16 +909,50 @@ for test_counter in range(0,4):
 
 	# Remove files possibly left over in the HotFolder and results dir.
 	error_happened, error_message = delete_files_from_a_directory('*', hotfolder_path)
+
+	if error_happened == True:
+		list_of_test_result_text_lines.append('')
+		list_of_test_result_text_lines.append(error_message)
+		list_of_test_result_text_lines.append('')
+		error_happened = False
+		error_message = ''
+
+		for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
+			print(list_of_test_result_text_lines[counter])
+		last_printed_test_result_text_line = len(list_of_test_result_text_lines)
+
 	error_happened, error_message = delete_files_from_a_directory('*', directory_for_results)
+
+	if error_happened == True:
+		list_of_test_result_text_lines.append('')
+		list_of_test_result_text_lines.append(error_message)
+		list_of_test_result_text_lines.append('')
+		error_happened = False
+		error_message = ''
+
+		for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
+			print(list_of_test_result_text_lines[counter])
+		last_printed_test_result_text_line = len(list_of_test_result_text_lines)
+
 	time.sleep(5)
 
 	################################
 	# Link test files to HotFolder #
 	################################
-	error_happened = False
-	error_message = ''
 
 	error_happened, error_message = link_test_files_to_target_directory(list_of_testfile_paths, hotfolder_path)
+
+	if error_happened == True:
+		list_of_test_result_text_lines.append('')
+		list_of_test_result_text_lines.append(error_message)
+		list_of_test_result_text_lines.append('')
+		error_happened = False
+		error_message = ''
+
+		for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
+			print(list_of_test_result_text_lines[counter])
+		last_printed_test_result_text_line = len(list_of_test_result_text_lines)
+
 
 	#############################
 	# Run LoudnessCorrection.py #
@@ -846,6 +976,18 @@ for test_counter in range(0,4):
 	# Remove jpg - files from the results directory #
 	#################################################
 	error_happened, error_message = delete_files_from_a_directory('.jpg', directory_for_results)
+
+	if error_happened == True:
+		list_of_test_result_text_lines.append('')
+		list_of_test_result_text_lines.append(error_message)
+		list_of_test_result_text_lines.append('')
+		error_happened = False
+		error_message = ''
+
+		for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
+			print(list_of_test_result_text_lines[counter])
+		last_printed_test_result_text_line = len(list_of_test_result_text_lines)
+
 
 	##################################################
 	# Calculate loudness of loudness corrected files #
@@ -888,10 +1030,34 @@ for test_counter in range(0,4):
 	#######################################
 	error_happened, error_message = delete_files_from_a_directory('*', hotfolder_path)
 
+	if error_happened == True:
+		list_of_test_result_text_lines.append('')
+		list_of_test_result_text_lines.append(error_message)
+		list_of_test_result_text_lines.append('')
+		error_happened = False
+		error_message = ''
+
+		for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
+			print(list_of_test_result_text_lines[counter])
+		last_printed_test_result_text_line = len(list_of_test_result_text_lines)
+
+
 	###############################################
 	# Remove all files from the results directory #
 	###############################################
 	error_happened, error_message = delete_files_from_a_directory('*', directory_for_results)
+
+	if error_happened == True:
+		list_of_test_result_text_lines.append('')
+		list_of_test_result_text_lines.append(error_message)
+		list_of_test_result_text_lines.append('')
+		error_happened = False
+		error_message = ''
+
+		for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
+			print(list_of_test_result_text_lines[counter])
+		last_printed_test_result_text_line = len(list_of_test_result_text_lines)
+
 
 	###########################################################
 	# Check if LoudnessCorrection.py reported critical errors #
@@ -899,25 +1065,64 @@ for test_counter in range(0,4):
 	file_name = find_matching_filename(regression_test_results_target_dir + os.sep + new_results_directory, 'error_log-')
 
 	if file_name != '':
-		text_content_of_file = read_a_text_file(regression_test_results_target_dir + os.sep + new_results_directory + os.sep + file_name)
+		text_content_of_file, error_happened, error_message = read_a_text_file(regression_test_results_target_dir + os.sep + new_results_directory + os.sep + file_name)
+
+		if error_happened == True:
+			list_of_test_result_text_lines.append('')
+			list_of_test_result_text_lines.append(error_message)
+			list_of_test_result_text_lines.append('')
+			error_happened = False
+			error_message = ''
+
+			for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
+				print(list_of_test_result_text_lines[counter])
+			last_printed_test_result_text_line = len(list_of_test_result_text_lines)
 
 		if 'Critical Python Error' in text_content_of_file:
 
-			print()
-			print('Error: LoudnessCorrection.py reported critical python errors !!!!!!!')
-			print()
+			list_of_test_result_text_lines.append('')
+			list_of_test_result_text_lines.append('Error: LoudnessCorrection.py reported critical python errors !!!!!!!')
+			list_of_test_result_text_lines.append('')
 
+	# Print information gathered so far.
+	for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
+		print(list_of_test_result_text_lines[counter])
+	last_printed_test_result_text_line = len(list_of_test_result_text_lines)
 
-	##############################################
-	# Mediainfo: identical and differing results #
-	##############################################
+	##########################################
+	# Mediainfo for loudness corrected files #
+	##########################################
 
 	# Mediainfo records information like: format, channel count, bit depth, sample rate, duration, so comparing mediainfo - files
 	# gives us confidence that all technical aspects of loudness corrected files are as expected
 	mediainfo_results_1_dict = {}
 	mediainfo_results_2_dict = {}
-	mediainfo_results_1_dict = read_text_lines_in_mediainfo_files_to_dictionary(mediainfo_source_dir)
-	mediainfo_results_2_dict = read_text_lines_in_mediainfo_files_to_dictionary(mediainfo_target_dir)
+	mediainfo_results_1_dict, error_happened, error_message = read_text_lines_in_mediainfo_files_to_dictionary(mediainfo_source_dir)
+
+	if error_happened == True:
+		list_of_test_result_text_lines.append('')
+		list_of_test_result_text_lines.append(error_message)
+		list_of_test_result_text_lines.append('')
+		error_happened = False
+		error_message = ''
+
+		for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
+			print(list_of_test_result_text_lines[counter])
+		last_printed_test_result_text_line = len(list_of_test_result_text_lines)
+
+	mediainfo_results_2_dict, error_happened, error_message = read_text_lines_in_mediainfo_files_to_dictionary(mediainfo_target_dir)
+
+	if error_happened == True:
+		list_of_test_result_text_lines.append('')
+		list_of_test_result_text_lines.append(error_message)
+		list_of_test_result_text_lines.append('')
+		error_happened = False
+		error_message = ''
+
+		for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
+			print(list_of_test_result_text_lines[counter])
+		last_printed_test_result_text_line = len(list_of_test_result_text_lines)
+
 
 	mediainfo_files_with_identical_results_dict = {}
 	mediainfo_files_with_differing_results_dict = {}
@@ -927,38 +1132,38 @@ for test_counter in range(0,4):
 	# Mediainfo: Compare results in the two dictionaries and store results in four dictionaries.
 	mediainfo_files_with_identical_results_dict, mediainfo_files_with_differing_results_dict, mediainfo_files_only_in_path_1_dict, mediainfo_files_only_in_path_2_dict = find_differences_in_two_result_dictionaries(mediainfo_results_1_dict, mediainfo_results_2_dict) 
 
-	title_string = '# Mediainfo: identical and differing results for: ' + new_results_directory + ' #'
-	print()
-	print('#' * len(title_string))
-	print(title_string)
-	print('#' * len(title_string))
-	print()
+	title_string = '# Mediainfo for loudness corrected files: ' + new_results_directory + ' #'
+	list_of_test_result_text_lines.append('')
+	list_of_test_result_text_lines.append('#' * len(title_string))
+	list_of_test_result_text_lines.append(title_string)
+	list_of_test_result_text_lines.append('#' * len(title_string))
+	list_of_test_result_text_lines.append('')
 
 	# Mediainfo: Show the total number of mediainfo results
-	print()
-	print('Data for', str(len(mediainfo_results_1_dict)), 'files found in path:', mediainfo_source_dir)
-	print('Data for', str(len(mediainfo_results_2_dict)), 'files found in path:', mediainfo_target_dir)
+	list_of_test_result_text_lines.append('')
+	list_of_test_result_text_lines.append('Data for ' + str(len(mediainfo_results_1_dict)) + ' files found in path: ' + mediainfo_source_dir)
+	list_of_test_result_text_lines.append('Data for ' + str(len(mediainfo_results_2_dict)) + ' files found in path: ' + mediainfo_target_dir)
 
 
 	# Mediainfo: Show Identical files
 	if (len(mediainfo_results_1_dict) == len(mediainfo_results_2_dict)) and (len(mediainfo_results_1_dict) == len(mediainfo_files_with_identical_results_dict)):
 
-		print()
-		print('Results for all', str(len(mediainfo_files_with_identical_results_dict)), 'files are identical :)')
-		print()
+		list_of_test_result_text_lines.append('')
+		list_of_test_result_text_lines.append('Results for all ' + str(len(mediainfo_files_with_identical_results_dict)) + ' files are identical :)')
+		list_of_test_result_text_lines.append('')
 	else:
-		print()
-		print('Results for', str(len(mediainfo_files_with_identical_results_dict)), 'files are identical :)')
-		print()
+		list_of_test_result_text_lines.append('')
+		list_of_test_result_text_lines.append('Results for ' + str(len(mediainfo_files_with_identical_results_dict)) + ' files are identical :)')
+		list_of_test_result_text_lines.append('')
 
 	# Mediainfo: Show Files with differing results
 	if len(mediainfo_files_with_differing_results_dict) != 0:
 
 		# Report any mismatch found.
-		print()
-		print(str(len(mediainfo_files_with_differing_results_dict)), "Calculation results don't match")
-		print('-' * len(str(len(mediainfo_files_with_differing_results_dict)) + " Calculation results don't match ") + '-')
-		print()
+		list_of_test_result_text_lines.append('')
+		list_of_test_result_text_lines.append(str(len(mediainfo_files_with_differing_results_dict)) + " Calculation results don't match")
+		list_of_test_result_text_lines.append('-' * len(str(len(mediainfo_files_with_differing_results_dict)) + " Calculation results don't match ") + '-')
+		list_of_test_result_text_lines.append('')
 
 		list_of_non_matching_filenames = list(mediainfo_files_with_differing_results_dict)
 		list_of_non_matching_filenames.sort(key=str.lower)
@@ -968,10 +1173,10 @@ for test_counter in range(0,4):
 			file1_results = mediainfo_files_with_differing_results_dict[item][0]
 			file2_results = mediainfo_files_with_differing_results_dict[item][1]
 
-			print()
-			print(item)
-			print('-' * int(len(item) + 1))
-			print()
+			list_of_test_result_text_lines.append('')
+			list_of_test_result_text_lines.append(item)
+			list_of_test_result_text_lines.append('-' * int(len(item) + 1))
+			list_of_test_result_text_lines.append('')
 
 
 			for value_counter in range(0, len(file1_results)):
@@ -984,19 +1189,19 @@ for test_counter in range(0,4):
 					string_2_to_print = file2_results[value_counter]
 					string_2_to_print = ' ' * (5 - len(string_2_to_print)) + string_2_to_print
 					
-					print(string_1_to_print + '   |  ' + string_2_to_print + '     ' +  item)
-			print()
+					list_of_test_result_text_lines.append(string_1_to_print + '   |  ' + string_2_to_print + '     ' +  item)
+			list_of_test_result_text_lines.append('')
 		
-		print()
+		list_of_test_result_text_lines.append('')
 
 	# Mediainfo: Show Files only in path 1
 	if len(mediainfo_files_only_in_path_1_dict) != 0:
 
 		# Report any mismatch found.
-		print()
-		print(str(len(mediainfo_files_only_in_path_1_dict)), "Filenames only in:", mediainfo_source_dir)
-		print('-' * len(str(len(mediainfo_files_only_in_path_1_dict)) + " Filenames only in: " + mediainfo_source_dir) + '-')
-		print()
+		list_of_test_result_text_lines.append('')
+		list_of_test_result_text_lines.append(str(len(mediainfo_files_only_in_path_1_dict)) + " Filenames only in: " + mediainfo_source_dir)
+		list_of_test_result_text_lines.append('-' * len(str(len(mediainfo_files_only_in_path_1_dict)) + " Filenames only in: " + mediainfo_source_dir) + '-')
+		list_of_test_result_text_lines.append('')
 
 		list_of_missing_filenames = []
 
@@ -1005,18 +1210,18 @@ for test_counter in range(0,4):
 
 		for item in list_of_missing_filenames:
 
-			print(item)
+			list_of_test_result_text_lines.append(item)
 
-		print()
+		list_of_test_result_text_lines.append('')
 
 	# Mediainfo: Show Files only in path 2
 	if len(mediainfo_files_only_in_path_2_dict) != 0:
 
 		# Report any mismatch found.
-		print()
-		print(str(len(mediainfo_files_only_in_path_2_dict)), "Filenames only in:", mediainfo_target_dir)
-		print('-' * len(str(len(mediainfo_files_only_in_path_2_dict)) + " Filenames only in: " + mediainfo_target_dir) + '-')
-		print()
+		list_of_test_result_text_lines.append('')
+		list_of_test_result_text_lines.append(str(len(mediainfo_files_only_in_path_2_dict)) + " Filenames only in: " + mediainfo_target_dir)
+		list_of_test_result_text_lines.append('-' * len(str(len(mediainfo_files_only_in_path_2_dict)) + " Filenames only in: " + mediainfo_target_dir) + '-')
+		list_of_test_result_text_lines.append('')
 
 		list_of_missing_filenames = []
 
@@ -1025,13 +1230,18 @@ for test_counter in range(0,4):
 
 		for item in list_of_missing_filenames:
 
-			print(item)
+			list_of_test_result_text_lines.append(item)
+		list_of_test_result_text_lines.append
 
-		print()
+	# Print information gathered so far.
+	for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
+		print(list_of_test_result_text_lines[counter])
+	last_printed_test_result_text_line = len(list_of_test_result_text_lines)
 
-	#########################################################################
-	# Loudness of loudness corrected files: identical and differing results #
-	#########################################################################
+
+	########################################
+	# Loudness of loudness corrected files #
+	########################################
 
 	previous_results_as_text = ''
 	previous_results_as_list = []
@@ -1040,8 +1250,32 @@ for test_counter in range(0,4):
 	new_results_as_list = []
 	new_results_dict = {}
 
-	previous_results_as_text = read_a_text_file(previous_measured_loudness_of_loudness_corrected_files)
-	new_results_as_text = read_a_text_file(new_measured_loudness_of_loudness_corrected_files)
+	previous_results_as_text, error_happened, error_message = read_a_text_file(previous_measured_loudness_of_loudness_corrected_files)
+
+	if error_happened == True:
+		list_of_test_result_text_lines.append('')
+		list_of_test_result_text_lines.append(error_message)
+		list_of_test_result_text_lines.append('')
+		error_happened = False
+		error_message = ''
+
+		for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
+			print(list_of_test_result_text_lines[counter])
+		last_printed_test_result_text_line = len(list_of_test_result_text_lines)
+
+	new_results_as_text, error_happened, error_message = read_a_text_file(new_measured_loudness_of_loudness_corrected_files)
+
+	if error_happened == True:
+		list_of_test_result_text_lines.append('')
+		list_of_test_result_text_lines.append(error_message)
+		list_of_test_result_text_lines.append('')
+		error_happened = False
+		error_message = ''
+
+		for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
+			print(list_of_test_result_text_lines[counter])
+		last_printed_test_result_text_line = len(list_of_test_result_text_lines)
+
 
 	previous_results_as_list = previous_results_as_text.split('\n')
 	new_results_as_list = new_results_as_text.split('\n')
@@ -1059,35 +1293,35 @@ for test_counter in range(0,4):
 
 	# Loudness of loudness corrected files: Show the total number of mediainfo results
 
-	title_string = '# Loudness of loudness corrected files: identical and differing results for: ' + new_results_directory + ' #'
-	print()
-	print('#' * len(title_string))
-	print(title_string)
-	print('#' * len(title_string))
-	print()
+	title_string = '# Loudness of loudness corrected files: ' + new_results_directory + ' #'
+	list_of_test_result_text_lines.append('')
+	list_of_test_result_text_lines.append('#' * len(title_string))
+	list_of_test_result_text_lines.append(title_string)
+	list_of_test_result_text_lines.append('#' * len(title_string))
+	list_of_test_result_text_lines.append('')
 
-	print('Data for', str(len(previous_results_dict)), 'files found in path:', previous_measured_loudness_of_loudness_corrected_files)
-	print('Data for', str(len(new_results_dict)), 'files found in path:', new_measured_loudness_of_loudness_corrected_files)
+	list_of_test_result_text_lines.append('Data for ' + str(len(previous_results_dict)) + ' files found in path: ' + previous_measured_loudness_of_loudness_corrected_files)
+	list_of_test_result_text_lines.append('Data for ' + str(len(new_results_dict)) + ' files found in path: ' + new_measured_loudness_of_loudness_corrected_files)
 
 	# Loudness of loudness corrected files: Show Identical files
 	if (len(previous_results_dict) == len(new_results_dict)) and (len(previous_results_dict) == len(loudness_corrected_files_with_identical_results_dict)):
 
-		print()
-		print('Results for all', str(len(loudness_corrected_files_with_identical_results_dict)), 'files are identical :)')
-		print()
+		list_of_test_result_text_lines.append('')
+		list_of_test_result_text_lines.append('Results for all ' + str(len(loudness_corrected_files_with_identical_results_dict)) + ' files are identical :)')
+		list_of_test_result_text_lines.append('')
 	else:
-		print()
-		print('Results for', str(len(loudness_corrected_files_with_identical_results_dict)), 'files are identical :)')
-		print()
+		list_of_test_result_text_lines.append('')
+		list_of_test_result_text_lines.append('Results for ' + str(len(loudness_corrected_files_with_identical_results_dict)) + ' files are identical :)')
+		list_of_test_result_text_lines.append('')
 
 	# Loudness of loudness corrected files: Show Files with differing results
 	if len(loudness_corrected_files_with_differing_results_dict) != 0:
 
 		# Report any mismatch found.
-		print()
-		print(str(len(loudness_corrected_files_with_differing_results_dict)), "Calculation results don't match")
-		print('-' * len(str(len(loudness_corrected_files_with_differing_results_dict)) + " Calculation results don't match ") + '-')
-		print()
+		list_of_test_result_text_lines.append('')
+		list_of_test_result_text_lines.append(str(len(loudness_corrected_files_with_differing_results_dict)) + " Calculation results don't match")
+		list_of_test_result_text_lines.append('-' * len(str(len(loudness_corrected_files_with_differing_results_dict)) + " Calculation results don't match ") + '-')
+		list_of_test_result_text_lines.append('')
 
 		list_of_non_matching_filenames = list(loudness_corrected_files_with_differing_results_dict)
 		list_of_non_matching_filenames.sort(key=str.lower)
@@ -1104,18 +1338,18 @@ for test_counter in range(0,4):
 			string_2_to_print = ' ' * (5 - len(string_2_to_print)) + string_2_to_print
 			calculation_result_type = 'integrated_loudness\t'
 			
-			print(calculation_result_type + '   ' +  string_1_to_print + '   |  ' + string_2_to_print + '     ' +  item)
+			list_of_test_result_text_lines.append(calculation_result_type + '   ' +  string_1_to_print + '   |  ' + string_2_to_print + '     ' +  item)
 		
-		print()
+		list_of_test_result_text_lines.append('')
 
 	# Loudness of loudness corrected files: Show Files only in path 1
 	if len(loudness_corrected_files_only_in_path_1_dict) != 0:
 
 		# Report any mismatch found.
-		print()
-		print(str(len(loudness_corrected_files_only_in_path_1_dict)), "Filenames only in:", previous_measured_loudness_of_loudness_corrected_files)
-		print('-' * len(str(len(loudness_corrected_files_only_in_path_1_dict)) + " Filenames only in: " + previous_measured_loudness_of_loudness_corrected_files) + '-')
-		print()
+		list_of_test_result_text_lines.append('')
+		list_of_test_result_text_lines.append(str(len(loudness_corrected_files_only_in_path_1_dict)) + " Filenames only in: " + previous_measured_loudness_of_loudness_corrected_files)
+		list_of_test_result_text_lines.append('-' * len(str(len(loudness_corrected_files_only_in_path_1_dict)) + " Filenames only in: " + previous_measured_loudness_of_loudness_corrected_files) + '-')
+		list_of_test_result_text_lines.append('')
 
 		list_of_missing_filenames = []
 
@@ -1124,18 +1358,18 @@ for test_counter in range(0,4):
 
 		for item in list_of_missing_filenames:
 
-			print(item)
+			list_of_test_result_text_lines.append(item)
 
-		print()
+		list_of_test_result_text_lines.append('')
 
 	# Loudness of loudness corrected files: Show Files only in path 2
 	if len(loudness_corrected_files_only_in_path_2_dict) != 0:
 
 		# Report any mismatch found.
-		print()
-		print(str(len(loudness_corrected_files_only_in_path_2_dict)), "Filenames only in:", new_measured_loudness_of_loudness_corrected_files)
-		print('-' * len(str(len(loudness_corrected_files_only_in_path_2_dict)) + " Filenames only in: " + new_measured_loudness_of_loudness_corrected_files) + '-')
-		print()
+		list_of_test_result_text_lines.append('')
+		list_of_test_result_text_lines.append(str(len(loudness_corrected_files_only_in_path_2_dict)) + " Filenames only in: " + new_measured_loudness_of_loudness_corrected_files)
+		list_of_test_result_text_lines.append('-' * len(str(len(loudness_corrected_files_only_in_path_2_dict)) + " Filenames only in: " + new_measured_loudness_of_loudness_corrected_files) + '-')
+		list_of_test_result_text_lines.append('')
 
 		list_of_missing_filenames = []
 
@@ -1144,23 +1378,63 @@ for test_counter in range(0,4):
 
 		for item in list_of_missing_filenames:
 
-			print(item)
+			list_of_test_result_text_lines.append(item)
 
-		print()
+		list_of_test_result_text_lines.append('')
 
-	#############################################################
-	# Loudness Calculation Log: identical and differing results #
-	#############################################################
+	# Print information gathered so far.
+	for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
+		print(list_of_test_result_text_lines[counter])
+	last_printed_test_result_text_line = len(list_of_test_result_text_lines)
 
-	title_string = '# Loudness Calculation Log: identical and differing results for: ' + new_results_directory + ' #'
-	print()
-	print('#' * len(title_string))
-	print(title_string)
-	print('#' * len(title_string))
-	print()
+	##########################################################################################################################
+	# Loudness Calculation Log: Selftest: compare this regression tests loudness calculation log to machine readable results #
+	##########################################################################################################################
+
+	title_string = '# Loudness Calculation Log: Selftest: compare this regression tests loudness calculation log to machine readable results: ' + new_results_directory + ' #'
+	list_of_test_result_text_lines.append('')
+	list_of_test_result_text_lines.append('#' * len(title_string))
+	list_of_test_result_text_lines.append(title_string)
+	list_of_test_result_text_lines.append('#' * len(title_string))
+	list_of_test_result_text_lines.append('')
 
 	# path_to_results_comparison_script
-	new_loudness_calculation_log_name = find_matching_filename(regression_test_results_target_dir + os.sep + new_results_directory, 'loudness_calculation_log-')
+	previous_loudness_calculation_log_name = find_matching_filename(regression_test_results_target_dir + os.sep + new_results_directory, list_of_result_file_names[4])
+	previous_loudness_calculation_log = regression_test_results_target_dir + os.sep + new_results_directory + os.sep + previous_loudness_calculation_log_name
+	new_loudness_calculation_log = regression_test_results_target_dir + os.sep + new_results_directory + os.sep + 'machine_readable_results'
+
+	commands_to_run = [path_to_results_comparison_script, previous_loudness_calculation_log, new_loudness_calculation_log]
+
+	list_of_command_output, error_happened, list_of_errors = run_external_program(commands_to_run)
+
+
+	if len(list_of_command_output) != 0:
+
+		list_of_test_result_text_lines.append('')
+
+		for item in list_of_command_output:
+			list_of_test_result_text_lines.append(item)
+
+	# Print information gathered so far.
+	for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
+		print(list_of_test_result_text_lines[counter])
+	last_printed_test_result_text_line = len(list_of_test_result_text_lines)
+
+	#######################################
+	# Loudness Calculation Log Comparison #
+	#######################################
+
+	title_string = '# Loudness Calculation Log Comparison: ' + new_results_directory + ' #'
+	list_of_test_result_text_lines.append('')
+	list_of_test_result_text_lines.append('#' * len(title_string))
+	list_of_test_result_text_lines.append(title_string)
+	list_of_test_result_text_lines.append('#' * len(title_string))
+	list_of_test_result_text_lines.append('')
+
+	# path_to_results_comparison_script
+	previous_loudness_calculation_log_name = find_matching_filename(path_to_known_good_results_dir + os.sep + new_results_directory, list_of_result_file_names[4])
+	previous_loudness_calculation_log = path_to_known_good_results_dir + os.sep + new_results_directory + os.sep + previous_loudness_calculation_log_name
+	new_loudness_calculation_log_name = find_matching_filename(regression_test_results_target_dir + os.sep + new_results_directory, list_of_result_file_names[4])
 	new_loudness_calculation_log = regression_test_results_target_dir + os.sep + new_results_directory + os.sep + new_loudness_calculation_log_name
 
 	commands_to_run = [path_to_results_comparison_script, previous_loudness_calculation_log, new_loudness_calculation_log]
@@ -1170,19 +1444,118 @@ for test_counter in range(0,4):
 
 	if len(list_of_command_output) != 0:
 
-		print()
+		list_of_test_result_text_lines.append('')
 
 		for item in list_of_command_output:
-			print(item)
+			list_of_test_result_text_lines.append(item)
+
+	# Print information gathered so far.
+	for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
+		print(list_of_test_result_text_lines[counter])
+	last_printed_test_result_text_line = len(list_of_test_result_text_lines)
+
+	#######################################
+	# Machine readable results comparison #
+	#######################################
+
+	title_string = '# Machine readable results comparison: ' + new_results_directory + ' #'
+	list_of_test_result_text_lines.append('')
+	list_of_test_result_text_lines.append('#' * len(title_string))
+	list_of_test_result_text_lines.append(title_string)
+	list_of_test_result_text_lines.append('#' * len(title_string))
+	list_of_test_result_text_lines.append('')
+
+	# path_to_results_comparison_script
+	previous_loudness_calculation_log = path_to_known_good_results_dir + os.sep + new_results_directory + os.sep + 'machine_readable_results'
+	new_loudness_calculation_log = regression_test_results_target_dir + os.sep + new_results_directory + os.sep + 'machine_readable_results'
+
+
+	if (os.path.exists(previous_loudness_calculation_log) == True) and (os.path.exists(new_loudness_calculation_log) == True):
+
+		commands_to_run = [path_to_results_comparison_script, previous_loudness_calculation_log, new_loudness_calculation_log]
+
+		list_of_command_output, error_happened, list_of_errors = run_external_program(commands_to_run)
+
+
+		if len(list_of_command_output) != 0:
+
+			list_of_test_result_text_lines.append('')
+
+			for item in list_of_command_output:
+				list_of_test_result_text_lines.append(item)
+	else:
+		list_of_test_result_text_lines.append('')
+		if os.path.exists(previous_loudness_calculation_log) == False:
+			list_of_test_result_text_lines.append('There is no machine readable results in: ' + str(path_to_known_good_results_dir + os.sep + new_results_directory))
+
+		if os.path.exists(new_loudness_calculation_log) == False:
+			list_of_test_result_text_lines.append('There is no machine readable results in: ' + str(regression_test_results_target_dir + os.sep + new_results_directory))
+		list_of_test_result_text_lines.append('')
+
+	# Print information gathered so far.
+	for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
+		print(list_of_test_result_text_lines[counter])
+	last_printed_test_result_text_line = len(list_of_test_result_text_lines)
+
+	time_in_ticks_and_string_format = get_realtime()
+	stop_time_for_individual_test = time_in_ticks_and_string_format[0]
+	test_duration = calculate_duration(start_time_for_individual_test, stop_time_for_individual_test)
+
+	list_of_test_result_text_lines.append('')
+	list_of_test_result_text_lines.append("'" + new_results_directory +"'" + ' Test Ended At: ' + time_in_ticks_and_string_format[1] + '   Test duration: '+ test_duration)
+	list_of_test_result_text_lines.append('')
+
+	# Print information gathered so far.
+	for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
+		print(list_of_test_result_text_lines[counter])
+	last_printed_test_result_text_line = len(list_of_test_result_text_lines)
+
+
+time_in_ticks_and_string_format = get_realtime()
+stop_time_for_complete_regression_test = time_in_ticks_and_string_format[0]
+complete_test_duration = calculate_duration(start_time_for_complete_regression_test, stop_time_for_complete_regression_test)
+
+list_of_test_result_text_lines.append('')
+list_of_test_result_text_lines.append('Complete Regression Test Ended At: ' + time_in_ticks_and_string_format[1] + '   Complete Regression Test duration: '+ complete_test_duration)
+list_of_test_result_text_lines.append('')
+
+# Print information gathered so far.
+for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
+	print(list_of_test_result_text_lines[counter])
+last_printed_test_result_text_line = len(list_of_test_result_text_lines)
+
+# Write regression test results to a log file.
+error_happened, error_message = write_a_list_of_text_to_a_file(list_of_test_result_text_lines, regression_test_log_file_name)
+
+if error_happened == True:
+
+	error_happened = False
+
+	print()
+	print(error_message)
+	print()
+
+# Send regression test result to the admin by email.
+message_text_string = '\n'.join(list_of_test_result_text_lines)
+send_email('Regression Test Report', message_text_string, '', email_sending_details)
+
+# If email sending encounters errors, then the email subroutine appends errors to the results list. Check for this and write the test results log again, if necessary.
+if len(list_of_test_result_text_lines) + 1 > last_printed_test_result_text_line:
+
+	# Write regression test results to a log file.
+	error_happened, error_message = write_a_list_of_text_to_a_file(list_of_test_result_text_lines, regression_test_log_file_name)
+
+	if error_happened == True:
+
+		error_happened = False
+
+		print()
+		print(error_message)
+		print()
+
 
 
 	#FIXME
-	# vertaa loudness calculation logia vanhaan hyväksi tiedettyyn
-	# jos vanhat machine readable tiedostot löytyy, niin vertaa uusia niihin
-	# jos vanhat machine readable tiedostot löytyy, niin vertaa niitä loudness calculation logiin.
-	# Vaihda 'korjattujen_tiedostojen_aanekkyys.txt' nimi englanniks.
-	# lähetä tulos sähköpostilla
-	# Muista kerätä virheet ja lähettää nekin ylläpitäjälle / kirjata logiin.
 	# Muista pyytää rootin salasana, jos komentorivillä on optio -shutdown-when-ready
 	# Muista tehdä mahdollisuus luoda testitulokset ilman, että on olemassa aiempia tuloksia joihin verrata. Tätä tarvitaan, jos käyttäjä haluaa luoda ekan datasetin.
 
