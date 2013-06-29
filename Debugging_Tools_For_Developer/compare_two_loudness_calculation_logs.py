@@ -335,7 +335,6 @@ files_with_identical_results_dict, files_with_differing_results_dict, files_only
 # Display results #
 ###################
 
-print()
 time_string = get_realtime()[1]
 
 print()

@@ -4,6 +4,10 @@ Regression_tester
 
 Regression_tester
 -----------------
+- Bugfixes.
+
+Regression_tester
+-----------------
 - Functionality mostly ready.
 
 Regression_tester

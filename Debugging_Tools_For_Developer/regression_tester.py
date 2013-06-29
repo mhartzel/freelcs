@@ -260,7 +260,7 @@ def test_that_hotfolder_and_test_files_are_on_the_same_partition(sourcedir, targ
 	temp1=str(command_output).split('\\n') # Split df output by lines using carrage return ('\n').
 	temp2=str(temp1[1]).split() # The second item (second line df printed) has the device name, split the second line to separate items.
 	if len(temp1)==3: # If df printed 3 lines of text ('temp1 is equal to 3), then df printed valid information about the disk device, else df did not find device name (df error message = 2 lines of text).
-		source_disk_device=temp2[0] # Get source dir disk device name.
+		source_disk_device = temp2[0] # Get source dir disk device name.
 
 	# Parse shell command 'df' to find out what disk device the target dir is on.
 	temp1=''
@@ -269,7 +269,7 @@ def test_that_hotfolder_and_test_files_are_on_the_same_partition(sourcedir, targ
 	temp1=str(command_output).split('\\n') # Split df output by lines using carrage return ('\n').
 	temp2=str(temp1[1]).split() # The second item (second line df printed) has the device name, split the second line to separate items.
 	if len(temp1)==3: # If df printed 3 lines of text ('temp1 is equal to 3), then df printed valid information about the disk device, else df did not find device name (df error message = 2 lines of text).
-		target_disk_device=temp2[0] # Get target dir disk device name.
+		target_disk_device = temp2[0] # Get target dir disk device name.
 
 	if not (source_disk_device =='') and not (target_disk_device == ''): 
 		if source_disk_device == target_disk_device:
@@ -534,7 +534,7 @@ def send_email(message_title, message_text_string, message_attachment_path, emai
 			 message_size = len(email_message_content_string) # Get our message size
 			 if message_size > server_max_message_size: # Message is too large for the smtp server to accept, abort sending.
 				 message_size_is_within_limits = False
-				 list_of_test_result_text_lines.append(text_marginal + 'Message_size (' + str(message_size), ') is larger than the max supported size (' + str(server_max_message_size) + ') of server: ' + smtp_server_name + 'Sending aborted.')
+				 list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Message_size (' + str(message_size), ') is larger than the max supported size (' + str(server_max_message_size) + ') of server: ' + smtp_server_name + 'Sending aborted.')
 				 sys.exit(1)
 		 if message_size_is_within_limits == True:
 			 # Uncomment the following line if you want to see printed out the final message that is sent to the smtp server
@@ -548,25 +548,25 @@ def send_email(message_title, message_text_string, message_attachment_path, emai
 		 mailServer.close()
 
 	except smtplib.socket.timeout as reason_for_error:
-		 list_of_test_result_text_lines.append(text_marginal + 'Error, Timeout error: ' + reason_for_error)
+		 list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Error, Timeout error: ' + str(reason_for_error))
 	except smtplib.socket.error as reason_for_error:
-		 list_of_test_result_text_lines.append(text_marginal + 'Error, Socket error: ' + reason_for_error)
+		 list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Error, Socket error: ' + str(reason_for_error))
 	except smtplib.SMTPRecipientsRefused as reason_for_error:
-		 list_of_test_result_text_lines.append(text_marginal + 'Error, All recipients were refused: ' + reason_for_error)
+		 list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Error, All recipients were refused: ' + str(reason_for_error))
 	except smtplib.SMTPHeloError as reason_for_error:
-		 list_of_test_result_text_lines.append(text_marginal + 'Error, The server didn’t reply properly to the HELO greeting: ' + reason_for_error)
+		 list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Error, The server didn’t reply properly to the HELO greeting: ' + str(reason_for_error))
 	except smtplib.SMTPSenderRefused as reason_for_error:
-		 list_of_test_result_text_lines.append(text_marginal + 'Error, The server didn’t accept the sender address: ' + reason_for_error)
+		 list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Error, The server didn’t accept the sender address: ' + str(reason_for_error))
 	except smtplib.SMTPDataError as reason_for_error:
-		 list_of_test_result_text_lines.append(text_marginal + 'Error, The server replied with an unexpected error code or The SMTP server refused to accept the message data: ' + reason_for_error)
+		 list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Error, The server replied with an unexpected error code or The SMTP server refused to accept the message data: ' + str(reason_for_error))
 	except smtplib.SMTPException as reason_for_error:
-		 list_of_test_result_text_lines.append(text_marginal + 'Error, The server does not support the STARTTLS extension or No suitable authentication method was found: ' + reason_for_error)
+		 list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Error, The server does not support the STARTTLS extension or No suitable authentication method was found: ' + str(reason_for_error))
 	except smtplib.SMTPAuthenticationError as reason_for_error:
-		 list_of_test_result_text_lines.append(text_marginal + 'Error, The server didn’t accept the username/password combination: ' + reason_for_error)
+		 list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Error, The server didn’t accept the username/password combination: ' + str(reason_for_error))
 	except smtplib.SMTPConnectError as reason_for_error:
-		 list_of_test_result_text_lines.append(text_marginal + 'Error, Error occurred during establishment of a connection with the server: '+ reason_for_error)
+		 list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Error, Error occurred during establishment of a connection with the server: '+ str(reason_for_error))
 	except RuntimeError as reason_for_error:
-		 list_of_test_result_text_lines.append(text_marginal + 'Error, SSL/TLS support is not available to your Python interpreter: ' + reason_for_error)
+		 list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Error, SSL/TLS support is not available to your Python interpreter: ' + str(reason_for_error))
 
 def calculate_duration(start_time, end_time):
 
@@ -613,7 +613,8 @@ def calculate_duration(start_time, end_time):
 list_of_result_file_directories = ['ffmpeg-truepeak', 'ffmpeg-samplepeak', 'native-truepeak', 'native-samplepeak']
 list_of_result_file_names = ['debug-file_processing_info-', 'debug-variables_lists_and_dictionaries-', 'error_log-', 'measured_loudness_of_loudness_corrected_files.txt', 'loudness_calculation_log-']
 list_of_test_result_text_lines = []
-text_marginal = '\t\t'
+text_marginal_1_tabs = '\t'
+text_marginal_2_tabs = '\t\t'
 last_printed_test_result_text_line = 0
 
 start_time_for_complete_regression_test = 0
@@ -777,6 +778,12 @@ if os.path.exists(directory_for_error_logs) == False:
 source_and_target_are_on_same_disk = False
 source_and_target_are_on_same_disk = test_that_hotfolder_and_test_files_are_on_the_same_partition(dir_of_test_files, hotfolder_path)
 
+if source_and_target_are_on_same_disk == False:
+	print()
+	print('Error: Testfiles needs to be on the same partition as the HotFolder:', hotfolder_path)
+	print()
+	sys.exit(1)
+
 # Check if previous results files can be found
 for counter1 in range(0,4):
 
@@ -820,8 +827,11 @@ if os.path.exists(regression_test_results_target_dir) == True:
 time_in_ticks_and_string_format = get_realtime()
 start_time_for_complete_regression_test = time_in_ticks_and_string_format[0]
 
+title_string = '# Complete Regression Test Started At: ' + time_in_ticks_and_string_format[1] + ' #'
 list_of_test_result_text_lines.append('')
-list_of_test_result_text_lines.append('Complete Regression Test Started At: ' + time_in_ticks_and_string_format[1])
+list_of_test_result_text_lines.append('#' * len(title_string))
+list_of_test_result_text_lines.append(title_string)
+list_of_test_result_text_lines.append('#' * len(title_string))
 list_of_test_result_text_lines.append('')
 
 # Print information gathered so far.
@@ -832,9 +842,9 @@ last_printed_test_result_text_line = len(list_of_test_result_text_lines)
 # Create directories needed to store regression test results
 for path in list_of_result_file_directories:
 	os.makedirs(regression_test_results_target_dir + os.sep + path + os.sep + 'mediainfo')
-	list_of_test_result_text_lines.append(text_marginal + 'Creating dir: ' + regression_test_results_target_dir + os.sep + path + os.sep + 'mediainfo')
+	list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Creating dir: ' + regression_test_results_target_dir + os.sep + path + os.sep + 'mediainfo')
 	os.makedirs(regression_test_results_target_dir + os.sep + path + os.sep + 'machine_readable_results')
-	list_of_test_result_text_lines.append(text_marginal + 'Creating dir: ' + regression_test_results_target_dir + os.sep + path + os.sep + 'machine_readable_results')
+	list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Creating dir: ' + regression_test_results_target_dir + os.sep + path + os.sep + 'machine_readable_results')
 
 # Print information gathered so far.
 for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
@@ -842,33 +852,41 @@ for counter in range(last_printed_test_result_text_line, len(list_of_test_result
 last_printed_test_result_text_line = len(list_of_test_result_text_lines)
 
 list_of_test_result_text_lines.append('')
-list_of_test_result_text_lines.append(text_marginal + 'loudness_correction_version = ' + loudness_correction_version)
-list_of_test_result_text_lines.append(text_marginal + 'source_and_target_are_on_same_disk = ' + str(source_and_target_are_on_same_disk))
-list_of_test_result_text_lines.append(text_marginal + 'home_directory_for_the_current_user = ' + home_directory_for_the_current_user)
-list_of_test_result_text_lines.append(text_marginal + 'hotfolder_path = ' + hotfolder_path)
-list_of_test_result_text_lines.append(text_marginal + 'directory_for_results = ' + directory_for_results)
-list_of_test_result_text_lines.append(text_marginal + 'directory_for_error_logs = ' + directory_for_error_logs)
-list_of_test_result_text_lines.append(text_marginal + 'path_to_known_good_results_dir = ' + path_to_known_good_results_dir)
-list_of_test_result_text_lines.append(text_marginal + 'regression_test_results_target_dir = ' + regression_test_results_target_dir)
+list_of_test_result_text_lines.append(text_marginal_2_tabs + 'loudness_correction_version = ' + loudness_correction_version)
+list_of_test_result_text_lines.append(text_marginal_2_tabs + 'source_and_target_are_on_same_disk = ' + str(source_and_target_are_on_same_disk))
+list_of_test_result_text_lines.append(text_marginal_2_tabs + 'home_directory_for_the_current_user = ' + home_directory_for_the_current_user)
+list_of_test_result_text_lines.append(text_marginal_2_tabs + 'hotfolder_path = ' + hotfolder_path)
+list_of_test_result_text_lines.append(text_marginal_2_tabs + 'directory_for_results = ' + directory_for_results)
+list_of_test_result_text_lines.append(text_marginal_2_tabs + 'directory_for_error_logs = ' + directory_for_error_logs)
+list_of_test_result_text_lines.append(text_marginal_2_tabs + 'path_to_known_good_results_dir = ' + path_to_known_good_results_dir)
+list_of_test_result_text_lines.append(text_marginal_2_tabs + 'regression_test_results_target_dir = ' + regression_test_results_target_dir)
 list_of_test_result_text_lines.append('')
-list_of_test_result_text_lines.append(text_marginal + 'email_sending_details')
-list_of_test_result_text_lines.append(text_marginal + '----------------------')
+list_of_test_result_text_lines.append(text_marginal_2_tabs + 'email_sending_details')
+list_of_test_result_text_lines.append(text_marginal_2_tabs + '----------------------')
 
 if len(email_sending_details) != 0:
 	for item in email_sending_details:
 		if item == 'smtp_password':
 			continue
-		list_of_test_result_text_lines.append(text_marginal + item + ' = ' + str(email_sending_details[item]))
+		list_of_test_result_text_lines.append(text_marginal_2_tabs + item + ' = ' + str(email_sending_details[item]))
 
-list_of_test_result_text_lines.append(text_marginal + 'len(list_of_testfile_paths) = ' + str(len(list_of_testfile_paths)))
+list_of_test_result_text_lines.append(text_marginal_2_tabs + 'len(list_of_testfile_paths) = ' + str(len(list_of_testfile_paths)))
 list_of_test_result_text_lines.append('')
 
-list_of_test_result_text_lines.append(text_marginal + 'Previous results filenames')
-list_of_test_result_text_lines.append(text_marginal + '---------------------------')
+list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Previous results filenames')
+list_of_test_result_text_lines.append(text_marginal_2_tabs + '---------------------------')
 
 for counter in range(0, len(previous_results_filenames)):
 	# list_of_result_file_directories
-	list_of_test_result_text_lines.append(text_marginal + list_of_result_file_directories[counter] + ' = ' + str(previous_results_filenames[counter]))
+
+	title_string = list_of_result_file_directories[counter]
+	list_of_test_result_text_lines.append(text_marginal_2_tabs + title_string)
+	list_of_test_result_text_lines.append(text_marginal_2_tabs + '-' * len(title_string))
+
+	for counter2 in range(0, len(previous_results_filenames[counter])):
+		list_of_test_result_text_lines.append(text_marginal_2_tabs + str(previous_results_filenames[counter][counter2]))
+	list_of_test_result_text_lines.append('')
+
 list_of_test_result_text_lines.append('')
 
 # Print information gathered so far.
@@ -898,8 +916,10 @@ for test_counter in range(0,4):
 	time_in_ticks_and_string_format = get_realtime()
 	start_time_for_individual_test = time_in_ticks_and_string_format[0]
 
-	list_of_test_result_text_lines.append('')
-	list_of_test_result_text_lines.append("'" + new_results_directory +"'" + ' Test Started At: ' + time_in_ticks_and_string_format[1])
+	title_string = '# ' + "'" + new_results_directory +"'" + ' Test Started At: ' + time_in_ticks_and_string_format[1] + ' #'
+	list_of_test_result_text_lines.append('#' * len(title_string))
+	list_of_test_result_text_lines.append(title_string)
+	list_of_test_result_text_lines.append('#' * len(title_string))
 	list_of_test_result_text_lines.append('')
 
 	# Print information gathered so far.
@@ -917,7 +937,7 @@ for test_counter in range(0,4):
 
 	if error_happened == True:
 		list_of_test_result_text_lines.append('')
-		list_of_test_result_text_lines.append(text_marginal + error_message)
+		list_of_test_result_text_lines.append(text_marginal_2_tabs + error_message)
 		list_of_test_result_text_lines.append('')
 		error_happened = False
 		error_message = ''
@@ -930,7 +950,7 @@ for test_counter in range(0,4):
 
 	if error_happened == True:
 		list_of_test_result_text_lines.append('')
-		list_of_test_result_text_lines.append(text_marginal + error_message)
+		list_of_test_result_text_lines.append(text_marginal_2_tabs + error_message)
 		list_of_test_result_text_lines.append('')
 		error_happened = False
 		error_message = ''
@@ -949,7 +969,7 @@ for test_counter in range(0,4):
 
 	if error_happened == True:
 		list_of_test_result_text_lines.append('')
-		list_of_test_result_text_lines.append(text_marginal + error_message)
+		list_of_test_result_text_lines.append(text_marginal_2_tabs + error_message)
 		list_of_test_result_text_lines.append('')
 		error_happened = False
 		error_message = ''
@@ -984,7 +1004,7 @@ for test_counter in range(0,4):
 
 	if error_happened == True:
 		list_of_test_result_text_lines.append('')
-		list_of_test_result_text_lines.append(text_marginal + error_message)
+		list_of_test_result_text_lines.append(text_marginal_2_tabs + error_message)
 		list_of_test_result_text_lines.append('')
 		error_happened = False
 		error_message = ''
@@ -1037,7 +1057,7 @@ for test_counter in range(0,4):
 
 	if error_happened == True:
 		list_of_test_result_text_lines.append('')
-		list_of_test_result_text_lines.append(text_marginal + error_message)
+		list_of_test_result_text_lines.append(text_marginal_2_tabs + error_message)
 		list_of_test_result_text_lines.append('')
 		error_happened = False
 		error_message = ''
@@ -1054,7 +1074,7 @@ for test_counter in range(0,4):
 
 	if error_happened == True:
 		list_of_test_result_text_lines.append('')
-		list_of_test_result_text_lines.append(text_marginal + error_message)
+		list_of_test_result_text_lines.append(text_marginal_2_tabs + error_message)
 		list_of_test_result_text_lines.append('')
 		error_happened = False
 		error_message = ''
@@ -1074,7 +1094,7 @@ for test_counter in range(0,4):
 
 		if error_happened == True:
 			list_of_test_result_text_lines.append('')
-			list_of_test_result_text_lines.append(text_marginal + error_message)
+			list_of_test_result_text_lines.append(text_marginal_2_tabs + error_message)
 			list_of_test_result_text_lines.append('')
 			error_happened = False
 			error_message = ''
@@ -1086,7 +1106,7 @@ for test_counter in range(0,4):
 		if 'Critical Python Error' in text_content_of_file:
 
 			list_of_test_result_text_lines.append('')
-			list_of_test_result_text_lines.append(text_marginal + 'Error: LoudnessCorrection.py reported critical python errors !!!!!!!')
+			list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Error: LoudnessCorrection.py reported critical python errors !!!!!!!')
 			list_of_test_result_text_lines.append('')
 
 	# Print information gathered so far.
@@ -1100,13 +1120,16 @@ for test_counter in range(0,4):
 
 	# Mediainfo records information like: format, channel count, bit depth, sample rate, duration, so comparing mediainfo - files
 	# gives us confidence that all technical aspects of loudness corrected files are as expected
+
 	mediainfo_results_1_dict = {}
 	mediainfo_results_2_dict = {}
+
+	# Read in text of mediainfo files to a dictionary (key = filename)
 	mediainfo_results_1_dict, error_happened, error_message = read_text_lines_in_mediainfo_files_to_dictionary(mediainfo_source_dir)
 
 	if error_happened == True:
 		list_of_test_result_text_lines.append('')
-		list_of_test_result_text_lines.append(text_marginal + error_message)
+		list_of_test_result_text_lines.append(text_marginal_2_tabs + error_message)
 		list_of_test_result_text_lines.append('')
 		error_happened = False
 		error_message = ''
@@ -1115,11 +1138,12 @@ for test_counter in range(0,4):
 			print(list_of_test_result_text_lines[counter])
 		last_printed_test_result_text_line = len(list_of_test_result_text_lines)
 
+	# Read in text of mediainfo files to a dictionary (key = filename)
 	mediainfo_results_2_dict, error_happened, error_message = read_text_lines_in_mediainfo_files_to_dictionary(mediainfo_target_dir)
 
 	if error_happened == True:
 		list_of_test_result_text_lines.append('')
-		list_of_test_result_text_lines.append(text_marginal + error_message)
+		list_of_test_result_text_lines.append(text_marginal_2_tabs + error_message)
 		list_of_test_result_text_lines.append('')
 		error_happened = False
 		error_message = ''
@@ -1128,173 +1152,213 @@ for test_counter in range(0,4):
 			print(list_of_test_result_text_lines[counter])
 		last_printed_test_result_text_line = len(list_of_test_result_text_lines)
 
+	# Find files that are only in source or only in target. Sets makes it very fast to compare a bunch of filenames.
+	filenames_1_set = set(mediainfo_results_1_dict) # Get all source dir filenames from the dictionary to this set.
+	filenames_2_set = set(mediainfo_results_2_dict) # Get all target dir filenames from the dictionary to this set.
+	filenames_only_in_set_1 = set.difference(filenames_1_set, filenames_2_set) # Get all filenames that exists only in  source
+	filenames_only_in_set_2 = set.difference(filenames_2_set, filenames_1_set) # Get all filenames that exists only in  target
+	common_filenames_set = set.intersection(filenames_1_set, filenames_2_set) # Get all filenames that exists in both source and target to this set.
 
-	mediainfo_files_with_identical_results_dict = {}
+	# Store mediainfo data of one filename to dictionary and compare both results (1 file = 2 results)
+	mediainfo_files_with_identical_results_list = []
 	mediainfo_files_with_differing_results_dict = {}
 	mediainfo_files_only_in_path_1_dict = {}
 	mediainfo_files_only_in_path_2_dict = {}
 
-	# Mediainfo: Compare results in the two dictionaries and store results in four dictionaries.
-	mediainfo_files_with_identical_results_dict, mediainfo_files_with_differing_results_dict, mediainfo_files_only_in_path_1_dict, mediainfo_files_only_in_path_2_dict = find_differences_in_two_result_dictionaries(mediainfo_results_1_dict, mediainfo_results_2_dict) 
 
+	# Split text in mediainfo file and store results in a dictionary (key = field 0 in text line, value = field 1 in text line).
+	for file_name in common_filenames_set:
+		
+		results_for_file_1_list = []
+		results_for_file_2_list = []
+
+		results_for_file_1_dict = {}
+		results_for_file_2_dict = {}
+
+		results_for_file_1_list = mediainfo_results_1_dict[file_name]
+		results_for_file_2_list = mediainfo_results_2_dict[file_name]
+
+		headline = ''
+
+		for item1 in results_for_file_1_list:
+
+			if item1.strip() == '':
+				continue
+
+			if ':' not in item1:
+				headline = item1.strip()
+				continue # This text line is the headline, skip it.
+
+			splitted_text_1 =  item1.split(':')
+
+			results_for_file_1_dict[headline + ' ' + splitted_text_1[0].strip()] = splitted_text_1[1].strip()
+
+		for item2 in results_for_file_2_list:
+
+			if ':' not in item2:
+				headline = item2.strip()
+				continue # This text line is the headline, skip it.
+
+			splitted_text_2 =  item2.split(':')
+
+			results_for_file_2_dict[headline + ' ' + splitted_text_2[0].strip()] = splitted_text_2[1].strip()
+
+		# Mediainfo: Compare results in the two dictionaries and store results in four dictionaries.
+		# Note this compares individual mediainfo result text lines.
+		text_lines_with_identical_results_dict = {}
+		text_lines_with_differing_results_dict = {}
+		text_lines_only_in_path_1_dict = {}
+		text_lines_only_in_path_2_dict = {}
+		text_lines_with_identical_results_dict, text_lines_with_differing_results_dict, text_lines_only_in_path_1_dict, text_lines_only_in_path_2_dict = find_differences_in_two_result_dictionaries(results_for_file_1_dict, results_for_file_2_dict) 
+
+		# Store list of identical files
+		if (len(text_lines_with_identical_results_dict) > 0) and (len(text_lines_with_differing_results_dict) == 0) and (len(text_lines_only_in_path_1_dict) == 0) and (len(text_lines_only_in_path_2_dict) == 0):
+			mediainfo_files_with_identical_results_list.append(file_name) 
+
+		# Store info about differing result lines
+		if len(text_lines_with_differing_results_dict) > 0:
+
+			result_list = []
+
+			for individual_item in text_lines_with_differing_results_dict:
+				adjust_printing1 = ''
+				adjust_printing2 = ''
+				if len(individual_item + ':') < 40:
+					adjust_printing1 = ' ' * int(40 - len(individual_item + ':'))
+				if len(str(text_lines_with_differing_results_dict[individual_item][0]) + '|') < 25:
+					adjust_printing2 = ' ' * int(25 - len(str(text_lines_with_differing_results_dict[individual_item][0]) + '|'))
+				string_to_print = individual_item + ':' + adjust_printing1  + str(text_lines_with_differing_results_dict[individual_item][0]) + adjust_printing2 + '|            ' + str(text_lines_with_differing_results_dict[individual_item][1])
+				result_list.append(string_to_print)
+
+			mediainfo_files_with_differing_results_dict[file_name] = result_list
+
+		# Store info about text lines only in file 1
+		if len(text_lines_only_in_path_1_dict) > 0:
+
+			result_list = []
+
+			if file_name in mediainfo_files_with_differing_results_dict:
+				result_list = mediainfo_files_with_differing_results_dict[file_name]
+
+			for individual_item in text_lines_only_in_path_1_dict:
+
+				adjust_printing1 = ''
+				adjust_printing2 = ''
+				if len(individual_item + ':') < 40:
+					adjust_printing1 = ' ' * int(40 - len(individual_item + ':'))
+				if len(str(text_lines_only_in_path_1_dict[individual_item]) + '|') < 25:
+					adjust_printing2 = ' ' * int(25 - len(str(text_lines_only_in_path_1_dict[individual_item])  + '|'))
+
+				result_list.append(individual_item + ':' + adjust_printing1  + str(text_lines_only_in_path_1_dict[individual_item]) + adjust_printing2  + '|            ' + '<No value>')
+
+			mediainfo_files_with_differing_results_dict[file_name] = result_list
+
+		# Store info about text lines only in file 2
+		if len(text_lines_only_in_path_2_dict) > 0:
+
+			result_list = []
+
+			if file_name in mediainfo_files_with_differing_results_dict:
+				result_list = mediainfo_files_with_differing_results_dict[file_name]
+
+			for individual_item in text_lines_only_in_path_2_dict:
+
+				adjust_printing1 = ''
+				adjust_printing2 = ''
+				if len(individual_item + ':') < 40:
+					adjust_printing1 = ' ' * int(40 - len(individual_item + ':'))
+				if len('<No value>'  + '|') < 25:
+					adjust_printing2 = ' ' * int(25 - len('<No value>'  + '|'))
+
+				result_list.append(individual_item + ':' + adjust_printing1  + '<No value>'  + adjust_printing2 + '|            ' + str(text_lines_only_in_path_2_dict[individual_item]))
+
+			mediainfo_files_with_differing_results_dict[file_name] = result_list
+
+	# Report differences in mediainfo results files
 	title_string = '# Mediainfo for loudness corrected files: ' + new_results_directory + ' #'
 	list_of_test_result_text_lines.append('')
-	list_of_test_result_text_lines.append(text_marginal + '#' * len(title_string))
-	list_of_test_result_text_lines.append(text_marginal + title_string)
-	list_of_test_result_text_lines.append(text_marginal + '#' * len(title_string))
-	list_of_test_result_text_lines.append('')
+	list_of_test_result_text_lines.append(text_marginal_1_tabs + '#' * len(title_string))
+	list_of_test_result_text_lines.append(text_marginal_1_tabs + title_string)
+	list_of_test_result_text_lines.append(text_marginal_1_tabs + '#' * len(title_string))
 
 	# Mediainfo: Show the total number of mediainfo results
 	list_of_test_result_text_lines.append('')
-	list_of_test_result_text_lines.append(text_marginal + 'Data for ' + str(len(mediainfo_results_1_dict)) + ' files found in path: ' + mediainfo_source_dir)
-	list_of_test_result_text_lines.append(text_marginal + 'Data for ' + str(len(mediainfo_results_2_dict)) + ' files found in path: ' + mediainfo_target_dir)
-
+	list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Data for ' + str(len(mediainfo_results_1_dict)) + ' files found in path: ' + mediainfo_source_dir)
+	list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Data for ' + str(len(mediainfo_results_2_dict)) + ' files found in path: ' + mediainfo_target_dir)
 
 	# Mediainfo: Show Identical files
-	if (len(mediainfo_results_1_dict) == len(mediainfo_results_2_dict)) and (len(mediainfo_results_1_dict) == len(mediainfo_files_with_identical_results_dict)):
+	if (len(mediainfo_results_1_dict) == len(mediainfo_results_2_dict)) and (len(mediainfo_results_1_dict) == len(mediainfo_files_with_identical_results_list)):
 
 		list_of_test_result_text_lines.append('')
-		list_of_test_result_text_lines.append(text_marginal + 'Results for all ' + str(len(mediainfo_files_with_identical_results_dict)) + ' files are identical :)')
+		list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Results for all ' + str(len(mediainfo_files_with_identical_results_list)) + ' files are identical :)')
 		list_of_test_result_text_lines.append('')
 	else:
 		list_of_test_result_text_lines.append('')
-		list_of_test_result_text_lines.append(text_marginal + 'Results for ' + str(len(mediainfo_files_with_identical_results_dict)) + ' files are identical :)')
+		list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Results for ' + str(len(mediainfo_files_with_identical_results_list)) + ' files are identical :)')
 		list_of_test_result_text_lines.append('')
 
-	# Mediainfo: Show Files with differing results
+	# Mediainfo: Show Files with differing results and each individual differing result line.
 	if len(mediainfo_files_with_differing_results_dict) != 0:
 
 		# Report any mismatch found.
 		list_of_test_result_text_lines.append('')
-		list_of_test_result_text_lines.append(text_marginal + str(len(mediainfo_files_with_differing_results_dict)) + " Calculation results don't match")
-		list_of_test_result_text_lines.append(text_marginal + '-' * len(str(len(mediainfo_files_with_differing_results_dict)) + " Calculation results don't match ") + '-')
+		list_of_test_result_text_lines.append(text_marginal_2_tabs + "Mediainfo results for " + str(len(mediainfo_files_with_differing_results_dict)) + " file does not match (Note: mediainfo category title is appended as the beginning of each line)")
+		list_of_test_result_text_lines.append(text_marginal_2_tabs + '-' * len("Mediainfo results for " + str(len(mediainfo_files_with_differing_results_dict)) + " file does not match (Note: mediainfo category title is appended as the beginning of each line)") + '-')
 		list_of_test_result_text_lines.append('')
 
 		list_of_non_matching_filenames = list(mediainfo_files_with_differing_results_dict)
 		list_of_non_matching_filenames.sort(key=str.lower)
 
-		for item in list_of_non_matching_filenames: # Get name of each file.
-
-			file1_results = mediainfo_files_with_differing_results_dict[item][0]
-			file2_results = mediainfo_files_with_differing_results_dict[item][1]
+		for file_name in list_of_non_matching_filenames: # Get name of each file.
 
 			list_of_test_result_text_lines.append('')
-			list_of_test_result_text_lines.append(text_marginal + item)
-			list_of_test_result_text_lines.append(text_marginal + '-' * int(len(item) + 1))
+			list_of_test_result_text_lines.append(text_marginal_2_tabs + file_name)
+			list_of_test_result_text_lines.append(text_marginal_2_tabs + '-' * int(len(file_name) + 1))
 			list_of_test_result_text_lines.append('')
 
-
-
-
-
-			## FIXME
-			#list_of_test_result_text_lines.append(text_marginal + 'Tulos 1:')
-			#list_of_test_result_text_lines.append(text_marginal + '---------')
-
-			#for silli1 in file1_results:
-			#	list_of_test_result_text_lines.append(text_marginal + silli1.strip('\n'))
-			#list_of_test_result_text_lines.append('')
-
-			#list_of_test_result_text_lines.append(text_marginal + 'Tulos 2:')
-			#list_of_test_result_text_lines.append(text_marginal + '---------')
-
-			#for silli2 in file2_results:
-			#	list_of_test_result_text_lines.append(text_marginal + silli2.strip('\n'))
-			#list_of_test_result_text_lines.append('')
-
-
-
-
-
-
-
-			# Test which results text file is longer and use its length as the counter.
-			length_of_the_longer_results_file = 0
-
-			if len(file1_results) > len(file2_results):
-				length_of_the_longer_results_file = len(file1_results)
-			else:
-				length_of_the_longer_results_file = len(file2_results)
-
-			# Compare each text line from results files to each other.
-			for value_counter in range(0, length_of_the_longer_results_file):
-
-				text_line_1 = ''
-				text_line_2 = ''
-
-				try:
-					# Get a text line from list of results text lines.
-					text_line_1 = file1_results[value_counter].strip('\n')
-					text_line_2 = file2_results[value_counter].strip('\n')
-
-				except KeyError as reason_for_error:
-					# If we get here, there was an unequal number of text lines in the two results text file, ignore the error.
-					pass
-				except IndexError as reason_for_error:
-					# If we get here, there was an unequal number of text lines in the two results text file, ignore the error.
-					pass
-				
-				if (text_line_1 != '') or (text_line_2 != ''):
-
-					if text_line_1 != text_line_2:
-			
-						# FIXME  Arvot pitää lukea dictionaryyn, avaimena tekstirivin eka kenttä, arvona toka, muuten arvoja ei voi luotettavasti verrata toisiinsa.
-						if text_line_1 != '':
-							text_line_1 = '<No value>'
-
-						if text_line_2 != '':
-							text_line_2 = '<No value>'
-
-						# Make the printout prettier by aligning number values to each other.
-						string_1_to_print = text_line_1
-						string_1_to_print = ' ' * (5 - len(string_1_to_print)) + string_1_to_print
-						string_2_to_print = text_line_2
-						string_2_to_print = ' ' * (5 - len(string_2_to_print)) + string_2_to_print
-						
-						list_of_test_result_text_lines.append(text_marginal + string_1_to_print + '   |  ' + string_2_to_print)
-
+			for differing_item in mediainfo_files_with_differing_results_dict[file_name]:
+				list_of_test_result_text_lines.append(text_marginal_2_tabs + differing_item)
 			list_of_test_result_text_lines.append('')
 		
 		list_of_test_result_text_lines.append('')
 
 	# Mediainfo: Show Files only in path 1
-	if len(mediainfo_files_only_in_path_1_dict) != 0:
+	if len(filenames_only_in_set_1) != 0:
 
 		# Report any mismatch found.
 		list_of_test_result_text_lines.append('')
-		list_of_test_result_text_lines.append(text_marginal + str(len(mediainfo_files_only_in_path_1_dict)) + " Filenames only in: " + mediainfo_source_dir)
-		list_of_test_result_text_lines.append(text_marginal + '-' * len(str(len(mediainfo_files_only_in_path_1_dict)) + " Filenames only in: " + mediainfo_source_dir) + '-')
+		list_of_test_result_text_lines.append(text_marginal_2_tabs + str(len(filenames_only_in_set_1)) + " Filenames only in: " + mediainfo_source_dir)
+		list_of_test_result_text_lines.append(text_marginal_2_tabs + '-' * len(str(len(filenames_only_in_set_1)) + " Filenames only in: " + mediainfo_source_dir) + '-')
 		list_of_test_result_text_lines.append('')
 
 		list_of_missing_filenames = []
 
-		list_of_missing_filenames = list(mediainfo_files_only_in_path_1_dict)
+		list_of_missing_filenames = list(filenames_only_in_set_1)
 		list_of_missing_filenames.sort(key=str.lower)
 
 		for item in list_of_missing_filenames:
 
-			list_of_test_result_text_lines.append(text_marginal + item)
+			list_of_test_result_text_lines.append(text_marginal_2_tabs + item)
 
 		list_of_test_result_text_lines.append('')
 
 	# Mediainfo: Show Files only in path 2
-	if len(mediainfo_files_only_in_path_2_dict) != 0:
+	if len(filenames_only_in_set_2) != 0:
 
 		# Report any mismatch found.
 		list_of_test_result_text_lines.append('')
-		list_of_test_result_text_lines.append(text_marginal + str(len(mediainfo_files_only_in_path_2_dict)) + " Filenames only in: " + mediainfo_target_dir)
-		list_of_test_result_text_lines.append(text_marginal + '-' * len(str(len(mediainfo_files_only_in_path_2_dict)) + " Filenames only in: " + mediainfo_target_dir) + '-')
+		list_of_test_result_text_lines.append(text_marginal_2_tabs + str(len(filenames_only_in_set_2)) + " Filenames only in: " + mediainfo_target_dir)
+		list_of_test_result_text_lines.append(text_marginal_2_tabs + '-' * len(str(len(filenames_only_in_set_2)) + " Filenames only in: " + mediainfo_target_dir) + '-')
 		list_of_test_result_text_lines.append('')
 
 		list_of_missing_filenames = []
 
-		list_of_missing_filenames = list(mediainfo_files_only_in_path_2_dict)
+		list_of_missing_filenames = list(filenames_only_in_set_2)
 		list_of_missing_filenames.sort(key=str.lower)
 
 		for item in list_of_missing_filenames:
 
-			list_of_test_result_text_lines.append(text_marginal + item)
-		list_of_test_result_text_lines.append
+			list_of_test_result_text_lines.append(text_marginal_2_tabs + item)
 
 	# Print information gathered so far.
 	for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
@@ -1317,7 +1381,7 @@ for test_counter in range(0,4):
 
 	if error_happened == True:
 		list_of_test_result_text_lines.append('')
-		list_of_test_result_text_lines.append(text_marginal + error_message)
+		list_of_test_result_text_lines.append(text_marginal_2_tabs + error_message)
 		list_of_test_result_text_lines.append('')
 		error_happened = False
 		error_message = ''
@@ -1330,7 +1394,7 @@ for test_counter in range(0,4):
 
 	if error_happened == True:
 		list_of_test_result_text_lines.append('')
-		list_of_test_result_text_lines.append(text_marginal + error_message)
+		list_of_test_result_text_lines.append(text_marginal_2_tabs + error_message)
 		list_of_test_result_text_lines.append('')
 		error_happened = False
 		error_message = ''
@@ -1358,23 +1422,23 @@ for test_counter in range(0,4):
 
 	title_string = '# Loudness of loudness corrected files: ' + new_results_directory + ' #'
 	list_of_test_result_text_lines.append('')
-	list_of_test_result_text_lines.append(text_marginal + '#' * len(title_string))
-	list_of_test_result_text_lines.append(text_marginal + title_string)
-	list_of_test_result_text_lines.append(text_marginal + '#' * len(title_string))
+	list_of_test_result_text_lines.append(text_marginal_1_tabs + '#' * len(title_string))
+	list_of_test_result_text_lines.append(text_marginal_1_tabs + title_string)
+	list_of_test_result_text_lines.append(text_marginal_1_tabs + '#' * len(title_string))
 	list_of_test_result_text_lines.append('')
 
-	list_of_test_result_text_lines.append(text_marginal + 'Data for ' + str(len(previous_results_dict)) + ' files found in path: ' + previous_measured_loudness_of_loudness_corrected_files)
-	list_of_test_result_text_lines.append(text_marginal + 'Data for ' + str(len(new_results_dict)) + ' files found in path: ' + new_measured_loudness_of_loudness_corrected_files)
+	list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Data for ' + str(len(previous_results_dict)) + ' files found in path: ' + previous_measured_loudness_of_loudness_corrected_files)
+	list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Data for ' + str(len(new_results_dict)) + ' files found in path: ' + new_measured_loudness_of_loudness_corrected_files)
 
 	# Loudness of loudness corrected files: Show Identical files
 	if (len(previous_results_dict) == len(new_results_dict)) and (len(previous_results_dict) == len(loudness_corrected_files_with_identical_results_dict)):
 
 		list_of_test_result_text_lines.append('')
-		list_of_test_result_text_lines.append(text_marginal + 'Results for all ' + str(len(loudness_corrected_files_with_identical_results_dict)) + ' files are identical :)')
+		list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Results for all ' + str(len(loudness_corrected_files_with_identical_results_dict)) + ' files are identical :)')
 		list_of_test_result_text_lines.append('')
 	else:
 		list_of_test_result_text_lines.append('')
-		list_of_test_result_text_lines.append(text_marginal + 'Results for ' + str(len(loudness_corrected_files_with_identical_results_dict)) + ' files are identical :)')
+		list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Results for ' + str(len(loudness_corrected_files_with_identical_results_dict)) + ' files are identical :)')
 		list_of_test_result_text_lines.append('')
 
 	# Loudness of loudness corrected files: Show Files with differing results
@@ -1382,8 +1446,8 @@ for test_counter in range(0,4):
 
 		# Report any mismatch found.
 		list_of_test_result_text_lines.append('')
-		list_of_test_result_text_lines.append(text_marginal + str(len(loudness_corrected_files_with_differing_results_dict)) + " Calculation results don't match")
-		list_of_test_result_text_lines.append(text_marginal + '-' * len(str(len(loudness_corrected_files_with_differing_results_dict)) + " Calculation results don't match ") + '-')
+		list_of_test_result_text_lines.append(text_marginal_2_tabs + str(len(loudness_corrected_files_with_differing_results_dict)) + " Calculation results don't match")
+		list_of_test_result_text_lines.append(text_marginal_2_tabs + '-' * len(str(len(loudness_corrected_files_with_differing_results_dict)) + " Calculation results don't match ") + '-')
 		list_of_test_result_text_lines.append('')
 
 		list_of_non_matching_filenames = list(loudness_corrected_files_with_differing_results_dict)
@@ -1401,7 +1465,7 @@ for test_counter in range(0,4):
 			string_2_to_print = ' ' * (5 - len(string_2_to_print)) + string_2_to_print
 			calculation_result_type = 'integrated_loudness\t'
 			
-			list_of_test_result_text_lines.append(text_marginal + calculation_result_type + '   ' +  string_1_to_print + '   |  ' + string_2_to_print + '     ' +  item)
+			list_of_test_result_text_lines.append(text_marginal_2_tabs + calculation_result_type + '   ' +	string_1_to_print + '	|  ' + string_2_to_print + '	 ' +  item)
 		
 		list_of_test_result_text_lines.append('')
 
@@ -1410,8 +1474,8 @@ for test_counter in range(0,4):
 
 		# Report any mismatch found.
 		list_of_test_result_text_lines.append('')
-		list_of_test_result_text_lines.append(text_marginal + str(len(loudness_corrected_files_only_in_path_1_dict)) + " Filenames only in: " + previous_measured_loudness_of_loudness_corrected_files)
-		list_of_test_result_text_lines.append(text_marginal + '-' * len(str(len(loudness_corrected_files_only_in_path_1_dict)) + " Filenames only in: " + previous_measured_loudness_of_loudness_corrected_files) + '-')
+		list_of_test_result_text_lines.append(text_marginal_2_tabs + str(len(loudness_corrected_files_only_in_path_1_dict)) + " Filenames only in: " + previous_measured_loudness_of_loudness_corrected_files)
+		list_of_test_result_text_lines.append(text_marginal_2_tabs + '-' * len(str(len(loudness_corrected_files_only_in_path_1_dict)) + " Filenames only in: " + previous_measured_loudness_of_loudness_corrected_files) + '-')
 		list_of_test_result_text_lines.append('')
 
 		list_of_missing_filenames = []
@@ -1421,7 +1485,7 @@ for test_counter in range(0,4):
 
 		for item in list_of_missing_filenames:
 
-			list_of_test_result_text_lines.append(text_marginal + item)
+			list_of_test_result_text_lines.append(text_marginal_2_tabs + item)
 
 		list_of_test_result_text_lines.append('')
 
@@ -1430,8 +1494,8 @@ for test_counter in range(0,4):
 
 		# Report any mismatch found.
 		list_of_test_result_text_lines.append('')
-		list_of_test_result_text_lines.append(text_marginal + str(len(loudness_corrected_files_only_in_path_2_dict)) + " Filenames only in: " + new_measured_loudness_of_loudness_corrected_files)
-		list_of_test_result_text_lines.append(text_marginal + '-' * len(str(len(loudness_corrected_files_only_in_path_2_dict)) + " Filenames only in: " + new_measured_loudness_of_loudness_corrected_files) + '-')
+		list_of_test_result_text_lines.append(text_marginal_2_tabs + str(len(loudness_corrected_files_only_in_path_2_dict)) + " Filenames only in: " + new_measured_loudness_of_loudness_corrected_files)
+		list_of_test_result_text_lines.append(text_marginal_2_tabs + '-' * len(str(len(loudness_corrected_files_only_in_path_2_dict)) + " Filenames only in: " + new_measured_loudness_of_loudness_corrected_files) + '-')
 		list_of_test_result_text_lines.append('')
 
 		list_of_missing_filenames = []
@@ -1441,7 +1505,7 @@ for test_counter in range(0,4):
 
 		for item in list_of_missing_filenames:
 
-			list_of_test_result_text_lines.append(text_marginal + item)
+			list_of_test_result_text_lines.append(text_marginal_2_tabs + item)
 
 		list_of_test_result_text_lines.append('')
 
@@ -1456,10 +1520,9 @@ for test_counter in range(0,4):
 
 	title_string = '# Loudness Calculation Log: Selftest: compare this regression tests loudness calculation log to machine readable results: ' + new_results_directory + ' #'
 	list_of_test_result_text_lines.append('')
-	list_of_test_result_text_lines.append(text_marginal + '#' * len(title_string))
-	list_of_test_result_text_lines.append(text_marginal + title_string)
-	list_of_test_result_text_lines.append(text_marginal + '#' * len(title_string))
-	list_of_test_result_text_lines.append('')
+	list_of_test_result_text_lines.append(text_marginal_1_tabs + '#' * len(title_string))
+	list_of_test_result_text_lines.append(text_marginal_1_tabs + title_string)
+	list_of_test_result_text_lines.append(text_marginal_1_tabs + '#' * len(title_string))
 
 	# path_to_results_comparison_script
 	previous_loudness_calculation_log_name = find_matching_filename(regression_test_results_target_dir + os.sep + new_results_directory, list_of_result_file_names[4])
@@ -1473,10 +1536,8 @@ for test_counter in range(0,4):
 
 	if len(list_of_command_output) != 0:
 
-		list_of_test_result_text_lines.append('')
-
 		for item in list_of_command_output:
-			list_of_test_result_text_lines.append(text_marginal + item)
+			list_of_test_result_text_lines.append(text_marginal_2_tabs + item)
 
 	# Print information gathered so far.
 	for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
@@ -1489,10 +1550,9 @@ for test_counter in range(0,4):
 
 	title_string = '# Loudness Calculation Log Comparison: ' + new_results_directory + ' #'
 	list_of_test_result_text_lines.append('')
-	list_of_test_result_text_lines.append(text_marginal + '#' * len(title_string))
-	list_of_test_result_text_lines.append(text_marginal + title_string)
-	list_of_test_result_text_lines.append(text_marginal + '#' * len(title_string))
-	list_of_test_result_text_lines.append('')
+	list_of_test_result_text_lines.append(text_marginal_1_tabs + '#' * len(title_string))
+	list_of_test_result_text_lines.append(text_marginal_1_tabs + title_string)
+	list_of_test_result_text_lines.append(text_marginal_1_tabs + '#' * len(title_string))
 
 	# path_to_results_comparison_script
 	previous_loudness_calculation_log_name = find_matching_filename(path_to_known_good_results_dir + os.sep + new_results_directory, list_of_result_file_names[4])
@@ -1507,10 +1567,8 @@ for test_counter in range(0,4):
 
 	if len(list_of_command_output) != 0:
 
-		list_of_test_result_text_lines.append('')
-
 		for item in list_of_command_output:
-			list_of_test_result_text_lines.append(text_marginal + item)
+			list_of_test_result_text_lines.append(text_marginal_2_tabs + item)
 
 	# Print information gathered so far.
 	for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
@@ -1523,10 +1581,9 @@ for test_counter in range(0,4):
 
 	title_string = '# Machine readable results comparison: ' + new_results_directory + ' #'
 	list_of_test_result_text_lines.append('')
-	list_of_test_result_text_lines.append(text_marginal + '#' * len(title_string))
-	list_of_test_result_text_lines.append(text_marginal + title_string)
-	list_of_test_result_text_lines.append(text_marginal + '#' * len(title_string))
-	list_of_test_result_text_lines.append('')
+	list_of_test_result_text_lines.append(text_marginal_1_tabs + '#' * len(title_string))
+	list_of_test_result_text_lines.append(text_marginal_1_tabs + title_string)
+	list_of_test_result_text_lines.append(text_marginal_1_tabs + '#' * len(title_string))
 
 	# path_to_results_comparison_script
 	previous_loudness_calculation_log = path_to_known_good_results_dir + os.sep + new_results_directory + os.sep + 'machine_readable_results'
@@ -1539,20 +1596,17 @@ for test_counter in range(0,4):
 
 		list_of_command_output, error_happened, list_of_errors = run_external_program(commands_to_run)
 
-
 		if len(list_of_command_output) != 0:
 
-			list_of_test_result_text_lines.append('')
-
 			for item in list_of_command_output:
-				list_of_test_result_text_lines.append(text_marginal + item)
+				list_of_test_result_text_lines.append(text_marginal_2_tabs + item)
 	else:
 		list_of_test_result_text_lines.append('')
 		if os.path.exists(previous_loudness_calculation_log) == False:
-			list_of_test_result_text_lines.append(text_marginal + 'There is no machine readable results in: ' + str(path_to_known_good_results_dir + os.sep + new_results_directory))
+			list_of_test_result_text_lines.append(text_marginal_2_tabs + 'There is no machine readable results in: ' + str(path_to_known_good_results_dir + os.sep + new_results_directory))
 
 		if os.path.exists(new_loudness_calculation_log) == False:
-			list_of_test_result_text_lines.append(text_marginal + 'There is no machine readable results in: ' + str(regression_test_results_target_dir + os.sep + new_results_directory))
+			list_of_test_result_text_lines.append(text_marginal_2_tabs + 'There is no machine readable results in: ' + str(regression_test_results_target_dir + os.sep + new_results_directory))
 		list_of_test_result_text_lines.append('')
 
 	# Print information gathered so far.
@@ -1564,8 +1618,11 @@ for test_counter in range(0,4):
 	stop_time_for_individual_test = time_in_ticks_and_string_format[0]
 	test_duration = calculate_duration(start_time_for_individual_test, stop_time_for_individual_test)
 
+	title_string = '# ' + "'" + new_results_directory +"'" + ' Test Ended At: ' + time_in_ticks_and_string_format[1] + '   Test duration: '+ test_duration + ' #'
 	list_of_test_result_text_lines.append('')
-	list_of_test_result_text_lines.append("'" + new_results_directory +"'" + ' Test Ended At: ' + time_in_ticks_and_string_format[1] + '   Test duration: '+ test_duration)
+	list_of_test_result_text_lines.append('#' * len(title_string))
+	list_of_test_result_text_lines.append(title_string)
+	list_of_test_result_text_lines.append('#' * len(title_string))
 	list_of_test_result_text_lines.append('')
 
 	# Print information gathered so far.
@@ -1578,8 +1635,11 @@ time_in_ticks_and_string_format = get_realtime()
 stop_time_for_complete_regression_test = time_in_ticks_and_string_format[0]
 complete_test_duration = calculate_duration(start_time_for_complete_regression_test, stop_time_for_complete_regression_test)
 
+title_string = '# Complete Regression Test Ended At: ' + time_in_ticks_and_string_format[1] +  '   Complete Regression Test duration: '+ complete_test_duration + ' #'
 list_of_test_result_text_lines.append('')
-list_of_test_result_text_lines.append('Complete Regression Test Ended At: ' + time_in_ticks_and_string_format[1] + '   Complete Regression Test duration: '+ complete_test_duration)
+list_of_test_result_text_lines.append('#' * len(title_string))
+list_of_test_result_text_lines.append(title_string)
+list_of_test_result_text_lines.append('#' * len(title_string))
 list_of_test_result_text_lines.append('')
 
 # Print information gathered so far.
