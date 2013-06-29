@@ -22,6 +22,7 @@ import email.mime
 import email.mime.text
 import email.mime.multipart
 import copy
+import getpass
 
 def read_text_lines_in_mediainfo_files_to_dictionary(directory_for_mediainfo_files):
 	
@@ -346,11 +347,14 @@ def print_info_about_usage():
 	print('This means the program runs through the same test files with and without FFmpeg and using sample peak and truepeak measurement.')
 	print('Test results are compared agains a known good set of results created using a previous stable version of LoudnessCorrection.py')
 	print('Test results a written to a file and optionally sent to the admin by email.')
+	print('The -shutdown option shuts computer after the test completes.')
 	print()
 	print('Note !!!!!! The test files MUST be on the same physical partition as the LoudnessCorrection HotFolder because test files are not copied but linked to the HotFolder !!!!!!!')
 	print()
 	print()
 	print('Usage: regression_tester.py   DIR_OF_TEST_FILES	 PATH_TO_RESULT_COMPARISON_SCRIPT   PATH_TO_KNOWN_GOOD_RESULTS_DIR')
+	print()
+	print('Usage: regression_tester.py   DIR_OF_TEST_FILES	 PATH_TO_RESULT_COMPARISON_SCRIPT   PATH_TO_KNOWN_GOOD_RESULTS_DIR -shutdown')
 	print()
 	print()
 
@@ -605,6 +609,92 @@ def calculate_duration(start_time, end_time):
 
 	return(time_display_string)
 
+def test_if_root_password_is_valid(source_testfile_path, password):
+	
+	root_password_was_accepted = True
+
+	password = password + '\n' # Add a carriage return after the root password
+	password = password.encode('utf-8') # Convert password from string to binary format.
+	# Sudo switches are:
+	# -k = Forget authentication immediately after command.
+	# -p = Use a custom string to prompt the user for the password (we use an empty string here).
+	# -S = Read password from stdin.
+	
+	################################################################################
+	# Try to copy the file to /etc, it only succeeds if the root password is valid #
+	################################################################################
+	
+	source_test_file_name = os.path.split(source_testfile_path)[1]
+	
+	commands_to_run = ['sudo', '-k', '-p', '', '-S', 'cp', '-f', source_testfile_path, os.sep + 'etc' + os.sep + source_test_file_name] # Create the commandline we need to run as root.
+	
+	# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
+	sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
+	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+	
+	# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
+	if len(sudo_stderr_string) != 0:
+		root_password_was_accepted = False
+		print()
+		print('Error: root password was not accepted !!!!!!!')
+		print()
+		sys.exit()
+		
+	###########################################
+	# Delete the test file we copied to /etc/ #
+	###########################################
+	
+	if root_password_was_accepted == True:
+	
+		commands_to_run = ['sudo', '-k', '-p', '', '-S', 'rm', '-f', os.sep + 'etc' + os.sep + source_test_file_name] # Create the commandline we need to run as root.	     
+		
+		# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
+		sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)		     
+		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+		
+		# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
+		if len(sudo_stderr_string) != 0:
+			root_password_was_accepted = False
+			print()
+			print('Error: Unable to delete temp file created in /etc/, root password was not accepted !!!!!!!')
+			print()
+
+	return(root_password_was_accepted)
+
+def ask_for_root_password():
+
+        print()
+        password = getpass.getpass('Enter root password (needed to shut down computer): ')
+        print()
+
+        password = password.strip('\n').strip('\t').strip()
+
+        return(password)
+
+def shutdown_computer(password):
+	
+	password = password + '\n' # Add a carriage return after the root password
+	password = password.encode('utf-8') # Convert password from string to binary format.
+	# Sudo switches are:
+	# -k = Forget authentication immediately after command.
+	# -p = Use a custom string to prompt the user for the password (we use an empty string here).
+	# -S = Read password from stdin.
+	
+	commands_to_run = ['sudo', '-k', '-p', '', '-S', '/sbin/poweroff'] # Create the commandline we need to run as root.
+	
+	# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
+	sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
+	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+	
+	# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
+	if len(sudo_stderr_string) != 0:
+		print()
+		print('Error: root password was not accepted !!!!!!!')
+		print()
+		sys.exit()
+
+	return()
+
 
 ########
 # Main #
@@ -727,6 +817,30 @@ if os.path.exists(mediainfo_path) == False:
 	print("Error: '" + mediainfo_path + "' can not be found")
 	print()
 	sys.exit(1)
+
+shudown_after_test = False
+
+# Test if user whant us to shut down computer after test, ask for root password and test it is valid
+if ('-shutdown' in sys.argv) or ('-shut-down' in sys.argv):
+
+	shudown_after_test = True
+	unix_time_in_ticks, realtime = get_realtime()                                                                                                                                
+	test_file_name = os.sep + 'tmp' + os.sep + str(unix_time_in_ticks) + '.txt'
+
+	error_happened, error_message = write_a_list_of_text_to_a_file(realtime, test_file_name)
+
+	root_password_was_accepted = False
+
+	password = ask_for_root_password()
+
+	root_password_was_accepted = test_if_root_password_is_valid(test_file_name, password)
+
+	if root_password_was_accepted == False:
+
+		print()
+		print('Error: root password was not accepted !!!!!!!')
+		print()
+		sys.exit()
 
 list_of_test_result_text_lines.append('')
 
@@ -1227,7 +1341,7 @@ for test_counter in range(0,4):
 					adjust_printing1 = ' ' * int(40 - len(individual_item + ':'))
 				if len(str(text_lines_with_differing_results_dict[individual_item][0]) + '|') < 25:
 					adjust_printing2 = ' ' * int(25 - len(str(text_lines_with_differing_results_dict[individual_item][0]) + '|'))
-				string_to_print = individual_item + ':' + adjust_printing1  + str(text_lines_with_differing_results_dict[individual_item][0]) + adjust_printing2 + '|            ' + str(text_lines_with_differing_results_dict[individual_item][1])
+				string_to_print = individual_item + ':' + adjust_printing1  + str(text_lines_with_differing_results_dict[individual_item][0]) + adjust_printing2 + '|		 ' + str(text_lines_with_differing_results_dict[individual_item][1])
 				result_list.append(string_to_print)
 
 			mediainfo_files_with_differing_results_dict[file_name] = result_list
@@ -1249,7 +1363,7 @@ for test_counter in range(0,4):
 				if len(str(text_lines_only_in_path_1_dict[individual_item]) + '|') < 25:
 					adjust_printing2 = ' ' * int(25 - len(str(text_lines_only_in_path_1_dict[individual_item])  + '|'))
 
-				result_list.append(individual_item + ':' + adjust_printing1  + str(text_lines_only_in_path_1_dict[individual_item]) + adjust_printing2  + '|            ' + '<No value>')
+				result_list.append(individual_item + ':' + adjust_printing1  + str(text_lines_only_in_path_1_dict[individual_item]) + adjust_printing2	+ '|		' + '<No value>')
 
 			mediainfo_files_with_differing_results_dict[file_name] = result_list
 
@@ -1270,7 +1384,7 @@ for test_counter in range(0,4):
 				if len('<No value>'  + '|') < 25:
 					adjust_printing2 = ' ' * int(25 - len('<No value>'  + '|'))
 
-				result_list.append(individual_item + ':' + adjust_printing1  + '<No value>'  + adjust_printing2 + '|            ' + str(text_lines_only_in_path_2_dict[individual_item]))
+				result_list.append(individual_item + ':' + adjust_printing1  + '<No value>'  + adjust_printing2 + '|		' + str(text_lines_only_in_path_2_dict[individual_item]))
 
 			mediainfo_files_with_differing_results_dict[file_name] = result_list
 
@@ -1676,9 +1790,17 @@ if len(list_of_test_result_text_lines) + 1 > last_printed_test_result_text_line:
 		print(error_message)
 		print()
 
+# If user asked us to shutdown the computer after the test, do it.
+if shudown_after_test == True:
 
+	print()
+	print('Shutting down computer in 2 minutes .......')
+	print()
+
+	time.sleep(120)
+
+	shutdown_computer(password)
 
 	#FIXME
-	# Muista pyytää rootin salasana, jos komentorivillä on optio -shutdown-when-ready
 	# Muista tehdä mahdollisuus luoda testitulokset ilman, että on olemassa aiempia tuloksia joihin verrata. Tätä tarvitaan, jos käyttäjä haluaa luoda ekan datasetin.
 

@@ -1,5 +1,9 @@
 Regression_tester
 -----------------
+- A couple more features and bugfixes. Almost feature complete now :)
+
+Regression_tester
+-----------------
 - Bugfixes.
 
 Regression_tester
