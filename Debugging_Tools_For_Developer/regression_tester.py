@@ -347,7 +347,6 @@ def print_info_about_usage():
 	print('This means the program runs through the same test files with and without FFmpeg and using sample peak and truepeak measurement.')
 	print('Test results are compared agains a known good set of results created using a previous stable version of LoudnessCorrection.py')
 	print('Test results a written to a file and optionally sent to the admin by email.')
-	print('The -shutdown option shuts computer after the test completes.')
 	print()
 	print('Note !!!!!! The test files MUST be on the same physical partition as the LoudnessCorrection HotFolder because test files are not copied but linked to the HotFolder !!!!!!!')
 	print()
@@ -356,6 +355,12 @@ def print_info_about_usage():
 	print()
 	print('Usage: regression_tester.py   DIR_OF_TEST_FILES	 PATH_TO_RESULT_COMPARISON_SCRIPT   PATH_TO_KNOWN_GOOD_RESULTS_DIR -shutdown')
 	print()
+	print('Usage: regression_tester.py   DIR_OF_TEST_FILES	 PATH_TO_RESULT_COMPARISON_SCRIPT   PATH_TO_SAVE_RESULTS  -no-result-comparison')
+	print()
+	print('The -shutdown option shuts computer after the test completes.')
+	print()
+	print('The -no-result-comparison option creates results for test files and skips comparing them to previous results.')
+	print('Use this option to create the first results for a set of test files.')
 	print()
 
 	sys.exit(1)
@@ -773,7 +778,7 @@ if os.path.isdir(sys.argv[3]) == True:
 		path_to_known_good_results_dir = path_to_known_good_results_dir[:-1]
 else:
 	print()
-	print('Path to previous results file dir does not exist:', sys.argv[3])
+	print('Path does not exist:', sys.argv[3])
 	print()
 	print()
 
@@ -908,29 +913,30 @@ if source_and_target_are_on_same_disk == False:
 	sys.exit(1)
 
 # Check if previous results files can be found
-for counter1 in range(0,4):
+if '-no-result-comparison' not in sys.argv:
+	for counter1 in range(0,4):
 
-	directory_name = path_to_known_good_results_dir + os.sep + list_of_result_file_directories[counter1]
+		directory_name = path_to_known_good_results_dir + os.sep + list_of_result_file_directories[counter1]
 
-	for counter2 in range(0,5):
+		for counter2 in range(0,5):
 
-		file_name = list_of_result_file_names[counter2]
-		name_of_matching_file = ''
+			file_name = list_of_result_file_names[counter2]
+			name_of_matching_file = ''
 
-		if file_name == list_of_result_file_names[3]:
-			if os.path.exists(directory_name + os.sep + 'korjattujen_tiedostojen_aanekkyys.txt') == True: # The file name used to be in finnish, check if a file with the old name can be found.
-				file_name = 'korjattujen_tiedostojen_aanekkyys.txt'
+			if file_name == list_of_result_file_names[3]:
+				if os.path.exists(directory_name + os.sep + 'korjattujen_tiedostojen_aanekkyys.txt') == True: # The file name used to be in finnish, check if a file with the old name can be found.
+					file_name = 'korjattujen_tiedostojen_aanekkyys.txt'
 
-		name_of_matching_file = find_matching_filename(directory_name, file_name)
+			name_of_matching_file = find_matching_filename(directory_name, file_name)
 
-		if name_of_matching_file != '':
-			previous_results_filenames[counter1][counter2] = name_of_matching_file
-		else:
-			if file_name != 'error_log-':
-				print()
-				print('Error: Can not find previous results file:', directory_name + os.sep + os.sep + file_name)
-				print()
-				sys.exit(1)
+			if name_of_matching_file != '':
+				previous_results_filenames[counter1][counter2] = name_of_matching_file
+			else:
+				if file_name != 'error_log-':
+					print()
+					print('Error: Can not find previous results file:', directory_name + os.sep + os.sep + file_name)
+					print()
+					sys.exit(1)
 
 # Read test file names in to a list
 list_of_testfile_paths = read_in_file_names(dir_of_test_files)
@@ -943,7 +949,11 @@ if len(list_of_testfile_paths) == 0:
 	sys.exit(1)
 
 # Check if regression test result dir already exists, if true then delete it.
-regression_test_results_target_dir = os.path.split(path_to_known_good_results_dir)[0] + os.sep + loudness_correction_version
+if '-no-result-comparison' not in sys.argv:
+	regression_test_results_target_dir = os.path.split(path_to_known_good_results_dir)[0] + os.sep + loudness_correction_version
+else:
+	regression_test_results_target_dir = path_to_known_good_results_dir + os.sep + loudness_correction_version
+
 if os.path.exists(regression_test_results_target_dir) == True:
 	shutil.rmtree(regression_test_results_target_dir)
 
@@ -996,19 +1006,20 @@ if len(email_sending_details) != 0:
 list_of_test_result_text_lines.append(text_marginal_2_tabs + 'len(list_of_testfile_paths) = ' + str(len(list_of_testfile_paths)))
 list_of_test_result_text_lines.append('')
 
-list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Previous results filenames')
-list_of_test_result_text_lines.append(text_marginal_2_tabs + '---------------------------')
+if '-no-result-comparison' not in sys.argv:
+	list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Previous results filenames')
+	list_of_test_result_text_lines.append(text_marginal_2_tabs + '---------------------------')
 
-for counter in range(0, len(previous_results_filenames)):
-	# list_of_result_file_directories
+	for counter in range(0, len(previous_results_filenames)):
+		# list_of_result_file_directories
 
-	title_string = list_of_result_file_directories[counter]
-	list_of_test_result_text_lines.append(text_marginal_2_tabs + title_string)
-	list_of_test_result_text_lines.append(text_marginal_2_tabs + '-' * len(title_string))
+		title_string = list_of_result_file_directories[counter]
+		list_of_test_result_text_lines.append(text_marginal_2_tabs + title_string)
+		list_of_test_result_text_lines.append(text_marginal_2_tabs + '-' * len(title_string))
 
-	for counter2 in range(0, len(previous_results_filenames[counter])):
-		list_of_test_result_text_lines.append(text_marginal_2_tabs + str(previous_results_filenames[counter][counter2]))
-	list_of_test_result_text_lines.append('')
+		for counter2 in range(0, len(previous_results_filenames[counter])):
+			list_of_test_result_text_lines.append(text_marginal_2_tabs + str(previous_results_filenames[counter][counter2]))
+		list_of_test_result_text_lines.append('')
 
 list_of_test_result_text_lines.append('')
 
@@ -1237,522 +1248,529 @@ for test_counter in range(0,4):
 		print(list_of_test_result_text_lines[counter])
 	last_printed_test_result_text_line = len(list_of_test_result_text_lines)
 
-	##########################################
-	# Mediainfo for loudness corrected files #
-	##########################################
+	################################################################################################################
+	# Compare results to reults of a previous regression test run                                                  #
+	################################################################################################################
 
-	# Mediainfo records information like: format, channel count, bit depth, sample rate, duration, so comparing mediainfo - files
-	# gives us confidence that all technical aspects of loudness corrected files are as expected
+	# Only compare results previous results, if the user told us so :)
+	if '-no-result-comparison' not in sys.argv:
 
-	mediainfo_results_1_dict = {}
-	mediainfo_results_2_dict = {}
+		##########################################
+		# Mediainfo for loudness corrected files #
+		##########################################
 
-	# Read in text of mediainfo files to a dictionary (key = filename)
-	mediainfo_results_1_dict, error_happened, error_message = read_text_lines_in_mediainfo_files_to_dictionary(mediainfo_source_dir)
+		# Mediainfo records information like: format, channel count, bit depth, sample rate, duration, so comparing mediainfo - files
+		# gives us confidence that all technical aspects of loudness corrected files are as expected
 
-	if error_happened == True:
-		list_of_test_result_text_lines.append('')
-		list_of_test_result_text_lines.append(text_marginal_2_tabs + error_message)
-		list_of_test_result_text_lines.append('')
-		error_happened = False
-		error_message = ''
+		mediainfo_results_1_dict = {}
+		mediainfo_results_2_dict = {}
 
-		for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
-			print(list_of_test_result_text_lines[counter])
-		last_printed_test_result_text_line = len(list_of_test_result_text_lines)
+		# Read in text of mediainfo files to a dictionary (key = filename)
+		mediainfo_results_1_dict, error_happened, error_message = read_text_lines_in_mediainfo_files_to_dictionary(mediainfo_source_dir)
 
-	# Read in text of mediainfo files to a dictionary (key = filename)
-	mediainfo_results_2_dict, error_happened, error_message = read_text_lines_in_mediainfo_files_to_dictionary(mediainfo_target_dir)
-
-	if error_happened == True:
-		list_of_test_result_text_lines.append('')
-		list_of_test_result_text_lines.append(text_marginal_2_tabs + error_message)
-		list_of_test_result_text_lines.append('')
-		error_happened = False
-		error_message = ''
-
-		for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
-			print(list_of_test_result_text_lines[counter])
-		last_printed_test_result_text_line = len(list_of_test_result_text_lines)
-
-	# Find files that are only in source or only in target. Sets makes it very fast to compare a bunch of filenames.
-	filenames_1_set = set(mediainfo_results_1_dict) # Get all source dir filenames from the dictionary to this set.
-	filenames_2_set = set(mediainfo_results_2_dict) # Get all target dir filenames from the dictionary to this set.
-	filenames_only_in_set_1 = set.difference(filenames_1_set, filenames_2_set) # Get all filenames that exists only in  source
-	filenames_only_in_set_2 = set.difference(filenames_2_set, filenames_1_set) # Get all filenames that exists only in  target
-	common_filenames_set = set.intersection(filenames_1_set, filenames_2_set) # Get all filenames that exists in both source and target to this set.
-
-	# Store mediainfo data of one filename to dictionary and compare both results (1 file = 2 results)
-	mediainfo_files_with_identical_results_list = []
-	mediainfo_files_with_differing_results_dict = {}
-	mediainfo_files_only_in_path_1_dict = {}
-	mediainfo_files_only_in_path_2_dict = {}
-
-
-	# Split text in mediainfo file and store results in a dictionary (key = field 0 in text line, value = field 1 in text line).
-	for file_name in common_filenames_set:
-		
-		results_for_file_1_list = []
-		results_for_file_2_list = []
-
-		results_for_file_1_dict = {}
-		results_for_file_2_dict = {}
-
-		results_for_file_1_list = mediainfo_results_1_dict[file_name]
-		results_for_file_2_list = mediainfo_results_2_dict[file_name]
-
-		headline = ''
-
-		for item1 in results_for_file_1_list:
-
-			if item1.strip() == '':
-				continue
-
-			if ':' not in item1:
-				headline = item1.strip()
-				continue # This text line is the headline, skip it.
-
-			splitted_text_1 =  item1.split(':')
-
-			results_for_file_1_dict[headline + ' ' + splitted_text_1[0].strip()] = splitted_text_1[1].strip()
-
-		for item2 in results_for_file_2_list:
-
-			if ':' not in item2:
-				headline = item2.strip()
-				continue # This text line is the headline, skip it.
-
-			splitted_text_2 =  item2.split(':')
-
-			results_for_file_2_dict[headline + ' ' + splitted_text_2[0].strip()] = splitted_text_2[1].strip()
-
-		# Mediainfo: Compare results in the two dictionaries and store results in four dictionaries.
-		# Note this compares individual mediainfo result text lines.
-		text_lines_with_identical_results_dict = {}
-		text_lines_with_differing_results_dict = {}
-		text_lines_only_in_path_1_dict = {}
-		text_lines_only_in_path_2_dict = {}
-		text_lines_with_identical_results_dict, text_lines_with_differing_results_dict, text_lines_only_in_path_1_dict, text_lines_only_in_path_2_dict = find_differences_in_two_result_dictionaries(results_for_file_1_dict, results_for_file_2_dict) 
-
-		# Store list of identical files
-		if (len(text_lines_with_identical_results_dict) > 0) and (len(text_lines_with_differing_results_dict) == 0) and (len(text_lines_only_in_path_1_dict) == 0) and (len(text_lines_only_in_path_2_dict) == 0):
-			mediainfo_files_with_identical_results_list.append(file_name) 
-
-		# Store info about differing result lines
-		if len(text_lines_with_differing_results_dict) > 0:
-
-			result_list = []
-
-			for individual_item in text_lines_with_differing_results_dict:
-				adjust_printing1 = ''
-				adjust_printing2 = ''
-				adjust_printing3 = ' ' * 14
-				if len(individual_item + ':') < 40:
-					adjust_printing1 = ' ' * int(40 - len(individual_item + ':'))
-				if len(str(text_lines_with_differing_results_dict[individual_item][0]) + '|') < 25:
-					adjust_printing2 = ' ' * int(25 - len(str(text_lines_with_differing_results_dict[individual_item][0]) + '|'))
-				string_to_print = individual_item + ':' + adjust_printing1  + str(text_lines_with_differing_results_dict[individual_item][0]) + adjust_printing2 + '|' + adjust_printing3 + str(text_lines_with_differing_results_dict[individual_item][1])
-				result_list.append(string_to_print)
-
-			mediainfo_files_with_differing_results_dict[file_name] = result_list
-
-		# Store info about text lines only in file 1
-		if len(text_lines_only_in_path_1_dict) > 0:
-
-			result_list = []
-
-			if file_name in mediainfo_files_with_differing_results_dict:
-				result_list = mediainfo_files_with_differing_results_dict[file_name]
-
-			for individual_item in text_lines_only_in_path_1_dict:
-
-				adjust_printing1 = ''
-				adjust_printing2 = ''
-				if len(individual_item + ':') < 40:
-					adjust_printing1 = ' ' * int(40 - len(individual_item + ':'))
-				if len(str(text_lines_only_in_path_1_dict[individual_item]) + '|') < 25:
-					adjust_printing2 = ' ' * int(25 - len(str(text_lines_only_in_path_1_dict[individual_item])  + '|'))
-
-				result_list.append(individual_item + ':' + adjust_printing1  + str(text_lines_only_in_path_1_dict[individual_item]) + adjust_printing2	+ '|' + adjust_printing3 + '<No value>')
-
-			mediainfo_files_with_differing_results_dict[file_name] = result_list
-
-		# Store info about text lines only in file 2
-		if len(text_lines_only_in_path_2_dict) > 0:
-
-			result_list = []
-
-			if file_name in mediainfo_files_with_differing_results_dict:
-				result_list = mediainfo_files_with_differing_results_dict[file_name]
-
-			for individual_item in text_lines_only_in_path_2_dict:
-
-				adjust_printing1 = ''
-				adjust_printing2 = ''
-				if len(individual_item + ':') < 40:
-					adjust_printing1 = ' ' * int(40 - len(individual_item + ':'))
-				if len('<No value>'  + '|') < 25:
-					adjust_printing2 = ' ' * int(25 - len('<No value>'  + '|'))
-
-				result_list.append(individual_item + ':' + adjust_printing1  + '<No value>'  + adjust_printing2 + '|' + adjust_printing3 + str(text_lines_only_in_path_2_dict[individual_item]))
-
-			mediainfo_files_with_differing_results_dict[file_name] = result_list
-
-	# Report differences in mediainfo results files
-	title_string = '# Mediainfo for loudness corrected files: ' + new_results_directory + ' #'
-	list_of_test_result_text_lines.append('')
-	list_of_test_result_text_lines.append(text_marginal_1_tabs + '#' * len(title_string))
-	list_of_test_result_text_lines.append(text_marginal_1_tabs + title_string)
-	list_of_test_result_text_lines.append(text_marginal_1_tabs + '#' * len(title_string))
-
-	# Mediainfo: Show the total number of mediainfo results
-	list_of_test_result_text_lines.append('')
-	list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Data for ' + str(len(mediainfo_results_1_dict)) + ' files found in path: ' + mediainfo_source_dir)
-	list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Data for ' + str(len(mediainfo_results_2_dict)) + ' files found in path: ' + mediainfo_target_dir)
-
-	# Mediainfo: Show Identical files
-	if (len(mediainfo_results_1_dict) == len(mediainfo_results_2_dict)) and (len(mediainfo_results_1_dict) == len(mediainfo_files_with_identical_results_list)):
-
-		list_of_test_result_text_lines.append('')
-		list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Results for all ' + str(len(mediainfo_files_with_identical_results_list)) + ' files are identical :)')
-		list_of_test_result_text_lines.append('')
-	else:
-		list_of_test_result_text_lines.append('')
-		list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Results for ' + str(len(mediainfo_files_with_identical_results_list)) + ' files are identical :)')
-		list_of_test_result_text_lines.append('')
-
-	# Mediainfo: Show Files with differing results and each individual differing result line.
-	if len(mediainfo_files_with_differing_results_dict) != 0:
-
-		# Report any mismatch found.
-		list_of_test_result_text_lines.append('')
-		list_of_test_result_text_lines.append(text_marginal_2_tabs + "Mediainfo results for " + str(len(mediainfo_files_with_differing_results_dict)) + " file does not match (Note: mediainfo category title is appended as the beginning of each line)")
-		list_of_test_result_text_lines.append(text_marginal_2_tabs + '-' * len("Mediainfo results for " + str(len(mediainfo_files_with_differing_results_dict)) + " file does not match (Note: mediainfo category title is appended as the beginning of each line)") + '-')
-		list_of_test_result_text_lines.append('')
-
-		list_of_non_matching_filenames = list(mediainfo_files_with_differing_results_dict)
-		list_of_non_matching_filenames.sort(key=str.lower)
-
-		for file_name in list_of_non_matching_filenames: # Get name of each file.
-
+		if error_happened == True:
 			list_of_test_result_text_lines.append('')
-			list_of_test_result_text_lines.append(text_marginal_2_tabs + file_name)
-			list_of_test_result_text_lines.append(text_marginal_2_tabs + '-' * int(len(file_name) + 1))
+			list_of_test_result_text_lines.append(text_marginal_2_tabs + error_message)
 			list_of_test_result_text_lines.append('')
+			error_happened = False
+			error_message = ''
 
-			for differing_item in mediainfo_files_with_differing_results_dict[file_name]:
-				list_of_test_result_text_lines.append(text_marginal_2_tabs + differing_item)
+			for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
+				print(list_of_test_result_text_lines[counter])
+			last_printed_test_result_text_line = len(list_of_test_result_text_lines)
+
+		# Read in text of mediainfo files to a dictionary (key = filename)
+		mediainfo_results_2_dict, error_happened, error_message = read_text_lines_in_mediainfo_files_to_dictionary(mediainfo_target_dir)
+
+		if error_happened == True:
 			list_of_test_result_text_lines.append('')
-		
-		list_of_test_result_text_lines.append('')
+			list_of_test_result_text_lines.append(text_marginal_2_tabs + error_message)
+			list_of_test_result_text_lines.append('')
+			error_happened = False
+			error_message = ''
 
-	# Mediainfo: Show Files only in path 1
-	if len(filenames_only_in_set_1) != 0:
+			for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
+				print(list_of_test_result_text_lines[counter])
+			last_printed_test_result_text_line = len(list_of_test_result_text_lines)
 
-		# Report any mismatch found.
-		list_of_test_result_text_lines.append('')
-		list_of_test_result_text_lines.append(text_marginal_2_tabs + str(len(filenames_only_in_set_1)) + " Filenames only in: " + mediainfo_source_dir)
-		list_of_test_result_text_lines.append(text_marginal_2_tabs + '-' * len(str(len(filenames_only_in_set_1)) + " Filenames only in: " + mediainfo_source_dir) + '-')
-		list_of_test_result_text_lines.append('')
+		# Find files that are only in source or only in target. Sets makes it very fast to compare a bunch of filenames.
+		filenames_1_set = set(mediainfo_results_1_dict) # Get all source dir filenames from the dictionary to this set.
+		filenames_2_set = set(mediainfo_results_2_dict) # Get all target dir filenames from the dictionary to this set.
+		filenames_only_in_set_1 = set.difference(filenames_1_set, filenames_2_set) # Get all filenames that exists only in  source
+		filenames_only_in_set_2 = set.difference(filenames_2_set, filenames_1_set) # Get all filenames that exists only in  target
+		common_filenames_set = set.intersection(filenames_1_set, filenames_2_set) # Get all filenames that exists in both source and target to this set.
 
-		list_of_missing_filenames = []
-
-		list_of_missing_filenames = list(filenames_only_in_set_1)
-		list_of_missing_filenames.sort(key=str.lower)
-
-		for item in list_of_missing_filenames:
-
-			list_of_test_result_text_lines.append(text_marginal_2_tabs + item)
-
-		list_of_test_result_text_lines.append('')
-
-	# Mediainfo: Show Files only in path 2
-	if len(filenames_only_in_set_2) != 0:
-
-		# Report any mismatch found.
-		list_of_test_result_text_lines.append('')
-		list_of_test_result_text_lines.append(text_marginal_2_tabs + str(len(filenames_only_in_set_2)) + " Filenames only in: " + mediainfo_target_dir)
-		list_of_test_result_text_lines.append(text_marginal_2_tabs + '-' * len(str(len(filenames_only_in_set_2)) + " Filenames only in: " + mediainfo_target_dir) + '-')
-		list_of_test_result_text_lines.append('')
-
-		list_of_missing_filenames = []
-
-		list_of_missing_filenames = list(filenames_only_in_set_2)
-		list_of_missing_filenames.sort(key=str.lower)
-
-		for item in list_of_missing_filenames:
-
-			list_of_test_result_text_lines.append(text_marginal_2_tabs + item)
-
-	# Print information gathered so far.
-	for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
-		print(list_of_test_result_text_lines[counter])
-	last_printed_test_result_text_line = len(list_of_test_result_text_lines)
+		# Store mediainfo data of one filename to dictionary and compare both results (1 file = 2 results)
+		mediainfo_files_with_identical_results_list = []
+		mediainfo_files_with_differing_results_dict = {}
+		mediainfo_files_only_in_path_1_dict = {}
+		mediainfo_files_only_in_path_2_dict = {}
 
 
-	########################################
-	# Loudness of loudness corrected files #
-	########################################
-
-	previous_results_as_text = ''
-	previous_results_as_list = []
-	previous_results_dict = {}
-	new_results_as_text = ''
-	new_results_as_list = []
-	new_results_dict = {}
-
-	previous_results_as_text, error_happened, error_message = read_a_text_file(previous_measured_loudness_of_loudness_corrected_files)
-
-	if error_happened == True:
-		list_of_test_result_text_lines.append('')
-		list_of_test_result_text_lines.append(text_marginal_2_tabs + error_message)
-		list_of_test_result_text_lines.append('')
-		error_happened = False
-		error_message = ''
-
-		for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
-			print(list_of_test_result_text_lines[counter])
-		last_printed_test_result_text_line = len(list_of_test_result_text_lines)
-
-	new_results_as_text, error_happened, error_message = read_a_text_file(new_measured_loudness_of_loudness_corrected_files)
-
-	if error_happened == True:
-		list_of_test_result_text_lines.append('')
-		list_of_test_result_text_lines.append(text_marginal_2_tabs + error_message)
-		list_of_test_result_text_lines.append('')
-		error_happened = False
-		error_message = ''
-
-		for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
-			print(list_of_test_result_text_lines[counter])
-		last_printed_test_result_text_line = len(list_of_test_result_text_lines)
-
-
-	previous_results_as_list = previous_results_as_text.split('\n')
-	new_results_as_list = new_results_as_text.split('\n')
-
-	previous_results_dict = assign_results_of_loudness_corrected_files_to_dictionary(previous_results_as_list)
-	new_results_dict = assign_results_of_loudness_corrected_files_to_dictionary(new_results_as_list)
-
-	loudness_corrected_files_with_identical_results_dict = {}
-	loudness_corrected_files_with_differing_results_dict = {}
-	loudness_corrected_files_only_in_path_1_dict = {}
-	loudness_corrected_files_only_in_path_2_dict = {}
-
-	# Loudness of loudness corrected files: Compare results in the two dictionaries and store results in four dictionaries.
-	loudness_corrected_files_with_identical_results_dict, loudness_corrected_files_with_differing_results_dict, loudness_corrected_files_only_in_path_1_dict, loudness_corrected_files_only_in_path_2_dict = find_differences_in_two_result_dictionaries(previous_results_dict, new_results_dict) 
-
-	# Loudness of loudness corrected files: Show the total number of mediainfo results
-
-	title_string = '# Loudness of loudness corrected files: ' + new_results_directory + ' #'
-	list_of_test_result_text_lines.append('')
-	list_of_test_result_text_lines.append(text_marginal_1_tabs + '#' * len(title_string))
-	list_of_test_result_text_lines.append(text_marginal_1_tabs + title_string)
-	list_of_test_result_text_lines.append(text_marginal_1_tabs + '#' * len(title_string))
-	list_of_test_result_text_lines.append('')
-
-	list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Data for ' + str(len(previous_results_dict)) + ' files found in path: ' + previous_measured_loudness_of_loudness_corrected_files)
-	list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Data for ' + str(len(new_results_dict)) + ' files found in path: ' + new_measured_loudness_of_loudness_corrected_files)
-
-	# Loudness of loudness corrected files: Show Identical files
-	if (len(previous_results_dict) == len(new_results_dict)) and (len(previous_results_dict) == len(loudness_corrected_files_with_identical_results_dict)):
-
-		list_of_test_result_text_lines.append('')
-		list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Results for all ' + str(len(loudness_corrected_files_with_identical_results_dict)) + ' files are identical :)')
-		list_of_test_result_text_lines.append('')
-	else:
-		list_of_test_result_text_lines.append('')
-		list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Results for ' + str(len(loudness_corrected_files_with_identical_results_dict)) + ' files are identical :)')
-		list_of_test_result_text_lines.append('')
-
-	# Loudness of loudness corrected files: Show Files with differing results
-	if len(loudness_corrected_files_with_differing_results_dict) != 0:
-
-		# Report any mismatch found.
-		list_of_test_result_text_lines.append('')
-		list_of_test_result_text_lines.append(text_marginal_2_tabs + str(len(loudness_corrected_files_with_differing_results_dict)) + " Calculation results don't match")
-		list_of_test_result_text_lines.append(text_marginal_2_tabs + '-' * len(str(len(loudness_corrected_files_with_differing_results_dict)) + " Calculation results don't match ") + '-')
-		list_of_test_result_text_lines.append('')
-
-		list_of_non_matching_filenames = list(loudness_corrected_files_with_differing_results_dict)
-		list_of_non_matching_filenames.sort(key=str.lower)
-
-		for item in list_of_non_matching_filenames:
-
-			file1_calculation_results = loudness_corrected_files_with_differing_results_dict[item][0]
-			file2_calculation_results = loudness_corrected_files_with_differing_results_dict[item][1]
-
-			# Make the printout prettier by aligning number values to each other.
-			string_1_to_print = file1_calculation_results
-			string_1_to_print = ' ' * (5 - len(string_1_to_print)) + string_1_to_print
-			string_2_to_print = file2_calculation_results
-			string_2_to_print = ' ' * (5 - len(string_2_to_print)) + string_2_to_print
-			calculation_result_type = 'integrated_loudness\t'
+		# Split text in mediainfo file and store results in a dictionary (key = field 0 in text line, value = field 1 in text line).
+		for file_name in common_filenames_set:
 			
-			list_of_test_result_text_lines.append(text_marginal_2_tabs + calculation_result_type + '   ' +	string_1_to_print + '	|  ' + string_2_to_print + '	 ' +  item)
-		
+			results_for_file_1_list = []
+			results_for_file_2_list = []
+
+			results_for_file_1_dict = {}
+			results_for_file_2_dict = {}
+
+			results_for_file_1_list = mediainfo_results_1_dict[file_name]
+			results_for_file_2_list = mediainfo_results_2_dict[file_name]
+
+			headline = ''
+
+			for item1 in results_for_file_1_list:
+
+				if item1.strip() == '':
+					continue
+
+				if ':' not in item1:
+					headline = item1.strip()
+					continue # This text line is the headline, skip it.
+
+				splitted_text_1 =  item1.split(':')
+
+				results_for_file_1_dict[headline + ' ' + splitted_text_1[0].strip()] = splitted_text_1[1].strip()
+
+			for item2 in results_for_file_2_list:
+
+				if ':' not in item2:
+					headline = item2.strip()
+					continue # This text line is the headline, skip it.
+
+				splitted_text_2 =  item2.split(':')
+
+				results_for_file_2_dict[headline + ' ' + splitted_text_2[0].strip()] = splitted_text_2[1].strip()
+
+			# Mediainfo: Compare results in the two dictionaries and store results in four dictionaries.
+			# Note this compares individual mediainfo result text lines.
+			text_lines_with_identical_results_dict = {}
+			text_lines_with_differing_results_dict = {}
+			text_lines_only_in_path_1_dict = {}
+			text_lines_only_in_path_2_dict = {}
+			text_lines_with_identical_results_dict, text_lines_with_differing_results_dict, text_lines_only_in_path_1_dict, text_lines_only_in_path_2_dict = find_differences_in_two_result_dictionaries(results_for_file_1_dict, results_for_file_2_dict) 
+
+			# Store list of identical files
+			if (len(text_lines_with_identical_results_dict) > 0) and (len(text_lines_with_differing_results_dict) == 0) and (len(text_lines_only_in_path_1_dict) == 0) and (len(text_lines_only_in_path_2_dict) == 0):
+				mediainfo_files_with_identical_results_list.append(file_name) 
+
+			# Store info about differing result lines
+			if len(text_lines_with_differing_results_dict) > 0:
+
+				result_list = []
+
+				for individual_item in text_lines_with_differing_results_dict:
+					adjust_printing1 = ''
+					adjust_printing2 = ''
+					adjust_printing3 = ' ' * 14
+					if len(individual_item + ':') < 40:
+						adjust_printing1 = ' ' * int(40 - len(individual_item + ':'))
+					if len(str(text_lines_with_differing_results_dict[individual_item][0]) + '|') < 25:
+						adjust_printing2 = ' ' * int(25 - len(str(text_lines_with_differing_results_dict[individual_item][0]) + '|'))
+					string_to_print = individual_item + ':' + adjust_printing1  + str(text_lines_with_differing_results_dict[individual_item][0]) + adjust_printing2 + '|' + adjust_printing3 + str(text_lines_with_differing_results_dict[individual_item][1])
+					result_list.append(string_to_print)
+
+				mediainfo_files_with_differing_results_dict[file_name] = result_list
+
+			# Store info about text lines only in file 1
+			if len(text_lines_only_in_path_1_dict) > 0:
+
+				result_list = []
+
+				if file_name in mediainfo_files_with_differing_results_dict:
+					result_list = mediainfo_files_with_differing_results_dict[file_name]
+
+				for individual_item in text_lines_only_in_path_1_dict:
+
+					adjust_printing1 = ''
+					adjust_printing2 = ''
+					if len(individual_item + ':') < 40:
+						adjust_printing1 = ' ' * int(40 - len(individual_item + ':'))
+					if len(str(text_lines_only_in_path_1_dict[individual_item]) + '|') < 25:
+						adjust_printing2 = ' ' * int(25 - len(str(text_lines_only_in_path_1_dict[individual_item])  + '|'))
+
+					result_list.append(individual_item + ':' + adjust_printing1  + str(text_lines_only_in_path_1_dict[individual_item]) + adjust_printing2	+ '|' + adjust_printing3 + '<No value>')
+
+				mediainfo_files_with_differing_results_dict[file_name] = result_list
+
+			# Store info about text lines only in file 2
+			if len(text_lines_only_in_path_2_dict) > 0:
+
+				result_list = []
+
+				if file_name in mediainfo_files_with_differing_results_dict:
+					result_list = mediainfo_files_with_differing_results_dict[file_name]
+
+				for individual_item in text_lines_only_in_path_2_dict:
+
+					adjust_printing1 = ''
+					adjust_printing2 = ''
+					if len(individual_item + ':') < 40:
+						adjust_printing1 = ' ' * int(40 - len(individual_item + ':'))
+					if len('<No value>'  + '|') < 25:
+						adjust_printing2 = ' ' * int(25 - len('<No value>'  + '|'))
+
+					result_list.append(individual_item + ':' + adjust_printing1  + '<No value>'  + adjust_printing2 + '|' + adjust_printing3 + str(text_lines_only_in_path_2_dict[individual_item]))
+
+				mediainfo_files_with_differing_results_dict[file_name] = result_list
+
+		# Report differences in mediainfo results files
+		title_string = '# Mediainfo for loudness corrected files: ' + new_results_directory + ' #'
+		list_of_test_result_text_lines.append('')
+		list_of_test_result_text_lines.append(text_marginal_1_tabs + '#' * len(title_string))
+		list_of_test_result_text_lines.append(text_marginal_1_tabs + title_string)
+		list_of_test_result_text_lines.append(text_marginal_1_tabs + '#' * len(title_string))
+
+		# Mediainfo: Show the total number of mediainfo results
+		list_of_test_result_text_lines.append('')
+		list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Data for ' + str(len(mediainfo_results_1_dict)) + ' files found in path: ' + mediainfo_source_dir)
+		list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Data for ' + str(len(mediainfo_results_2_dict)) + ' files found in path: ' + mediainfo_target_dir)
+
+		# Mediainfo: Show Identical files
+		if (len(mediainfo_results_1_dict) == len(mediainfo_results_2_dict)) and (len(mediainfo_results_1_dict) == len(mediainfo_files_with_identical_results_list)):
+
+			list_of_test_result_text_lines.append('')
+			list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Results for all ' + str(len(mediainfo_files_with_identical_results_list)) + ' files are identical :)')
+			list_of_test_result_text_lines.append('')
+		else:
+			list_of_test_result_text_lines.append('')
+			list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Results for ' + str(len(mediainfo_files_with_identical_results_list)) + ' files are identical :)')
+			list_of_test_result_text_lines.append('')
+
+		# Mediainfo: Show Files with differing results and each individual differing result line.
+		if len(mediainfo_files_with_differing_results_dict) != 0:
+
+			# Report any mismatch found.
+			list_of_test_result_text_lines.append('')
+			list_of_test_result_text_lines.append(text_marginal_2_tabs + "Mediainfo results for " + str(len(mediainfo_files_with_differing_results_dict)) + " file does not match (Note: mediainfo category title is appended as the beginning of each line)")
+			list_of_test_result_text_lines.append(text_marginal_2_tabs + '-' * len("Mediainfo results for " + str(len(mediainfo_files_with_differing_results_dict)) + " file does not match (Note: mediainfo category title is appended as the beginning of each line)") + '-')
+			list_of_test_result_text_lines.append('')
+
+			list_of_non_matching_filenames = list(mediainfo_files_with_differing_results_dict)
+			list_of_non_matching_filenames.sort(key=str.lower)
+
+			for file_name in list_of_non_matching_filenames: # Get name of each file.
+
+				list_of_test_result_text_lines.append('')
+				list_of_test_result_text_lines.append(text_marginal_2_tabs + file_name)
+				list_of_test_result_text_lines.append(text_marginal_2_tabs + '-' * int(len(file_name) + 1))
+				list_of_test_result_text_lines.append('')
+
+				for differing_item in mediainfo_files_with_differing_results_dict[file_name]:
+					list_of_test_result_text_lines.append(text_marginal_2_tabs + differing_item)
+				list_of_test_result_text_lines.append('')
+			
+			list_of_test_result_text_lines.append('')
+
+		# Mediainfo: Show Files only in path 1
+		if len(filenames_only_in_set_1) != 0:
+
+			# Report any mismatch found.
+			list_of_test_result_text_lines.append('')
+			list_of_test_result_text_lines.append(text_marginal_2_tabs + str(len(filenames_only_in_set_1)) + " Filenames only in: " + mediainfo_source_dir)
+			list_of_test_result_text_lines.append(text_marginal_2_tabs + '-' * len(str(len(filenames_only_in_set_1)) + " Filenames only in: " + mediainfo_source_dir) + '-')
+			list_of_test_result_text_lines.append('')
+
+			list_of_missing_filenames = []
+
+			list_of_missing_filenames = list(filenames_only_in_set_1)
+			list_of_missing_filenames.sort(key=str.lower)
+
+			for item in list_of_missing_filenames:
+
+				list_of_test_result_text_lines.append(text_marginal_2_tabs + item)
+
+			list_of_test_result_text_lines.append('')
+
+		# Mediainfo: Show Files only in path 2
+		if len(filenames_only_in_set_2) != 0:
+
+			# Report any mismatch found.
+			list_of_test_result_text_lines.append('')
+			list_of_test_result_text_lines.append(text_marginal_2_tabs + str(len(filenames_only_in_set_2)) + " Filenames only in: " + mediainfo_target_dir)
+			list_of_test_result_text_lines.append(text_marginal_2_tabs + '-' * len(str(len(filenames_only_in_set_2)) + " Filenames only in: " + mediainfo_target_dir) + '-')
+			list_of_test_result_text_lines.append('')
+
+			list_of_missing_filenames = []
+
+			list_of_missing_filenames = list(filenames_only_in_set_2)
+			list_of_missing_filenames.sort(key=str.lower)
+
+			for item in list_of_missing_filenames:
+
+				list_of_test_result_text_lines.append(text_marginal_2_tabs + item)
+
+		# Print information gathered so far.
+		for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
+			print(list_of_test_result_text_lines[counter])
+		last_printed_test_result_text_line = len(list_of_test_result_text_lines)
+
+
+		########################################
+		# Loudness of loudness corrected files #
+		########################################
+
+		previous_results_as_text = ''
+		previous_results_as_list = []
+		previous_results_dict = {}
+		new_results_as_text = ''
+		new_results_as_list = []
+		new_results_dict = {}
+
+		previous_results_as_text, error_happened, error_message = read_a_text_file(previous_measured_loudness_of_loudness_corrected_files)
+
+		if error_happened == True:
+			list_of_test_result_text_lines.append('')
+			list_of_test_result_text_lines.append(text_marginal_2_tabs + error_message)
+			list_of_test_result_text_lines.append('')
+			error_happened = False
+			error_message = ''
+
+			for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
+				print(list_of_test_result_text_lines[counter])
+			last_printed_test_result_text_line = len(list_of_test_result_text_lines)
+
+		new_results_as_text, error_happened, error_message = read_a_text_file(new_measured_loudness_of_loudness_corrected_files)
+
+		if error_happened == True:
+			list_of_test_result_text_lines.append('')
+			list_of_test_result_text_lines.append(text_marginal_2_tabs + error_message)
+			list_of_test_result_text_lines.append('')
+			error_happened = False
+			error_message = ''
+
+			for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
+				print(list_of_test_result_text_lines[counter])
+			last_printed_test_result_text_line = len(list_of_test_result_text_lines)
+
+
+		previous_results_as_list = previous_results_as_text.split('\n')
+		new_results_as_list = new_results_as_text.split('\n')
+
+		previous_results_dict = assign_results_of_loudness_corrected_files_to_dictionary(previous_results_as_list)
+		new_results_dict = assign_results_of_loudness_corrected_files_to_dictionary(new_results_as_list)
+
+		loudness_corrected_files_with_identical_results_dict = {}
+		loudness_corrected_files_with_differing_results_dict = {}
+		loudness_corrected_files_only_in_path_1_dict = {}
+		loudness_corrected_files_only_in_path_2_dict = {}
+
+		# Loudness of loudness corrected files: Compare results in the two dictionaries and store results in four dictionaries.
+		loudness_corrected_files_with_identical_results_dict, loudness_corrected_files_with_differing_results_dict, loudness_corrected_files_only_in_path_1_dict, loudness_corrected_files_only_in_path_2_dict = find_differences_in_two_result_dictionaries(previous_results_dict, new_results_dict) 
+
+		# Loudness of loudness corrected files: Show the total number of mediainfo results
+
+		title_string = '# Loudness of loudness corrected files: ' + new_results_directory + ' #'
+		list_of_test_result_text_lines.append('')
+		list_of_test_result_text_lines.append(text_marginal_1_tabs + '#' * len(title_string))
+		list_of_test_result_text_lines.append(text_marginal_1_tabs + title_string)
+		list_of_test_result_text_lines.append(text_marginal_1_tabs + '#' * len(title_string))
 		list_of_test_result_text_lines.append('')
 
-	# Loudness of loudness corrected files: Show Files only in path 1
-	if len(loudness_corrected_files_only_in_path_1_dict) != 0:
+		list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Data for ' + str(len(previous_results_dict)) + ' files found in path: ' + previous_measured_loudness_of_loudness_corrected_files)
+		list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Data for ' + str(len(new_results_dict)) + ' files found in path: ' + new_measured_loudness_of_loudness_corrected_files)
 
-		# Report any mismatch found.
+		# Loudness of loudness corrected files: Show Identical files
+		if (len(previous_results_dict) == len(new_results_dict)) and (len(previous_results_dict) == len(loudness_corrected_files_with_identical_results_dict)):
+
+			list_of_test_result_text_lines.append('')
+			list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Results for all ' + str(len(loudness_corrected_files_with_identical_results_dict)) + ' files are identical :)')
+			list_of_test_result_text_lines.append('')
+		else:
+			list_of_test_result_text_lines.append('')
+			list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Results for ' + str(len(loudness_corrected_files_with_identical_results_dict)) + ' files are identical :)')
+			list_of_test_result_text_lines.append('')
+
+		# Loudness of loudness corrected files: Show Files with differing results
+		if len(loudness_corrected_files_with_differing_results_dict) != 0:
+
+			# Report any mismatch found.
+			list_of_test_result_text_lines.append('')
+			list_of_test_result_text_lines.append(text_marginal_2_tabs + str(len(loudness_corrected_files_with_differing_results_dict)) + " Calculation results don't match")
+			list_of_test_result_text_lines.append(text_marginal_2_tabs + '-' * len(str(len(loudness_corrected_files_with_differing_results_dict)) + " Calculation results don't match ") + '-')
+			list_of_test_result_text_lines.append('')
+
+			list_of_non_matching_filenames = list(loudness_corrected_files_with_differing_results_dict)
+			list_of_non_matching_filenames.sort(key=str.lower)
+
+			for item in list_of_non_matching_filenames:
+
+				file1_calculation_results = loudness_corrected_files_with_differing_results_dict[item][0]
+				file2_calculation_results = loudness_corrected_files_with_differing_results_dict[item][1]
+
+				# Make the printout prettier by aligning number values to each other.
+				string_1_to_print = file1_calculation_results
+				string_1_to_print = ' ' * (5 - len(string_1_to_print)) + string_1_to_print
+				string_2_to_print = file2_calculation_results
+				string_2_to_print = ' ' * (5 - len(string_2_to_print)) + string_2_to_print
+				calculation_result_type = 'integrated_loudness\t'
+				
+				list_of_test_result_text_lines.append(text_marginal_2_tabs + calculation_result_type + '   ' +	string_1_to_print + '	|  ' + string_2_to_print + '	 ' +  item)
+			
+			list_of_test_result_text_lines.append('')
+
+		# Loudness of loudness corrected files: Show Files only in path 1
+		if len(loudness_corrected_files_only_in_path_1_dict) != 0:
+
+			# Report any mismatch found.
+			list_of_test_result_text_lines.append('')
+			list_of_test_result_text_lines.append(text_marginal_2_tabs + str(len(loudness_corrected_files_only_in_path_1_dict)) + " Filenames only in: " + previous_measured_loudness_of_loudness_corrected_files)
+			list_of_test_result_text_lines.append(text_marginal_2_tabs + '-' * len(str(len(loudness_corrected_files_only_in_path_1_dict)) + " Filenames only in: " + previous_measured_loudness_of_loudness_corrected_files) + '-')
+			list_of_test_result_text_lines.append('')
+
+			list_of_missing_filenames = []
+
+			list_of_missing_filenames = list(loudness_corrected_files_only_in_path_1_dict)
+			list_of_missing_filenames.sort(key=str.lower)
+
+			for item in list_of_missing_filenames:
+
+				list_of_test_result_text_lines.append(text_marginal_2_tabs + item)
+
+			list_of_test_result_text_lines.append('')
+
+		# Loudness of loudness corrected files: Show Files only in path 2
+		if len(loudness_corrected_files_only_in_path_2_dict) != 0:
+
+			# Report any mismatch found.
+			list_of_test_result_text_lines.append('')
+			list_of_test_result_text_lines.append(text_marginal_2_tabs + str(len(loudness_corrected_files_only_in_path_2_dict)) + " Filenames only in: " + new_measured_loudness_of_loudness_corrected_files)
+			list_of_test_result_text_lines.append(text_marginal_2_tabs + '-' * len(str(len(loudness_corrected_files_only_in_path_2_dict)) + " Filenames only in: " + new_measured_loudness_of_loudness_corrected_files) + '-')
+			list_of_test_result_text_lines.append('')
+
+			list_of_missing_filenames = []
+
+			list_of_missing_filenames = list(loudness_corrected_files_only_in_path_2_dict)
+			list_of_missing_filenames.sort(key=str.lower)
+
+			for item in list_of_missing_filenames:
+
+				list_of_test_result_text_lines.append(text_marginal_2_tabs + item)
+
+			list_of_test_result_text_lines.append('')
+
+		# Print information gathered so far.
+		for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
+			print(list_of_test_result_text_lines[counter])
+		last_printed_test_result_text_line = len(list_of_test_result_text_lines)
+
+		##########################################################################################################################
+		# Loudness Calculation Log: Selftest: compare this regression tests loudness calculation log to machine readable results #
+		##########################################################################################################################
+
+		title_string = '# Loudness Calculation Log: Selftest: compare this regression tests loudness calculation log to machine readable results: ' + new_results_directory + ' #'
 		list_of_test_result_text_lines.append('')
-		list_of_test_result_text_lines.append(text_marginal_2_tabs + str(len(loudness_corrected_files_only_in_path_1_dict)) + " Filenames only in: " + previous_measured_loudness_of_loudness_corrected_files)
-		list_of_test_result_text_lines.append(text_marginal_2_tabs + '-' * len(str(len(loudness_corrected_files_only_in_path_1_dict)) + " Filenames only in: " + previous_measured_loudness_of_loudness_corrected_files) + '-')
-		list_of_test_result_text_lines.append('')
+		list_of_test_result_text_lines.append(text_marginal_1_tabs + '#' * len(title_string))
+		list_of_test_result_text_lines.append(text_marginal_1_tabs + title_string)
+		list_of_test_result_text_lines.append(text_marginal_1_tabs + '#' * len(title_string))
 
-		list_of_missing_filenames = []
-
-		list_of_missing_filenames = list(loudness_corrected_files_only_in_path_1_dict)
-		list_of_missing_filenames.sort(key=str.lower)
-
-		for item in list_of_missing_filenames:
-
-			list_of_test_result_text_lines.append(text_marginal_2_tabs + item)
-
-		list_of_test_result_text_lines.append('')
-
-	# Loudness of loudness corrected files: Show Files only in path 2
-	if len(loudness_corrected_files_only_in_path_2_dict) != 0:
-
-		# Report any mismatch found.
-		list_of_test_result_text_lines.append('')
-		list_of_test_result_text_lines.append(text_marginal_2_tabs + str(len(loudness_corrected_files_only_in_path_2_dict)) + " Filenames only in: " + new_measured_loudness_of_loudness_corrected_files)
-		list_of_test_result_text_lines.append(text_marginal_2_tabs + '-' * len(str(len(loudness_corrected_files_only_in_path_2_dict)) + " Filenames only in: " + new_measured_loudness_of_loudness_corrected_files) + '-')
-		list_of_test_result_text_lines.append('')
-
-		list_of_missing_filenames = []
-
-		list_of_missing_filenames = list(loudness_corrected_files_only_in_path_2_dict)
-		list_of_missing_filenames.sort(key=str.lower)
-
-		for item in list_of_missing_filenames:
-
-			list_of_test_result_text_lines.append(text_marginal_2_tabs + item)
-
-		list_of_test_result_text_lines.append('')
-
-	# Print information gathered so far.
-	for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
-		print(list_of_test_result_text_lines[counter])
-	last_printed_test_result_text_line = len(list_of_test_result_text_lines)
-
-	##########################################################################################################################
-	# Loudness Calculation Log: Selftest: compare this regression tests loudness calculation log to machine readable results #
-	##########################################################################################################################
-
-	title_string = '# Loudness Calculation Log: Selftest: compare this regression tests loudness calculation log to machine readable results: ' + new_results_directory + ' #'
-	list_of_test_result_text_lines.append('')
-	list_of_test_result_text_lines.append(text_marginal_1_tabs + '#' * len(title_string))
-	list_of_test_result_text_lines.append(text_marginal_1_tabs + title_string)
-	list_of_test_result_text_lines.append(text_marginal_1_tabs + '#' * len(title_string))
-
-	# path_to_results_comparison_script
-	previous_loudness_calculation_log_name = find_matching_filename(regression_test_results_target_dir + os.sep + new_results_directory, list_of_result_file_names[4])
-	previous_loudness_calculation_log = regression_test_results_target_dir + os.sep + new_results_directory + os.sep + previous_loudness_calculation_log_name
-	new_loudness_calculation_log = regression_test_results_target_dir + os.sep + new_results_directory + os.sep + 'machine_readable_results'
-
-	commands_to_run = [path_to_results_comparison_script, previous_loudness_calculation_log, new_loudness_calculation_log]
-
-	list_of_command_output, error_happened, list_of_errors = run_external_program(commands_to_run)
-
-
-	if len(list_of_command_output) != 0:
-
-		for item in list_of_command_output:
-			list_of_test_result_text_lines.append(text_marginal_2_tabs + item)
-
-	# Print information gathered so far.
-	for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
-		print(list_of_test_result_text_lines[counter])
-	last_printed_test_result_text_line = len(list_of_test_result_text_lines)
-
-	#######################################
-	# Loudness Calculation Log Comparison #
-	#######################################
-
-	title_string = '# Loudness Calculation Log Comparison: ' + new_results_directory + ' #'
-	list_of_test_result_text_lines.append('')
-	list_of_test_result_text_lines.append(text_marginal_1_tabs + '#' * len(title_string))
-	list_of_test_result_text_lines.append(text_marginal_1_tabs + title_string)
-	list_of_test_result_text_lines.append(text_marginal_1_tabs + '#' * len(title_string))
-
-	# path_to_results_comparison_script
-	previous_loudness_calculation_log_name = find_matching_filename(path_to_known_good_results_dir + os.sep + new_results_directory, list_of_result_file_names[4])
-	previous_loudness_calculation_log = path_to_known_good_results_dir + os.sep + new_results_directory + os.sep + previous_loudness_calculation_log_name
-	new_loudness_calculation_log_name = find_matching_filename(regression_test_results_target_dir + os.sep + new_results_directory, list_of_result_file_names[4])
-	new_loudness_calculation_log = regression_test_results_target_dir + os.sep + new_results_directory + os.sep + new_loudness_calculation_log_name
-
-	commands_to_run = [path_to_results_comparison_script, previous_loudness_calculation_log, new_loudness_calculation_log]
-
-	list_of_command_output, error_happened, list_of_errors = run_external_program(commands_to_run)
-
-
-	if len(list_of_command_output) != 0:
-
-		for item in list_of_command_output:
-			list_of_test_result_text_lines.append(text_marginal_2_tabs + item)
-
-	# Print information gathered so far.
-	for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
-		print(list_of_test_result_text_lines[counter])
-	last_printed_test_result_text_line = len(list_of_test_result_text_lines)
-
-	#######################################
-	# Machine readable results comparison #
-	#######################################
-
-	title_string = '# Machine readable results comparison: ' + new_results_directory + ' #'
-	list_of_test_result_text_lines.append('')
-	list_of_test_result_text_lines.append(text_marginal_1_tabs + '#' * len(title_string))
-	list_of_test_result_text_lines.append(text_marginal_1_tabs + title_string)
-	list_of_test_result_text_lines.append(text_marginal_1_tabs + '#' * len(title_string))
-
-	# path_to_results_comparison_script
-	previous_loudness_calculation_log = path_to_known_good_results_dir + os.sep + new_results_directory + os.sep + 'machine_readable_results'
-	new_loudness_calculation_log = regression_test_results_target_dir + os.sep + new_results_directory + os.sep + 'machine_readable_results'
-
-
-	if (os.path.exists(previous_loudness_calculation_log) == True) and (os.path.exists(new_loudness_calculation_log) == True):
+		# path_to_results_comparison_script
+		previous_loudness_calculation_log_name = find_matching_filename(regression_test_results_target_dir + os.sep + new_results_directory, list_of_result_file_names[4])
+		previous_loudness_calculation_log = regression_test_results_target_dir + os.sep + new_results_directory + os.sep + previous_loudness_calculation_log_name
+		new_loudness_calculation_log = regression_test_results_target_dir + os.sep + new_results_directory + os.sep + 'machine_readable_results'
 
 		commands_to_run = [path_to_results_comparison_script, previous_loudness_calculation_log, new_loudness_calculation_log]
 
 		list_of_command_output, error_happened, list_of_errors = run_external_program(commands_to_run)
 
+
 		if len(list_of_command_output) != 0:
 
 			for item in list_of_command_output:
 				list_of_test_result_text_lines.append(text_marginal_2_tabs + item)
-	else:
+
+		# Print information gathered so far.
+		for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
+			print(list_of_test_result_text_lines[counter])
+		last_printed_test_result_text_line = len(list_of_test_result_text_lines)
+
+		#######################################
+		# Loudness Calculation Log Comparison #
+		#######################################
+
+		title_string = '# Loudness Calculation Log Comparison: ' + new_results_directory + ' #'
 		list_of_test_result_text_lines.append('')
-		if os.path.exists(previous_loudness_calculation_log) == False:
-			list_of_test_result_text_lines.append(text_marginal_2_tabs + 'There is no machine readable results in: ' + str(path_to_known_good_results_dir + os.sep + new_results_directory))
+		list_of_test_result_text_lines.append(text_marginal_1_tabs + '#' * len(title_string))
+		list_of_test_result_text_lines.append(text_marginal_1_tabs + title_string)
+		list_of_test_result_text_lines.append(text_marginal_1_tabs + '#' * len(title_string))
 
-		if os.path.exists(new_loudness_calculation_log) == False:
-			list_of_test_result_text_lines.append(text_marginal_2_tabs + 'There is no machine readable results in: ' + str(regression_test_results_target_dir + os.sep + new_results_directory))
+		# path_to_results_comparison_script
+		previous_loudness_calculation_log_name = find_matching_filename(path_to_known_good_results_dir + os.sep + new_results_directory, list_of_result_file_names[4])
+		previous_loudness_calculation_log = path_to_known_good_results_dir + os.sep + new_results_directory + os.sep + previous_loudness_calculation_log_name
+		new_loudness_calculation_log_name = find_matching_filename(regression_test_results_target_dir + os.sep + new_results_directory, list_of_result_file_names[4])
+		new_loudness_calculation_log = regression_test_results_target_dir + os.sep + new_results_directory + os.sep + new_loudness_calculation_log_name
+
+		commands_to_run = [path_to_results_comparison_script, previous_loudness_calculation_log, new_loudness_calculation_log]
+
+		list_of_command_output, error_happened, list_of_errors = run_external_program(commands_to_run)
+
+
+		if len(list_of_command_output) != 0:
+
+			for item in list_of_command_output:
+				list_of_test_result_text_lines.append(text_marginal_2_tabs + item)
+
+		# Print information gathered so far.
+		for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
+			print(list_of_test_result_text_lines[counter])
+		last_printed_test_result_text_line = len(list_of_test_result_text_lines)
+
+		#######################################
+		# Machine readable results comparison #
+		#######################################
+
+		title_string = '# Machine readable results comparison: ' + new_results_directory + ' #'
+		list_of_test_result_text_lines.append('')
+		list_of_test_result_text_lines.append(text_marginal_1_tabs + '#' * len(title_string))
+		list_of_test_result_text_lines.append(text_marginal_1_tabs + title_string)
+		list_of_test_result_text_lines.append(text_marginal_1_tabs + '#' * len(title_string))
+
+		# path_to_results_comparison_script
+		previous_loudness_calculation_log = path_to_known_good_results_dir + os.sep + new_results_directory + os.sep + 'machine_readable_results'
+		new_loudness_calculation_log = regression_test_results_target_dir + os.sep + new_results_directory + os.sep + 'machine_readable_results'
+
+
+		if (os.path.exists(previous_loudness_calculation_log) == True) and (os.path.exists(new_loudness_calculation_log) == True):
+
+			commands_to_run = [path_to_results_comparison_script, previous_loudness_calculation_log, new_loudness_calculation_log]
+
+			list_of_command_output, error_happened, list_of_errors = run_external_program(commands_to_run)
+
+			if len(list_of_command_output) != 0:
+
+				for item in list_of_command_output:
+					list_of_test_result_text_lines.append(text_marginal_2_tabs + item)
+		else:
+			list_of_test_result_text_lines.append('')
+			if os.path.exists(previous_loudness_calculation_log) == False:
+				list_of_test_result_text_lines.append(text_marginal_2_tabs + 'There is no machine readable results in: ' + str(path_to_known_good_results_dir + os.sep + new_results_directory))
+
+			if os.path.exists(new_loudness_calculation_log) == False:
+				list_of_test_result_text_lines.append(text_marginal_2_tabs + 'There is no machine readable results in: ' + str(regression_test_results_target_dir + os.sep + new_results_directory))
+			list_of_test_result_text_lines.append('')
+
+		# Print information gathered so far.
+		for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
+			print(list_of_test_result_text_lines[counter])
+		last_printed_test_result_text_line = len(list_of_test_result_text_lines)
+
+		time_in_ticks_and_string_format = get_realtime()
+		stop_time_for_individual_test = time_in_ticks_and_string_format[0]
+		test_duration = calculate_duration(start_time_for_individual_test, stop_time_for_individual_test)
+
+		title_string = '# ' + "'" + new_results_directory +"'" + ' Test Ended At: ' + time_in_ticks_and_string_format[1] + '   Test duration: '+ test_duration + ' #'
+		list_of_test_result_text_lines.append('')
+		list_of_test_result_text_lines.append('#' * len(title_string))
+		list_of_test_result_text_lines.append(title_string)
+		list_of_test_result_text_lines.append('#' * len(title_string))
 		list_of_test_result_text_lines.append('')
 
-	# Print information gathered so far.
-	for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
-		print(list_of_test_result_text_lines[counter])
-	last_printed_test_result_text_line = len(list_of_test_result_text_lines)
-
-	time_in_ticks_and_string_format = get_realtime()
-	stop_time_for_individual_test = time_in_ticks_and_string_format[0]
-	test_duration = calculate_duration(start_time_for_individual_test, stop_time_for_individual_test)
-
-	title_string = '# ' + "'" + new_results_directory +"'" + ' Test Ended At: ' + time_in_ticks_and_string_format[1] + '   Test duration: '+ test_duration + ' #'
-	list_of_test_result_text_lines.append('')
-	list_of_test_result_text_lines.append('#' * len(title_string))
-	list_of_test_result_text_lines.append(title_string)
-	list_of_test_result_text_lines.append('#' * len(title_string))
-	list_of_test_result_text_lines.append('')
-
-	# Print information gathered so far.
-	for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
-		print(list_of_test_result_text_lines[counter])
-	last_printed_test_result_text_line = len(list_of_test_result_text_lines)
+		# Print information gathered so far.
+		for counter in range(last_printed_test_result_text_line, len(list_of_test_result_text_lines)):
+			print(list_of_test_result_text_lines[counter])
+		last_printed_test_result_text_line = len(list_of_test_result_text_lines)
 
 
 time_in_ticks_and_string_format = get_realtime()
