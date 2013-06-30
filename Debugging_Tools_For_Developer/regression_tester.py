@@ -152,7 +152,7 @@ def write_a_list_of_text_to_a_file(list_of_data, target_file):
 	data_to_write = '\n'.join(list_of_data)
 
 	try:
-		with open(target_file, 'at') as textfile_handler:
+		with open(target_file, 'wt') as textfile_handler:
 			textfile_handler.write(data_to_write)
 			textfile_handler.flush() # Flushes written data to os cache
 			os.fsync(textfile_handler.fileno()) # Flushes os cache to disk
@@ -818,6 +818,15 @@ if os.path.exists(mediainfo_path) == False:
 	print()
 	sys.exit(1)
 
+# Check if ffmpeg is installed.
+ffmpeg_path = '/usr/bin/ffmpeg'
+
+if os.path.exists(ffmpeg_path) == False:
+	print()
+	print("Error: '" + ffmpeg_path + "' can not be found")
+	print()
+	sys.exit(1)
+
 shudown_after_test = False
 
 # Test if user whant us to shut down computer after test, ask for root password and test it is valid
@@ -1337,11 +1346,12 @@ for test_counter in range(0,4):
 			for individual_item in text_lines_with_differing_results_dict:
 				adjust_printing1 = ''
 				adjust_printing2 = ''
+				adjust_printing3 = ' ' * 14
 				if len(individual_item + ':') < 40:
 					adjust_printing1 = ' ' * int(40 - len(individual_item + ':'))
 				if len(str(text_lines_with_differing_results_dict[individual_item][0]) + '|') < 25:
 					adjust_printing2 = ' ' * int(25 - len(str(text_lines_with_differing_results_dict[individual_item][0]) + '|'))
-				string_to_print = individual_item + ':' + adjust_printing1  + str(text_lines_with_differing_results_dict[individual_item][0]) + adjust_printing2 + '|		 ' + str(text_lines_with_differing_results_dict[individual_item][1])
+				string_to_print = individual_item + ':' + adjust_printing1  + str(text_lines_with_differing_results_dict[individual_item][0]) + adjust_printing2 + '|' + adjust_printing3 + str(text_lines_with_differing_results_dict[individual_item][1])
 				result_list.append(string_to_print)
 
 			mediainfo_files_with_differing_results_dict[file_name] = result_list
@@ -1363,7 +1373,7 @@ for test_counter in range(0,4):
 				if len(str(text_lines_only_in_path_1_dict[individual_item]) + '|') < 25:
 					adjust_printing2 = ' ' * int(25 - len(str(text_lines_only_in_path_1_dict[individual_item])  + '|'))
 
-				result_list.append(individual_item + ':' + adjust_printing1  + str(text_lines_only_in_path_1_dict[individual_item]) + adjust_printing2	+ '|		' + '<No value>')
+				result_list.append(individual_item + ':' + adjust_printing1  + str(text_lines_only_in_path_1_dict[individual_item]) + adjust_printing2	+ '|' + adjust_printing3 + '<No value>')
 
 			mediainfo_files_with_differing_results_dict[file_name] = result_list
 
@@ -1384,7 +1394,7 @@ for test_counter in range(0,4):
 				if len('<No value>'  + '|') < 25:
 					adjust_printing2 = ' ' * int(25 - len('<No value>'  + '|'))
 
-				result_list.append(individual_item + ':' + adjust_printing1  + '<No value>'  + adjust_printing2 + '|		' + str(text_lines_only_in_path_2_dict[individual_item]))
+				result_list.append(individual_item + ':' + adjust_printing1  + '<No value>'  + adjust_printing2 + '|' + adjust_printing3 + str(text_lines_only_in_path_2_dict[individual_item]))
 
 			mediainfo_files_with_differing_results_dict[file_name] = result_list
 
@@ -1777,7 +1787,7 @@ message_text_string = '\n'.join(list_of_test_result_text_lines)
 send_email('Regression Test Report', message_text_string, '', email_sending_details)
 
 # If email sending encounters errors, then the email subroutine appends errors to the results list. Check for this and write the test results log again, if necessary.
-if len(list_of_test_result_text_lines) + 1 > last_printed_test_result_text_line:
+if len(list_of_test_result_text_lines) > last_printed_test_result_text_line:
 
 	# Write regression test results to a log file.
 	error_happened, error_message = write_a_list_of_text_to_a_file(list_of_test_result_text_lines, regression_test_log_file_name)
@@ -1800,7 +1810,4 @@ if shudown_after_test == True:
 	time.sleep(120)
 
 	shutdown_computer(password)
-
-	#FIXME
-	# Muista tehdä mahdollisuus luoda testitulokset ilman, että on olemassa aiempia tuloksia joihin verrata. Tätä tarvitaan, jos käyttäjä haluaa luoda ekan datasetin.
 
