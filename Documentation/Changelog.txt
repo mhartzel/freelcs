@@ -1,5 +1,9 @@
 Regression_tester
 -----------------
+- A small correction to text output in case email sending fails.
+
+Regression_tester
+-----------------
 - The final feature added and some bugfixes. 
 
 Regression_tester

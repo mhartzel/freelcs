@@ -543,7 +543,7 @@ def send_email(message_title, message_text_string, message_attachment_path, emai
 			 message_size = len(email_message_content_string) # Get our message size
 			 if message_size > server_max_message_size: # Message is too large for the smtp server to accept, abort sending.
 				 message_size_is_within_limits = False
-				 list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Message_size (' + str(message_size), ') is larger than the max supported size (' + str(server_max_message_size) + ') of server: ' + smtp_server_name + 'Sending aborted.')
+				 list_of_test_result_text_lines.append('Error sending email: ' + 'Message_size (' + str(message_size), ') is larger than the max supported size (' + str(server_max_message_size) + ') of server: ' + smtp_server_name + 'Sending aborted.')
 				 sys.exit(1)
 		 if message_size_is_within_limits == True:
 			 # Uncomment the following line if you want to see printed out the final message that is sent to the smtp server
@@ -557,25 +557,25 @@ def send_email(message_title, message_text_string, message_attachment_path, emai
 		 mailServer.close()
 
 	except smtplib.socket.timeout as reason_for_error:
-		 list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Error, Timeout error: ' + str(reason_for_error))
+		list_of_test_result_text_lines.append('Error sending email: ' + 'Timeout error: ' + str(reason_for_error))
 	except smtplib.socket.error as reason_for_error:
-		 list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Error, Socket error: ' + str(reason_for_error))
+		list_of_test_result_text_lines.append('Error sending email: ' + 'Socket error: ' + str(reason_for_error))
 	except smtplib.SMTPRecipientsRefused as reason_for_error:
-		 list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Error, All recipients were refused: ' + str(reason_for_error))
+		list_of_test_result_text_lines.append('Error sending email: ' + 'All recipients were refused: ' + str(reason_for_error))
 	except smtplib.SMTPHeloError as reason_for_error:
-		 list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Error, The server didn’t reply properly to the HELO greeting: ' + str(reason_for_error))
+		list_of_test_result_text_lines.append('Error sending email: ' + 'The server didn’t reply properly to the HELO greeting: ' + str(reason_for_error))
 	except smtplib.SMTPSenderRefused as reason_for_error:
-		 list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Error, The server didn’t accept the sender address: ' + str(reason_for_error))
+		list_of_test_result_text_lines.append('Error sending email: ' + 'The server didn’t accept the sender address: ' + str(reason_for_error))
 	except smtplib.SMTPDataError as reason_for_error:
-		 list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Error, The server replied with an unexpected error code or The SMTP server refused to accept the message data: ' + str(reason_for_error))
+		list_of_test_result_text_lines.append('Error sending email: ' + 'The server replied with an unexpected error code or The SMTP server refused to accept the message data: ' + str(reason_for_error))
 	except smtplib.SMTPException as reason_for_error:
-		 list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Error, The server does not support the STARTTLS extension or No suitable authentication method was found: ' + str(reason_for_error))
+		list_of_test_result_text_lines.append('Error sending email: ' + 'The server does not support the STARTTLS extension or No suitable authentication method was found: ' + str(reason_for_error))
 	except smtplib.SMTPAuthenticationError as reason_for_error:
-		 list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Error, The server didn’t accept the username/password combination: ' + str(reason_for_error))
+		list_of_test_result_text_lines.append('Error sending email: ' + 'The server didn’t accept the username/password combination: ' + str(reason_for_error))
 	except smtplib.SMTPConnectError as reason_for_error:
-		 list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Error, Error occurred during establishment of a connection with the server: '+ str(reason_for_error))
+		list_of_test_result_text_lines.append('Error sending email: ' + 'Error occurred during establishment of a connection with the server: '+ str(reason_for_error))
 	except RuntimeError as reason_for_error:
-		 list_of_test_result_text_lines.append(text_marginal_2_tabs + 'Error, SSL/TLS support is not available to your Python interpreter: ' + str(reason_for_error))
+		list_of_test_result_text_lines.append('Error sending email: ' + 'SSL/TLS support is not available to your Python interpreter: ' + str(reason_for_error))
 
 def calculate_duration(start_time, end_time):
 
