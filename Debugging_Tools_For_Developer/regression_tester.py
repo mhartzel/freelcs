@@ -296,6 +296,24 @@ def get_version_of_loudnesscorrection_script(path_to_loudnesscorrection_script):
 
 	return(loudness_correction_version)
 
+def test_if_path_to_comparison_script_is_valid(path_to_script):
+
+	commands_to_run = ['/bin/grep', "Identifier:", path_to_script]
+
+	list_of_command_output = []
+	error_happened = False
+	list_of_errors = []
+	script_is_found = False
+
+	list_of_command_output, error_happened, list_of_errors = run_external_program(commands_to_run)
+
+	list_of_command_output = str(list_of_command_output[0]).split()
+
+	if 'Identifier: compare_two_loudness_calculation_logs.py' in list_of_command_output:
+		script_is_found = True
+
+	return(script_is_found)
+
 def move_files_to_a_new_directory(source_directory, target_directory):
 
 	path = ''
@@ -339,6 +357,25 @@ def find_matching_filename(target_path, start_of_filename_to_match):
 			break
 
 	return(matching_filename)
+
+def delete_temp_files_from_path(target_path):
+
+	path = ''
+	list_of_directories = []
+	list_of_files = []
+	list_of_deleted_files = []
+
+	# Get directory listing. The 'break' statement stops the for - statement from recursing into subdirectories.
+	for path, list_of_directories, list_of_files in os.walk(target_path):
+	
+		for file_name in list_of_files:
+
+			if file_name.endswith('~'):
+
+				list_of_deleted_files.append(path + os.sep + file_name)
+				os.remove(path + os.sep + file_name)
+
+	return(list_of_deleted_files)
 
 def print_info_about_usage():
 
@@ -772,6 +809,19 @@ else:
 
 	sys.exit(1)
 
+# Test that an identifier text is found inside the script. This comfirms we have the correct path to the comparison script.
+comparison_script_is_found = False
+comparison_script_is_found = test_if_path_to_comparison_script_is_valid(path_to_results_comparison_script)
+
+if  comparison_script_is_found == False:
+
+	print()
+	print('The path defined on the commandline does not point to the comparison script we need')
+	print()
+	print()
+
+	sys.exit(1)
+
 if os.path.isdir(sys.argv[3]) == True:
 	path_to_known_good_results_dir = sys.argv[3]
 	if path_to_known_good_results_dir.endswith(os.sep):
@@ -911,6 +961,17 @@ if source_and_target_are_on_same_disk == False:
 	print('Error: Testfiles needs to be on the same partition as the HotFolder:', hotfolder_path)
 	print()
 	sys.exit(1)
+
+# Remove temporary files from previous results dir. This may have been left there by a text editor if user edited some text files for testing purposes.
+# If there are two filenames differing only by the leading '~' and with differing results in the files, then the comparison script might get results from the wrong file.
+list_of_deleted_files = []
+list_of_deleted_files = delete_temp_files_from_path(path_to_known_good_results_dir)
+
+if len(list_of_deleted_files) > 0:
+
+	list_of_test_result_text_lines.append('')
+	for item in list_of_deleted_files:
+		list_of_test_result_text_lines.append('Deleted temporary file: ' + item)
 
 # Check if previous results files can be found
 if '-no-result-comparison' not in sys.argv:
@@ -1666,12 +1727,11 @@ for test_counter in range(0,4):
 		list_of_test_result_text_lines.append(text_marginal_1_tabs + title_string)
 		list_of_test_result_text_lines.append(text_marginal_1_tabs + '#' * len(title_string))
 
-		# path_to_results_comparison_script
 		previous_loudness_calculation_log_name = find_matching_filename(regression_test_results_target_dir + os.sep + new_results_directory, list_of_result_file_names[4])
 		previous_loudness_calculation_log = regression_test_results_target_dir + os.sep + new_results_directory + os.sep + previous_loudness_calculation_log_name
 		new_loudness_calculation_log = regression_test_results_target_dir + os.sep + new_results_directory + os.sep + 'machine_readable_results'
 
-		commands_to_run = [path_to_results_comparison_script, previous_loudness_calculation_log, new_loudness_calculation_log]
+		commands_to_run = [path_to_results_comparison_script, previous_loudness_calculation_log, new_loudness_calculation_log, '--no-result-highlighting']
 
 		list_of_command_output, error_happened, list_of_errors = run_external_program(commands_to_run)
 
@@ -1696,13 +1756,12 @@ for test_counter in range(0,4):
 		list_of_test_result_text_lines.append(text_marginal_1_tabs + title_string)
 		list_of_test_result_text_lines.append(text_marginal_1_tabs + '#' * len(title_string))
 
-		# path_to_results_comparison_script
 		previous_loudness_calculation_log_name = find_matching_filename(path_to_known_good_results_dir + os.sep + new_results_directory, list_of_result_file_names[4])
 		previous_loudness_calculation_log = path_to_known_good_results_dir + os.sep + new_results_directory + os.sep + previous_loudness_calculation_log_name
 		new_loudness_calculation_log_name = find_matching_filename(regression_test_results_target_dir + os.sep + new_results_directory, list_of_result_file_names[4])
 		new_loudness_calculation_log = regression_test_results_target_dir + os.sep + new_results_directory + os.sep + new_loudness_calculation_log_name
 
-		commands_to_run = [path_to_results_comparison_script, previous_loudness_calculation_log, new_loudness_calculation_log]
+		commands_to_run = [path_to_results_comparison_script, previous_loudness_calculation_log, new_loudness_calculation_log, '--no-result-highlighting']
 
 		list_of_command_output, error_happened, list_of_errors = run_external_program(commands_to_run)
 
@@ -1727,14 +1786,13 @@ for test_counter in range(0,4):
 		list_of_test_result_text_lines.append(text_marginal_1_tabs + title_string)
 		list_of_test_result_text_lines.append(text_marginal_1_tabs + '#' * len(title_string))
 
-		# path_to_results_comparison_script
 		previous_loudness_calculation_log = path_to_known_good_results_dir + os.sep + new_results_directory + os.sep + 'machine_readable_results'
 		new_loudness_calculation_log = regression_test_results_target_dir + os.sep + new_results_directory + os.sep + 'machine_readable_results'
 
 
 		if (os.path.exists(previous_loudness_calculation_log) == True) and (os.path.exists(new_loudness_calculation_log) == True):
 
-			commands_to_run = [path_to_results_comparison_script, previous_loudness_calculation_log, new_loudness_calculation_log]
+			commands_to_run = [path_to_results_comparison_script, previous_loudness_calculation_log, new_loudness_calculation_log, '--no-result-highlighting']
 
 			list_of_command_output, error_happened, list_of_errors = run_external_program(commands_to_run)
 

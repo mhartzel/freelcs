@@ -1,5 +1,13 @@
 Regression_tester
 -----------------
+- Small bugfixes.
+
+compare_two_loudness_calculation_logs.py
+----------------------------------------
+- Small bugfixes.
+
+Regression_tester
+-----------------
 - A small correction to text output in case email sending fails.
 
 Regression_tester

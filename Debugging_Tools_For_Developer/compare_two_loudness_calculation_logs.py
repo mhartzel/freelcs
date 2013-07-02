@@ -4,8 +4,11 @@
 # Copyright (C) Mikael Hartzell 2013.
 #
 # This program is distributed under the GNU General Public License, version 3 (GPLv3)
-
+#
 # This program compares loudness calculation results in a loudness_calculation log to another loudness calculation log or to the results of multiple machine readable results files.
+#
+# This line is used to identify this script when it is started from an external script, don't change. Identifier: compare_two_loudness_calculation_logs.py
+#
 
 import sys
 import copy
@@ -149,6 +152,7 @@ def print_instructions_on_program_usage():
 	print('Usage: ', sys.argv[0], 'LOUDNESS_CALCULATION_LOG_1    LOUDNESS_CALCULATION_LOG_2')
 	print('Usage: ', sys.argv[0], 'LOUDNESS_CALCULATION_LOG_1    PATH_TO/MACHINE_READBLE_RESULTS/DIR')
 	print('Usage: ', sys.argv[0], 'PATH_TO/MACHINE_READBLE_RESULTS/DIR_1    PATH_TO/MACHINE_READBLE_RESULTS/DIR_2')
+	print('Usage: ', sys.argv[0], 'LOUDNESS_CALCULATION_LOG_1    LOUDNESS_CALCULATION_LOG_2   --no-result-highlighting')
 	print('Usage: ', sys.argv[0], 'FILENAME1 FILENAME2 --ignore-loudness-results')
 	print('Usage: ', sys.argv[0], 'FILENAME1 FILENAME2 --ignore-peak-measurement')
 	print()
@@ -261,6 +265,7 @@ files_only_in_path_2_dict = {}
 
 ignore_loudness_results = False
 ignore_peak_measurement = False
+no_result_highlighting = False
 
 # The program operates in one of three operating modes:
 # 1 = compare two loudness calculation logs
@@ -304,6 +309,9 @@ if len(sys.argv) > 3:
 if len(sys.argv) > 3:
 	if (sys.argv[3] == '--ignore-peak-measurement') or (sys.argv[3] == '-ignore-peak-measurement'):
 		ignore_peak_measurement = True
+
+if ('--no-result-highlighting' in sys.argv) or ('-no-result-highlighting' in sys.argv):
+	no_result_highlighting = True
 
 
 ################################################################################
@@ -401,7 +409,10 @@ if len(files_with_differing_results_dict) != 0:
 
 			if file1_calculation_results[value_counter] != file2_calculation_results[value_counter]:
 				# integrated_loudness, loudness_range, highest_peak_db, channel_count, sample_rate, bit_depth, audio_duration
-				calculation_result_type = ['\033[7m' + 'integrated_loudness\t' + '\033[0m', 'loudness_range\t\t', 'highest_peak_db\t\t', 'channel_count\t\t', 'sample_rate\t\t', 'bit_depth\t\t', 'audio_duration\t\t'][value_counter]
+				if no_result_highlighting == False:
+					calculation_result_type = ['\033[7m' + 'integrated_loudness\t' + '\033[0m', 'loudness_range\t\t', 'highest_peak_db\t\t', 'channel_count\t\t', 'sample_rate\t\t', 'bit_depth\t\t', 'audio_duration\t\t'][value_counter]
+				else:
+					calculation_result_type = ['integrated_loudness\t', 'loudness_range\t\t', 'highest_peak_db\t\t', 'channel_count\t\t', 'sample_rate\t\t', 'bit_depth\t\t', 'audio_duration\t\t'][value_counter]
 				
 				# Make the printout prettier by aligning number values to each other.
 				string_1_to_print = file1_calculation_results[value_counter]
