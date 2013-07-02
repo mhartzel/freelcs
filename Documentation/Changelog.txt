@@ -1,5 +1,9 @@
 Regression_tester
 -----------------
+- Fixed a bug created in the last change :)
+
+Regression_tester
+-----------------
 - Small bugfixes.
 
 compare_two_loudness_calculation_logs.py

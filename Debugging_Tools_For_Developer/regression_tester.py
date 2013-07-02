@@ -298,7 +298,7 @@ def get_version_of_loudnesscorrection_script(path_to_loudnesscorrection_script):
 
 def test_if_path_to_comparison_script_is_valid(path_to_script):
 
-	commands_to_run = ['/bin/grep', "Identifier:", path_to_script]
+	commands_to_run = ['/bin/grep', 'Identifier:', path_to_script]
 
 	list_of_command_output = []
 	error_happened = False
@@ -307,11 +307,12 @@ def test_if_path_to_comparison_script_is_valid(path_to_script):
 
 	list_of_command_output, error_happened, list_of_errors = run_external_program(commands_to_run)
 
-	list_of_command_output = str(list_of_command_output[0]).split()
+	if len(list_of_command_output) > 0:
 
-	if 'Identifier: compare_two_loudness_calculation_logs.py' in list_of_command_output:
-		script_is_found = True
+		list_of_command_output = str(list_of_command_output[0])
 
+		if 'Identifier: compare_two_loudness_calculation_logs.py' in list_of_command_output:
+			script_is_found = True
 	return(script_is_found)
 
 def move_files_to_a_new_directory(source_directory, target_directory):
