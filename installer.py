@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '059'
+version = '060'
 
 ###################################
 # Function definitions start here #
@@ -3009,6 +3009,9 @@ def define_program_installation_commands():
 	global libebur128_cmake_commands
 	global libebur128_make_build_and_install_commands
 	global libebur128_simplified_build_and_install_commands_displayed_to_user
+	global libebur128_repository_url
+
+	libebur128_repository_directory_name = os.path.splitext(os.path.split(libebur128_repository_url)[1])[0]
 	
 	# Check if we need to install some programs that LoudnessCorrection needs and add install commands to lists.
 	apt_get_commands = ['apt-get', '-q=2', '-y', '--reinstall', 'install']
@@ -3031,9 +3034,12 @@ def define_program_installation_commands():
 		'libxml2-dev', 'libgstreamer0.10-dev', 'libgstreamer-plugins-base0.10-dev', 'libqt4-dev']
 	if loudness_path == '':
 		# Store commands of downloading and building libebur128 sourcecode to lists.
-		libebur128_git_commands = ['cd ' + directory_for_os_temporary_files, 'git clone http://github.com/jiixyj/libebur128.git', 'cd libebur128', \
-		'mv .gitmodules .gitmodules.orig', "cat .gitmodules.orig | sed 's/git:\/\//http:\/\//g' > .gitmodules", \
-		'git submodule init', 'git submodule update']
+		libebur128_git_commands = ['cd ' + directory_for_os_temporary_files, \
+		'if [ -e "' +  directory_for_os_temporary_files + os.sep + libebur128_repository_directory_name  + '" ] ; then rm -rf "' + directory_for_os_temporary_files + os.sep + libebur128_repository_directory_name  +  '" ; fi', \
+		'if [ -e "' +  directory_for_os_temporary_files + os.sep + 'libebur128" ] ; then rm -rf "' + directory_for_os_temporary_files + os.sep + 'libebur128" ; fi', \
+		'git clone ' + libebur128_repository_url, 
+		'mv ' + libebur128_repository_directory_name + ' libebur128', \
+		'cd libebur128']
 		
 		# Check if libebur128 is at version we need and add commands to get the version we want.
 		libebur128_simplified_build_and_install_commands_displayed_to_user = ['mkdir build', 'cd build', 'cmake -Wno-dev -DCMAKE_INSTALL_PREFIX:PATH=/usr ..', 'make -w', 'make install']
@@ -3041,6 +3047,7 @@ def define_program_installation_commands():
 
 		libebur128_cmake_commands = ['cd ' + directory_for_os_temporary_files + '/libebur128', 'mkdir build', 'cd build', 'cmake -Wno-dev -DCMAKE_INSTALL_PREFIX:PATH=/usr ..']
 		libebur128_make_build_and_install_commands = ['cd ' + directory_for_os_temporary_files + '/libebur128/build', 'make -s -j 4', 'make install']
+
 
 def check_libebur128_version_and_add_git_commands_to_checkout_specific_commit():
 	
@@ -3085,16 +3092,16 @@ def check_libebur128_version_and_add_git_commands_to_checkout_specific_commit():
 		libebur128_is_installed.set('Not Installed')
 		loudness_path = '' # Empty value in the path-variable forces reinstallation of the 'loudness' program.
 		all_needed_external_programs_are_installed = False
-		libebur128_simplified_build_and_install_commands_displayed_to_user = ['git checkout --force 1c0e8dac8d1a2f1ce07bee469d26ccfbb2688247', 'mkdir build', 'cd build', 'cmake -Wno-dev -DCMAKE_INSTALL_PREFIX:PATH=/usr ..', 'make -w', 'make install']
+		libebur128_simplified_build_and_install_commands_displayed_to_user = ['git checkout --force 18d1b743b27b810ebf04e012c34105a71c1620b1', 'mkdir build', 'cd build', 'cmake -Wno-dev -DCMAKE_INSTALL_PREFIX:PATH=/usr ..', 'make -w', 'make install']
 	
 	if (libebur128_version_is_the_one_we_require == False) and (libebur128_git_commands != []):
 		
 		# Add 4.0 (L, R, LS, RS) and 5.0 (L, R, C, LS, RS) compatibility patching commands to git commands, but don't do it if it has already been done.
-		if 'LIBEBUR128_REQUIRED_GIT_COMMIT_VERSION="1c0e8dac8d1a2f1ce07bee469d26ccfbb2688247"' not in libebur128_git_commands:
+		if 'LIBEBUR128_REQUIRED_GIT_COMMIT_VERSION="18d1b743b27b810ebf04e012c34105a71c1620b1"' not in libebur128_git_commands:
 			libebur128_git_commands.extend(['', \
 			'# Get the git commit number of current version of libebur128', \
 			'echo', \
-			'LIBEBUR128_REQUIRED_GIT_COMMIT_VERSION="1c0e8dac8d1a2f1ce07bee469d26ccfbb2688247"', \
+			'LIBEBUR128_REQUIRED_GIT_COMMIT_VERSION="18d1b743b27b810ebf04e012c34105a71c1620b1"', \
 			'LIBEBUR128_CURRENT_COMMIT=`git rev-parse HEAD`', \
 			'', \
 			'# If libebur128 commit number does not match, check out the correct version from git', \
@@ -3282,6 +3289,7 @@ def check_sox_version_and_add_git_commands_to_checkout_specific_commit():
 		'apt-get remove -y sox', \
 		'', \
 		'# Download sox source', \
+		'if [ -e "' +  directory_for_os_temporary_files + os.sep + 'sox_personal_fork" ] ; then rm -rf "' + directory_for_os_temporary_files + os.sep + 'sox_personal_fork" ; fi', \
 		'cd ' + directory_for_os_temporary_files, \
 		'git clone http://github.com/mhartzel/sox_personal_fork.git', \
 		'cd sox_personal_fork', \
@@ -4100,6 +4108,7 @@ all_ip_addresses_of_the_machine = []
 all_ip_addresses_of_the_machine = get_ip_addresses_of_the_host_machine()
 peak_measurement_method = '--peak=sample'
 installation_is_running = False
+libebur128_repository_url = "http://github.com/mhartzel/libebur128_fork_for_freelcs_2.4.git"
 
 # Get the directory the os uses for storing temporary files.
 directory_for_os_temporary_files = tempfile.gettempdir()

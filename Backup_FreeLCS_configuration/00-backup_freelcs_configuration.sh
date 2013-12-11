@@ -248,6 +248,18 @@ if [ -e "/tmp/libebur128" ] ; then
 	fi
 fi
 
+if [ -e "/tmp/libebur128_fork_for_freelcs_2.4" ] ; then
+
+	rm -rf "/tmp/libebur128_fork_for_freelcs_2.4"
+
+	if [ "$?" -ne "0"  ] ; then
+		echo
+		echo "Error, could not delete temporary dir /tmp/libebur128_fork_for_freelcs_2.4"
+		echo
+		exit
+	fi
+fi
+
 if [ -e "/tmp/sox_personal_fork" ] ; then
 
 	rm -rf "/tmp/sox_personal_fork"
@@ -371,16 +383,13 @@ echo "##########################"
 echo
 
 cd /tmp
-git clone http://github.com/jiixyj/libebur128.git
+git clone http://github.com/mhartzel/libebur128_fork_for_freelcs_2.4.git
+mv libebur128_fork_for_freelcs_2.4 libebur128
 cd libebur128
-mv .gitmodules .gitmodules.orig
-cat .gitmodules.orig | sed 's/git:\/\//http:\/\//g' > .gitmodules
-git submodule init
-git submodule update
 
 # Get the git commit number of current version of libebur128
 echo
-LIBEBUR128_REQUIRED_GIT_COMMIT_VERSION="1c0e8dac8d1a2f1ce07bee469d26ccfbb2688247"
+LIBEBUR128_REQUIRED_GIT_COMMIT_VERSION="18d1b743b27b810ebf04e012c34105a71c1620b1"
 LIBEBUR128_CURRENT_COMMIT=`git rev-parse HEAD`
 
 # If libebur128 commit number does not match, check out the correct version from git
