@@ -1,4 +1,137 @@
-<!DOCTYPE html><html dir="ltr" lang="en">  <head>    <meta content="text/html; charset=UTF-8" http-equiv="content-type">    <title>index</title>    <meta content="Mikael Hartzell" name="author">  </head>  <body>    <h1>FreeLCS</h1>    <br>    FreeLCS stands for <strong>Free Loudness Correction Server</strong>. The    software lets you easily set up a server that shares one of it's folders to    the network where users can drop audio files to be loudness corrected    according to the EBU R128 loudness recommendation. The server also creates a    loudness history graphics file which gives visual feedback of the internal    loudness variations in a file.<br>    <br>    The software is very fast even on modest hardware giving 15 times faster    than realtime processing (16 bit stereo files, TruePeak measurement turned    on) on a server with one Intel Core 2 Duo processor, 2 GB Ram, 3 internal    Sata disks in software RAID 0. <br>    <br>    FreeLCS uses other open source programs to get the job done (Linux,    libebur128, gnuplot, FFmpeg, sox, mediainfo).<br>    <h2><strong>Latest news:</strong></h2>    <h2>2013.12.04 FreeLCS 2.4 released.</h2>    <ul>      <li>Libebur128 source code repository that FreeLCS uses during        installation was reorganized by the author. The change broke        installation for FreeLCS 2.3 and older. I uploaded my backup of original        libebur128 source code to github and updated FreeLCS installer to        install libebur128 from this new repository.</li>      <li>All installations made before this change will continue to work fine,        but reinstalling or restoring an old backup made with FreeLCS 2.3 or        earlier won't work anymore. All new installations must be done with        version 2.4. Sorry for the inconvenience.</li>      <li>There is no new functionality in this release (though some new        features are under development :)</li>    </ul>    <strong>2013.03.29</strong> FreeLCS 2.3 released.<br>    <ul>      <li> This is a maintenance bug fix release.</li>      <li>Fixes a bug made in FreeLCS version 2.2 that affects only output files        bigger than 4 GB. When the output file was split to separate mono        channels, some channels were missing.</li>      <li>Fixed a number of ways LoudnessCorrection.py could be crashed by        deleting files that it was already processing.</li>      <li>Added a new script to backup / clone FreeLCS installation to another        Ubuntu machine. The script does not require X and can be used over a ssh        - connection. This functionality can be used to create automation that        clones FreeLCS installation to several machines quickly and easily. Read        about it <a href="FreeLCS_User_Manual.html#Cloning%20a%20FreeLCS%20installation%20to%20another%20machine%20%28without%20a%20display%29">here</a>.      </li>    </ul>    <p></p>    <h4></h4>    <h4>2013.03.11 <span style="font-weight: normal;">Released introductory        material about EBU R128 recommendation and FreeLCS. This version is in        Finnish language only, a English version will follow when I get the        translation ready. The material tries to explain R128 concepts and        FreeLCS usage in the point of view of a common user.&nbsp; Read it here:        <a href="Introduction_To_Loudness_Correction/html/Aanekkyyden%20Hallinta.html">Äänekkyyden
-          Hallinta</a>.</span></h4>    <p><strong>2013.03.10</strong> FreeLCS 2.2 released.</p>    <ul>      <li>This is a maintenance bug fix release. This version fixes a couple of        bugs that sometimes caused file processing to hang. This release also        adds code that catches possible Python error messages and sends them to        the user. This helps to identify what situation caused the error.<br>      </li>      <li>Addition to the manual "<a href="FreeLCS_User_Manual.html#Synchronizing%20clock%20to%20a%20NTP%20time%20server">How
-          to synchronize server clock to a NTP server</a>".</li>      <li>Correction to manual: "<a href="FreeLCS_User_Manual.html#Configuring%20software%20Raid">Use
-          UUID as the device name when configuring software raid</a>". This        solves the problem where raid device number sometimes changes when a        kernel update is installed.<br>      </li>      <li><a href="FreeLCS_FAQ.html#What%20formats%20are%20supported%20?">The          installer no longer installs FFmpeg</a>, but if the user does, then        FFmpeg is used for file processing.</li>      <li><a href="Changelog.txt">Changelog</a>.</li>    </ul>    <p></p>    Older news can be found <a href="FreeLCS-Old_News.html">here</a>.<br>    <br>    <h2> <a id="Features">Features</a></h2>    <ul>      <li> Calculates loudness according to EBU R128 for files dropped into the        HotFolder.</li>      <li>For each file it creates a loudness history graphics file which gives        visual feedback of the loudness variations in the file.</li>      <li>Creates loudness corrected versions of each file dropped in the        servers HotFolder.</li>      <li>Uses FFmpeg to pre-process files and supports the huge number of file        formats FFmpeg supports.<br>      </li>      <li> Supports files with several audio streams. Each stream is demuxed to        a separate file and loudness corrected.</li>      <li>Even video files can be dropped in for processing. Audio streams are        demuxed from the file and processed.<br>      </li>      <li> Supports channel counts from mono to 5.1.</li>      <li> Takes advantage of multiple processor cores to run calculations        simultaneously.</li>      <li>Uses a protective limiter to prevent clipping in cases where volume        must be increased.<br>      </li>      <li> Automatic file deletion after a set time.</li>      <li>Possible error messages are emailed to the admin.</li>      <li>All software is free and Open Source.<br>      </li>      <li>Very easy to use, just drop in your file and copy back the corrected        version.</li>      <li>Easy to integrate in many workflows.</li>      <li>Modest hardware requirements.</li>      <li>Written in Python 3.</li>      <li>More specific information can be found in the <a href="FreeLCS_FAQ.html">FAQ</a>.<br>      </li>    </ul>    <br>    <img title="Example: Loudness history graphics" src="Pictures/Beethoven-Coriolan_Overture_Op_62.wav-Loudness_Results_Graphics.jpg"><br>    <br>    <br>    <a href="https://sourceforge.net/projects/freelcs/files/">Click here to go      to the download page (User manual is included in the download)</a><br>    <br>    <a href="FreeLCS_User_Manual.html">Click here to go to the User manual.</a><br>    <br>    <a href="FreeLCS_User_Manual.html#How%20to%20report%20a%20bug">Report a bug</a><br>    <br>  </body></html>
+<!DOCTYPE html>
+<html dir="ltr" lang="en">
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+    <title>index</title>
+    <meta content="Mikael Hartzell" name="author">
+  </head>
+  <body>
+    <h1>FreeLCS</h1>
+    <br>
+    FreeLCS stands for <strong>Free Loudness Correction Server</strong>. The
+    software lets you easily set up a server that shares one of it's folders to
+    the network where users can drop audio files to be loudness corrected
+    according to the EBU R128 loudness recommendation. The server also creates a
+    loudness history graphics file which gives visual feedback of the internal
+    loudness variations in a file.<br>
+    <br>
+    The software is very fast even on modest hardware giving 15 times faster
+    than realtime processing (16 bit stereo files, TruePeak measurement turned
+    on) on a server with one Intel Core 2 Duo processor, 2 GB Ram, 3 internal
+    Sata disks in software RAID 0. <br>
+    <br>
+    FreeLCS uses other open source programs to get the job done (Linux,
+    libebur128, gnuplot, FFmpeg, sox, mediainfo).<br>
+    <h2><strong>Latest news:</strong></h2>
+    <h2>2013.12.04 FreeLCS 2.4 released.</h2>
+    <ul>
+      <li>Libebur128 source code repository that FreeLCS uses during
+        installation was reorganized by its author. The change broke
+        installation for FreeLCS 2.3 and older. I uploaded my backup of original
+        libebur128 source code to github and updated FreeLCS installer to
+        install libebur128 from this new repository.</li>
+      <li>All installations made before this change will continue to work fine,
+        but new installations or restoring an old backup made with FreeLCS 2.3
+        backup-tool won't work anymore. All new installations must be done with
+        version 2.4. Sorry for the inconvenience.</li>
+      <li>If you made a backup of your server using the tool provided in FreeLCS
+        2.3 zip, then please download FreeLCS version 2.4 and make a new backup.
+        The restore script in version 2.3 uses the original libebur128
+        repository and it does not work the way it used to when FreeLCS 2.3 was
+        released.</li>
+      <li>There is no new functionality in this release (though some new
+        features are under development :)</li>
+    </ul>
+    <strong>2013.03.29</strong> FreeLCS 2.3 released.<br>
+    <ul>
+      <li> This is a maintenance bug fix release.</li>
+      <li>Fixes a bug made in FreeLCS version 2.2 that affects only output files
+        bigger than 4 GB. When the output file was split to separate mono
+        channels, some channels were missing.</li>
+      <li>Fixed a number of ways LoudnessCorrection.py could be crashed by
+        deleting files that it was already processing.</li>
+      <li>Added a new script to backup / clone FreeLCS installation to another
+        Ubuntu machine. The script does not require X and can be used over a ssh
+        - connection. This functionality can be used to create automation that
+        clones FreeLCS installation to several machines quickly and easily. Read
+        about it <a href="FreeLCS_User_Manual.html#Cloning%20a%20FreeLCS%20installation%20to%20another%20machine%20%28without%20a%20display%29">here</a>.
+      </li>
+    </ul>
+    <p></p>
+    <h4></h4>
+    <h4>2013.03.11 <span style="font-weight: normal;">Released introductory
+        material about EBU R128 recommendation and FreeLCS. This version is in
+        Finnish language only, a English version will follow when I get the
+        translation ready. The material tries to explain R128 concepts and
+        FreeLCS usage in the point of view of a common user.&nbsp; Read it here:
+        <a href="Introduction_To_Loudness_Correction/html/Aanekkyyden%20Hallinta.html">Äänekkyyden
+          Hallinta</a>.</span></h4>
+    <p><strong>2013.03.10</strong> FreeLCS 2.2 released.</p>
+    <ul>
+      <li>This is a maintenance bug fix release. This version fixes a couple of
+        bugs that sometimes caused file processing to hang. This release also
+        adds code that catches possible Python error messages and sends them to
+        the user. This helps to identify what situation caused the error.<br>
+      </li>
+      <li>Addition to the manual "<a href="FreeLCS_User_Manual.html#Synchronizing%20clock%20to%20a%20NTP%20time%20server">How
+          to synchronize server clock to a NTP server</a>".</li>
+      <li>Correction to manual: "<a href="FreeLCS_User_Manual.html#Configuring%20software%20Raid">Use
+          UUID as the device name when configuring software raid</a>". This
+        solves the problem where raid device number sometimes changes when a
+        kernel update is installed.<br>
+      </li>
+      <li><a href="FreeLCS_FAQ.html#What%20formats%20are%20supported%20?">The
+          installer no longer installs FFmpeg</a>, but if the user does, then
+        FFmpeg is used for file processing.</li>
+      <li><a href="Changelog.txt">Changelog</a>.</li>
+    </ul>
+    <p></p>
+    Older news can be found <a href="FreeLCS-Old_News.html">here</a>.<br>
+    <br>
+    <h2> <a id="Features">Features</a></h2>
+    <ul>
+      <li> Calculates loudness according to EBU R128 for files dropped into the
+        HotFolder.</li>
+      <li>For each file it creates a loudness history graphics file which gives
+        visual feedback of the loudness variations in the file.</li>
+      <li>Creates loudness corrected versions of each file dropped in the
+        servers HotFolder.</li>
+      <li>Uses FFmpeg to pre-process files and supports the huge number of file
+        formats FFmpeg supports.<br>
+      </li>
+      <li> Supports files with several audio streams. Each stream is demuxed to
+        a separate file and loudness corrected.</li>
+      <li>Even video files can be dropped in for processing. Audio streams are
+        demuxed from the file and processed.<br>
+      </li>
+      <li> Supports channel counts from mono to 5.1.</li>
+      <li> Takes advantage of multiple processor cores to run calculations
+        simultaneously.</li>
+      <li>Uses a protective limiter to prevent clipping in cases where volume
+        must be increased.<br>
+      </li>
+      <li> Automatic file deletion after a set time.</li>
+      <li>Possible error messages are emailed to the admin.</li>
+      <li>All software is free and Open Source.<br>
+      </li>
+      <li>Very easy to use, just drop in your file and copy back the corrected
+        version.</li>
+      <li>Easy to integrate in many workflows.</li>
+      <li>Modest hardware requirements.</li>
+      <li>Written in Python 3.</li>
+      <li>More specific information can be found in the <a href="FreeLCS_FAQ.html">FAQ</a>.<br>
+      </li>
+    </ul>
+    <br>
+    <img title="Example: Loudness history graphics" src="Pictures/Beethoven-Coriolan_Overture_Op_62.wav-Loudness_Results_Graphics.jpg"><br>
+    <br>
+    <br>
+    <a href="https://sourceforge.net/projects/freelcs/files/">Click here to go
+      to the download page (User manual is included in the download)</a><br>
+    <br>
+    <a href="FreeLCS_User_Manual.html">Click here to go to the User manual.</a><br>
+    <br>
+    <a href="FreeLCS_User_Manual.html#How%20to%20report%20a%20bug">Report a bug</a><br>
+    <br>
+  </body>
+</html>
