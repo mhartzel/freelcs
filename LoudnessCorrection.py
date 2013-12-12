@@ -36,11 +36,11 @@ import math
 import signal
 import traceback
 
-version = '249'
+version = '250'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
-# These values are used if the script is run without giving an settings file as an argument. Values read from the settingsfile override these default settings.                        #
+# These values are used if the script is run without giving an settings file as an argument. Values read from the settingsfile override these default settings.			       #
 ########################################################################################################################################################################################
 #
 # Language to use for directories and printing messages. Finnish and english are supported.
@@ -60,13 +60,13 @@ else:
 # Assign some debug variables.
 silent = False # Use True if you don't want this programs to print anything on screen (useful if you want to start this program from Linux init scripts).
 
-# Information about integrated loudness calculation and time slice processing is stored in separate dictionaries.
+# When debug_file_processing == True, then information about integrated loudness calculation and time slice processing is stored in separate dictionaries.
 # This information is later appended to 'debug_complete_final_information_for_all_file_processing_dict'.
 # The information must be first gathered to separate dictionary because loudness calculation information is simultaneously gathered in two threads.
 debug_temporary_dict_for_integrated_loudness_calculation_information = {} 
 debug_temporary_dict_for_timeslice_calculation_information = {} 
 
-# Debug information about file processing is stored in this dictionary.
+# When debug_file_processing == True, then debug information about file processing is stored in this dictionary.
 # This information is later appended to 'debug_complete_final_information_for_all_file_processing_dict'. 
 debug_temporary_dict_for_all_file_processing_information = {} 
 
@@ -320,7 +320,7 @@ pcm_64_bit_formats = ['pcm_f64be', 'pcm_f64le']
 # Files left over after creating the remixes are discarded.
 # If mxf - channel map has been defined, then first remixes are created before loudness correction.
 # This global mxf remix map can be overwritten by a file specific remix map. If there is a text file with the same name as the source file but ending with '.remix_map', then the info inside this file is used for remixing just that specific mxf file.
-global_mxf_audio_remix_channel_map = [] # Example [2, 6, 2, 2]   Create stereo, 5.1, stereo and stereo mixes (if there are enough source audio channels).
+global_mxf_audio_remix_channel_map = [] # Example [2, 6, 2, 2]	 Create stereo, 5.1, stereo and stereo mixes (if there are enough source audio channels).
 remix_map_file_extension = '.remix_map'
 
 # If FFmpeg is installed, then define what wrapper formats are allowed to be processed.
@@ -379,7 +379,7 @@ record_separator = chr(13) + chr(10) # This string is used to separate info for 
 
 
 ###############################################################################################################################################################################
-# Default value definitions end here :)                                                                                                                                       #
+# Default value definitions end here :)																	      #
 ###############################################################################################################################################################################
 
 
@@ -396,8 +396,6 @@ def calculate_integrated_loudness(event_for_integrated_loudness_calculation, fil
 
 	try:
 		global integrated_loudness_calculation_results
-		global debug_temporary_dict_for_integrated_loudness_calculation_information
-		debug_information_list = []
 		integrated_loudness_calculation_stdout = b''
 		integrated_loudness_calculation_stderr = b''
 		file_to_process = hotfolder_path + os.sep + filename
@@ -417,12 +415,16 @@ def calculate_integrated_loudness(event_for_integrated_loudness_calculation, fil
 		error_message = ''
 
 		# Save some debug information. Items are always saved in pairs (Title, value) so that the list is easy to parse later.
-		unix_time_in_ticks, realtime = get_realtime(english, finnish)
-		debug_information_list.append('Start Time')
-		debug_information_list.append(unix_time_in_ticks)
-		debug_information_list.append('Subprocess Name')
-		debug_information_list.append('calculate_integrated_loudness')
-		debug_temporary_dict_for_integrated_loudness_calculation_information[filename] = debug_information_list
+		if debug_file_processing == True:
+			debug_information_list = []
+			global debug_temporary_dict_for_integrated_loudness_calculation_information
+
+			unix_time_in_ticks, realtime = get_realtime(english, finnish)
+			debug_information_list.append('Start Time')
+			debug_information_list.append(unix_time_in_ticks)
+			debug_information_list.append('Subprocess Name')
+			debug_information_list.append('calculate_integrated_loudness')
+			debug_temporary_dict_for_integrated_loudness_calculation_information[filename] = debug_information_list
 
 		if os.path.exists(file_to_process): # Check if the audio file still exists, user may have deleted it. If True start loudness calculation.
 		
@@ -482,11 +484,12 @@ def calculate_integrated_loudness(event_for_integrated_loudness_calculation, fil
 				send_error_messages_to_screen_logfile_email(error_message, [])
 
 			# Save debug information.
-			debug_information_list.append('integrated_loudness_calculation_stdout_string')
-			debug_information_list.append(integrated_loudness_calculation_stdout_string.replace('\n','\\n'))
-			debug_information_list.append('integrated_loudness_calculation_stderr_string')
-			debug_information_list.append(' '.join(integrated_loudness_calculation_stderr_string.replace('#','').replace('[','').replace(']','').replace('\n','').split())) # Remove # - characters and white space from string.
-			debug_temporary_dict_for_integrated_loudness_calculation_information[filename] = debug_information_list
+			if debug_file_processing == True:
+				debug_information_list.append('integrated_loudness_calculation_stdout_string')
+				debug_information_list.append(integrated_loudness_calculation_stdout_string.replace('\n','\\n'))
+				debug_information_list.append('integrated_loudness_calculation_stderr_string')
+				debug_information_list.append(' '.join(integrated_loudness_calculation_stderr_string.replace('#','').replace('[','').replace(']','').replace('\n','').split())) # Remove # - characters and white space from string.
+				debug_temporary_dict_for_integrated_loudness_calculation_information[filename] = debug_information_list
 
 			# Test if libebur128 was successful in processing the file or not.
 			# If libebur128 can successfully process the file it prints the results to its stdout and the progress printout to stderr.
@@ -539,15 +542,16 @@ def calculate_integrated_loudness(event_for_integrated_loudness_calculation, fil
 					integrated_loudness_calculation_error_message = 'Error: libebur128 calculation result (highest_peak) is negative: ' * english + 'Virhe: libebur128 laskentatulos (Huippuarvo) on negatiivinen: ' * finnish + '\'' + str(integrated_loudness_calculation_parsed_results[2]) + '\''
 
 				# Save debug information.
-				debug_information_list.append('integrated_loudness_calculation_parsed_results')
-				debug_information_list.append(integrated_loudness_calculation_parsed_results)
-				debug_information_list.append('integrated_loudness')
-				debug_information_list.append(integrated_loudness)
-				debug_information_list.append('loudness_range')
-				debug_information_list.append(loudness_range)
-				debug_information_list.append('highest_peak_float')
-				debug_information_list.append(highest_peak_float)
-				debug_temporary_dict_for_integrated_loudness_calculation_information[filename] = debug_information_list
+				if debug_file_processing == True:
+					debug_information_list.append('integrated_loudness_calculation_parsed_results')
+					debug_information_list.append(integrated_loudness_calculation_parsed_results)
+					debug_information_list.append('integrated_loudness')
+					debug_information_list.append(integrated_loudness)
+					debug_information_list.append('loudness_range')
+					debug_information_list.append(loudness_range)
+					debug_information_list.append('highest_peak_float')
+					debug_information_list.append(highest_peak_float)
+					debug_temporary_dict_for_integrated_loudness_calculation_information[filename] = debug_information_list
 
 				try:
 					highest_peak_db = round(20 * math.log(highest_peak_float, 10),1)
@@ -573,24 +577,25 @@ def calculate_integrated_loudness(event_for_integrated_loudness_calculation, fil
 			send_error_messages_to_screen_logfile_email(error_message, [])
 
 		# Save debug information.
-		debug_information_list.append('peak_measurement_method ')
-		debug_information_list.append(peak_measurement_method )
-		debug_information_list.append('highest_peak_db')
-		debug_information_list.append(highest_peak_db)
-		debug_information_list.append('difference_from_target_loudness')
-		debug_information_list.append(difference_from_target_loudness)
-		debug_information_list.append('integrated_loudness_calculation_error')
-		debug_information_list.append(integrated_loudness_calculation_error)
-		debug_information_list.append('integrated_loudness_calculation_error_message')
-		debug_information_list.append(integrated_loudness_calculation_error_message)
-		debug_information_list.append('integrated_loudness_is_below_measurement_threshold')
-		debug_information_list.append(integrated_loudness_is_below_measurement_threshold)
-		debug_information_list.append('error_message')
-		debug_information_list.append(error_message)
-		unix_time_in_ticks, realtime = get_realtime(english, finnish)
-		debug_information_list.append('Stop Time')
-		debug_information_list.append(unix_time_in_ticks)
-		debug_temporary_dict_for_integrated_loudness_calculation_information[filename] = debug_information_list
+		if debug_file_processing == True:
+			debug_information_list.append('peak_measurement_method ')
+			debug_information_list.append(peak_measurement_method )
+			debug_information_list.append('highest_peak_db')
+			debug_information_list.append(highest_peak_db)
+			debug_information_list.append('difference_from_target_loudness')
+			debug_information_list.append(difference_from_target_loudness)
+			debug_information_list.append('integrated_loudness_calculation_error')
+			debug_information_list.append(integrated_loudness_calculation_error)
+			debug_information_list.append('integrated_loudness_calculation_error_message')
+			debug_information_list.append(integrated_loudness_calculation_error_message)
+			debug_information_list.append('integrated_loudness_is_below_measurement_threshold')
+			debug_information_list.append(integrated_loudness_is_below_measurement_threshold)
+			debug_information_list.append('error_message')
+			debug_information_list.append(error_message)
+			unix_time_in_ticks, realtime = get_realtime(english, finnish)
+			debug_information_list.append('Stop Time')
+			debug_information_list.append(unix_time_in_ticks)
+			debug_temporary_dict_for_integrated_loudness_calculation_information[filename] = debug_information_list
 
 		# Set the event for this calculation thread. The main program checks the events and sees that this calculation thread is ready.
 		event_for_integrated_loudness_calculation.set()
@@ -630,20 +635,22 @@ def calculate_loudness_timeslices(filename, hotfolder_path, libebur128_commands_
 		timeslice_calculation_error = False
 		timeslice_calculation_error_message =''
 
-		global debug_temporary_dict_for_timeslice_calculation_information
-		debug_information_list = []
 		error_message = ''
 		file_size = 0
 
 		# Save some debug information. Items are always saved in pairs (Title, value) so that the list is easy to parse later.
-		if filename in debug_temporary_dict_for_timeslice_calculation_information:
-			debug_information_list = debug_temporary_dict_for_timeslice_calculation_information[filename]
-		unix_time_in_ticks, realtime = get_realtime(english, finnish)
-		debug_information_list.append('Start Time')
-		debug_information_list.append(unix_time_in_ticks)
-		debug_information_list.append('Subprocess Name')
-		debug_information_list.append('calculate_loudness_timeslices')
-		debug_temporary_dict_for_timeslice_calculation_information[filename] = debug_information_list
+		if debug_file_processing == True:
+			global debug_temporary_dict_for_timeslice_calculation_information
+			debug_information_list = []
+
+			if filename in debug_temporary_dict_for_timeslice_calculation_information:
+				debug_information_list = debug_temporary_dict_for_timeslice_calculation_information[filename]
+			unix_time_in_ticks, realtime = get_realtime(english, finnish)
+			debug_information_list.append('Start Time')
+			debug_information_list.append(unix_time_in_ticks)
+			debug_information_list.append('Subprocess Name')
+			debug_information_list.append('calculate_loudness_timeslices')
+			debug_temporary_dict_for_timeslice_calculation_information[filename] = debug_information_list
 
 		if os.path.exists(file_to_process): # Check if the audio file still exists, user may have deleted it. If True start loudness calculation.
 			# Start time slice loudness calculation.
@@ -724,13 +731,14 @@ def calculate_loudness_timeslices(filename, hotfolder_path, libebur128_commands_
 				timeslice_calculation_error_message = 'Number of time slices from loudness calculation: ' * english + 'Äänekkyyslaskennasta saatujen aikaviipaleiden määrä: ' * finnish + str(number_of_timeslices) + ' differs from the number that was expected: ' * english + ' eroaa ennakoidusta lukumäärästä: ' * finnish + str(expected_number_of_time_slices) 
 
 			# Save some debug information.
-			debug_information_list.append('number_of_timeslices')
-			debug_information_list.append(number_of_timeslices)
-			debug_information_list.append('timeslice_loudness_calculation_result_list')
-			debug_information_list.append(timeslice_loudness_calculation_result_list)
-			debug_information_list.append('expected_number_of_time_slices')
-			debug_information_list.append(expected_number_of_time_slices)
-			debug_temporary_dict_for_timeslice_calculation_information[filename] = debug_information_list
+			if debug_file_processing == True:
+				debug_information_list.append('number_of_timeslices')
+				debug_information_list.append(number_of_timeslices)
+				debug_information_list.append('timeslice_loudness_calculation_result_list')
+				debug_information_list.append(timeslice_loudness_calculation_result_list)
+				debug_information_list.append('expected_number_of_time_slices')
+				debug_information_list.append(expected_number_of_time_slices)
+				debug_temporary_dict_for_timeslice_calculation_information[filename] = debug_information_list
 
 			# Wait for the other loudness calculation thread to end since it's results are needed in the next step of the process.
 			integrated_loudness_calculation_is_ready = False
@@ -763,20 +771,21 @@ def calculate_loudness_timeslices(filename, hotfolder_path, libebur128_commands_
 			timeslice_calculation_error_message = 'Error accessing file: ' * english + 'Tiedoston lukemisessa tapahtui virhe: ' * finnish + str(reason_for_error) 
 
 		# Save some debug information. 
-		debug_information_list.append('expected_file_size')
-		debug_information_list.append(expected_file_size)
-		debug_information_list.append('file_size')
-		debug_information_list.append(file_size)
-		debug_information_list.append('timeslice_calculation_error')
-		debug_information_list.append(timeslice_calculation_error)
-		debug_information_list.append('timeslice_calculation_error_message')
-		debug_information_list.append(timeslice_calculation_error_message)
-		debug_information_list.append('error_message')
-		debug_information_list.append(error_message)
-		unix_time_in_ticks, realtime = get_realtime(english, finnish)
-		debug_information_list.append('Stop Time')
-		debug_information_list.append(unix_time_in_ticks)
-		debug_temporary_dict_for_timeslice_calculation_information[filename] = debug_information_list
+		if debug_file_processing == True:
+			debug_information_list.append('expected_file_size')
+			debug_information_list.append(expected_file_size)
+			debug_information_list.append('file_size')
+			debug_information_list.append(file_size)
+			debug_information_list.append('timeslice_calculation_error')
+			debug_information_list.append(timeslice_calculation_error)
+			debug_information_list.append('timeslice_calculation_error_message')
+			debug_information_list.append(timeslice_calculation_error_message)
+			debug_information_list.append('error_message')
+			debug_information_list.append(error_message)
+			unix_time_in_ticks, realtime = get_realtime(english, finnish)
+			debug_information_list.append('Stop Time')
+			debug_information_list.append(unix_time_in_ticks)
+			debug_temporary_dict_for_timeslice_calculation_information[filename] = debug_information_list
 
 		# We now have all loudness calculation results needed for graphics generation, start the subprocess that plots graphics and calls another subprocess that creates loudness corrected audio with sox.
 		create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_string, timeslice_calculation_error, timeslice_calculation_error_message, timeslice_loudness_calculation_stdout, hotfolder_path, directory_for_temporary_files, directory_for_results, english, finnish)
@@ -827,25 +836,27 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 		sox_encountered_an_error = False
 		sox_error_message = ''
 		
-		global debug_temporary_dict_for_all_file_processing_information
 		global create_loudness_history_graphics_files
 		global create_loudness_corrected_files
 		global write_loudness_calculation_results_to_a_machine_readable_file
 		global temp_loudness_results_for_automation
 
-		debug_information_list = []
 		error_message = ''
 		gnuplot_commands = []
 
 		# Save some debug information. Items are always saved in pairs (Title, value) so that the list is easy to parse later.
-		if filename in debug_temporary_dict_for_all_file_processing_information:
-			debug_information_list = debug_temporary_dict_for_all_file_processing_information[filename]
-		unix_time_in_ticks, realtime = get_realtime(english, finnish)
-		debug_information_list.append('Start Time')
-		debug_information_list.append(unix_time_in_ticks)
-		debug_information_list.append('Subprocess Name')
-		debug_information_list.append('create_gnuplot_commands')
-		debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
+		if debug_file_processing == True:
+			debug_information_list = []
+			global debug_temporary_dict_for_all_file_processing_information
+
+			if filename in debug_temporary_dict_for_all_file_processing_information:
+				debug_information_list = debug_temporary_dict_for_all_file_processing_information[filename]
+			unix_time_in_ticks, realtime = get_realtime(english, finnish)
+			debug_information_list.append('Start Time')
+			debug_information_list.append(unix_time_in_ticks)
+			debug_information_list.append('Subprocess Name')
+			debug_information_list.append('create_gnuplot_commands')
+			debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 		
 		# Get loudness calculation results from the integrated loudness calculation process. Results are in list format in dictionary 'integrated_loudness_calculation_results', assing results to variables.
 		if filename in integrated_loudness_calculation_results:
@@ -957,15 +968,17 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 				plotfile_x_axis_time_information = ''.join(plotfile_x_axis_time_information)
 		
 		# Save some debug information.
-		debug_information_list.append('Message')
-		debug_information_list.append('Calling subroutine: get_audiofile_info_with_sox_and_determine_output_format')
+		if debug_file_processing == True:
+			debug_information_list.append('Message')
+			debug_information_list.append('Calling subroutine: get_audiofile_info_with_sox_and_determine_output_format')
 		
 		# Get technical info from audio file and determine what the output format will be
 		channel_count, sample_rate, bit_depth, sample_count, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, audio_channels_will_be_split_to_separate_mono_files, audio_duration, output_file_too_big_to_split_to_separate_wav_channels, sox_encountered_an_error, sox_error_message = get_audiofile_info_with_sox_and_determine_output_format(directory_for_temporary_files, hotfolder_path, filename)
 
 		# Save some debug information.
-		debug_information_list.append('Message')
-		debug_information_list.append('Returned from subroutine: get_audiofile_info_with_sox_and_determine_output_format')
+		if debug_file_processing == True:
+			debug_information_list.append('Message')
+			debug_information_list.append('Returned from subroutine: get_audiofile_info_with_sox_and_determine_output_format')
 
 		# Write details of loudness measurement of the file to a debug logfile.
 		# This is a debugging option.
@@ -981,14 +994,16 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 				loudness_calculation_data = filename + ',EndOFFileName,' + str(integrated_loudness) + ',' + str(loudness_range) + ',' + str(highest_peak_db) + ',' + str(channel_count) + ',' + str(sample_rate) + ',' + str(bit_depth) + ',' + str(int(audio_duration)) + '\n'
 
 				# Save some debug information.
-				debug_information_list.append('Message')
-				debug_information_list.append('Calling subroutine: debug_write_loudness_calculation_info_to_a_logfile')
+				if debug_file_processing == True:
+					debug_information_list.append('Message')
+					debug_information_list.append('Calling subroutine: debug_write_loudness_calculation_info_to_a_logfile')
 
 				debug_write_loudness_calculation_info_to_a_logfile(loudness_calculation_data, loudness_calculation_logfile_path)
 
 				# Save some debug information.
-				debug_information_list.append('Message')
-				debug_information_list.append('Returned from subroutine: debug_write_loudness_calculation_info_to_a_logfile')
+				if debug_file_processing == True:
+					debug_information_list.append('Message')
+					debug_information_list.append('Returned from subroutine: debug_write_loudness_calculation_info_to_a_logfile')
 
 
 		# Write loudness calculation results of each file to separate text files in results directory.
@@ -1106,18 +1121,19 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 				error_message_to_print_with_gnuplot = error_message_to_print_with_gnuplot + sox_error_message + '\\n'
 			
 			# Save some debug information.
-			debug_information_list.append('create_loudness_history_graphics_files')
-			debug_information_list.append(create_loudness_history_graphics_files)
-			debug_information_list.append('gnuplot_commands')
-			debug_information_list.append(gnuplot_commands)
-			debug_information_list.append('error_message')
-			debug_information_list.append(error_message)
-			debug_information_list.append('create_loudness_corrected_files')
-			debug_information_list.append(create_loudness_corrected_files)
-			unix_time_in_ticks, realtime = get_realtime(english, finnish)
-			debug_information_list.append('Stop Time')
-			debug_information_list.append(unix_time_in_ticks)
-			debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
+			if debug_file_processing == True:
+				debug_information_list.append('create_loudness_history_graphics_files')
+				debug_information_list.append(create_loudness_history_graphics_files)
+				debug_information_list.append('gnuplot_commands')
+				debug_information_list.append(gnuplot_commands)
+				debug_information_list.append('error_message')
+				debug_information_list.append(error_message)
+				debug_information_list.append('create_loudness_corrected_files')
+				debug_information_list.append(create_loudness_corrected_files)
+				unix_time_in_ticks, realtime = get_realtime(english, finnish)
+				debug_information_list.append('Stop Time')
+				debug_information_list.append(unix_time_in_ticks)
+				debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 			
 			create_gnuplot_commands_for_error_message(error_message_to_print_with_gnuplot, filename, directory_for_temporary_files, directory_for_results, english, finnish)		
 		else:
@@ -1184,18 +1200,19 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 					send_error_messages_to_screen_logfile_email(error_message, [])
 
 			# Save some debug information.
-			debug_information_list.append('create_loudness_history_graphics_files')
-			debug_information_list.append(create_loudness_history_graphics_files)
-			debug_information_list.append('gnuplot_commands')
-			debug_information_list.append(gnuplot_commands)
-			debug_information_list.append('error_message')
-			debug_information_list.append(error_message)
-			debug_information_list.append('create_loudness_corrected_files')
-			debug_information_list.append(create_loudness_corrected_files)
-			unix_time_in_ticks, realtime = get_realtime(english, finnish)
-			debug_information_list.append('Stop Time')
-			debug_information_list.append(unix_time_in_ticks)
-			debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
+			if debug_file_processing == True:
+				debug_information_list.append('create_loudness_history_graphics_files')
+				debug_information_list.append(create_loudness_history_graphics_files)
+				debug_information_list.append('gnuplot_commands')
+				debug_information_list.append(gnuplot_commands)
+				debug_information_list.append('error_message')
+				debug_information_list.append(error_message)
+				debug_information_list.append('create_loudness_corrected_files')
+				debug_information_list.append(create_loudness_corrected_files)
+				unix_time_in_ticks, realtime = get_realtime(english, finnish)
+				debug_information_list.append('Stop Time')
+				debug_information_list.append(unix_time_in_ticks)
+				debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 
 			# Call a subprocess to run gnuplot
 			if create_loudness_history_graphics_files == True:
@@ -1223,20 +1240,22 @@ def create_gnuplot_commands_for_error_message(error_message, filename, directory
 
 		gnuplot_commands = []
 		global create_loudness_history_graphics_files
-		global debug_temporary_dict_for_all_file_processing_information
 		global silent
 		
-		debug_information_list = []
 
 		# Save some debug information. Items are always saved in pairs (Title, value) so that the list is easy to parse later.
-		if filename in debug_temporary_dict_for_all_file_processing_information:
-			debug_information_list = debug_temporary_dict_for_all_file_processing_information[filename]
-		unix_time_in_ticks, realtime = get_realtime(english, finnish)
-		debug_information_list.append('Start Time')
-		debug_information_list.append(unix_time_in_ticks)
-		debug_information_list.append('Subprocess Name')
-		debug_information_list.append('create_gnuplot_commands_for_error_message')
-		debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
+		if debug_file_processing == True:
+			debug_information_list = []
+			global debug_temporary_dict_for_all_file_processing_information
+
+			if filename in debug_temporary_dict_for_all_file_processing_information:
+				debug_information_list = debug_temporary_dict_for_all_file_processing_information[filename]
+			unix_time_in_ticks, realtime = get_realtime(english, finnish)
+			debug_information_list.append('Start Time')
+			debug_information_list.append(unix_time_in_ticks)
+			debug_information_list.append('Subprocess Name')
+			debug_information_list.append('create_gnuplot_commands_for_error_message')
+			debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 
 		# Write 4 coordinates to gnuplot data file. These 4 coordinates are used to draw a big red cross on the error graphics file.
 		if create_loudness_history_graphics_files == True:
@@ -1283,26 +1302,27 @@ def create_gnuplot_commands_for_error_message(error_message, filename, directory
 				send_error_messages_to_screen_logfile_email(error_message, [])
 
 		# Save some debug information.
-		debug_information_list.append('create_loudness_history_graphics_files')
-		debug_information_list.append(create_loudness_history_graphics_files)
-		debug_information_list.append('gnuplot_commands')
-		debug_information_list.append(gnuplot_commands)
-		debug_information_list.append('error_message')
-		debug_information_list.append(error_message)
-		unix_time_in_ticks, realtime = get_realtime(english, finnish)
-		debug_information_list.append('Stop Time')
-		debug_information_list.append(unix_time_in_ticks)
-		debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
+		if debug_file_processing == True:
+			debug_information_list.append('create_loudness_history_graphics_files')
+			debug_information_list.append(create_loudness_history_graphics_files)
+			debug_information_list.append('gnuplot_commands')
+			debug_information_list.append(gnuplot_commands)
+			debug_information_list.append('error_message')
+			debug_information_list.append(error_message)
+			unix_time_in_ticks, realtime = get_realtime(english, finnish)
+			debug_information_list.append('Stop Time')
+			debug_information_list.append(unix_time_in_ticks)
+			debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 
 		# Call a subprocess to run gnuplot
 		if create_loudness_history_graphics_files == True:
 			run_gnuplot(filename, directory_for_temporary_files, directory_for_results, english, finnish)
 
 	except Exception:
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
-                subroutine_name = 'create_gnuplot_commands_for_error_message'
-                catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
+		exc_type, exc_value, exc_traceback = sys.exc_info()
+		error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
+		subroutine_name = 'create_gnuplot_commands_for_error_message'
+		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 	
 def run_gnuplot(filename, directory_for_temporary_files, directory_for_results, english, finnish):
 
@@ -1316,20 +1336,22 @@ def run_gnuplot(filename, directory_for_temporary_files, directory_for_results, 
 		gnuplot_temporary_output_graphicsfile = directory_for_temporary_files + os.sep + filename + '-Loudness_Results_Graphics.jpg' * english + '-Aanekkyyslaskennan_Tulokset.jpg' * finnish
 		gnuplot_output_graphicsfile = directory_for_results + os.sep + filename + '-Loudness_Results_Graphics.jpg' * english + '-Aanekkyyslaskennan_Tulokset.jpg' * finnish
 
-		global debug_temporary_dict_for_all_file_processing_information
 		global silent
-		debug_information_list = []
 		error_message = ''
 
 		# Save some debug information. Items are always saved in pairs (Title, value) so that the list is easy to parse later.
-		if filename in debug_temporary_dict_for_all_file_processing_information:
-			debug_information_list = debug_temporary_dict_for_all_file_processing_information[filename]
-		unix_time_in_ticks, realtime = get_realtime(english, finnish)
-		debug_information_list.append('Start Time')
-		debug_information_list.append(unix_time_in_ticks)
-		debug_information_list.append('Subprocess Name')
-		debug_information_list.append('run_gnuplot')
-		debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
+		if debug_file_processing == True:
+			debug_information_list = []
+			global debug_temporary_dict_for_all_file_processing_information
+
+			if filename in debug_temporary_dict_for_all_file_processing_information:
+				debug_information_list = debug_temporary_dict_for_all_file_processing_information[filename]
+			unix_time_in_ticks, realtime = get_realtime(english, finnish)
+			debug_information_list.append('Start Time')
+			debug_information_list.append(unix_time_in_ticks)
+			debug_information_list.append('Subprocess Name')
+			debug_information_list.append('run_gnuplot')
+			debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 
 		try:
 			# Define filename for the temporary file that we are going to use as stdout for the external command.
@@ -1369,10 +1391,10 @@ def run_gnuplot(filename, directory_for_temporary_files, directory_for_results, 
 		try:
 			os.remove(stdout_for_external_command)
 		except IOError as reason_for_error:
-			error_message = 'Error deleting gnuplot stdout - file ' * english + 'Gnuplotin stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+			error_message = 'Error deleting gnuplot stdout - file ' * english + 'Gnuplotin stdout - tiedoston deletoiminen epäonnistui ' * finnish	+ str(reason_for_error)
 			send_error_messages_to_screen_logfile_email(error_message, [])
 		except OSError as reason_for_error:
-			error_message = 'Error deleting gnuplot stdout - file ' * english + 'Gnuplotin stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+			error_message = 'Error deleting gnuplot stdout - file ' * english + 'Gnuplotin stdout - tiedoston deletoiminen epäonnistui ' * finnish	+ str(reason_for_error)
 			send_error_messages_to_screen_logfile_email(error_message, [])
 			
 		# If gnuplot outputs something, there was an error. Send this message to user.
@@ -1381,12 +1403,13 @@ def run_gnuplot(filename, directory_for_temporary_files, directory_for_results, 
 			send_error_messages_to_screen_logfile_email(error_message, [])
 
 		# Save some debug information.
-		debug_information_list.append('error_message')
-		debug_information_list.append(error_message)
-		unix_time_in_ticks, realtime = get_realtime(english, finnish)
-		debug_information_list.append('Stop Time')
-		debug_information_list.append(unix_time_in_ticks)
-		debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
+		if debug_file_processing == True:
+			debug_information_list.append('error_message')
+			debug_information_list.append(error_message)
+			unix_time_in_ticks, realtime = get_realtime(english, finnish)
+			debug_information_list.append('Stop Time')
+			debug_information_list.append(unix_time_in_ticks)
+			debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 
 		# Remove time slice and gnuplot command files and move graphics file to results directory.
 		try:
@@ -1417,10 +1440,10 @@ def run_gnuplot(filename, directory_for_temporary_files, directory_for_results, 
 			send_error_messages_to_screen_logfile_email(error_message, [])
 
 	except Exception:
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
-                subroutine_name = 'run_gnuplot'
-                catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
+		exc_type, exc_value, exc_traceback = sys.exc_info()
+		error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
+		subroutine_name = 'run_gnuplot'
+		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 
 def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calculation_error, difference_from_target_loudness, filename, english, finnish, hotfolder_path, directory_for_results, directory_for_temporary_files, highest_peak_db, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, channel_count, audio_channels_will_be_split_to_separate_mono_files, output_file_too_big_to_split_to_separate_wav_channels):
 
@@ -1445,19 +1468,21 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 		global temp_loudness_results_for_automation
 		global write_loudness_calculation_results_to_a_machine_readable_file
 		
-		global debug_temporary_dict_for_all_file_processing_information
-		debug_information_list = []
 		error_message = ''
 		
 		# Save some debug information. Items are always saved in pairs (Title, value) so that the list is easy to parse later.
-		if filename in debug_temporary_dict_for_all_file_processing_information:
-			debug_information_list = debug_temporary_dict_for_all_file_processing_information[filename]
-		unix_time_in_ticks, realtime = get_realtime(english, finnish)
-		debug_information_list.append('Start Time')
-		debug_information_list.append(unix_time_in_ticks)
-		debug_information_list.append('Subprocess Name')
-		debug_information_list.append('create_sox_commands_for_loudness_adjusting_a_file')
-		debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
+		if debug_file_processing == True:
+			debug_information_list = []
+			global debug_temporary_dict_for_all_file_processing_information
+
+			if filename in debug_temporary_dict_for_all_file_processing_information:
+				debug_information_list = debug_temporary_dict_for_all_file_processing_information[filename]
+			unix_time_in_ticks, realtime = get_realtime(english, finnish)
+			debug_information_list.append('Start Time')
+			debug_information_list.append(unix_time_in_ticks)
+			debug_information_list.append('Subprocess Name')
+			debug_information_list.append('create_sox_commands_for_loudness_adjusting_a_file')
+			debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 
 		# Create loudness corrected file if there were no errors in loudness calculation.
 		if (integrated_loudness_calculation_error == False):
@@ -1481,18 +1506,19 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 			hard_limiter_level = difference_from_target_loudness + audio_peaks_absolute_ceiling
 			
 			# Save some debug information.
-			debug_information_list.append('combined_channels_targetfile_name')
-			debug_information_list.append(combined_channels_targetfile_name)
-			debug_information_list.append('temporary_peak_limited_targetfile')
-			debug_information_list.append(temporary_peak_limited_targetfile)
-			debug_information_list.append('difference_from_target_loudness')
-			debug_information_list.append(difference_from_target_loudness)
-			debug_information_list.append('difference_from_target_loudness_sign_inverted')
-			debug_information_list.append(difference_from_target_loudness_sign_inverted)
-			debug_information_list.append('audio_peaks_absolute_ceiling')
-			debug_information_list.append(audio_peaks_absolute_ceiling)
-			debug_information_list.append('hard_limiter_level')
-			debug_information_list.append(hard_limiter_level)
+			if debug_file_processing == True:
+				debug_information_list.append('combined_channels_targetfile_name')
+				debug_information_list.append(combined_channels_targetfile_name)
+				debug_information_list.append('temporary_peak_limited_targetfile')
+				debug_information_list.append(temporary_peak_limited_targetfile)
+				debug_information_list.append('difference_from_target_loudness')
+				debug_information_list.append(difference_from_target_loudness)
+				debug_information_list.append('difference_from_target_loudness_sign_inverted')
+				debug_information_list.append(difference_from_target_loudness_sign_inverted)
+				debug_information_list.append('audio_peaks_absolute_ceiling')
+				debug_information_list.append(audio_peaks_absolute_ceiling)
+				debug_information_list.append('hard_limiter_level')
+				debug_information_list.append(hard_limiter_level)
 
 			if difference_from_target_loudness >= 0:
 				
@@ -1516,8 +1542,9 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 					sox_commandline.extend([directory_for_temporary_files + os.sep + combined_channels_targetfile_name, 'gain', str(difference_from_target_loudness_sign_inverted)])
 					
 					# Save some debug information.
-					debug_information_list.append('sox_commandline')
-					debug_information_list.append(sox_commandline)
+					if debug_file_processing == True:
+						debug_information_list.append('sox_commandline')
+						debug_information_list.append(sox_commandline)
 					
 					#Gather all names of processed files to a list.
 					list_of_filenames = [combined_channels_targetfile_name]
@@ -1541,8 +1568,9 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 						list_of_filenames.append(split_channel_targetfile_name)
 					
 					# Save some debug information.
-					debug_information_list.append('list_of_sox_commandlines')
-					debug_information_list.append(''.join(str(list_of_sox_commandlines)))
+					if debug_file_processing == True:
+						debug_information_list.append('list_of_sox_commandlines')
+						debug_information_list.append(''.join(str(list_of_sox_commandlines)))
 					
 					# Run several sox commands in parallel threads, this speeds up splitting the file to separate mono files.	
 					sox_encountered_an_error = run_sox_commands_in_parallel_threads(directory_for_temporary_files, directory_for_results, filename, list_of_sox_commandlines, english, finnish)
@@ -1560,7 +1588,7 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 					
 					#########################################################################################################################
 					# Peaks will exceed our upper peak limit defined in 'audio_peaks_absolute_ceiling'. Create a peak limited file with sox #
-					# After this the loudness of the file needs to be recalculated                                                          #
+					# After this the loudness of the file needs to be recalculated								#
 					#########################################################################################################################
 					
 					sox_commandline = []
@@ -1589,8 +1617,9 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 					sox_commandline.extend(hard_limiter)
 					
 					# Save some debug information.
-					debug_information_list.append('sox_commandline')
-					debug_information_list.append(sox_commandline)
+					if debug_file_processing == True:
+						debug_information_list.append('sox_commandline')
+						debug_information_list.append(sox_commandline)
 
 					# Run sox with the commandline compiled in the lines above.
 					sox_encountered_an_error = run_sox(directory_for_temporary_files, directory_for_results, filename, sox_commandline, english, finnish, 0, 0)
@@ -1603,11 +1632,12 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 						########################################################################################
 
 						# Save some debug information.
-						unix_time_in_ticks, realtime = get_realtime(english, finnish)
-						debug_information_list.append('Start Time')
-						debug_information_list.append(unix_time_in_ticks)
-						debug_information_list.append('Subprocess Name')
-						debug_information_list.append('create_sox_commands_for_loudness_adjusting_a_file: integrated measurements after peak-limiting ')
+						if debug_file_processing == True:
+							unix_time_in_ticks, realtime = get_realtime(english, finnish)
+							debug_information_list.append('Start Time')
+							debug_information_list.append(unix_time_in_ticks)
+							debug_information_list.append('Subprocess Name')
+							debug_information_list.append('create_sox_commands_for_loudness_adjusting_a_file: integrated measurements after peak-limiting ')
 						
 						event_for_integrated_loudness_calculation = threading.Event() # Create a dummy event for loudness calculation subroutine. This is needed by the subroutine, but not used anywhere else, since we do not start loudness calculation as a thread.
 						libebur128_commands_for_integrated_loudness_calculation=[libebur128_path, 'scan', '-l', peak_measurement_method] # Put libebur128 commands in a list.
@@ -1630,22 +1660,23 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 						list_of_filenames = []
 						
 						# Save some debug information.
-						debug_information_list.append('difference_from_target_loudness')
-						debug_information_list.append(difference_from_target_loudness)
-						debug_information_list.append('difference_from_target_loudness_sign_inverted')
-						debug_information_list.append(difference_from_target_loudness_sign_inverted)
-						debug_information_list.append('peak_measurement_method ')
-						debug_information_list.append(peak_measurement_method )
-						debug_information_list.append('highest_peak_db')
-						debug_information_list.append(highest_peak_db)
-						unix_time_in_ticks, realtime = get_realtime(english, finnish)
-						debug_information_list.append('Stop Time')
-						debug_information_list.append(unix_time_in_ticks)
-						debug_information_list.append('Subprocess Name')
-						debug_information_list.append('create_sox_commands_for_loudness_adjusting_a_file: integrated measurements after peak-limiting ')
+						if debug_file_processing == True:
+							debug_information_list.append('difference_from_target_loudness')
+							debug_information_list.append(difference_from_target_loudness)
+							debug_information_list.append('difference_from_target_loudness_sign_inverted')
+							debug_information_list.append(difference_from_target_loudness_sign_inverted)
+							debug_information_list.append('peak_measurement_method ')
+							debug_information_list.append(peak_measurement_method )
+							debug_information_list.append('highest_peak_db')
+							debug_information_list.append(highest_peak_db)
+							unix_time_in_ticks, realtime = get_realtime(english, finnish)
+							debug_information_list.append('Stop Time')
+							debug_information_list.append(unix_time_in_ticks)
+							debug_information_list.append('Subprocess Name')
+							debug_information_list.append('create_sox_commands_for_loudness_adjusting_a_file: integrated measurements after peak-limiting ')
 
-						# Remove debug data about integrated loudness measurement of temporary peak limited file since this data is already appended to debug dictionary by the lines above.
-						del debug_temporary_dict_for_integrated_loudness_calculation_information[temporary_peak_limited_targetfile]
+							# Remove debug data about integrated loudness measurement of temporary peak limited file since this data is already appended to debug dictionary by the lines above.
+							del debug_temporary_dict_for_integrated_loudness_calculation_information[temporary_peak_limited_targetfile]
 
 						if integrated_loudness_calculation_error == True:
 
@@ -1680,8 +1711,9 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 							sox_commandline.extend([directory_for_temporary_files + os.sep + combined_channels_targetfile_name, 'gain', str(difference_from_target_loudness_sign_inverted)])
 							
 							# Save some debug information.
-							debug_information_list.append('sox_commandline')
-							debug_information_list.append(sox_commandline)
+							if debug_file_processing == True:
+								debug_information_list.append('sox_commandline')
+								debug_information_list.append(sox_commandline)
 							
 							#Gather all names of processed files to a list.
 							list_of_filenames = [combined_channels_targetfile_name]
@@ -1704,8 +1736,10 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 								list_of_sox_commandlines.append(sox_commandline)
 								list_of_filenames.append(split_channel_targetfile_name)
 								
-							debug_information_list.append('list_of_sox_commandlines')
-							debug_information_list.append(''.join(str(list_of_sox_commandlines)))
+							# Save some debug information.
+							if debug_file_processing == True:
+								debug_information_list.append('list_of_sox_commandlines')
+								debug_information_list.append(''.join(str(list_of_sox_commandlines)))
 
 							# Run several sox commands in parallel threads, this speeds up splitting the file to separate mono files.	
 							sox_encountered_an_error = run_sox_commands_in_parallel_threads(directory_for_temporary_files, directory_for_results, filename, list_of_sox_commandlines, english, finnish)
@@ -1717,7 +1751,7 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 					
 					#######################################################################################################################
 					# Volume of the file needs to be adjusted up, but peaks will not exceed our upper limit so no peak limiting is needed #
-					# Create loudness corrected file                                                                                      #
+					# Create loudness corrected file										      #
 					#######################################################################################################################
 					
 					sox_commandline = []
@@ -1734,8 +1768,9 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 						sox_commandline.extend([directory_for_temporary_files + os.sep + combined_channels_targetfile_name, 'gain', str(difference_from_target_loudness_sign_inverted)])
 						
 						# Save some debug information.
-						debug_information_list.append('sox_commandline')
-						debug_information_list.append(sox_commandline)
+						if debug_file_processing == True:
+							debug_information_list.append('sox_commandline')
+							debug_information_list.append(sox_commandline)
 						
 						#Gather all names of processed files to a list.
 						list_of_filenames = [combined_channels_targetfile_name]
@@ -1759,8 +1794,9 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 							list_of_filenames.append(split_channel_targetfile_name)
 						
 						# Save some debug information.
-						debug_information_list.append('list_of_sox_commandlines')
-						debug_information_list.append(''.join(str(list_of_sox_commandlines)))
+						if debug_file_processing == True:
+							debug_information_list.append('list_of_sox_commandlines')
+							debug_information_list.append(''.join(str(list_of_sox_commandlines)))
 						
 						# Run several sox commands in parallel threads, this speeds up splitting the file to separate mono files.	
 						sox_encountered_an_error = run_sox_commands_in_parallel_threads(directory_for_temporary_files, directory_for_results, filename, list_of_sox_commandlines, english, finnish)
@@ -1784,18 +1820,19 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 					send_error_messages_to_screen_logfile_email(error_message, [])
 		
 		# Save some debug information.
-		debug_information_list.append('error_message')
-		debug_information_list.append(error_message)
-		unix_time_in_ticks, realtime = get_realtime(english, finnish)
-		debug_information_list.append('Stop Time')
-		debug_information_list.append(unix_time_in_ticks)
-		debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
+		if debug_file_processing == True:
+			debug_information_list.append('error_message')
+			debug_information_list.append(error_message)
+			unix_time_in_ticks, realtime = get_realtime(english, finnish)
+			debug_information_list.append('Stop Time')
+			debug_information_list.append(unix_time_in_ticks)
+			debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 
 	except Exception:
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
-                subroutine_name = 'create_sox_commands_for_loudness_adjusting_a_file'
-                catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
+		exc_type, exc_value, exc_traceback = sys.exc_info()
+		error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
+		subroutine_name = 'create_sox_commands_for_loudness_adjusting_a_file'
+		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 
 def run_sox_commands_in_parallel_threads(directory_for_temporary_files, directory_for_results, filename, list_of_sox_commandlines, english, finnish):
 
@@ -1865,10 +1902,10 @@ def run_sox_commands_in_parallel_threads(directory_for_temporary_files, director
 			# Wait 1 second before running the loop again
 			time.sleep(1)
 	except Exception:
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
-                subroutine_name = 'run_sox_commands_in_parallel_threads'
-                catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
+		exc_type, exc_value, exc_traceback = sys.exc_info()
+		error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
+		subroutine_name = 'run_sox_commands_in_parallel_threads'
+		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 
 	return(sox_encountered_an_error)
 
@@ -1939,10 +1976,10 @@ def run_sox(directory_for_temporary_files, directory_for_results, filename, sox_
 			if os.path.exists(stdout_for_external_command):
 				os.remove(stdout_for_external_command)
 		except IOError as reason_for_error:
-			error_message = 'Error deleting sox stdout - file ' * english + 'Soxin stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+			error_message = 'Error deleting sox stdout - file ' * english + 'Soxin stdout - tiedoston deletoiminen epäonnistui ' * finnish	+ str(reason_for_error)
 			send_error_messages_to_screen_logfile_email(error_message, [])
 		except OSError as reason_for_error:
-			error_message = 'Error deleting sox stdout - file ' * english + 'Soxin stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+			error_message = 'Error deleting sox stdout - file ' * english + 'Soxin stdout - tiedoston deletoiminen epäonnistui ' * finnish	+ str(reason_for_error)
 			send_error_messages_to_screen_logfile_email(error_message, [])
 		
 		# If sox did output something, there was and error. Print message to user.
@@ -1979,10 +2016,10 @@ def run_sox(directory_for_temporary_files, directory_for_results, filename, sox_
 			event_for_sox_processing.set()
 
 	except Exception:
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
-                subroutine_name = 'run_sox'
-                catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
+		exc_type, exc_value, exc_traceback = sys.exc_info()
+		error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
+		subroutine_name = 'run_sox'
+		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 
 	# This subroutine can be called directly or from the subroutine 'run_sox_commands_in_parallel_threads'.
 	# The routine 'create_sox_commands_for_loudness_adjusting_a_file' calls this routine directly if loudness corrected ouput audio channels do not need to be split to separate mono files.
@@ -2022,10 +2059,10 @@ def move_processed_audio_files_to_target_directory(source_directory, target_dire
 					send_error_messages_to_screen_logfile_email(error_message, [])
 
 	except Exception:
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
-                subroutine_name = 'move_processed_audio_files_to_target_directory'
-                catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
+		exc_type, exc_value, exc_traceback = sys.exc_info()
+		error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
+		subroutine_name = 'move_processed_audio_files_to_target_directory'
+		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 
 def get_audiofile_info_with_sox_and_determine_output_format(directory_for_temporary_files, hotfolder_path, filename):
 	
@@ -2054,19 +2091,21 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 		sox_error_message = ''
 		results_from_sox_run = b''
 		
-		global debug_temporary_dict_for_all_file_processing_information
-		debug_information_list = []
 		error_message = ''
 		
 		# Save some debug information. Items are always saved in pairs (Title, value) so that the list is easy to parse later.
-		if filename in debug_temporary_dict_for_all_file_processing_information:
-			debug_information_list = debug_temporary_dict_for_all_file_processing_information[filename]
-		unix_time_in_ticks, realtime = get_realtime(english, finnish)
-		debug_information_list.append('Start Time')
-		debug_information_list.append(unix_time_in_ticks)
-		debug_information_list.append('Subprocess Name')
-		debug_information_list.append('get_audiofile_info_with_sox_and_determine_output_format')
-		debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
+		if debug_file_processing == True:
+			debug_information_list = []
+			global debug_temporary_dict_for_all_file_processing_information
+
+			if filename in debug_temporary_dict_for_all_file_processing_information:
+				debug_information_list = debug_temporary_dict_for_all_file_processing_information[filename]
+			unix_time_in_ticks, realtime = get_realtime(english, finnish)
+			debug_information_list.append('Start Time')
+			debug_information_list.append(unix_time_in_ticks)
+			debug_information_list.append('Subprocess Name')
+			debug_information_list.append('get_audiofile_info_with_sox_and_determine_output_format')
+			debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 		
 		try:
 			# Define filename for the temporary file that we are going to use as stdout for the external command.
@@ -2134,44 +2173,56 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 			channel_count = int(channel_count_string)
 		else:
 			error_message = 'ERROR !!! I could not parse sox channel count string: ' * english + 'VIRHE !!! En osannut tulkita sox:in antamaa tietoa kanavamäärästä: ' * finnish + '\'' + channel_count_string + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
-			# Save some debug information.
 			sox_encountered_an_error = True
 			sox_error_message = error_message
-			debug_information_list.append('error_message')
-			debug_information_list.append(error_message)
+
+			# Save some debug information.
+			if debug_file_processing == True:
+				debug_information_list.append('error_message')
+				debug_information_list.append(error_message)
+
 			send_error_messages_to_screen_logfile_email(error_message, [])
 
 		if sample_rate_string.isnumeric() == True:
 			sample_rate = int(sample_rate_string)
 		else:
 			error_message = 'ERROR !!! I could not parse sox sample rate string: ' * english + 'VIRHE !!! En osannut tulkita sox:in antamaa tietoa näyteenottotaajuudesta: ' * finnish + '\'' + sample_rate_string + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
-			# Save some debug information.
 			sox_encountered_an_error = True
 			sox_error_message = error_message
-			debug_information_list.append('error_message')
-			debug_information_list.append(error_message)
+
+			# Save some debug information.
+			if debug_file_processing == True:
+				debug_information_list.append('error_message')
+				debug_information_list.append(error_message)
+
 			send_error_messages_to_screen_logfile_email(error_message, [])
 
 		if bit_depth_string.isnumeric() == True:
 			bit_depth = int(bit_depth_string)
 		else:
 			error_message = 'ERROR !!! I could not parse sox bit depth string: ' * english + 'VIRHE !!! En osannut tulkita sox:in antamaa tietoa bittisyvyydestä: ' * finnish + '\'' + bit_depth_string + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
-			# Save some debug information.
 			sox_encountered_an_error = True
 			sox_error_message = error_message
-			debug_information_list.append('error_message')
-			debug_information_list.append(error_message)
+
+			# Save some debug information.
+			if debug_file_processing == True:
+				debug_information_list.append('error_message')
+				debug_information_list.append(error_message)
+
 			send_error_messages_to_screen_logfile_email(error_message, [])
 
 		if sample_count_string.isnumeric() == True:
 			sample_count = int(sample_count_string)
 		else:
 			error_message = 'ERROR !!! I could not parse sox sample count string: ' * english + 'VIRHE !!! En osannut tulkita sox:in antamaa tietoa näytteiden lukumäärästä: ' * finnish + '\'' + sample_count_string + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
-			# Save some debug information.
 			sox_encountered_an_error = True
 			sox_error_message = error_message
-			debug_information_list.append('error_message')
-			debug_information_list.append(error_message)
+
+			# Save some debug information.
+			if debug_file_processing == True:
+				debug_information_list.append('error_message')
+				debug_information_list.append(error_message)
+
 			send_error_messages_to_screen_logfile_email(error_message, [])
 
 
@@ -2189,7 +2240,7 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 		# Sox can not get duration from long files correctly, get audio duration with mediainfo.
 		not_used, not_used, not_used, not_used, mediainfo_audio_duration, not_used, not_used = get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish, save_debug_information = False)
 		if audio_duration != mediainfo_audio_duration:
-			error_message = 'ERROR !!! Sox audio duration: ' + str(audio_duration)  + ' differs from mediainfo audio duration: ' + str(mediainfo_audio_duration) + ': ' + filename
+			error_message = 'ERROR !!! Sox audio duration: ' + str(audio_duration)	+ ' differs from mediainfo audio duration: ' + str(mediainfo_audio_duration) + ': ' + filename
 			send_error_messages_to_screen_logfile_email(error_message, [])
 
 
@@ -2197,11 +2248,13 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 
 		if not os.path.exists(file_to_process): # Check if the audio file still exists, user may have deleted it. If True start loudness calculation.
 			error_message = 'Sox: Error accessing file' * english + 'Sox: Tiedoston lukemisessa tapahtui virhe' * finnish 
-			# Save some debug information.
 			sox_encountered_an_error = True
 			sox_error_message = error_message
-			debug_information_list.append('error_message')
-			debug_information_list.append(error_message)
+
+			# Save some debug information.
+			if debug_file_processing == True:
+				debug_information_list.append('error_message')
+				debug_information_list.append(error_message)
 
 		
 		# Calculate estimated uncompressed file size. Add one second of data to the file size (sample_rate = 1 second) to be on the safe side.
@@ -2231,44 +2284,45 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 			output_format_for_final_file = 'wav'
 
 		# Save some debug information.
-		debug_information_list.append('channel_count_string')
-		debug_information_list.append(channel_count_string)
-		debug_information_list.append('sample_rate_string')
-		debug_information_list.append(sample_rate_string)
-		debug_information_list.append('bit_depth_string')
-		debug_information_list.append(bit_depth_string)
-		debug_information_list.append('sample_count_string')
-		debug_information_list.append(sample_count_string)
-		debug_information_list.append('audio_duration')
-		debug_information_list.append(audio_duration)
-		debug_information_list.append('sox_encountered_an_error')
-		debug_information_list.append(sox_encountered_an_error)
-		debug_information_list.append('sox_error_message')
-		debug_information_list.append(sox_error_message)
-		debug_information_list.append('wav_format_maximum_file_size')
-		debug_information_list.append(wav_format_maximum_file_size)
-		debug_information_list.append('estimated_uncompressed_size_for_single_mono_file')
-		debug_information_list.append(estimated_uncompressed_size_for_single_mono_file)
-		debug_information_list.append('estimated_uncompressed_size_for_combined_channels')
-		debug_information_list.append(estimated_uncompressed_size_for_combined_channels)
-		debug_information_list.append('output_format_for_intermediate_files')
-		debug_information_list.append(output_format_for_intermediate_files)
-		debug_information_list.append('output_format_for_final_file')
-		debug_information_list.append(output_format_for_final_file)
-		debug_information_list.append('audio_channels_will_be_split_to_separate_mono_files')
-		debug_information_list.append(audio_channels_will_be_split_to_separate_mono_files)
-		debug_information_list.append('output_file_too_big_to_split_to_separate_wav_channels')
-		debug_information_list.append(output_file_too_big_to_split_to_separate_wav_channels)
-		unix_time_in_ticks, realtime = get_realtime(english, finnish)
-		debug_information_list.append('Stop Time')
-		debug_information_list.append(unix_time_in_ticks)
-		debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
+		if debug_file_processing == True:
+			debug_information_list.append('channel_count_string')
+			debug_information_list.append(channel_count_string)
+			debug_information_list.append('sample_rate_string')
+			debug_information_list.append(sample_rate_string)
+			debug_information_list.append('bit_depth_string')
+			debug_information_list.append(bit_depth_string)
+			debug_information_list.append('sample_count_string')
+			debug_information_list.append(sample_count_string)
+			debug_information_list.append('audio_duration')
+			debug_information_list.append(audio_duration)
+			debug_information_list.append('sox_encountered_an_error')
+			debug_information_list.append(sox_encountered_an_error)
+			debug_information_list.append('sox_error_message')
+			debug_information_list.append(sox_error_message)
+			debug_information_list.append('wav_format_maximum_file_size')
+			debug_information_list.append(wav_format_maximum_file_size)
+			debug_information_list.append('estimated_uncompressed_size_for_single_mono_file')
+			debug_information_list.append(estimated_uncompressed_size_for_single_mono_file)
+			debug_information_list.append('estimated_uncompressed_size_for_combined_channels')
+			debug_information_list.append(estimated_uncompressed_size_for_combined_channels)
+			debug_information_list.append('output_format_for_intermediate_files')
+			debug_information_list.append(output_format_for_intermediate_files)
+			debug_information_list.append('output_format_for_final_file')
+			debug_information_list.append(output_format_for_final_file)
+			debug_information_list.append('audio_channels_will_be_split_to_separate_mono_files')
+			debug_information_list.append(audio_channels_will_be_split_to_separate_mono_files)
+			debug_information_list.append('output_file_too_big_to_split_to_separate_wav_channels')
+			debug_information_list.append(output_file_too_big_to_split_to_separate_wav_channels)
+			unix_time_in_ticks, realtime = get_realtime(english, finnish)
+			debug_information_list.append('Stop Time')
+			debug_information_list.append(unix_time_in_ticks)
+			debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 
 	except Exception:
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
-                subroutine_name = 'get_audiofile_info_with_sox_and_determine_output_format'
-                catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
+		exc_type, exc_value, exc_traceback = sys.exc_info()
+		error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
+		subroutine_name = 'get_audiofile_info_with_sox_and_determine_output_format'
+		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 
 	return(channel_count, sample_rate, bit_depth, sample_count, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, audio_channels_will_be_split_to_separate_mono_files, audio_duration, output_file_too_big_to_split_to_separate_wav_channels, sox_encountered_an_error, sox_error_message)
 
@@ -2294,7 +2348,7 @@ def get_realtime(english, finnish):
 	minutes = str('0' * ( 2 - len(str(minutes))) + str(minutes))
 	seconds = str('0' * (2 - len(str(seconds))) + str(seconds))
 
-	# Return the time string.                                                                                                                                     
+	# Return the time string.																      
 	realtime = year + '.' + month + '.' + day + '_' + 'at' * english + 'klo' * finnish + '_' + hours + '.' + minutes + '.' + seconds
 
 	return (unix_time_in_ticks, realtime)  
@@ -2314,23 +2368,25 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 	try:
 		global files_queued_for_deletion
 		global silent
-		global debug_temporary_dict_for_all_file_processing_information
 		global where_to_send_error_messages
 		global directory_for_results
 		global write_loudness_calculation_results_to_a_machine_readable_file
 		global temp_loudness_results_for_automation
-		debug_information_list = []
 		error_message = ''
 		
 		# Save some debug information. Items are always saved in pairs (Title, value) so that the list is easy to parse later.
-		if filename in debug_temporary_dict_for_all_file_processing_information:
-			debug_information_list = debug_temporary_dict_for_all_file_processing_information[filename]
-		unix_time_in_ticks, realtime = get_realtime(english, finnish)
-		debug_information_list.append('Start Time')
-		debug_information_list.append(unix_time_in_ticks)
-		debug_information_list.append('Subprocess Name')
-		debug_information_list.append('decompress_audio_streams_with_ffmpeg')
-		debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
+		if debug_file_processing == True:
+			debug_information_list = []
+			global debug_temporary_dict_for_all_file_processing_information
+
+			if filename in debug_temporary_dict_for_all_file_processing_information:
+				debug_information_list = debug_temporary_dict_for_all_file_processing_information[filename]
+			unix_time_in_ticks, realtime = get_realtime(english, finnish)
+			debug_information_list.append('Start Time')
+			debug_information_list.append(unix_time_in_ticks)
+			debug_information_list.append('Subprocess Name')
+			debug_information_list.append('decompress_audio_streams_with_ffmpeg')
+			debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 		
 		# In list 'file_format_support_information' we already have all the information FFmpeg was able to find about the valid audio streams in the file, assign all info to variables.
 		natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames, mxf_audio_remixing, filenames_and_channel_counts_for_mxf_audio_remixing, audio_remix_channel_map, number_of_unsupported_streams_in_file = file_format_support_information
@@ -2378,9 +2434,12 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 		for item in ffmpeg_run_output_result_list:
 			if 'error:' in item.lower(): # If there is the string 'error' in ffmpeg's output, there has been an error.
 				error_message = 'ERROR !!! Extracting audio streams with ffmpeg, ' * english + 'VIRHE !!! Audio streamien purkamisessa ffmpeg:illä, ' * finnish + ' ' + filename + ' : ' + item
+
 				# Save some debug information.
-				debug_information_list.append('error_message')
-				debug_information_list.append(error_message)
+				if debug_file_processing == True:
+					debug_information_list.append('error_message')
+					debug_information_list.append(error_message)
+
 				send_error_messages_to_screen_logfile_email(error_message, [])
 		
 		# Delete the temporary stdout - file.
@@ -2397,14 +2456,16 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 		if (mxf_audio_remixing == True) and (len(filenames_and_channel_counts_for_mxf_audio_remixing) > 0) and (len(audio_remix_channel_map) > 0):
 
 			# Save some debug information.
-			debug_information_list.append('Message')
-			debug_information_list.append('Calling subroutine: remix_files_according_to_channel_map')
+			if debug_file_processing == True:
+				debug_information_list.append('Message')
+				debug_information_list.append('Calling subroutine: remix_files_according_to_channel_map')
 
 			list_of_files_to_move_to_loudness_processing = remix_files_according_to_channel_map(directory_for_temporary_files, filename, filenames_and_channel_counts_for_mxf_audio_remixing, audio_remix_channel_map, english, finnish)
 
 			# Save some debug information.
-			debug_information_list.append('Message')
-			debug_information_list.append('Returned from subroutine: remix_files_according_to_channel_map')
+			if debug_file_processing == True:
+				debug_information_list.append('Message')
+				debug_information_list.append('Returned from subroutine: remix_files_according_to_channel_map')
 
 			# Warn user if mxf - file remixing is on and there are some unsupported streams in the inputfile, since this can create unexpected results.
 			if number_of_unsupported_streams_in_file > 0:
@@ -2455,10 +2516,11 @@ def decompress_audio_streams_with_ffmpeg(event_1_for_ffmpeg_audiostream_conversi
 			files_queued_for_deletion.append(filename)
 		
 		# Save some debug information.
-		unix_time_in_ticks, realtime = get_realtime(english, finnish)
-		debug_information_list.append('Stop Time')
-		debug_information_list.append(unix_time_in_ticks)
-		debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
+		if debug_file_processing == True:
+			unix_time_in_ticks, realtime = get_realtime(english, finnish)
+			debug_information_list.append('Stop Time')
+			debug_information_list.append(unix_time_in_ticks)
+			debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 
 		# Set the events so that the main program can see that extracting audio streams from file is ready.
 		event_1_for_ffmpeg_audiostream_conversion.set()
@@ -2493,7 +2555,7 @@ def send_error_messages_to_screen_logfile_email(error_message, send_error_messag
 	# Print error messages to screen
 	if silent == False:
 		if 'screen' in send_error_messages_to_these_destinations:
-			print('\033[7m' + '\r-------->  ' + error_message_with_timestamp + '\033[0m')
+			print('\033[7m' + '\r-------->	' + error_message_with_timestamp + '\033[0m')
 
 	# Write error messages to a logfile
 	if 'logfile' in send_error_messages_to_these_destinations:
@@ -2510,14 +2572,14 @@ def send_error_messages_to_screen_logfile_email(error_message, send_error_messag
 			exception_error_message = 'Error opening error logfile for writing ' * english + 'Virhe lokitiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
 
 			if silent == False:
-				print('\033[7m' + '\r-------->  ' + exception_error_message + '\033[0m')
+				print('\033[7m' + '\r-------->	' + exception_error_message + '\033[0m')
 
 			error_messages_to_email_later_list.append(exception_error_message)
 		except OSError as reason_for_error:
 			exception_error_message = 'Error opening error logfile for writing ' * english + 'Virhe lokitiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
 
 			if silent == False:
-				print('\033[7m' + '\r-------->  ' + exception_error_message + '\033[0m')
+				print('\033[7m' + '\r-------->	' + exception_error_message + '\033[0m')
 
 			error_messages_to_email_later_list.append(exception_error_message)
 			
@@ -2656,11 +2718,11 @@ def send_error_messages_by_email_thread(email_sending_details, english, finnish)
 					except IOError as reason_for_error:
 						exception_error_message = 'Error opening error logfile for writing ' * english + 'Virhe lokitiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
 						if silent == False:
-							print('\033[7m' + '\r-------->  ' + exception_error_message + '\033[0m')
+							print('\033[7m' + '\r-------->	' + exception_error_message + '\033[0m')
 					except OSError as reason_for_error:
 						exception_error_message = 'Error opening error logfile for writing ' * english + 'Virhe lokitiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
 						if silent == False:
-							print('\033[7m' + '\r-------->  ' + exception_error_message + '\033[0m')
+							print('\033[7m' + '\r-------->	' + exception_error_message + '\033[0m')
 				reason_for_failed_send = []
 
 def write_html_progress_report_thread(english, finnish):
@@ -2802,10 +2864,10 @@ def write_html_progress_report_thread(english, finnish):
 				send_error_messages_to_screen_logfile_email(error_message, [])
 
 	except Exception:
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
-                subroutine_name = 'write_html_progress_report_thread'
-                catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
+		exc_type, exc_value, exc_traceback = sys.exc_info()
+		error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
+		subroutine_name = 'write_html_progress_report_thread'
+		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 			
 def write_to_heartbeat_file_thread():
 	
@@ -2856,10 +2918,10 @@ def write_to_heartbeat_file_thread():
 				pass
 
 	except Exception:
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
-                subroutine_name = 'write_to_heartbeat_file_thread'
-                catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
+		exc_type, exc_value, exc_traceback = sys.exc_info()
+		error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
+		subroutine_name = 'write_to_heartbeat_file_thread'
+		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 			
 def debug_lists_and_dictionaries_thread():
 	
@@ -3140,10 +3202,10 @@ def get_ip_addresses_of_the_host_machine():
 		all_ip_addresses_of_the_machine = stdout.split()
 
 	except Exception:
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
-                subroutine_name = 'get_ip_addresses_of_the_host_machine'
-                catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
+		exc_type, exc_value, exc_traceback = sys.exc_info()
+		error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
+		subroutine_name = 'get_ip_addresses_of_the_host_machine'
+		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 	
 	return(all_ip_addresses_of_the_machine)
 	
@@ -3200,14 +3262,16 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		supported_file_name = ''
 		
 		# Save some debug information. Items are always saved in pairs (Title, value) so that the list is easy to parse later.
-		global debug_temporary_dict_for_all_file_processing_information
-		debug_information_list = []
-		unix_time_in_ticks, realtime = get_realtime(english, finnish)
-		debug_information_list.append('Start Time')
-		debug_information_list.append(unix_time_in_ticks)
-		debug_information_list.append('Subprocess Name')
-		debug_information_list.append('get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters')
-		debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
+		if debug_file_processing == True:
+			debug_information_list = []
+			global debug_temporary_dict_for_all_file_processing_information
+
+			unix_time_in_ticks, realtime = get_realtime(english, finnish)
+			debug_information_list.append('Start Time')
+			debug_information_list.append(unix_time_in_ticks)
+			debug_information_list.append('Subprocess Name')
+			debug_information_list.append('get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters')
+			debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 
 		# Define lists of supported pcm bit depths
 		global pcm_8_bit_formats
@@ -3271,7 +3335,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			send_error_messages_to_screen_logfile_email(error_message, [])
 			
 		##################################################################################################
-		# Find lines from FFmpeg output that have information about audio streams and file duration      #
+		# Find lines from FFmpeg output that have information about audio streams and file duration	 #
 		# Also record channels count, bit depth, sample rate and FFmpeg map number for each stream found #
 		##################################################################################################
 		
@@ -3296,8 +3360,9 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				if file_type == 'mxf':
 
 					# Save some debug information.
-					debug_information_list.append('Message')
-					debug_information_list.append('Calling subroutine: read_audio_remix_map_file')
+					if debug_file_processing == True:
+						debug_information_list.append('Message')
+						debug_information_list.append('Calling subroutine: read_audio_remix_map_file')
 
 					audio_remix_channel_map = read_audio_remix_map_file(hotfolder_path, filename, english, finnish)
 
@@ -3307,8 +3372,9 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 						mxf_audio_remixing = False
 
 					# Save some debug information.
-					debug_information_list.append('Message')
-					debug_information_list.append('Returned from subroutine: read_audio_remix_map_file')
+					if debug_file_processing == True:
+						debug_information_list.append('Message')
+						debug_information_list.append('Returned from subroutine: read_audio_remix_map_file')
 
 			if 'Audio:' in item: # There is the string 'Audio' for each audio stream that ffmpeg finds. Count how many 'Audio' strings is found and put the strings in a list. The string holds detailed information about the stream and we print it later.
 			
@@ -3355,9 +3421,12 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				
 				if number_of_audio_channels == '0':
 					error_message = 'ERROR !!! I could not parse FFmpeg channel count string: ' * english + 'VIRHE !!! En osannut tulkita ffmpeg:in antamaa tietoa kanavien lukumäärästä: ' * finnish + '\'' + str(number_of_audio_channels_as_text_split_to_a_list[0]) + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
+
 					# Save some debug information.
-					debug_information_list.append('error_message')
-					debug_information_list.append(error_message)
+					if debug_file_processing == True:
+						debug_information_list.append('error_message')
+						debug_information_list.append(error_message)
+
 					send_error_messages_to_screen_logfile_email(error_message, [])
 				
 				# Channel counts bigger than 6 channels are only supported for mxf - files and only if mxf audio remixing is enabled.
@@ -3436,9 +3505,12 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 						bit_depth = int(bit_depth_as_text)
 					else:
 						error_message = 'ERROR !!! I could not parse FFmpeg bit depth string for flac format: ' * english + 'VIRHE !!! En osannut tulkita ffmpeg:in antamaa tietoa flac formaatin bittisyvyydestä: ' * finnish + '\'' + bit_depth_as_text + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
+
 						# Save some debug information.
-						debug_information_list.append('error_message')
-						debug_information_list.append(error_message)
+						if debug_file_processing == True:
+							debug_information_list.append('error_message')
+							debug_information_list.append(error_message)
+
 						send_error_messages_to_screen_logfile_email(error_message, [])
 					
 					# FFmpeg displays flac bit depths 24 bits and 32 bits both as 32 bits. Force flac bit depth to 24 if it is 32.
@@ -3467,18 +3539,28 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 					
 					if (mapnumber_digit_1.isnumeric() == False) or (mapnumber_digit_2.isnumeric() == False):
 						error_message = 'Error: stream map number found in FFmpeg output is not a number: ' * english + 'Virhe: FFmpegin tulosteesta löydetty streamin numero ei ole numero: ' * finnish + map_number
+
 						# Save some debug information.
-						debug_information_list.append('error_message')
-						debug_information_list.append(error_message)
+						if debug_file_processing == True:
+							debug_information_list.append('error_message')
+							debug_information_list.append(error_message)
+
 						send_error_messages_to_screen_logfile_email(error_message, [])
+
 						continue # If map number is not found then skip the stream.
+
 				except IndexError:
 					error_message = 'Error: stream map number found in FFmpeg output is not in correct format: ' * english + 'Virhe: FFmpegin tulosteesta löydetty streamin numero ei ole oikeassa formaatissa: ' * finnish + map_number
+
 					# Save some debug information.
-					debug_information_list.append('error_message')
-					debug_information_list.append(error_message)
+					if debug_file_processing == True:
+						debug_information_list.append('error_message')
+						debug_information_list.append(error_message)
+
 					send_error_messages_to_screen_logfile_email(error_message, [])
+
 					continue # If map number is not found then skip the stream.
+
 
 				# Find audio sample rate from FFmpeg stream info.
 				sample_rate_as_text = str(item.split(',')[1].strip().split(' ')[0].strip())
@@ -3487,9 +3569,12 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 					sample_rate = int(sample_rate_as_text)
 				else:
 					error_message = 'ERROR !!! I could not parse FFmpeg sample rate string: ' * english + 'VIRHE !!! En osannut tulkita ffmpeg:in antamaa tietoa näyteenottotaajuuudesta: ' * finnish + '\'' + sample_rate_as_text + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
+
 					# Save some debug information.
-					debug_information_list.append('error_message')
-					debug_information_list.append(error_message)
+					if debug_file_processing == True:
+						debug_information_list.append('error_message')
+						debug_information_list.append(error_message)
+
 					send_error_messages_to_screen_logfile_email(error_message, [])
 				
 				number_of_ffmpeg_supported_audiostreams = number_of_ffmpeg_supported_audiostreams + 1
@@ -3510,10 +3595,14 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 					# The FFmpeg reported audio duration as 'N/A' then this means ffmpeg could not determine the audio duration. Set audio duration to 0 seconds and inform user about the error.
 					audio_duration_rounded_to_seconds = 0
 					error_message = 'FFmpeg Error: Audio Duration = N/A' * english + 'FFmpeg Virhe: Äänen Kesto = N/A' * finnish + ': ' + filename
+
 					# Save some debug information.
-					debug_information_list.append('error_message')
-					debug_information_list.append(error_message)
+					if debug_file_processing == True:
+						debug_information_list.append('error_message')
+						debug_information_list.append(error_message)
+
 					send_error_messages_to_screen_logfile_email(error_message, [])
+
 			if filename + ':' in item: # Try to recognize some ffmpeg error messages, these always start with the filename + ':'
 				ffmpeg_error_message = 'FFmpeg Error: ' * english + 'FFmpeg Virhe: ' * finnish + item.split(':')[1] # Get the reason for error from ffmpeg output.
 				
@@ -3588,41 +3677,42 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 
 
 			# Save some debug information.
-			debug_information_list.append('Stream Filename')
-			debug_information_list.append(target_filenames[-1])
-			debug_information_list.append('Stream Is Supported')
-			debug_information_list.append('True')
-			debug_information_list.append('audio_stream_number')
-			debug_information_list.append(audio_stream_number)
-			debug_information_list.append('map_number')
-			debug_information_list.append(map_number)
-			debug_information_list.append('number_of_audio_channels')
-			debug_information_list.append(number_of_audio_channels)
-			debug_information_list.append('file_type')
-			debug_information_list.append(file_type)
-			debug_information_list.append('bit_depth')
-			debug_information_list.append(bit_depth)
-			debug_information_list.append('sample_rate')
-			debug_information_list.append(sample_rate)
-			debug_information_list.append('audio_duration')
-			debug_information_list.append(audio_duration)
-			debug_information_list.append('estimated_uncompressed_size_for_single_mono_file')
-			debug_information_list.append(estimated_uncompressed_size_for_single_mono_file)
-			debug_information_list.append('estimated_uncompressed_size_for_combined_channels')
-			debug_information_list.append(estimated_uncompressed_size_for_combined_channels)
-			debug_information_list.append('input_audiostream_format')
-			debug_information_list.append(input_audiostream_format)
-			debug_information_list.append('output_audiostream_format')
-			debug_information_list.append(output_audiostream_format)
-			debug_information_list.append('ffmpeg_output_format')
-			debug_information_list.append(ffmpeg_output_format)
-			debug_information_list.append('mxf_audio_remixing')
-			debug_information_list.append(mxf_audio_remixing)
-			debug_information_list.append('filenames_and_channel_counts_for_mxf_audio_remixing')
-			debug_information_list.append(filenames_and_channel_counts_for_mxf_audio_remixing)
-			debug_information_list.append('audio_remix_channel_map')
-			debug_information_list.append(audio_remix_channel_map)
-			debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
+			if debug_file_processing == True:
+				debug_information_list.append('Stream Filename')
+				debug_information_list.append(target_filenames[-1])
+				debug_information_list.append('Stream Is Supported')
+				debug_information_list.append('True')
+				debug_information_list.append('audio_stream_number')
+				debug_information_list.append(audio_stream_number)
+				debug_information_list.append('map_number')
+				debug_information_list.append(map_number)
+				debug_information_list.append('number_of_audio_channels')
+				debug_information_list.append(number_of_audio_channels)
+				debug_information_list.append('file_type')
+				debug_information_list.append(file_type)
+				debug_information_list.append('bit_depth')
+				debug_information_list.append(bit_depth)
+				debug_information_list.append('sample_rate')
+				debug_information_list.append(sample_rate)
+				debug_information_list.append('audio_duration')
+				debug_information_list.append(audio_duration)
+				debug_information_list.append('estimated_uncompressed_size_for_single_mono_file')
+				debug_information_list.append(estimated_uncompressed_size_for_single_mono_file)
+				debug_information_list.append('estimated_uncompressed_size_for_combined_channels')
+				debug_information_list.append(estimated_uncompressed_size_for_combined_channels)
+				debug_information_list.append('input_audiostream_format')
+				debug_information_list.append(input_audiostream_format)
+				debug_information_list.append('output_audiostream_format')
+				debug_information_list.append(output_audiostream_format)
+				debug_information_list.append('ffmpeg_output_format')
+				debug_information_list.append(ffmpeg_output_format)
+				debug_information_list.append('mxf_audio_remixing')
+				debug_information_list.append(mxf_audio_remixing)
+				debug_information_list.append('filenames_and_channel_counts_for_mxf_audio_remixing')
+				debug_information_list.append(filenames_and_channel_counts_for_mxf_audio_remixing)
+				debug_information_list.append('audio_remix_channel_map')
+				debug_information_list.append(audio_remix_channel_map)
+				debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 
 			# Generate FFmpeg extract options for audio stream.
 			ffmpeg_commandline.append('-acodec')
@@ -3638,7 +3728,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			ffmpeg_commandline.append(directory_for_temporary_files + os.sep + target_filenames[counter])
 		
 			# Create a audio stream mapping command list that will be appended at the end of ffmpeg commandline. Without this the streams would be extracted in random order and our stream numbers wouldn't match the streams.
-			ffmpeg_stream_mapping_commands.extend(['-map',  str(map_number) + ':0.' + str(counter)])
+			ffmpeg_stream_mapping_commands.extend(['-map',	str(map_number) + ':0.' + str(counter)])
 		
 		# Complete the FFmpeg commandline by adding stream mapping commands at the end of it. The commandline is later used to extract all valid audio streams from the file (only if the audio file is not natively supported by libebur128 and sox and needs to be processed with FFmpeg first).
 		ffmpeg_commandline.extend(ffmpeg_stream_mapping_commands)
@@ -3679,17 +3769,18 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 
 					final_loudness_results_for_automation[filename] = mix_result_lists
 
-				# Printing error message in history graphics file adds the stream name to a debug processing information dictionary.
-				# Since the stream is unsupported and will not be processed, remove it's name from the debug dictionary.
-				if unsupported_stream_name in debug_temporary_dict_for_all_file_processing_information:
-					del debug_temporary_dict_for_all_file_processing_information[unsupported_stream_name]
-			
 				# Save some debug information.
-				debug_information_list.append('Stream Filename')
-				debug_information_list.append(unsupported_stream_name)
-				debug_information_list.append('Stream Is Supported')
-				debug_information_list.append('False')
-				debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
+				if debug_file_processing == True:
+					# Printing error message in history graphics file adds the stream name to a debug processing information dictionary.
+					# Since the stream is unsupported and will not be processed, remove it's name from the debug dictionary.
+					if unsupported_stream_name in debug_temporary_dict_for_all_file_processing_information:
+						del debug_temporary_dict_for_all_file_processing_information[unsupported_stream_name]
+			
+					debug_information_list.append('Stream Filename')
+					debug_information_list.append(unsupported_stream_name)
+					debug_information_list.append('Stream Is Supported')
+					debug_information_list.append('False')
+					debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 
 		# If there are only unsupported audio streams in the file then assign an error message that gets printed on the results graphics file.
 		# Currently the only known unsupported streams in a file are streams with channel counts of zero and more than 6 channels.
@@ -3752,29 +3843,32 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		file_format_support_information = [natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames, mxf_audio_remixing, filenames_and_channel_counts_for_mxf_audio_remixing, audio_remix_channel_map, number_of_unsupported_streams_in_file]
 		
 		# Save some debug information.
-		debug_information_list.append('Support information for main file')
-		debug_information_list.append(filename)
-		debug_information_list.append('ffmpeg_supported_fileformat')
-		debug_information_list.append(ffmpeg_supported_fileformat)
-		debug_information_list.append('natively_supported_file_format')
-		debug_information_list.append(natively_supported_file_format)
-		debug_information_list.append('ffmpeg_error_message')
-		debug_information_list.append(ffmpeg_error_message)
-		if audio_duration_rounded_to_seconds == 0:
-			debug_information_list.append('Error Message')
-			debug_information_list.append('Audio duration less than 1 second')
-		debug_information_list.append('ffmpeg_commandline')
-		debug_information_list.append(ffmpeg_commandline)
-		unix_time_in_ticks, realtime = get_realtime(english, finnish)
-		debug_information_list.append('Stop Time')
-		debug_information_list.append(unix_time_in_ticks)
-		debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
+		if debug_file_processing == True:
+			debug_information_list.append('Support information for main file')
+			debug_information_list.append(filename)
+			debug_information_list.append('ffmpeg_supported_fileformat')
+			debug_information_list.append(ffmpeg_supported_fileformat)
+			debug_information_list.append('natively_supported_file_format')
+			debug_information_list.append(natively_supported_file_format)
+			debug_information_list.append('ffmpeg_error_message')
+			debug_information_list.append(ffmpeg_error_message)
+
+			if audio_duration_rounded_to_seconds == 0:
+				debug_information_list.append('Error Message')
+				debug_information_list.append('Audio duration less than 1 second')
+
+			debug_information_list.append('ffmpeg_commandline')
+			debug_information_list.append(ffmpeg_commandline)
+			unix_time_in_ticks, realtime = get_realtime(english, finnish)
+			debug_information_list.append('Stop Time')
+			debug_information_list.append(unix_time_in_ticks)
+			debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 
 	except Exception:
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
-                subroutine_name = 'get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters'
-                catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
+		exc_type, exc_value, exc_traceback = sys.exc_info()
+		error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
+		subroutine_name = 'get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters'
+		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 	
 	return(file_format_support_information, ffmpeg_error_message, send_ffmpeg_error_message_by_email)
 	
@@ -3805,16 +3899,17 @@ def get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, h
 		# Only save debug information when ffmpeg is not installed and mediainfo is used in its place to find audio from files.
 		if save_debug_information == True:
 
-			global debug_temporary_dict_for_all_file_processing_information
-			debug_information_list = []
-
 			# Save some debug information. Items are always saved in pairs (Title, value) so that the list is easy to parse later.
-			unix_time_in_ticks, realtime = get_realtime(english, finnish)
-			debug_information_list.append('Start Time')
-			debug_information_list.append(unix_time_in_ticks)
-			debug_information_list.append('Subprocess Name')
-			debug_information_list.append('get_audiofile_info_with_mediainfo')
-			debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
+			if debug_file_processing == True:
+				debug_information_list = []
+				global debug_temporary_dict_for_all_file_processing_information
+
+				unix_time_in_ticks, realtime = get_realtime(english, finnish)
+				debug_information_list.append('Start Time')
+				debug_information_list.append(unix_time_in_ticks)
+				debug_information_list.append('Subprocess Name')
+				debug_information_list.append('get_audiofile_info_with_mediainfo')
+				debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 
 		#####################################################
 		# Find how many audio streams there are in the file #
@@ -4107,7 +4202,7 @@ def get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, h
 					send_error_messages_to_screen_logfile_email(error_message, [])
 
 		###################################################################
-		# Decide if the file is one of the natively supported formats     #
+		# Decide if the file is one of the natively supported formats	  #
 		###################################################################
 		
 		if (str(os.path.splitext(filename)[1]).lower() in natively_supported_file_formats) and (audiostream_count == 1) and (channel_count != 0) and (channel_count <= 6) and (audio_duration_rounded_to_seconds > 0):
@@ -4153,32 +4248,33 @@ def get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, h
 		if save_debug_information == True:
 
 			# Save some debug information.
-			debug_information_list.append('File extension')
-			debug_information_list.append(str(os.path.splitext(filename)[1]).lower() + "'")
-			debug_information_list.append('audiostream_count')
-			debug_information_list.append(audiostream_count)
-			debug_information_list.append('channel_count')
-			debug_information_list.append(channel_count)
-			debug_information_list.append('bit_depth')
-			debug_information_list.append(bit_depth)
-			debug_information_list.append('sample_format')
-			debug_information_list.append(sample_format)
-			debug_information_list.append('audio_duration_rounded_to_seconds')
-			debug_information_list.append(audio_duration_rounded_to_seconds)
-			debug_information_list.append('natively_supported_file_format')
-			debug_information_list.append(natively_supported_file_format)
-			debug_information_list.append('mediainfo_error_message')
-			debug_information_list.append(mediainfo_error_message)
-			unix_time_in_ticks, realtime = get_realtime(english, finnish)
-			debug_information_list.append('Stop Time')
-			debug_information_list.append(unix_time_in_ticks)
-			debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
+			if debug_file_processing == True:
+				debug_information_list.append('File extension')
+				debug_information_list.append(str(os.path.splitext(filename)[1]).lower() + "'")
+				debug_information_list.append('audiostream_count')
+				debug_information_list.append(audiostream_count)
+				debug_information_list.append('channel_count')
+				debug_information_list.append(channel_count)
+				debug_information_list.append('bit_depth')
+				debug_information_list.append(bit_depth)
+				debug_information_list.append('sample_format')
+				debug_information_list.append(sample_format)
+				debug_information_list.append('audio_duration_rounded_to_seconds')
+				debug_information_list.append(audio_duration_rounded_to_seconds)
+				debug_information_list.append('natively_supported_file_format')
+				debug_information_list.append(natively_supported_file_format)
+				debug_information_list.append('mediainfo_error_message')
+				debug_information_list.append(mediainfo_error_message)
+				unix_time_in_ticks, realtime = get_realtime(english, finnish)
+				debug_information_list.append('Stop Time')
+				debug_information_list.append(unix_time_in_ticks)
+				debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 
 	except Exception:
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
-                subroutine_name = 'get_audiofile_info_with_mediainfo'
-                catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
+		exc_type, exc_value, exc_traceback = sys.exc_info()
+		error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
+		subroutine_name = 'get_audiofile_info_with_mediainfo'
+		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 
 	return(audiostream_count, channel_count, bit_depth, sample_format, audio_duration_rounded_to_seconds, natively_supported_file_format, mediainfo_error_message)
 	
@@ -4214,17 +4310,17 @@ def debug_write_loudness_calculation_info_to_a_logfile(loudness_calculation_data
 			send_error_messages_to_screen_logfile_email(error_message, [])
 
 	except Exception:
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
-                subroutine_name = 'debug_write_loudness_calculation_info_to_a_logfile'
-                catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
+		exc_type, exc_value, exc_traceback = sys.exc_info()
+		error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
+		subroutine_name = 'debug_write_loudness_calculation_info_to_a_logfile'
+		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 
 def debug_manage_file_processing_information_thread():
 	
 	# This subprocess is started in its own thread.
-	# This subroutine handles file processing debug information. LoudnessCorrection holds some debug data in memory (default 100 last files) and deletes info older than that.
-	# If debug_file_processing = True, then this subroutine periodically saves debug info to disk as a pickle.
-	# If debug mode is activated by sending a signal to LoudnessCorrection, then the program saves info of the last 100 files to disk and continues saving info until debug is cancelled by sending the same signal again.
+	# This subroutine handles file processing debug information. When debug_file_processing == True, then LoudnessCorrection holds some debug data in memory (default 100 last files) and deletes info older than that.
+	# If debug_file_processing == True, then this subroutine periodically saves debug info to disk as a pickle.
+	# If debug mode is activated by sending a signal to LoudnessCorrection, then the program starts saving info until debug is cancelled by sending the same signal again.
 
 	try:
 		global debug_complete_final_information_for_all_file_processing_dict
@@ -4252,7 +4348,7 @@ def debug_manage_file_processing_information_thread():
 			if debug_file_processing == False:
 
 				# Find debug data that is too old and delete it.
-				# A list of 100 last processed files is gathered for printing the filenames on the html progress report. We use the names on that list here also.
+				# When debug mode is on then a list of 100 last processed files is gathered for printing the filenames on the html progress report. We use the names on that list here also.
 				# Delete debug data about all other files, but leave those that are on the 100 list.
 				copy_of_completed_files_list = copy.deepcopy(completed_files_list)
 				list_of_dictionary_keys = list(debug_complete_final_information_for_all_file_processing_dict)
@@ -4264,7 +4360,7 @@ def debug_manage_file_processing_information_thread():
 			else:
 				# Debug mode is on, save data periodically to disk
 
-				# Save the dictionary to disk it is not empty.
+				# Save the dictionary to disk if it is not empty.
 				if len(debug_complete_final_information_for_all_file_processing_dict) != 0:
 					try:
 						with open(directory_for_error_logs + os.sep + filename_for_processing_debug_info, 'wb') as filehandler:
@@ -4328,10 +4424,10 @@ def debug_manage_file_processing_information_thread():
 				counter = counter + sleep_time
 
 	except Exception:
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
-                subroutine_name = 'debug_manage_file_processing_information_thread'
-                catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
+		exc_type, exc_value, exc_traceback = sys.exc_info()
+		error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
+		subroutine_name = 'debug_manage_file_processing_information_thread'
+		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 
 def signal_handler_routine(signal_number, stack_frame):
 	
@@ -4377,10 +4473,10 @@ def signal_handler_routine(signal_number, stack_frame):
 				save_all_measurement_results_to_a_single_debug_file = False
 
 	except Exception:
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
-                subroutine_name = 'signal_handler_routine'
-                catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
+		exc_type, exc_value, exc_traceback = sys.exc_info()
+		error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
+		subroutine_name = 'signal_handler_routine'
+		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 
 def check_samba_file_locks(filename):
 
@@ -4448,10 +4544,10 @@ def check_samba_file_locks(filename):
 			file_is_locked_by_samba = True
 
 	except Exception:
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
-                subroutine_name = 'check_samba_file_locks'
-                catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
+		exc_type, exc_value, exc_traceback = sys.exc_info()
+		error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
+		subroutine_name = 'check_samba_file_locks'
+		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 
 	return(file_is_locked_by_samba)
 
@@ -4493,7 +4589,7 @@ def read_audio_remix_map_file(hotfolder_path, audio_file_name, english, finnish)
 			try:
 				with open(remix_mapfile_name, 'rt') as remix_mapfile_handler: # Open logfile, the 'with' method closes files when execution exits the with - block
 					remix_mapfile_handler.seek(0) # Make sure that the 'read' - pointer is in the beginning of the source file
-					text_lines_list.extend(remix_mapfile_handler.readlines())                                                                                                             
+					text_lines_list.extend(remix_mapfile_handler.readlines())													      
 
 			except IOError as reason_for_error:
 				error_message = 'A mxf - file remix channel map file was found, but it can not be read: ' * english + 'Mxf - tiedoston uudelleenmiksauksen ohjetiedosto löytyi, mutta sitä ei voi lukea: ' * finnish + str(reason_for_error)
@@ -4532,10 +4628,10 @@ def read_audio_remix_map_file(hotfolder_path, audio_file_name, english, finnish)
 			audio_remix_channel_map = global_mxf_audio_remix_channel_map
 
 	except Exception:
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
-                subroutine_name = 'read_audio_remix_map_file'
-                catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
+		exc_type, exc_value, exc_traceback = sys.exc_info()
+		error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
+		subroutine_name = 'read_audio_remix_map_file'
+		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 
 	return(audio_remix_channel_map)
 
@@ -4560,7 +4656,7 @@ def remix_files_according_to_channel_map(directory_for_temporary_files, original
 		global temp_loudness_results_for_automation
 		initial_data_for_machine_readable_results_file = {}
 
-		list_of_sox_commandlines, list_of_files_that_match_exactly_a_channel_map, list_of_files_to_move_to_loudness_processing  = create_sox_commands_to_remix_audio(directory_for_temporary_files, original_input_file_name, filenames_and_channel_counts_for_mxf_audio_remixing, audio_remix_channel_map, english, finnish)
+		list_of_sox_commandlines, list_of_files_that_match_exactly_a_channel_map, list_of_files_to_move_to_loudness_processing	= create_sox_commands_to_remix_audio(directory_for_temporary_files, original_input_file_name, filenames_and_channel_counts_for_mxf_audio_remixing, audio_remix_channel_map, english, finnish)
 
 		if len(list_of_files_that_match_exactly_a_channel_map) > 0:
 
@@ -4624,10 +4720,10 @@ def remix_files_according_to_channel_map(directory_for_temporary_files, original
 			run_sox_commands_in_parallel_threads(directory_for_temporary_files, directory_for_results, original_input_file_name, list_of_sox_commandlines, english, finnish)
 
 	except Exception:
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
-                subroutine_name = 'remix_files_according_to_channel_map'
-                catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
+		exc_type, exc_value, exc_traceback = sys.exc_info()
+		error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
+		subroutine_name = 'remix_files_according_to_channel_map'
+		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 
 	return(list_of_files_to_move_to_loudness_processing)
 
@@ -4652,14 +4748,16 @@ def create_sox_commands_to_remix_audio(directory_for_temporary_files, original_i
 		flac_compression_level = ['-C', '1']
 
 		# Save some debug information. Items are always saved in pairs (Title, value) so that the list is easy to parse later.
-		global debug_temporary_dict_for_all_file_processing_information
-		debug_information_list = []
-		unix_time_in_ticks, realtime = get_realtime(english, finnish)
-		debug_information_list.append('Start Time')
-		debug_information_list.append(unix_time_in_ticks)
-		debug_information_list.append('Subprocess Name')
-		debug_information_list.append('create_sox_commands_to_remix_audio')
-		debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
+		if debug_file_processing == True:
+			debug_information_list = []
+			global debug_temporary_dict_for_all_file_processing_information
+
+			unix_time_in_ticks, realtime = get_realtime(english, finnish)
+			debug_information_list.append('Start Time')
+			debug_information_list.append(unix_time_in_ticks)
+			debug_information_list.append('Subprocess Name')
+			debug_information_list.append('create_sox_commands_to_remix_audio')
+			debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 
 		# Create a list with all source audiofile channels layed out as a flat list. Add also number of channels in file and source channel number to each source_file_name.
 		for item in filenames_and_channel_counts_for_mxf_audio_remixing:
@@ -4756,21 +4854,23 @@ def create_sox_commands_to_remix_audio(directory_for_temporary_files, original_i
 				# Stop if all available audio channels in source files have been assigned to ouput files based on channel_maps.
 				if len(available_source_channels_list) < 1:
 					break
-		
-		debug_information_list.append('list_of_sox_commandlines')
-		debug_information_list.append(list_of_sox_commandlines)
-		debug_information_list.append('list_of_files_that_match_exactly_a_channel_map')
-		debug_information_list.append(list_of_files_that_match_exactly_a_channel_map)
-		unix_time_in_ticks, realtime = get_realtime(english, finnish)
-		debug_information_list.append('Stop Time')
-		debug_information_list.append(unix_time_in_ticks)
-		debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
+
+		# Save some debug information.
+		if debug_file_processing == True:
+			debug_information_list.append('list_of_sox_commandlines')
+			debug_information_list.append(list_of_sox_commandlines)
+			debug_information_list.append('list_of_files_that_match_exactly_a_channel_map')
+			debug_information_list.append(list_of_files_that_match_exactly_a_channel_map)
+			unix_time_in_ticks, realtime = get_realtime(english, finnish)
+			debug_information_list.append('Stop Time')
+			debug_information_list.append(unix_time_in_ticks)
+			debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 
 	except Exception:
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
-                subroutine_name = 'create_sox_commands_to_remix_audio'
-                catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
+		exc_type, exc_value, exc_traceback = sys.exc_info()
+		error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
+		subroutine_name = 'create_sox_commands_to_remix_audio'
+		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 
 	return(list_of_sox_commandlines, list_of_files_that_match_exactly_a_channel_map, target_filenames)
 
@@ -4882,37 +4982,37 @@ def write_loudness_results_and_file_info_to_a_machine_readable_file(filename, da
 			send_error_messages_to_screen_logfile_email(error_message, [])
 
 	except Exception:
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
-                subroutine_name = 'write_loudness_results_and_file_info_to_a_machine_readable_file'
-                catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
+		exc_type, exc_value, exc_traceback = sys.exc_info()
+		error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
+		subroutine_name = 'write_loudness_results_and_file_info_to_a_machine_readable_file'
+		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 
 
 ##############################################################################################
-#                                The main program starts here:)                              #
+#				 The main program starts here:)				     #
 ##############################################################################################
 #
 # Start the program by giving full path to the target directory.
 # The program creates directories in the target, the most important ones are: '00-LoudnessCorrection', '00-LoudnessCorrection/00-Corrected_Files'.
 # The program polls the '00-LoudnessCorrection' directory periodically, by default every 5 seconds.
 # The program uses various dictionaries and lists for keeping track of files going through different stages of processing. The most importand variables are:
-#       'number_of_processor_cores'
+#	'number_of_processor_cores'
 # The value in this variable divided by two defines how many files we can process simultaneously.
 # Two processes in separate threads are started simultaneously for each file. The first calculates integrated loudness and loudness range. The second process calculates loudness by segmenting the file to time slices and calculates loudness of each slice individually. Slice duration is 0.5 secs for files 9 secs or shorter and 3 secs for files 10 seconds or longer.
 # Timeslice loudness values are later used for plotting loudness graphics.
-#       'new_hotfolder_filelist_dict' and 'old_hotfolder_filelist_dict'
+#	'new_hotfolder_filelist_dict' and 'old_hotfolder_filelist_dict'
 # These dictionaries are used to keep track of files that appear to the HotFolder and the time the files were first seen there.
 # This time is used to determine when files have expired and can been deleted. (Expiration time (seconds) is stored in variable 'file_expiry_time' and is 8 hours by default).
-#       'list_of_growing_files'
+#	'list_of_growing_files'
 # This list is used to keep track of files that are being transferred to the HotFolder but are not yet complete (file size is growing between directory polls).
-#       'files_queued_to_loudness_calculation'
+#	'files_queued_to_loudness_calculation'
 # This list holds the names of files in the HotFolder that are no longer growing and can be sent to loudness calculation.
-#        'loudness_calculation_queue'
+#	 'loudness_calculation_queue'
 # This list holds the names of files that are currently being calculated upon.
-#       'files_queued_for_deletion'
+#	'files_queued_for_deletion'
 # This list holds the names of files that are going to be deleted.
 #		'completed_files_list'
-# 		'completed_files_dict'
+#		'completed_files_dict'
 # The list holds the names of 100 last files that has gone through loudness calculation, and the order processing them was completed. The dictionary holds the time processing each file was completed. The list and dictionary are only used when printing loudness calculation progress information to a web page on disk.
 #
 #
@@ -4963,12 +5063,12 @@ def write_loudness_results_and_file_info_to_a_machine_readable_file(filename, da
 #	------------------------------------------------------------------------------------------------------------------------------------------------
 #	
 #	0 = No Errors
-#	1 = Loudness is below measurement threshold (-70 LUFS)   (create_gnuplot_commands)
+#	1 = Loudness is below measurement threshold (-70 LUFS)	 (create_gnuplot_commands)
 #	2 = Error in integrated loudness calculation   (create_gnuplot_commands)
 #	3 = File transfer failed   (main)
-#	4 = Audio duration less than 1 second   (main)
+#	4 = Audio duration less than 1 second	(main)
 #	5 = Zero channels in audio stream   (get_audio_stream_information_with_ffmpeg)
-#	6 = Channel count bigger than 6 is unsupported   (get_audio_stream_information_with_ffmpeg, main)
+#	6 = Channel count bigger than 6 is unsupported	 (get_audio_stream_information_with_ffmpeg, main)
 #	7 = No Audio Streams Found In File   (main)
 #	8 = Sox encountered an error   (create_sox_commands_for_loudness_adjusting_a_file)
 #	9 = There are unsupported audio streams in input MXF - file while remix function is on. This may create unwanted results
@@ -5036,7 +5136,7 @@ try:
 	files_queued_for_deletion=[] # See explanation of the purpose for this dictionary in comments above.
 	completed_files_list = [] # This variable holds the names of 100 last files that have gone through loudness calculation.
 	completed_files_dict = {} # This dictionary stores the time processing each file was completed.
-	adjust_line_printout='         '
+	adjust_line_printout='	       '
 	loudness_calculation_queue={} # See explanation of the purpose for this dictionary in comments above.
 	loop_counter=0
 	integrated_loudness_calculation_results = {}
@@ -5052,7 +5152,7 @@ try:
 
 
 	###############################################################################################################################################################################
-	# Read user defined configuration variables from a file                                                                                                                       #
+	# Read user defined configuration variables from a file															      #
 	###############################################################################################################################################################################
 
 	# If there is a value in the variable 'configfile_path' then it is a valid path to a readable configfile.
@@ -5298,7 +5398,7 @@ try:
 	debug_lists_process = threading.Thread(target=debug_lists_and_dictionaries_thread, args=()) # Create a process instance.
 	thread_object = debug_lists_process.start() # Start the process in it'own thread.
 
-	# Start the silent debugger process that gathers file processing debug data for the last 100 files.
+	# Start the silent debugger process that gathers file processing debug data for processed files.
 	# This gathered info can be written to disk by sending LoudnessCorrection a signal.
 	debug_file_processing_process = threading.Thread(target=debug_manage_file_processing_information_thread, args=()) # Create a process instance.
 	thread_object = debug_file_processing_process.start() # Start the process in it'own thread.
@@ -5529,14 +5629,14 @@ try:
 		##########################################################################################
 		# Check if file has stopped growing, if true test if ffmpeg can find audio streams in it #
 		######################################################################################################################################################################################
-		#                                                                                                                                                                                    #
-		# One thing that is not obvious from reading the code below is why new files gets processed and old files will not be processed again and again.                                     #
-		# Files only get into the processing queue through the 'list_of_growing_files'.                                                                                                      #
-		#                                                                                                                                                                                    #
-		# Only if a file was not there during the previous HotFolder poll (filename is not in 'old_hotfolder_filelist_dict'), will the file be added to the 'list_of_growing_files'.         #
-		# Only if a file was in the HotFolder during the last and the previous HotFolder poll (filename is in 'old_hotfolder_filelist_dict' and 'new_hotfolder_filelist_dict'),              #
-		# will it be moved from 'list_of_growing_files' to the processing queue.                                                                                                                                          #
-		#                                                                                                                                                                                    #
+		#																						     #
+		# One thing that is not obvious from reading the code below is why new files gets processed and old files will not be processed again and again.				     #
+		# Files only get into the processing queue through the 'list_of_growing_files'.													     #
+		#																						     #
+		# Only if a file was not there during the previous HotFolder poll (filename is not in 'old_hotfolder_filelist_dict'), will the file be added to the 'list_of_growing_files'.	     #
+		# Only if a file was in the HotFolder during the last and the previous HotFolder poll (filename is in 'old_hotfolder_filelist_dict' and 'new_hotfolder_filelist_dict'),		     #
+		# will it be moved from 'list_of_growing_files' to the processing queue.																	  #
+		#																						     #
 		######################################################################################################################################################################################
 		
 		for filename in new_hotfolder_filelist_dict:
@@ -5569,7 +5669,7 @@ try:
 
 					else:
 						#######################################################################################################
-						# Filesize has not changed since last poll, the file is ready to be inspected.                        #
+						# Filesize has not changed since last poll, the file is ready to be inspected.			      #
 						#######################################################################################################
 						
 						# Test if we really have read access to the file.
@@ -5718,8 +5818,9 @@ try:
 								unsupported_ignored_files_dict[filename] = int(time.time())
 								
 								# Remove file processing information from temporary debug dictionary, as file is not supported, it will not be processed and this info is no longer needed.
-								temporary_gathering_list = debug_temporary_dict_for_all_file_processing_information.pop(filename)
-								debug_complete_final_information_for_all_file_processing_dict[filename] = temporary_gathering_list
+								if debug_file_processing == True:
+									temporary_gathering_list = debug_temporary_dict_for_all_file_processing_information.pop(filename)
+									debug_complete_final_information_for_all_file_processing_dict[filename] = temporary_gathering_list
 
 							# If file duration was not found, or it is less than one second, then we have an error.
 							# Don't process file, inform user by plotting an error graphics file and add the filename to the list of files we will ignore.
@@ -5736,8 +5837,9 @@ try:
 								unsupported_ignored_files_dict[filename] = int(time.time())
 								
 								# Remove file processing information from temporary debug dictionary, as file is not supported, it will not be processed and this info is no longer needed.
-								temporary_gathering_list = debug_temporary_dict_for_all_file_processing_information.pop(filename)
-								debug_complete_final_information_for_all_file_processing_dict[filename] = temporary_gathering_list
+								if debug_file_processing == True:
+									temporary_gathering_list = debug_temporary_dict_for_all_file_processing_information.pop(filename)
+									debug_complete_final_information_for_all_file_processing_dict[filename] = temporary_gathering_list
 
 								# Add info for all mixes found in the file to dictionary that is used to write the machine readable results file.
 								if write_loudness_calculation_results_to_a_machine_readable_file == True:
@@ -5813,7 +5915,7 @@ try:
 						# Start simultaneously two threads to calculate file loudness. The first one calculates loudness by dividing the file in time slices and calculating the loudness of each slice individually. The second process calculates integrated loudness and loudness range of the file as a whole.
 						# Both processes can be done in almost the same time as one, since the first process reads the file in to os file cache, so the second process doesn't need to read the disk at all. Reading from cache is much much faster than reading from disk.
 						if silent == False:
-							print ('\r' + 'File' * english + 'Tiedoston' * finnish, '"' + filename + '"' + ' processing started ' * english + ' käsittely   alkoi  ' * finnish, realtime)
+							print ('\r' + 'File' * english + 'Tiedoston' * finnish, '"' + filename + '"' + ' processing started ' * english + ' käsittely	alkoi  ' * finnish, realtime)
 						
 						# Create commands for both loudness calculation processes.
 						libebur128_commands_for_time_slice_calculation=[libebur128_path, 'dump', '-s', time_slice_duration_string] # Put libebur128 commands in a list.
@@ -5840,7 +5942,7 @@ try:
 						if ffmpeg_supported_fileformat == True:
 
 							if silent == False:
-								print ('\r' + 'File' * english + 'Tiedoston' * finnish, '"' + filename + '"' + ' conversion started ' * english + '  muunnos    alkoi  ' * finnish, realtime)
+								print ('\r' + 'File' * english + 'Tiedoston' * finnish, '"' + filename + '"' + ' conversion started ' * english + '  muunnos	alkoi  ' * finnish, realtime)
 								print('\r' + adjust_line_printout, ' Extracting' * english + ' Puran' * finnish, str(number_of_ffmpeg_supported_audiostreams), 'audio streams from file' * english + 'miksausta tiedostosta' * finnish, filename)
 								
 								for counter in range(0, number_of_ffmpeg_supported_audiostreams): # Print information about all the audio streams we are going to extract.
@@ -5922,38 +6024,42 @@ try:
 							# The results have been written to a file now and can be deleted from the dictionary.
 							del final_loudness_results_for_automation[original_file_name]
 
-				event_for_process_1, event_for_process_2 = loudness_calculation_queue[filename]
-				temporary_gathering_list = []
 
 				# If filename exists in 'debug_temporary_dict_for_all_file_processing_information' then move file processing debug info to the final gathering dictionary.
 				# If filename is missing from 'debug_temporary_dict_for_all_file_processing_information' then user has deleted the file before processing finished. In this case delete all file processing debug information for the file.
-				if filename in debug_temporary_dict_for_all_file_processing_information:
 
-					# If both events are equal (pointing to the same event object) then audiostreams were extracted with ffmpeg from the file. 
-					# When loudness processing is ready then events are not equal (events point to different event objects).
+				if debug_file_processing == True:
 
-					if event_for_process_1 != event_for_process_2:
-						# Loudness processing of the file is ready, move debugging information to the main debugging dictionary.
-						# We get here only if both integrated and time slice loudness calculation are ready.
-						temporary_gathering_list = debug_temporary_dict_for_timeslice_calculation_information.pop(filename)
-						temporary_gathering_list.extend(debug_temporary_dict_for_integrated_loudness_calculation_information.pop(filename))
-						temporary_gathering_list.extend(debug_temporary_dict_for_all_file_processing_information.pop(filename))
-						debug_complete_final_information_for_all_file_processing_dict[filename] = temporary_gathering_list
+					event_for_process_1, event_for_process_2 = loudness_calculation_queue[filename]
+					temporary_gathering_list = []
+
+					if filename in debug_temporary_dict_for_all_file_processing_information:
+
+						# If both events are equal (pointing to the same event object) then audiostreams were extracted with ffmpeg from the file. 
+						# When loudness processing is ready then events are not equal (events point to different event objects).
+
+						if event_for_process_1 != event_for_process_2:
+							# Loudness processing of the file is ready, move debugging information to the main debugging dictionary.
+							# We get here only if both integrated and time slice loudness calculation are ready.
+							temporary_gathering_list = debug_temporary_dict_for_timeslice_calculation_information.pop(filename)
+							temporary_gathering_list.extend(debug_temporary_dict_for_integrated_loudness_calculation_information.pop(filename))
+							temporary_gathering_list.extend(debug_temporary_dict_for_all_file_processing_information.pop(filename))
+							debug_complete_final_information_for_all_file_processing_dict[filename] = temporary_gathering_list
+						else:
+							# We get here only when the process that has finished is function: decompress_audio_streams_with_ffmpeg. 
+							# Move debug processing info from temp dictionary to the main debug dictionary.
+							# The decompressed file will enter processing queue, but the decompressed file has different name than the compressed,
+							# So we have to remove the debug info about compressed version from the dictionary, as it is no longer used for anything.
+
+							temporary_gathering_list = debug_temporary_dict_for_all_file_processing_information.pop(filename)
+							debug_complete_final_information_for_all_file_processing_dict[filename] = temporary_gathering_list
 					else:
-						# We get here only when the process that has finished is function: decompress_audio_streams_with_ffmpeg. 
-						# Move debug processing info from temp dictionary to the main debug dictionary.
-						# The decompressed file will enter processing queue, but the decompressed file has different name than the compressed,
-						# So we have to remove the debug info about compressed version from the dictionary, as it is no longer used for anything.
+						# User has deleted the file before processing was ready, delete all file processing debug information.
 
-						temporary_gathering_list = debug_temporary_dict_for_all_file_processing_information.pop(filename)
-						debug_complete_final_information_for_all_file_processing_dict[filename] = temporary_gathering_list
-				else:
-					# User has deleted the file before processing was ready, delete all file processing debug information.
-
-					if filename in debug_temporary_dict_for_timeslice_calculation_information:
-						del debug_temporary_dict_for_timeslice_calculation_information[filename]
-					if filename in debug_temporary_dict_for_integrated_loudness_calculation_information:
-						del debug_temporary_dict_for_integrated_loudness_calculation_information[filename]
+						if filename in debug_temporary_dict_for_timeslice_calculation_information:
+							del debug_temporary_dict_for_timeslice_calculation_information[filename]
+						if filename in debug_temporary_dict_for_integrated_loudness_calculation_information:
+							del debug_temporary_dict_for_integrated_loudness_calculation_information[filename]
 			
 
 				realtime = get_realtime(english, finnish)[1].replace('_', ' ')
@@ -5998,8 +6104,8 @@ try:
 				sys.exit(0)
 
 except Exception:
-        exc_type, exc_value, exc_traceback = sys.exc_info()
-        error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
-        subroutine_name = 'Main'
-        catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
+	exc_type, exc_value, exc_traceback = sys.exc_info()
+	error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
+	subroutine_name = 'Main'
+	catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 
