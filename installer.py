@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '060'
+version = '061'
 
 ###################################
 # Function definitions start here #
@@ -896,6 +896,16 @@ def install_init_scripts_and_config_files(*args):
 	# Gather init script commands in a list.
 	loudness_correction_init_script_content_part_1 = ['#!/bin/sh', \
 	'', \
+	'### BEGIN INIT INFO', \
+	'# Provides:          LoudnessCorrection', \
+	'# Required-Start:    $all', \
+	'# Required-Stop:', \
+	'# Default-Start:     2', \
+	'# Default-Stop:      0 1 6', \
+	'# Short-Description: FreeLCS init script', \
+	'# Description:       FreeLCS init script', \
+	'### END INIT INFO', \
+	'', \
 	'USERNAME="' + user_account.get() + '"', \
 	'TARGET_PATH="' + target_path.get() + '"', \
 	'HOTFOLDER_NAME="' + os.path.basename(hotfolder_path.get()) + '"', \
@@ -1512,6 +1522,7 @@ def install_init_scripts_and_config_files(*args):
 	global loudnesscorrection_init_script_name
 	global loudnesscorrection_init_script_path
 	global loudnesscorrection_init_script_link_path
+	global os_version
 	
 	try:
 		with open(directory_for_os_temporary_files + os.sep + loudnesscorrection_init_script_name, 'wt') as init_script_file_handler:
@@ -1583,10 +1594,17 @@ def install_init_scripts_and_config_files(*args):
 	
 	######################################################################################################################
 	# Create a link for init script in /etc/rc2.d that starts up all LoudnessCorrection scripts when the computer starts #
-	# The link will be named /etc/rc2.d/S99loudnesscorrection_init_script                                                #
 	######################################################################################################################
-	
-	commands_to_run = ['sudo', '-k', '-p', '', '-S', 'ln', '-s', '-f', loudnesscorrection_init_script_path, loudnesscorrection_init_script_link_path] # Create the commandline we need to run as root.
+
+	# The link to the init script must be done differently on Ubuntu and Debian.
+	# On Ubuntu we manually link the init script to /etc/rc2.d/S99loudnesscorrection_init_script
+	# On Debian  we must run: insserv -d /etc/init.d/loudnesscorrection_init_script
+	# insserv links the init script to   /etc/rc2.d/  and it automatically adds a number to the link name (example:  S21loudnesscorrection_init_script)
+
+	if os_version == 'ubuntu':
+		commands_to_run = ['sudo', '-k', '-p', '', '-S', 'ln', '-s', '-f', loudnesscorrection_init_script_path, loudnesscorrection_init_script_link_path] # Create the commandline we need to run as root.
+	if os_version == 'debian':
+		commands_to_run = ['sudo', '-k', '-p', '', '-S', 'insserv', '-d', loudnesscorrection_init_script_path] # Create the commandline we need to run as root.
 
 	# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 	sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
@@ -1600,8 +1618,9 @@ def install_init_scripts_and_config_files(*args):
 	# Password was accepted and our command was successfully run as root.
 	root_password_was_not_accepted_message.set('') # Remove possible error message from the screen.
 	
-	# Our scripts were installed successfully, update the label the to tell it to the user.
+	# Our scripts were installed successfully, update the label to tell it to the user.
 	loudnesscorrection_scripts_are_installed.set('Installed')
+	seventh_window_loudnesscorrection_label['foreground'] = 'dark green'
 	
 	return(False) # False means 'No errors happened everything was installed successfully :)'.
 	
@@ -1733,9 +1752,17 @@ def show_error_message_on_root_password_window(error_in_string_format):
 		counter = counter + 1
 
 def find_program_in_os_path(program_name_to_find):
+
+	global os_version
+
 	# Find a program in the operating system path. Returns the full path to the program (search for python3 returns: '/usr/bin/python3').
 	program_path = ''
 	os_environment_list = os.environ["PATH"].split(os.pathsep)
+
+	# In Debian we must manually add path '/usr/sbin' to the path list, since smbd is installed there.
+	if os_version == 'debian':
+		os_environment_list.append('/usr/sbin')
+
 	for os_path in os_environment_list:
 		true_or_false = os.path.exists(os_path + os.sep + program_name_to_find) and os.access(os_path + os.sep + program_name_to_find, os.X_OK) # True if program can be found in the path and it has executable permissions on.
 		if true_or_false == True:
@@ -3978,6 +4005,29 @@ def change_state_of_license_agreement_button():
 	else:
 		license_info_window_next_button['state'] = 'disabled'
 
+def find_if_we_are_running_on_ubuntu_or_debian():
+
+        os_name_announced_by_uname = ''
+
+        # Create the commandline we need to run.
+        commands_to_run = ['uname', '-a']                                                                                                                                                             
+
+        if debug == True:                                                                                                                                                                                
+                print()                                                                                                                                                                                  
+                print('Running commands:', commands_to_run)                                                                                                                                              
+
+        # Run our command.                                                                                                                                                                           
+        stdout, stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()                                                                                               
+        stdout = str(stdout.decode('UTF-8')).lower() # Convert sudo possible error output from binary to UTF-8 text.                                                                                         
+        stderr = str(stderr.decode('UTF-8')).lower() # Convert sudo possible error output from binary to UTF-8 text.                                                                                         
+
+        if 'debian' in stdout.lower():
+                os_name_announced_by_uname = 'debian'
+        if 'ubuntu' in stdout.lower():
+                os_name_announced_by_uname = 'ubuntu'
+
+        return(os_name_announced_by_uname)  
+
 
 ###############################
 # Main program starts here :) #
@@ -4074,6 +4124,9 @@ showstopper_error_message = tkinter.StringVar()
 # To achieve this we must trace when the combobox value changes.
 smtp_server_name.trace('w', define_smtp_server_name)
 smtp_server_port.trace('w', define_smtp_server_port)
+
+# Find out if we are running on Ubuntu or Debian
+os_version = find_if_we_are_running_on_ubuntu_or_debian()
 
 # Define some normal python variables
 gnu_gpl_3 = ''
