@@ -1,0 +1,203 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html dir="ltr" lang="en">
+  <head>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type">
+    <title>Ubuntu Server modifications needed before FreeLCS installation</title>
+    <meta content="Mikael Hartzell" name="author">
+  </head>
+  <body>
+    <h1>Ubuntu Server modifications needed before FreeLCS installation</h1>
+    The FreeLCS installation instructions on the main user manual page describe
+    installation on <strong>Ubuntu Desktop</strong>. Ubuntu Desktop has a
+    graphical user interface and it is very user frendly. There is another
+    version of Ubuntu called <strong>Ubuntu server</strong>. It has no
+    graphical user interface and because of this it requires more Linux skills
+    than the desktop version. Instructions below assume you know your way around
+    the Ubuntu Server system.<br>
+    <br>
+    Ubuntu Server has some small problems that will prevent FreeLCS from working
+    correctly. Locale may be broken and the font that FreeLCS uses when printing
+    the loudness history graphics file is not installed by default. These
+    problems can be easily corrected.<br>
+    <br>
+    <h2>Fixing Ubuntu Server locale</h2>
+    If you install program packages and Ubuntu complains that locale is not
+    configured correctly, then you can fix it by following the instruction
+    below. All following commands must be executed as root.<br>
+    <br>
+    These next instructions fixes your locale if your language is Finnish (code:
+    <strong>fi</strong>). You can find language code for you language in the
+    file:&nbsp;&nbsp; <strong>/usr/share/i18n/SUPPORTED</strong> <br>
+    Find the line that mentions you language code and <strong>UTF-8</strong>.
+    In my case the line is:<br>
+    <br>
+    <div style="margin-left: 40px;"><strong>fi_FI.UTF-8&nbsp;&nbsp; UTF-8</strong></div>
+    <br>
+    Copy the line and put it as the last line of the textfile:&nbsp;&nbsp; <strong>/var/lib/locales/supported.d/local</strong><br>
+    <br>
+    Next you need to take first part of the line above and compose two lines
+    text with it and add these lines at the end of the file: &nbsp; <strong>/etc/environment</strong><br>
+    In the case of Finnish language the two lines are:<br>
+    <br>
+    <div style="margin-left: 40px;"><strong>LC_ALL=fi_FI.UTF-8</strong><br>
+      <strong>LANG=fi_FI.UTF-8</strong></div>
+    <br>
+    Next run the command: <strong>dpkg-reconfigure locales</strong><br>
+    <br>
+    You need to log out and back in for the changes to take effect.<br>
+    <br>
+    <h2>Fixing history graphics file fonts</h2>
+    <br>
+    Install liberation fonts:&nbsp; <strong>apt-get install fonts-liberation</strong><br>
+    <br>
+    Next create a link for the font that is used when FreeLCS creates history
+    graphics files:<br>
+    <br>
+    <strong>ln&nbsp;&nbsp;
+      /usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf&nbsp;&nbsp;
+      /usr/share/fonts/truetype/arial.ttf</strong><br>
+    <br>
+    <br>
+    <br>
+    <h2><a name="Installing FreeLCS on a computer without a graphical user interface"></a>Installing
+      FreeLCS on a computer without a graphical user interface</h2>
+    Ubuntu Server does not have a graphical user interface and Debian can be
+    installed also without one. Computers with these version of Linux are most
+    likely servers running in a dedicated server room or virtualized in a server
+    farm. The only way to access these servers is usually with a ssh connection.<br>
+    <br>
+    FreeLCS installation requires a graphical user interface, but there are two
+    methods to install it on a "headless" server.<br>
+    <ol>
+      <li>You can install FreeLCS on a computer that has a graphical user
+        interface, make a backup of the installation and restore it on a
+        "headless" server. The restoration process can be done over ssh.
+        <a href="FreeLCS_User_Manual.html#Cloning%20a%20FreeLCS%20installation%20to%20another%20machine%20%28without%20a%20display%29">
+          Instructions for this method are here</a>.</li>
+      <li>You can use X - forwarding over a ssh connection. This installation
+        method is described below.</li>
+    </ol>
+    <p><br>
+    </p>
+    <h2>Installing FreeLCS over ssh with X - forwarding</h2>
+    This method requires two computers: one Linux or OS X machine with the X
+    windowing system installed (<strong>Desktop computer</strong>) and the
+    target server (<strong>server computer</strong>). When using this method the
+    installer runs on the "headless" <strong>server</strong>, but its windows
+    will appears on the
+    <strong> Desktop</strong> computer. <br>
+    <ul>
+      <li>First make an ssh - connection from the <strong>Desktop</strong>
+        computer to the <strong>server</strong> with the following command
+        (replace the username with an actual username on the server and the ip
+        with the actual ip of the server):</li>
+    </ul>
+    <p style="margin-left: 40px;"><strong>ssh&nbsp;&nbsp; -l&nbsp;&nbsp;
+        username &nbsp; 192.168.1.1</strong></p>
+    <ul>
+    </ul>
+    <ul>
+      <li value="2">Now add the following line in the file:&nbsp; <strong>/etc/ssh/ssh_config</strong>&nbsp;&nbsp;&nbsp;
+        on the <strong>server</strong>:</li>
+    </ul>
+    <div style="margin-left: 40px;"><strong>X11Forward yes</strong></div>
+    <ul>
+      <li>Now quit the ssh connection and create it again now using X -
+        forwarding:</li>
+    </ul>
+    <div style="margin-left: 40px;"><strong>ssh&nbsp; -X&nbsp; -C&nbsp;
+        -l&nbsp;&nbsp; username &nbsp; 192.168.1.1</strong></div>
+    <ul>
+      <li>You might get the message "<strong>.Xauthority does not exist</strong>".
+        This is not an error, but an announcement telling that the file in
+        question did not exist and it is now created. Next time you make the
+        connection you should no longer see this message.</li>
+      <li>The following commands are all executed on the <strong>server</strong>
+        over the ssh - connection.</li>
+      <li>Install programs needed during FreeLCS installation:</li>
+    </ul>
+    <div style="margin-left: 40px;"><strong>sudo&nbsp; apt-get -y&nbsp;
+        install&nbsp; python3&nbsp; idle3&nbsp; zip&nbsp; unzip</strong></div>
+    <ul>
+      <li>Download FreeLCS installer. If a newer FreeLCS package is available
+        replace the name of the zip-file:</li>
+    </ul>
+    <p style="margin-left: 40px;"><strong>wget&nbsp;
+        http://sourceforge.net/projects/freelcs/files/FreeLCS-2.4.zip</strong></p>
+    <ul>
+      <li>Unzip the package:</li>
+    </ul>
+    <div style="margin-left: 40px;"><strong>unzip FreeLCS-2.4.zip</strong></div>
+    <ul>
+      <li>Enter the unzipped archive directory: </li>
+    </ul>
+    <div style="margin-left: 40px;"><strong>cd freelcs</strong></div>
+    <ul>
+      <li>Run FreeLCS installer:</li>
+    </ul>
+    <div style="margin-left: 40px;"><strong>./installer.py</strong></div>
+    <br>
+    Now after a few seconds the window of the installer program should appear on
+    the <strong>Desktop</strong> computer, even though the installer really
+    runs on the <strong>server</strong>. Now you can follow the <a href="FreeLCS_User_Manual.html#Installer_starts">Ubuntu
+      Desktop installation instructions.</a><br>
+    <br>
+    <br>
+    <br>
+    <h2><a name="Automatic security updates on Ubuntu Server and Debian"></a>Automatic
+      security updates on Ubuntu Server and Debian</h2>
+    The next intructions sets the operating system to install all security
+    updates automatically. Since these Linux versions don't have a graphical
+    user interface you need to make an ssh connection to the server and use the
+    command line to do the set up.<br>
+    <br>
+    All following instructions must be run as the <strong>root</strong> user.<br>
+    <ul>
+      <li> Install the software needed for automatic updates: </li>
+    </ul>
+    <div style="margin-left: 40px;"><strong>apt-get install unattended-upgrades</strong></div>
+    <ul>
+      <li> Then you need to configure the software we installed:</li>
+    </ul>
+    <div style="margin-left: 40px;"><strong>dpkg-reconfigure -plow
+        unattended-upgrades</strong></div>
+    <ul>
+      <li>The configuration program will as if you want to install updates
+        automatically, answer "<strong>Yes</strong>".</li>
+      <li>Then we need to change some settings, open the configfile</li>
+    </ul>
+    <div style="margin-left: 40px;"><strong>nano -w
+        /etc/apt/apt.conf.d/50unattended-upgrades</strong>&nbsp;&nbsp; </div>
+    <ul>
+      <li>Check that the following line is <strong>not</strong> commented out.
+        The characters //&nbsp; are used for commenting.</li>
+    </ul>
+    <div style="margin-left: 40px;"><strong>"${distro_id}:${distro_codename}-security";</strong></div>
+    <ul>
+      <li> Then we need to edit another text file:</li>
+    </ul>
+    <p style="margin-left: 40px;"><strong>nano -w /etc/apt/apt.conf.d/10periodic</strong></p>
+    <ul>
+      <li> and add the following lines to it:</li>
+    </ul>
+    <div style="margin-left: 40px;"> <strong>APT::Periodic::Update-Package-Lists
+        "1";</strong><br>
+      <strong> APT::Periodic::Download-Upgradeable-Packages "1";</strong><br>
+      <strong> APT::Periodic::AutocleanInterval "30";</strong><br>
+      <strong> APT::Periodic::Unattended-Upgrade "1";</strong></div>
+    <br>
+    The settings we made define that the server will download and install
+    security updates daily. The downloaded installation packages are deleted
+    after 30 days.<br>
+    <br>
+    When updates are installed then details about the installation are recorded
+    to log files in directory:<br>
+    <br>
+    <div style="margin-left: 40px;"><strong>/var/log/unattended-upgrades/</strong></div>
+    <br>
+    <br>
+    Now you can setup <a href="FreeLCS_User_Manual.html#Boot_Once_A_Week">automatic
+      reboot once a week</a> so that kernel updates are applied.<br>
+    <br>
+  </body>
+</html>

@@ -12,9 +12,14 @@
     <h3> <a href="#Introduction">Introduction</a></h3>
     <h3> <a href="#Features">Features</a></h3>
     <h3> <a href="#Requirements">Requirements</a></h3>
-    <h3> <a href="#Installation">Installation</a></h3>
     <h3><a href="Debian_modifications_needed_before_FreeLCS_installation.html">Debian
         modifications needed before installation</a></h3>
+    <h3><a href="Ubuntu_Server_modifications_needed_before_FreeLCS_installation.html">Ubuntu
+        Server modifications needed before FreeLCS installation</a></h3>
+    <h3> </h3>
+    <h3><a href="#Installation">Installation</a></h3>
+    <h3><a href="Ubuntu_Server_modifications_needed_before_FreeLCS_installation.html#Installing%20FreeLCS%20on%20a%20computer%20without%20a%20graphical%20user%20interface">Installing
+        FreeLCS on a computer without a graphical user interface</a></h3>
     <h3> <a href="#Files%20that%20FreeLCS%20creates%20in%20your%20system">Files
         that FreeLCS creates in your system</a></h3>
     <h3> <a href="#Usage">Usage</a></h3>
@@ -125,9 +130,10 @@
       <li>You need a computer with at least 2 processor cores.</li>
       <li>2 GB of RAM&nbsp; (there probably is not much advantage in having
         more).</li>
-      <li> Ubuntu Linux 12.04. This version of Ubuntu will be supported by
-        Canonical until April 2017, meaning there will be security updates for 5
-        years after the release.</li>
+      <li> Ubuntu Linux 12.04 LTS or 14.04 LTS. The LTS versions of Ubuntu are
+        supported for five years. For example Ubuntu 12.04 LTS was released in
+        April 2012 meaning Canonical will make security updates available until
+        April 2017.</li>
       <li>Also Debian 7 is supported. Note that you must do a couple of small
         config changes to the Debian system before FreeLCS can be installed.
         These changes are documented <a href="Debian_modifications_needed_before_FreeLCS_installation.html">here</a>.</li>
@@ -137,24 +143,28 @@
         supported formats, channel orders, etc.<br>
       </li>
     </ul>
-    <p><u><strong>Note:</strong></u><br>
-    </p>
-    Only files that have all audio channels of the mix in the same audiofile or
-    audiostream can be processed. For example you cannot process a 5.1 mix that
-    is split up to 6 separate files. Loudness calculation won't know these files
-    belong together.<br>
-    <ul>
-    </ul>
     <br>
     <br>
     <h2> <a id="Installation">Installation</a></h2>
     <ul>
     </ul>
-    <p>Ubuntu graphical user interface is Unity, but Debian uses Gnome 3 by
-      default. FreeLCS installation in both operating systems is mostly the
-      same, differing only in some small parts caused by the two diffrent
-      graphical user interfaces. FreeLCS installation is described here for
-      Ubuntu pointing out things that are different in Debian.</p>
+    <br>
+    The installation instruction below apply to <strong>Ubuntu Desktop</strong>.
+    This is the most user friendly of the supported operating systems.
+    Installation on other supported platforms differs from the instructions
+    below.<br>
+    <br>
+    If you use <strong>Ubuntu Server</strong> (Ubuntu version without any
+    graphical user interface) then the <a href="Ubuntu_Server_modifications_needed_before_FreeLCS_installation.html">installation
+      procedure is described here</a>.<br>
+    <br>
+    If you use <strong>Debian Desktop</strong> (with a graphical user
+    interface), then you first need to <a href="Debian_modifications_needed_before_FreeLCS_installation.html">make
+      some modifications to the Debian system</a> and then you can follow
+    installation instructions for Ubuntu Desktop below. Things that needs to be
+    done differently on Debian are pointed out in the instructions.<br>
+    <br>
+    <p><strong></strong></p>
     <ul>
       <li>If you don't know whether to choose 32 or 64 bit Linux version, use
         the 32 bit one if you have less than 4 GB of ram and 64 bit if you have
@@ -164,17 +174,12 @@
         are probably never going to be fixed. JFS was designed by IBM to be a
         very fault tolerant filesystem for big database servers. It is able to
         survive power outages and has been in serious production use for years.</li>
-      <li>(<strong>Debian</strong>: If you plan to run FreeLCS on Debian Linux
-        instead of Ubuntu, then you must do a couple of config changes to the
-        Debian system before FreeLCS can be installed. First make all changes
-        described <a href="Debian_modifications_needed_before_FreeLCS_installation.html">in
-          this link</a> and then follow the install procedure described below).</li>
       <li>During the installation of Ubuntu and Debian, you are prompted to
         create the first user. It is important to use a password for this
         account, do not leave the password empty.</li>
-      <li>After installation of the operating system, log in as the first user
-        you created during installation. (<strong>Debian</strong>: log in as the
-        non root user you created during installation).</li>
+      <li>After installation of Ubuntu, log in as the first user you created
+        during installation. (<strong>Debian</strong>: log in as the non root
+        user you created during installation (the second user you created)).</li>
       <li>Next you must install <strong>python3</strong> and <strong>idle3</strong>
         giving a terminal command.</li>
       <li>Press the "windows" key on the keyboard to bring up Ubuntu search
@@ -286,8 +291,9 @@
     <p><br>
     </p>
     <ul>
-      <li>The installer program starts. The first screen asks you to accept the
-        license agreement.</li>
+      <li><a id="Installer_starts" name="Installer_starts"></a>The installer
+        program starts. The first screen asks you to accept the license
+        agreement.</li>
       <li>FreeLCS is published under a permissive license that lets you use,
         modify and distribute the program.</li>
     </ul>
@@ -459,8 +465,7 @@
       <li>The next window asks for your password. On Ubuntu type in the password
         for the first user that you created during Ubuntu installation. </li>
       <li>(<strong>Debian</strong>: type in the password for the non privileged
-        user you created during installation (the second user you created during
-        installation)).</li>
+        user you created during installation (the second user you created)).</li>
       <li>The installer uses this password to get root - proviledes. Root
         permissions are needed when FreeLCS program files are installed into the
         Linux system.<br>
@@ -538,12 +543,12 @@
     <br>
     <strong>/etc/init.d/loudnesscorrection_init_script</strong><br>
     <br>
-    This script starts all FreeLCS programs when the server boots up. The
+    This script starts all FreeLCS programs when the server boots up. This
     program is not run directly, but by a link in the <strong>/etc/rc2.d</strong>
     - folder. <br>
     <br>
-    First this program creates a ram disk, then it creates directories in the
-    HotFolder and sets their permissions. Then it starts up
+    When this program starts if first creates a ram disk, then it creates
+    directories in the HotFolder and sets their permissions. Then it starts up
     LoudnessCorrection.py and HeartBeat_Checker.py - programs.<br>
     <br>
     <br>
@@ -559,8 +564,8 @@
     </strong> <br>
     <strong>/usr/bin/LoudnessCorrection.py</strong><br>
     <br>
-    This is the main program of FreeLCS. It is the one that processes all files
-    dropped into HotFolder.<br>
+    This is the main program of FreeLCS. It processes all files dropped into
+    HotFolder.<br>
     <br>
     <strong><br>
       /usr/bin/HeartBeat_Checker.py</strong><br>
@@ -893,8 +898,8 @@
     </p>
     <br>
     <ul>
-      <li>(<strong>Debian</strong>: the icon looks a bit different on Debian):&nbsp;<img
-          alt="" src="Pictures/debian_network-01.png"></li>
+      <li>(<strong>Debian</strong>: the icon looks a bit different on
+        Debian):&nbsp;<img alt="" src="Pictures/debian_network-01.png"></li>
     </ul>
     <br>
     <div style="text-align: center;"><br>
@@ -962,7 +967,18 @@
     system by setting up three disks in a raid 0 array and putting the HotFolder
     onto the raid.<br>
     <br>
-    The other thing that affects processing speed is the setting "<strong>Number
+    An alternative to software raid and multiple rotating disks is to use a
+    single Solid State Disk (SSD) as the HotFolder disk. SSD - disks are very
+    fast, but they have one disadvantage over traditional rotating disks. SSD -
+    disks wear out much more quickly than traditional disk. Modern SSDs have
+    hardware that tries to even out the wear that writing causes to SSD memory
+    cells. A typical SSD has a life that is roughly equal to a rotating disk
+    when the SSD is in an environment that corresponds to typical desktop usage.
+    If your FreeLCS - server processes lots of audio files all the time, then
+    the SSD - disk is going to wear out sooner than expected. SSD might be a
+    good solution if you buy two disks and keep the other as spare.<br>
+    <br>
+    Another thing that affects processing speed is the setting "<strong>Number
       Of Processor Cores To Use</strong>" in the installer. Each file that is
     processed ties up two processor cores, but if you have a fast disk and a
     hyper-threading capable processor, you might get more speed by setting the
@@ -1161,13 +1177,16 @@
         updates are applied.<br>
       </li>
     </ul>
-    <br>
     To make the server boot automatically after an power outage you need to find
     an option in the computers <strong>bios</strong> that says something like:
     "Restart after power failure".<br>
+    <br>
     <ul>
     </ul>
-    Then tell Ubuntu to install security updates without human intervention.
+    Then tell Ubuntu to install security updates without human intervention. The
+    following instructions apply to <strong>Ubuntu Desktop</strong>, if you are
+    using Ubuntu Server or Debian then you need to follow <a href="Ubuntu_Server_modifications_needed_before_FreeLCS_installation.html#Automatic%20security%20updates%20on%20Ubuntu%20Server%20and%20Debian">instructions
+      here</a>.<br>
     <ul>
     </ul>
     <ol>
@@ -1181,9 +1200,9 @@
         found in "<strong>Applications/System Tools/Administration/Synaptic
           Package Manager</strong>". When Synaptic starts it asks for your
         password<span style="font-weight: bold;">. </span>In Synaptic click on
-        "<strong>Settings/Repositories</strong>". Now jump ahead in the instructions
-        to step 4. From there the instructions are the same for Ubuntu and
-        Debian).</li>
+        "<strong>Settings/Repositories</strong>". Now jump ahead in the
+        instructions to step 4. From there the instructions are the same for
+        Ubuntu and Debian).</li>
     </ul>
     <ul>
     </ul>
@@ -1270,9 +1289,10 @@
     </p>
     <p><br>
     </p>
-    <p>Now security updates are downloaded and installed automatically. Some of
-      them are applied immediately but some of them (new versions of the Linux
-      kernel) may come into effect only after a reboot.</p>
+    <p><a id="Boot_Once_A_Week" name="Boot_Once_A_Week"></a>Now security updates
+      are downloaded and installed automatically. Some of them are applied
+      immediately but some of them (new versions of the Linux kernel) may come
+      into effect only after a reboot.</p>
     <ul>
       <li>Next we need to make the computer restart automatically once a week. A
         good time to reboot might be for example:<strong> every monday morning
