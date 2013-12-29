@@ -1,21 +1,430 @@
-<!DOCTYPE html><html dir="ltr" lang="en">  <head>    <meta content="text/html; charset=UTF-8" http-equiv="content-type">    <title>FreeLCS FAQ</title>    <meta content="Mikael Hartzell" name="author">    <meta content="FreeLCS FAQ" name="description">    <meta content="FreeLCS FAQ" name="keywords">  </head>  <body>    <h1>FreeLCS FAQ</h1>    <br>    <br>    <a href="#What%20is%20FreeLCS%20%20?">What is FreeLCS&nbsp; ?</a><br>    <br>    <a href="#What%20programs%20are%20used%20to%20process%20audio%20files%20?">What
-      programs are used to process audio files ?</a><br>    <br>    <a href="#What%20filetypes%20are%20supported%20?"></a><a href="#What%20formats%20are%20supported%20?">What
-      formats are supported ?</a><br>    <br>    <a href="#FFmpeg%20and%20patents">FFmpeg and patents</a><br>    <br>    <a href="#How%20many%20audio%20streams%20in%20a%20file%20are%20supported%20?">How
-      many audio streams in a file are supported ?</a><br>    <br>    <a href="#What%20is%20the%20maximum%20/%20minimum%20file%20duration%20supported%20?">What
-      is the maximum / minimum file duration supported ?</a><br>    <br>    <a href="#What%20is%20the%20output%20format%20of%20FreeLCS%20?">What is the      output format of FreeLCS ?</a><br>    <br>    <a href="#What%20happens%20to%20the%20files%20when%20they%20are%20processed%20?">What
-      happens to the files when they are processed ?</a><br>    <br>    <a href="#Is%20TruePeak%20measurement%20supported%20?">Is TruePeak      measurement supported ?</a><br>    <br>    <a href="#Is%20peak%20limiting%20used%20when%20adjusting%20volume%20up%20?"></a><a      href="#Is%20peak%20limiting%20used%20when%20loudness%20correction%20adjusts%20volume%20up%20?">Is
-      peak limiting used when loudness correction adjusts volume up ?</a><br>    <br>    <a href="#What%20happens%20to%20the%20internal%20dynamics%20of%20a%20processed%20file%20?">What
-      happens to the internal dynamics of a processed file ?</a><br>    <br>    <a href="#What%20channel%20orders%20are%20supported%20?">What channel orders      are supported ?</a><br>    <br>    <a href="#What%20is%20the%20calculation%20precision%20?">What is the      calculation precision ?</a><br>    <br>    <a href="#Is%20bit%20depth%20and%20sample%20rate%20preserved%20?">Is bit      depth and sample rate preserved ?</a><br>    <br>    <a href="#What%20happens%20if%20output%20file%20size%20exceeds%20wav%20format%204%20GB%20size%20limit%20?">What
-      happens if output file size exceeds wav format 4 GB size limit ?</a><br>    <br>    <a href="#Will%20FreeLCS%20remux%20loudness%20corrected%20audio%20back%20to%20the%20video%20it%20was%20extracted%20from%20?">Will
-      FreeLCS remux loudness corrected audio back to the video it was extracted      from ?</a><br>    <a href="#Is%20MXF%20supported%20?"></a><br>    <a href="#Is%20MXF%20supported%20?">Is MXF supported ?</a><br>    <br>    <a href="#Any%20suggestion%20for%20free%20tools%20to%20manipulate%20the%20Flac%20format%20?">Any
-      suggestion for free tools to manipulate the Flac format ?</a><br>    <br>    <a href="#How%20can%20I%20test%20multichannel%20behaviour%20of%20my%20loudness%20meter%20?">How
-      can I test multichannel behaviour of my loudness meter ?</a><br>    <br>    <a href="#What%20Linux%20distributions%20are%20supported%20?">What Linux      distributions are supported ?</a><br>    <br>    <br>    <br>    <br>    <h2><a id="What is FreeLCS  ?">What is FreeLCS&nbsp; ?</a></h2>    <ul>      <li>FreeLCS is a tool to automatically adjust loudness of files according        to the EBU R128 recommendation.<br>      </li>      <li>EBU R128 is designed for professional broadcasters to help eliminate        loudness jumps between broadcasted programs.</li>      <li>Files adjusted according to R128 will at the same loudness level.</li>      <li>FreeLCS is a Linux server where users can drop in files through the        network for loudness correction.</li>      <li>FreeLCS corrects the loudness of each file dropped in. It also        produces a loudness history graphics file that tells about loudness        variations across time in the file.</li>      <li>FreeLCS is open source and free software. You don't have to pay        anything to use it :)<br>      </li>      <li>FreeLCS site is here: <a href="http://freelcs.sourceforge.net/">http://freelcs.sourceforge.net/</a></li>    </ul>    <br>    <h2> <a id="What programs are used to process audio files ?">What programs        are used to process audio files ?</a></h2>    <ul>      <li>Natively supported formats are <strong>wav</strong>, <strong>flac</strong>        and <strong>ogg</strong>. If FFmpeg is installed then it's used to        extract and convert audio from unsupported formats to wav and flac.<br>      </li>      <li>Mediainfo gets duration info from mpeg transport stream files.<br>      </li>      <li>libebur128 measures integrated and momentary loudness.</li>      <li>Sox adjusts file loudness to target level and also provides protective        limiting in cases where it is needed.</li>      <li>Gnuplot creates loudness results graphics from momentary loudness        calculations provided by libebur128.<br>      </li>    </ul>    <br>    <h2><a id="What formats are supported ?">What formats are supported ?</a></h2>    <ul>      <li><strong>Wav</strong>, <strong>flac</strong> and <strong>ogg</strong>        are natively supported.</li>      <li>If FFmpeg is installed then it is used to convert other formats to        supported formats before processing. FFmpeg supports a large number of        formats: <strong>mp4</strong>, <strong>mp3</strong>, <strong>mp2</strong>,        <strong>avi</strong>, <strong>mov</strong>, <strong>aac</strong>, <strong>h264</strong>,        <strong>vob</strong>, <strong>mkv</strong> to name a few. FFmpeg is        able to extract all audio streams from supported file types including        video files. <br>      </li>      <li>Note that all channels of one mix must be in the same file. If your        5.1 mix consists of 6 files, then you must combine them before dropping        the mix into loudness correction.<br>      </li>    </ul>    <p><br>    </p>    <h2><a id="FFmpeg and patents">FFmpeg and patents</a><br>    </h2>    <ul>      <li>Most audio post production is done in <strong>Wav</strong> format        because it is very widely supported and can be used without paying        license fees for the use of the format (source: <a href="http://www.digitalpreservation.gov/formats/fdd/fdd000025.shtml">http://www.digitalpreservation.gov/formats/fdd/fdd000025.shtml</a>,&nbsp;
+<!DOCTYPE html>
+<html dir="ltr" lang="en">
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+    <title>FreeLCS FAQ</title>
+    <meta content="Mikael Hartzell" name="author">
+    <meta content="FreeLCS FAQ" name="description">
+    <meta content="FreeLCS FAQ" name="keywords">
+  </head>
+  <body>
+    <h1>FreeLCS FAQ</h1>
+    <br>
+    <br>
+    <a href="#What%20is%20FreeLCS%20%20?">What is FreeLCS&nbsp; ?</a><br>
+    <br>
+    <a href="#What%20programs%20are%20used%20to%20process%20audio%20files%20?">What
+      programs are used to process audio files ?</a><br>
+    <br>
+    <a href="#What%20filetypes%20are%20supported%20?"></a><a href="#What%20formats%20are%20supported%20?">What
+      formats are supported ?</a><br>
+    <br>
+    <a href="#FFmpeg%20and%20patents">FFmpeg and patents</a><br>
+    <br>
+    <a href="#How%20many%20audio%20streams%20in%20a%20file%20are%20supported%20?">How
+      many audio streams in a file are supported ?</a><br>
+    <br>
+    <a href="#What%20is%20the%20maximum%20/%20minimum%20file%20duration%20supported%20?">What
+      is the maximum / minimum file duration supported ?</a><br>
+    <br>
+    <a href="#What%20is%20the%20output%20format%20of%20FreeLCS%20?">What is the
+      output format of FreeLCS ?</a><br>
+    <br>
+    <a href="#What%20happens%20to%20the%20files%20when%20they%20are%20processed%20?">What
+      happens to the files when they are processed ?</a><br>
+    <br>
+    <a href="#Is%20TruePeak%20measurement%20supported%20?">Is TruePeak
+      measurement supported ?</a><br>
+    <br>
+    <a href="#Is%20peak%20limiting%20used%20when%20adjusting%20volume%20up%20?"></a><a
+      href="#Is%20peak%20limiting%20used%20when%20loudness%20correction%20adjusts%20volume%20up%20?">Is
+      peak limiting used when loudness correction adjusts volume up ?</a><br>
+    <br>
+    <a href="#What%20happens%20to%20the%20internal%20dynamics%20of%20a%20processed%20file%20?">What
+      happens to the internal dynamics of a processed file ?</a><br>
+    <br>
+    <a href="#What%20channel%20orders%20are%20supported%20?">What channel orders
+      are supported ?</a><br>
+    <br>
+    <a href="#What%20is%20the%20calculation%20precision%20?">What is the
+      calculation precision ?</a><br>
+    <br>
+    <a href="#Is%20bit%20depth%20and%20sample%20rate%20preserved%20?">Is bit
+      depth and sample rate preserved ?</a><br>
+    <br>
+    <a href="#What%20happens%20if%20output%20file%20size%20exceeds%20wav%20format%204%20GB%20size%20limit%20?">What
+      happens if output file size exceeds wav format 4 GB size limit ?</a><br>
+    <br>
+    <a href="#Will%20FreeLCS%20remux%20loudness%20corrected%20audio%20back%20to%20the%20video%20it%20was%20extracted%20from%20?">Will
+      FreeLCS remux loudness corrected audio back to the video it was extracted
+      from ?</a><br>
+    <a href="#Is%20MXF%20supported%20?"></a><br>
+    <a href="#Is%20MXF%20supported%20?">Is MXF supported ?</a><br>
+    <br>
+    <a href="#Any%20suggestion%20for%20free%20tools%20to%20manipulate%20the%20Flac%20format%20?">Any
+      suggestion for free tools to manipulate the Flac format ?</a><br>
+    <br>
+    <a href="#How%20can%20I%20test%20multichannel%20behaviour%20of%20my%20loudness%20meter%20?">How
+      can I test multichannel behaviour of my loudness meter ?</a><br>
+    <br>
+    <a href="#What%20Linux%20distributions%20are%20supported%20?">What Linux
+      distributions are supported ?</a><br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <h2><a id="What is FreeLCS  ?">What is FreeLCS&nbsp; ?</a></h2>
+    <ul>
+    </ul>
+    <ul>
+      <li>FreeLCS is a tool to automatically adjust loudness of audio files
+        according to the EBU R128 recommendation.<br>
+      </li>
+      <li>EBU R128 is designed for professional broadcasters to help eliminate
+        loudness jumps between broadcasted programs. Files adjusted according to
+        R128 will at the same loudness level.</li>
+      <li>FreeLCS is a Linux server that shares one of it's folders to the
+        network.</li>
+      <li>Users of your network can then drop audio files to the server for
+        automatic loudness correction.</li>
+      <li>For each processed file the server also creates a loudness history
+        graphics file which shows loudness variations inside the file.</li>
+      <li>FreeLCS is open source and free software. You don't have to pay
+        anything to use it :)<br>
+      </li>
+      <li>FreeLCS site is here: <a href="http://freelcs.sourceforge.net/">http://freelcs.sourceforge.net/</a></li>
+    </ul>
+    <br>
+    <h2> <a id="What programs are used to process audio files ?">What programs
+        are used to process audio files ?</a></h2>
+    <ul>
+      <li>Natively supported formats are <strong>wav</strong>, <strong>flac</strong>
+        and <strong>ogg</strong>. If <strong>FFmpeg</strong> is installed then
+        it's used to extract and convert audio from unsupported formats to wav
+        and flac.<br>
+      </li>
+      <li><strong>Mediainfo</strong> gets duration info from mpeg transport
+        stream files.<br>
+      </li>
+      <li><strong>libebur128</strong> measures integrated and momentary loudness
+        and maximum true peak value.</li>
+      <li><strong>Sox</strong> adjusts file loudness to target level and also
+        provides protective limiting in cases where it is needed.</li>
+      <li><strong>Gnuplot</strong> creates loudness results graphics from
+        momentary loudness calculations provided by libebur128.<br>
+      </li>
+    </ul>
+    <br>
+    <h2><a id="What formats are supported ?">What formats are supported ?</a></h2>
+    <ul>
+      <li><strong>Wav</strong>, <strong>flac</strong> and <strong>ogg</strong>
+        are natively supported.</li>
+      <li>If FFmpeg is installed then it is used to convert other formats to
+        supported formats before processing. FFmpeg supports a large number of
+        formats: <strong>mp4</strong>, <strong>mp3</strong>, <strong>mp2</strong>,
+        <strong>avi</strong>, <strong>mov</strong>, <strong>aac</strong>, <strong>h264</strong>,
+        <strong>vob</strong>, <strong>mkv</strong> to name a few. FFmpeg is
+        able to extract all audio streams from supported file types including
+        video files. <br>
+      </li>
+      <li>Note that all channels of one mix must be in the same file. If your
+        5.1 mix consists of 6 files, then you must combine them before dropping
+        the mix into loudness correction.<br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
+    <h2><a id="FFmpeg and patents">FFmpeg and patents</a><br>
+    </h2>
+    <ul>
+      <li>Most audio post production is done in <strong>Wav</strong> format
+        because it is very widely supported and can be used without paying
+        license fees for the use of the format (source: <a href="http://www.digitalpreservation.gov/formats/fdd/fdd000025.shtml">http://www.digitalpreservation.gov/formats/fdd/fdd000025.shtml</a>,&nbsp;
         <a href="http://www.digitalpreservation.gov/formats/fdd/fdd000001.shtml">http://www.digitalpreservation.gov/formats/fdd/fdd000001.shtml</a>).
-        FreeLCS supports wav and two royalty / patent free formats <strong>flac</strong>        and <strong>ogg </strong>(license: <a href="http://flac.sourceforge.net/license.html">http://flac.sourceforge.net/license.html</a>).
-        If your post production is done in wav then you don't ever need to        install FFmpeg.</li>      <li>FFmpeg is a video and audio conversion tool that can be used to        convert media to many different formats. Using FFmpeg to decompress        audio from patented formats may require a license from the rights        holders. However FFmpeg may also be used to process free formats (MXF,        MKV, WebM and others) or formats with possibly expired patents (Mpeg1        Layer1, Mpeg 1 Layer2) without aquiring licenses. To more complicate        things some patented formats may be patented in some countries but not        in others. Also the expiration dates for these patents may vary between        countries.</li>      <li>FreeLCS uses FFmpeg if it's installed but works fine without it with        wav, flac and ogg formats.<br>      </li>    </ul>    <p><br>    </p>    <h2> <a id="How many audio streams in a file are supported ?">How many        audio streams in a file are supported ?</a></h2>    <ul>      <li>When FFmpeg is not installed: 1 audio stream.<br>      </li>      <li>When FFmpeg is installed: the limit for the number of audio streams in        a single file has not been tested. I personally have tested files with        16 streams with no problems. Upper limit is propably set by a possible        limit in FFmpeg or file format in question.<br>      </li>    </ul>    <br>    <h2> <a id="What is the maximum / minimum file duration supported ?">What        is the maximum / minimum file duration supported ?</a></h2>    <ul>      <li>The shortest supported file duration is exactly 1 second.</li>      <li>The longest supported file duration should in theory be unlimited, but        no tests have been made to find out the limit.</li>      <li>The longest real world file I have tested was 18 hours of 16 bit        Stereo Mpeg 1 Layer 2 compressed audio from television        transmission.&nbsp; The longest test files (with only 1 kHz sine wave)        were 33 hours of Flac compressed 24 bit stereo audio and 388 hours of        ogg vorbis compresses stereo audio. The last one is 16 days of        continuous audio and the loudness corrected version was a 51 GB flac -        compressed file :)<br>      </li>    </ul>    <br>    <h2><a id="What is the output format of FreeLCS ?">What is the output format        of FreeLCS ?</a></h2>    <ul>      <li>FreeLCS output format is wav if output file size does not exceed wav        format max size 4 GB. In case of very large files the output format is        flac. See also question: <a href="#What%20happens%20if%20output%20file%20size%20exceeds%20wav%20format%204%20GB%20size%20limit%20?">What
-          happens if output file size exceeds wav format 4 GB size limit ?</a><br>      </li>    </ul>    <br>    <h2><a id="What happens to the files when they are processed ?">What happens        to the files when they are processed ?</a></h2>    <ul>      <li>First incoming files are searched for supported audio streams.</li>      <li>FreeLCS natively supports wav, flac and ogg formats and one audio        stream per file. If there are more streams or the audio format is        unsupported then FFmpeg is used (only if FFmpeg is installed) to convert        streams to a supported format.<br>      </li>      <li>FFmpeg places extracted streams back to FreeLCS HotFolder so that they        are seen as new files coming into processing. When all streams have been        extracted then the original file is deleted as it is no longer needed.<br>      </li>      <li>Then two simultaneous loudness calculation processes are started for        the file. One measures integrated loudness and the other momentary        loudness. Momentary loudness is calculated in 3 second slices for files        longer than 12 seconds and in 0.5 seconds slices for files shorter than        that. </li>      <li>After loudness measurement Gnuplot creates a loudess result graphics        file from momentary loudness measurements provided by libebur128.<br>      </li>      <li>Then a new loudness adjusted file is created with sox.</li>      <li>The resulting corrected file loudness will be at -23.0 LUFS.</li>      <li>All files will be automatically deleted after a delay defined during        FreeLCS installation, that is 8 hours by default.</li>    </ul>    <p><br>    </p>    <h2><a id="Is TruePeak measurement supported ?">Is TruePeak measurement        supported ?</a></h2>    <p>Yes :) When you install the software you can choose which method of peak      measurement is used: sample peak or TruePeak.</p>    <p><br>    </p>    <h2><a id="Is peak limiting used when loudness correction adjusts volume up ?">Is
-        peak limiting used when loudness correction adjusts volume up ?</a></h2>    <ul>      <li>If file gain is adjusted down then no peak limiting is needed as the        peaks also go down.</li>      <li>If file gain must be adjusted up then a protective limiter is used but        only if peaks in the file would go over a set limit after gain        correction.<br>      </li>      <li>The max peaks after gain adjustment will be at -3 dB when using sample        peaks and -1 dB when using TruePeak.</li>    </ul>    <p><br>    </p>    <h2><a id="What happens to the internal dynamics of a processed file ?">What        happens to the internal dynamics of a processed file ?</a></h2>    <ul>      <li>The dynamics inside an audio file are not changed in any way, only the        gain of the whole file is adjusted up or down so that the average        loudness of file hits -23.0 LUFS. For example if measured file loudness        is at -20.0 LUFS, then all samples of the file will be adjusted down by        3 dBs when loudness corrected file is created.<br>      </li>    </ul>    <br>    <h2><a id="What channel orders are supported ?">What channel orders are        supported ?</a></h2>    The following channel orders are supported:<br>    <ul>      <li>1.0 = Mono</li>      <li>2.0 = L, R.<br>      </li>      <li>3.0 = Any channel order for front channels L, R, C.</li>      <li>4.0 = L, R, LS, RS.</li>      <li>5.0 = L, R, C, LS, RS.</li>      <li>5.1 = L, R, C, LFE, LS, RS.</li>    </ul>    Ebu R128 recommendation (or to be more precise ITU 1770 that R128 refers to)    does not support any specific channel order, it only defines how the    loudness calculation of: <strong>Front</strong>, <strong>Surround</strong>    and <strong>LFE</strong> channels differs from each other. Surround    channels are weighted differently from front channels and LFE channel is    always discarded and not taken into account in loudness calculation. This    means that for example in the case of 3.0 any channel order is supported    since all of the channels L, R, C are front channels and weighted equally in    loudness calculation.<br>    <p>All channels of one mix must be in the same file. If your 5.1 mix      consists of 6 files, then you must combine them before dropping the mix      into loudness correction.</p>    <p><strong>Important note:</strong> channel counts of more than six channels      are not supported and not processed !!!!!!!</p>    <br>    <h2><a id="What is the calculation precision ?">What is the calculation        precision ?</a></h2>    <ul>      <li>Audio gain adjustment is done with sox and it uses 32 bits by default        for all calculations.<br>      </li>      <li>If output file bit depth is not 32 bits, then sox uses dithering by        default. The output file has the same bit depth as the input file in        most cases.</li>    </ul>    <br>    <h2><a id="Is bit depth and sample rate preserved ?">Is bit depth and sample        rate preserved ?</a></h2>    Sample rate should be preserved in all cases. <br>    <br>    The following rules for bit depth conversion comes from internal limitations    in sox and FFmpeg.<br>    <br>    <u><strong>When FFmpeg is not installed:</strong></u><br>    <ul>      <li>64 bit audio is not supported.</li>      <li>If audio is in uncompressed PCM - format, then bit depth will be        preserved.<br>      </li>      <li>If audio has been compressed with ogg then the audio has no real bit        depth anymore and audio will be extracted using bit depth of 16 bits.<br>      </li>      <li>If audio is in flac format then bit depth is preserved except that 8        bit audio is converted to 16 bits. Flac supports bit depths up to 24        bits.<br>      </li>    </ul>    <u><strong>When FFmpeg is installed:</strong></u><br>    <ul>      <li>If audio is in uncompressed PCM - format, then bit depth will be        preserved except that 64 bit audio will be converted to 32 bits because        sox supports bit depths only up to 32 bits.</li>      <li>If audio has been compressed using a lossy codec then the audio has no        real bit depth anymore and audio will be extracted using bit depth of 16        bits.</li>      <li>If output file size would exceed 4 GBs then FreeLCS must store the        audio in flac format when processing it. Bit depths bigger than 16 will        be converted to 16 bits. This is caused by internal limitation in        FFmpeg, it always uses 16 bits when storing in flac format. Also 8 bit        audio stored in flac format will be converted to 16 bits.<br>      </li>    </ul>    <u><strong></strong></u><br>    <h2><a id="What happens if output file size exceeds wav format 4 GB size limit ?">What
-        happens if output file size exceeds wav format 4 GB size limit ?</a></h2>    <ul>      <li>Audio production is usually done in wav format since wav is so widely        supported. The wav format has a max supported file size of 4 GB.</li>      <li>If the output file size would exceed this hard limit then FreeLCS        splits the audio channels in the file to separate wav - files. If the        size of a separate channel would also go over the 4 GB limit then        FreeLCS saves all channels of the file in a single flac file. Flac -        format supports very large files.</li>      <li>There are new revisions of the wav format (RF64, W64) that can store        files larger than 4 GB, but I have not tested these formats.&nbsp; RF64        and W64 are not yet very widely supported.<br>      </li>    </ul>    <br>    <h2><a id="Will FreeLCS remux loudness corrected audio back to the video it was extracted from ?">Will
-        FreeLCS remux loudness corrected audio back to the video it was        extracted from ?</a></h2>    <ul>      <li>No. FreeLCS tries to extract and process all audio streams from the        video file, but it won't remux video and audio back together.</li>    </ul>    <br>    <br>    <h2><a id="Is MXF supported ?">Is MXF supported ?</a></h2>    <ul>      <li>FFmpeg seems to have some support for MXF and I've been able to        extract audio from MXF with it. However as all channels of a mix must be        in one file this might be impractical. If the audio inside MXF is stored        as separate channels, then the user must combine them to a single file        before loudness correction.</li>    </ul>    <br>    <br>    <h2><a id="Any suggestion for free tools to manipulate the Flac format ?">Any
-        suggestion for free tools to manipulate the Flac format ?</a></h2>    <ul>      <li>If your audio tools don't support flac then you can use Audacity to        manipulate files in this format. Audacity is a free simple multitrack        audio tool and it supports Mac, Linux and windows.</li>      <li>Audacity site is here: <a href="http://audacity.sourceforge.net/?lang=en">http://audacity.sourceforge.net/?lang=en</a></li>    </ul>    <p><br>    </p>    <h2><a id="How can I test multichannel behaviour of my loudness meter ?">How        can I test multichannel behavior of my loudness meter ?</a></h2>    <ul>      <li>You can download multichannel test files here: <a href="http://sourceforge.net/projects/freelcs/files/">http://sourceforge.net/projects/freelcs/files/</a></li>      <li>The zip file comes with a text document with expected integrated        loudness results for all files.<br>      </li>      <li>Zip name is '<strong>EBU_R128_Test_Files_For_Channels_Counts_From_1_to_6.zip</strong>'<br>      </li>    </ul>    <br>    <h2><a id="What Linux distributions are supported ?">What Linux        distributions are supported ?</a></h2>    <ul>      <li>The plan is to support all <strong>Ubuntu</strong> <strong>LTS</strong>        releases (LTS stands for <strong>L</strong>ong <strong>T</strong>erm <strong>S</strong>upport).
-        The current one is <strong>Ubuntu 12.04 LTS</strong> that was released        on April 2012. Ubuntu 12.04 LTS will receive security updates for 5        years (until April 2017).</li>      <li>Canonical releases a new Ubuntu LTS version every 2 years. If you        install FreeLCS on Ubuntu 12.04 then you will need to upgrade the        software not sooner than 2017. The supported version of Ubuntu at that        time will be 16.04 LTS.</li>      <li>Debian 7 support was added in&nbsp; FreeLCS 2.5. Note that the user        must do a couple of small config changes to the Debian system before        FreeLCS can be installed. These changes are documented <a href="Debian_modifications_needed_before_FreeLCS_installation.html">here</a>.</li>    </ul>    <p><br>    </p>    <p><br>    </p>  </body></html>
+        FreeLCS supports wav and two royalty / patent free formats <strong>flac</strong>
+        and <strong>ogg </strong>(license: <a href="http://flac.sourceforge.net/license.html">http://flac.sourceforge.net/license.html</a>).
+        If your post production is done in wav then you don't ever need to
+        install FFmpeg.</li>
+      <li>FFmpeg is a video and audio conversion tool that can be used to
+        convert media to many different formats. Using FFmpeg to decompress
+        audio from patented formats may require a license from the rights
+        holders. However FFmpeg may also be used to process free formats (MXF,
+        MKV, WebM and others) or formats with possibly expired patents (Mpeg1
+        Layer1, Mpeg 1 Layer2) without aquiring licenses (source: <a href="http://en.wikipedia.org/wiki/MPEG-1#Patents">https://en.wikipedia.org/wiki/MPEG-1#Patents</a>).
+        To more complicate things some patented formats may be patented in some
+        countries but not in others. Also the expiration dates for these patents
+        may vary between countries.</li>
+      <li>FreeLCS uses FFmpeg if it's installed but works fine without it with
+        wav, flac and ogg formats.<br>
+      </li>
+    </ul>
+    <p><br>
+    </p>
+    <h2> <a id="How many audio streams in a file are supported ?">How many
+        audio streams in a file are supported ?</a></h2>
+    <ul>
+      <li>When FFmpeg is not installed: 1 audio stream.<br>
+      </li>
+      <li>When FFmpeg is installed: the limit for the number of audio streams in
+        a single file has not been tested. I personally have tested files with
+        16 streams with no problems. Upper limit is propably set by a possible
+        limit in FFmpeg or file format in question.<br>
+      </li>
+    </ul>
+    <br>
+    <h2> <a id="What is the maximum / minimum file duration supported ?">What
+        is the maximum / minimum file duration supported ?</a></h2>
+    <ul>
+      <li>The shortest supported file duration is exactly 1 second.</li>
+      <li>The longest supported file duration should in theory be unlimited, but
+        no tests have been made to find out the limit.</li>
+      <li>The longest real world file I have tested was 18 hours of 16 bit
+        Stereo Mpeg 1 Layer 2 compressed audio from television
+        transmission.&nbsp; The longest test files (with only 1 kHz sine wave)
+        were 33 hours of Flac compressed 24 bit stereo audio and 388 hours of
+        ogg vorbis compresses stereo audio. The last one is 16 days of
+        continuous audio and the loudness corrected version was a 51 GB flac -
+        compressed file :)<br>
+      </li>
+    </ul>
+    <br>
+    <h2><a id="What is the output format of FreeLCS ?">What is the output format
+        of FreeLCS ?</a></h2>
+    <ul>
+      <li>FreeLCS output format is wav if output file size does not exceed wav
+        format max size 4 GB. In case of very large files the output format is
+        flac. See also question: <a href="#What%20happens%20if%20output%20file%20size%20exceeds%20wav%20format%204%20GB%20size%20limit%20?">What
+          happens if output file size exceeds wav format 4 GB size limit ?</a><br>
+      </li>
+    </ul>
+    <br>
+    <h2><a id="What happens to the files when they are processed ?">What happens
+        to the files when they are processed ?</a></h2>
+    <ul>
+      <li>First incoming files are searched for supported audio streams.</li>
+      <li>FreeLCS natively supports wav, flac and ogg formats and one audio
+        stream per file. If there are more streams or the audio format is
+        unsupported then FFmpeg is used (only if FFmpeg is installed) to convert
+        streams to a supported format.<br>
+      </li>
+      <li>FFmpeg places extracted streams back to FreeLCS HotFolder so that they
+        are seen as new files coming into processing. When all streams have been
+        extracted then the original file is deleted as it is no longer needed.<br>
+      </li>
+      <li>Then two simultaneous loudness calculation processes are started for
+        the file. One measures integrated loudness and the other momentary
+        loudness. Momentary loudness is calculated in 3 second slices for files
+        longer than 12 seconds and in 0.5 seconds slices for files shorter than
+        that. </li>
+      <li>After loudness measurement Gnuplot creates a loudess result graphics
+        file from momentary loudness measurements provided by libebur128.<br>
+      </li>
+      <li>Then a new loudness adjusted file is created with sox. Loudness of
+        this file is at EBU R128 target level <strong>-23.0 LUFS</strong>.</li>
+      <li>All files will be automatically deleted after a delay defined during
+        FreeLCS installation, default is 8 hours.</li>
+    </ul>
+    <p><br>
+    </p>
+    <h2><a id="Is TruePeak measurement supported ?">Is TruePeak measurement
+        supported ?</a></h2>
+    <p>Yes :) When you install the software you can choose which method of peak
+      measurement is used: sample peak or TruePeak.</p>
+    <p><br>
+    </p>
+    <h2><a id="Is peak limiting used when loudness correction adjusts volume up ?">Is
+        peak limiting used when loudness correction adjusts volume up ?</a></h2>
+    <ul>
+      <li>If file gain is adjusted down then no peak limiting is needed as the
+        peaks also go down.</li>
+      <li>If file gain must be adjusted up then a protective limiter is used but
+        only if peaks in the file would go over a set limit after gain
+        correction.<br>
+      </li>
+      <li>The max peaks after gain adjustment will be at -3 dBFS when using
+        sample peaks and -1 dBTP when using TruePeak.</li>
+    </ul>
+    <p><br>
+    </p>
+    <h2><a id="What happens to the internal dynamics of a processed file ?">What
+        happens to the internal dynamics of a processed file ?</a></h2>
+    <ul>
+      <li>The dynamics inside an audio file are not changed in any way, only the
+        gain of the whole file is adjusted up or down so that the average
+        loudness of file hits -23.0 LUFS. For example if measured file loudness
+        is at -20.0 LUFS, then all samples of the file will be adjusted down by
+        3 dBs when loudness corrected file is created.<br>
+      </li>
+    </ul>
+    <br>
+    <h2><a id="What channel orders are supported ?">What channel orders are
+        supported ?</a></h2>
+    The following channel orders are supported:<br>
+    <ul>
+      <li>1.0 = Mono</li>
+      <li>2.0 = L, R.<br>
+      </li>
+      <li>3.0 = Any channel order for front channels L, R, C.</li>
+      <li>4.0 = L, R, LS, RS.</li>
+      <li>5.0 = L, R, C, LS, RS.</li>
+      <li>5.1 = L, R, C, LFE, LS, RS.</li>
+    </ul>
+    Ebu R128 recommendation (or to be more precise ITU 1770 that R128 refers to)
+    does not support any specific channel order, it only defines how loudness
+    measurement of: <strong>Front</strong>, <strong>Surround</strong> and <strong>LFE</strong>
+    channels differs from each other. Surround channels are weighted differently
+    from front channels and LFE channel is always discarded from loudness
+    calculation. This means that for example in the case of 3.0 any channel
+    order is supported since all of the channels L, R, C are front channels and
+    weighted equally in loudness calculation.<br>
+    <p><strong>Important notes:</strong></p>
+    <ul>
+      <li>Channel counts of more than six channels are not supported and not
+        processed !!!!!!!</li>
+      <li>All channels of one mix must be in the same file. If your 5.1 mix
+        consists of 6 files, then you must combine them before dropping the mix
+        into loudness correction.</li>
+    </ul>
+    <br>
+    <h2><a id="What is the calculation precision ?">What is the calculation
+        precision ?</a></h2>
+    <ul>
+      <li>Audio gain adjustment is done with sox and it uses 32 bits by default
+        for all calculations.<br>
+      </li>
+      <li>If output file bit depth is not 32 bits, then sox uses dithering by
+        default. The output file has the same bit depth as the input file in
+        most cases.</li>
+    </ul>
+    <br>
+    <h2><a id="Is bit depth and sample rate preserved ?">Is bit depth and sample
+        rate preserved ?</a></h2>
+    Sample rate should be preserved in all cases. <br>
+    <br>
+    The following rules for bit depth conversion comes from internal limitations
+    in sox and FFmpeg.<br>
+    <br>
+    <u><strong>When FFmpeg is not installed:</strong></u><br>
+    <ul>
+      <li>64 bit audio is not supported.</li>
+      <li>If audio is in uncompressed PCM - format, then bit depth will be
+        preserved.<br>
+      </li>
+      <li>If audio has been compressed with ogg then the audio has no real bit
+        depth anymore and audio will be extracted using bit depth of 16 bits.<br>
+      </li>
+      <li>If audio is in flac format then bit depth is preserved except that 8
+        bit audio is converted to 16 bits. Flac supports bit depths up to 24
+        bits.<br>
+      </li>
+    </ul>
+    <u><strong>When FFmpeg is installed:</strong></u><br>
+    <ul>
+      <li>If audio is in uncompressed PCM - format, then bit depth will be
+        preserved except that 64 bit audio will be converted to 32 bits because
+        sox supports bit depths only up to 32 bits.</li>
+      <li>If audio has been compressed using a lossy codec then the audio has no
+        real bit depth anymore and audio will be extracted using bit depth of 16
+        bits.</li>
+      <li>If output file size would exceed 4 GBs then FreeLCS must store the
+        audio in flac format when processing it. Bit depths bigger than 16 will
+        be converted to 16 bits. This is caused by internal limitation in
+        FFmpeg, it always uses 16 bits when storing in flac format. Also 8 bit
+        audio stored in flac format will be converted to 16 bits.<br>
+      </li>
+    </ul>
+    <u><strong></strong></u><br>
+    <h2><a id="What happens if output file size exceeds wav format 4 GB size limit ?">What
+        happens if output file size exceeds wav format 4 GB size limit ?</a></h2>
+    <ul>
+      <li>Audio production is usually done in wav format since wav is so widely
+        supported. The wav format has a max supported file size of 4 GB.</li>
+      <li>If the output file size would exceed this hard limit then FreeLCS
+        splits audio channels in the file to separate wav - files. If the size
+        of a separate channel would also go over the 4 GB limit then FreeLCS
+        saves all channels of the file in a single flac file. Flac - format
+        supports very large files.</li>
+      <li>There are new revisions of the wav format (RF64, W64) that can store
+        files larger than 4 GB, but I have not tested these formats.&nbsp; RF64
+        and W64 are not yet very widely supported.<br>
+      </li>
+    </ul>
+    <br>
+    <h2><a id="Will FreeLCS remux loudness corrected audio back to the video it was extracted from ?">Will
+        FreeLCS remux loudness corrected audio back to the video it was
+        extracted from ?</a></h2>
+    <ul>
+      <li>No. FreeLCS tries to extract and process all audio streams from the
+        video file, but it won't remux video and audio back together.</li>
+    </ul>
+    <br>
+    <br>
+    <h2><a id="Is MXF supported ?">Is MXF supported ?</a></h2>
+    <ul>
+      <li>FFmpeg seems to have some support for MXF and I've been able to
+        extract audio from MXF with it. However as all channels of a mix must be
+        in one file this might be impractical. If the audio inside MXF is stored
+        as separate channels, then the user must combine them to a single file
+        before loudness correction.</li>
+    </ul>
+    <br>
+    <br>
+    <h2><a id="Any suggestion for free tools to manipulate the Flac format ?">Any
+        suggestion for free tools to manipulate the Flac format ?</a></h2>
+    <ul>
+      <li>If your audio tools don't support flac then you can use Audacity to
+        manipulate files in this format. Audacity is a free simple multitrack
+        audio tool and it supports Mac, Linux and windows.</li>
+      <li>Audacity site is here: <a href="http://audacity.sourceforge.net/?lang=en">http://audacity.sourceforge.net/?lang=en</a></li>
+    </ul>
+    <p><br>
+    </p>
+    <h2><a id="How can I test multichannel behaviour of my loudness meter ?">How
+        can I test multichannel behavior of my loudness meter ?</a></h2>
+    <ul>
+      <li>You can download multichannel test files here: <a href="http://sourceforge.net/projects/freelcs/files/">http://sourceforge.net/projects/freelcs/files/</a></li>
+      <li>The zip file comes with a text document with expected integrated
+        loudness results for all files.<br>
+      </li>
+      <li>Zip name is '<strong>EBU_R128_Test_Files_For_Channels_Counts_From_1_to_6.zip</strong>'<br>
+      </li>
+    </ul>
+    <br>
+    <h2><a id="What Linux distributions are supported ?">What Linux
+        distributions are supported ?</a></h2>
+    <ul>
+    </ul>
+    FreeLCS 2.4 supports:<br>
+    <ul>
+      <li>Ubuntu Desktop 12.04 LTS.</li>
+    </ul>
+    FreeLCS 2.5 supports:<br>
+    <ul>
+      <li>Ubuntu 12.04 LTS Desktop</li>
+      <li>Ubuntu 12.04 LTS Server</li>
+      <li>Ubuntu 14.04 LTS Desktop</li>
+      <li>Ubuntu 14.04 LTS Server</li>
+      <li>Debian 7</li>
+    </ul>
+    The plan is to support all <strong>Debian </strong>releses from version <strong>7
+    </strong>and<strong> </strong>all future <strong>Ubuntu</strong> <strong>LTS</strong>
+    releases.<br>
+    <br>
+    LTS stands for <strong>L</strong>ong <strong>T</strong>erm <strong>S</strong>upport.
+    Ubuntu LTS releses get security updates for 5 years from the first release
+    date. <strong>Ubuntu 12.04 LTS</strong> that was released at April 2012 and
+    it will get security updates until April 2017.<br>
+    <br>
+    Canonical releases a new Ubuntu LTS version every 2 years. If you install
+    FreeLCS on Ubuntu 12.04 then you will need to upgrade the software not
+    sooner than 2017. The supported version of Ubuntu at that time will be
+    Ubuntu 16.04 LTS.
+    <ul>
+    </ul>
+    <br>
+    <p><br>
+    </p>
+    <p><br>
+    </p>
+  </body>
+</html>

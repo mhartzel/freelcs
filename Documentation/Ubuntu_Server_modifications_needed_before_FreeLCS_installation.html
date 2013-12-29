@@ -21,9 +21,11 @@
     problems can be easily corrected.<br>
     <br>
     <h2>Fixing Ubuntu Server locale</h2>
-    If you install program packages and Ubuntu complains that locale is not
-    configured correctly, then you can fix it by following the instruction
-    below. All following commands must be executed as root.<br>
+    Ubuntu Server locale is not configured correctly by default, this produces
+    error messages during program package installation and stops the FreeLCS
+    installer.<br>
+    <br>
+    All following commands must be executed as root.<br>
     <br>
     These next instructions fixes your locale if your language is Finnish (code:
     <strong>fi</strong>). You can find language code for you language in the
@@ -48,12 +50,13 @@
     <br>
     <h2>Fixing history graphics file fonts</h2>
     <br>
-    Install liberation fonts:&nbsp; <strong>apt-get install fonts-liberation</strong><br>
-    <br>
+    Install liberation fonts:&nbsp; <strong>sudo apt-get install
+      fonts-liberation<br>
+    </strong><br>
     Next create a link for the font that is used when FreeLCS creates history
     graphics files:<br>
     <br>
-    <strong>ln&nbsp;&nbsp;
+    <strong>sudo&nbsp;&nbsp; ln&nbsp;&nbsp;
       /usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf&nbsp;&nbsp;
       /usr/share/fonts/truetype/arial.ttf</strong><br>
     <br>
@@ -61,18 +64,29 @@
     <br>
     <h2><a name="Installing FreeLCS on a computer without a graphical user interface"></a>Installing
       FreeLCS on a computer without a graphical user interface</h2>
+    If your operating system is Debian, then you need to make some changes to
+    the system before FreeLCS installation. <a href="Debian_modifications_needed_before_FreeLCS_installation.html">Instructions
+      are here</a>.<br>
+    <br>
+    If your operating system is Ubuntu Server, then you need to make some
+    changes to the system before FreeLCS installation. <a href="Ubuntu_Server_modifications_needed_before_FreeLCS_installation.html">Instructions
+      are here</a>.<br>
+    <br>
     Ubuntu Server does not have a graphical user interface and Debian can be
     installed also without one. Computers with these version of Linux are most
     likely servers running in a dedicated server room or virtualized in a server
     farm. The only way to access these servers is usually with a ssh connection.<br>
+    <br>
+    The advantage of a operating system without a GUI is that it uses very
+    little physical resources, for example Debian 7 without a GUI uses only 45
+    MB of Ram when it starts up. <br>
     <br>
     FreeLCS installation requires a graphical user interface, but there are two
     methods to install it on a "headless" server.<br>
     <ol>
       <li>You can install FreeLCS on a computer that has a graphical user
         interface, make a backup of the installation and restore it on a
-        "headless" server. The restoration process can be done over ssh.
-        <a href="FreeLCS_User_Manual.html#Cloning%20a%20FreeLCS%20installation%20to%20another%20machine%20%28without%20a%20display%29">
+        "headless" server. The restoration process can be done over ssh. <a href="FreeLCS_User_Manual.html#Cloning%20a%20FreeLCS%20installation%20to%20another%20machine%20%28without%20a%20display%29">
           Instructions for this method are here</a>.</li>
       <li>You can use X - forwarding over a ssh connection. This installation
         method is described below.</li>
@@ -84,8 +98,7 @@
     windowing system installed (<strong>Desktop computer</strong>) and the
     target server (<strong>server computer</strong>). When using this method the
     installer runs on the "headless" <strong>server</strong>, but its windows
-    will appears on the
-    <strong> Desktop</strong> computer. <br>
+    will appears on the <strong> Desktop</strong> computer. <br>
     <ul>
       <li>First make an ssh - connection from the <strong>Desktop</strong>
         computer to the <strong>server</strong> with the following command
@@ -123,11 +136,11 @@
         replace the name of the zip-file:</li>
     </ul>
     <p style="margin-left: 40px;"><strong>wget&nbsp;
-        http://sourceforge.net/projects/freelcs/files/FreeLCS-2.4.zip</strong></p>
+        http://sourceforge.net/projects/freelcs/files/FreeLCS-2.5.zip</strong></p>
     <ul>
       <li>Unzip the package:</li>
     </ul>
-    <div style="margin-left: 40px;"><strong>unzip FreeLCS-2.4.zip</strong></div>
+    <div style="margin-left: 40px;"><strong>unzip FreeLCS-2.5.zip</strong></div>
     <ul>
       <li>Enter the unzipped archive directory: </li>
     </ul>
@@ -169,16 +182,28 @@
     <div style="margin-left: 40px;"><strong>nano -w
         /etc/apt/apt.conf.d/50unattended-upgrades</strong>&nbsp;&nbsp; </div>
     <ul>
-      <li>Check that the following line is <strong>not</strong> commented out.
-        The characters //&nbsp; are used for commenting.</li>
+      <li><strong>On Ubuntu</strong>: Check that the following line is <strong>not</strong>
+        commented out. The characters //&nbsp; are used for commenting.</li>
     </ul>
     <div style="margin-left: 40px;"><strong>"${distro_id}:${distro_codename}-security";</strong></div>
     <ul>
-      <li> Then we need to edit another text file:</li>
+      <li>(<strong>On Debian</strong>: Check that the following line is <strong>not</strong>
+        commented out. The characters //&nbsp; are used for commenting).</li>
+    </ul>
+    <p style="margin-left: 40px;"><strong>"origin=Debian,archive=stable,label=Debian-Security";</strong></p>
+    <ul>
+      <li>Then we need to edit another text file, <strong>on Ubuntu</strong>
+        open the file to text editor with the following command:</li>
     </ul>
     <p style="margin-left: 40px;"><strong>nano -w /etc/apt/apt.conf.d/10periodic</strong></p>
     <ul>
-      <li> and add the following lines to it:</li>
+      <li>(<strong>On Debian</strong> open the file to text editor with the
+        following command):</li>
+    </ul>
+    <p style="margin-left: 40px;"><strong>nano -w
+        /etc/apt/apt.conf.d/20auto-upgrades</strong></p>
+    <ul>
+      <li>and add the following lines to the text file:</li>
     </ul>
     <div style="margin-left: 40px;"> <strong>APT::Periodic::Update-Package-Lists
         "1";</strong><br>
@@ -198,6 +223,45 @@
     <br>
     Now you can setup <a href="FreeLCS_User_Manual.html#Boot_Once_A_Week">automatic
       reboot once a week</a> so that kernel updates are applied.<br>
+    <br>
+    <br>
+    <h2><a name="Static ip - address for Ubuntu Server and Debian without a GUI">Static
+        ip - address for Ubuntu Server and Debian without a GUI</a></h2>
+    In this example we assing the static ip-address of <strong>192.168.1.1</strong>
+    to the network interface <strong>eth0</strong>. The default <strong>gateway</strong>
+    to the internet is the computer at address: <strong>192.168.1.200</strong>.
+    We use OpenDNS - service as our name servers (ip-addresses: 208.67.222.222,
+    208.67.220.220). You need to change these settings to correspond to your
+    network environment.<br>
+    <br>
+    <strong>Important note:</strong><br>
+    <br>
+    Don't try to change network settings on a remote server through a ssh -
+    connection. There is always the possibility that something goes wrong and
+    you are not able to connect to the server anymore.<br>
+    <br>
+    <br>
+    <ul>
+      <li>Open the network interface configuration file to a text editor as
+        root:</li>
+    </ul>
+    <div style="margin-left: 40px;"><strong>sudo nano -w /etc/network/interfaces</strong></div>
+    <ul>
+      <li>First remove the line that says "<strong>iface eth0 inet dhcp</strong>"
+        and then add the following&nbsp; lines below it:</li>
+    </ul>
+    <div style="margin-left: 40px;"><strong>auto eth0<br>
+        iface eth0 inet static</strong><br>
+      <strong>address 192.168.1.1</strong><br>
+      <strong>netmask 255.255.255.0</strong><br>
+      <strong>gateway 192.168.1.200<br>
+        dns-nameservers&nbsp;&nbsp; </strong><strong>208.67.222.222&nbsp;&nbsp;
+      </strong><strong>208.67.220.220</strong></div>
+    <br>
+    You may need to reboot the computer for the changes to take effect.<br>
+    <br>
+    <br>
+    <br>
     <br>
   </body>
 </html>

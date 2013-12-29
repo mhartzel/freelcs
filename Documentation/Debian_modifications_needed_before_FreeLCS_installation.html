@@ -89,6 +89,29 @@
         'sudo', then you must now log out and back in for the changes to take
         effect.</li>
     </ul>
+    <ul>
+      <li> If sudo installation gives you the error: "<strong>unable to locate
+          package sudo</strong>", then some of the required package repositories
+        are missing from the text file:&nbsp; <strong>/etc/apt/sources.list</strong>&nbsp;&nbsp;
+        Below you can see an example of my working sources.list. You must
+        run&nbsp;&nbsp; <strong>apt-get update</strong>&nbsp;&nbsp; after you
+        make changes to the package repository settings so that the database for
+        available packages gets updated.</li>
+    </ul>
+    <div style="margin-left: 40px;"><strong># deb cdrom:[Debian GNU/Linux 7.2.0
+        _Wheezy_ - Official i386 DVD Binary-1 20131012-12:56]/ wheezy contrib
+        main<br>
+        <br>
+        deb http://ftp.fi.debian.org/debian/ wheezy main</strong><br>
+      <strong>deb-src http://ftp.fi.debian.org/debian/ wheezy main</strong><br>
+      <strong></strong><br>
+      <strong>deb http://security.debian.org/ wheezy/updates main contrib</strong><br>
+      <strong>deb-src http://security.debian.org/ wheezy/updates main contrib</strong><br>
+      <strong></strong><br>
+      <strong># wheezy-updates, previously known as 'volatile'</strong><br>
+      <strong>deb http://ftp.fi.debian.org/debian/ wheezy-updates main contrib</strong><br>
+      <strong>deb-src http://ftp.fi.debian.org/debian/ wheezy-updates main
+        contrib</strong></div>
     <br>
     <br>
     <h2>Load kernel module brd</h2>
@@ -127,6 +150,53 @@
       FreeLCS install procedure described in the user manual</a> :)<br>
     <br>
     <br>
+    <h2>Fixing Debian locale</h2>
+    If you installed a graphical desktop during Debian installation, then your
+    locale should be configured correctly, if not then you should configure it
+    before FreeLCS installation. Locale error messages during program package
+    installation stops the FreeLCS installer.<br>
     <br>
+    <ul>
+      <li>Run the command:</li>
+    </ul>
+    <div style="margin-left: 40px;"><strong>sudo dpkg-reconfigure locales</strong></div>
+    <br>
+    <ul>
+      <li>Select your locale from the list. Search for your language and the
+        text "UTF-8". I have selected the Finnish language in the picture below.</li>
+    </ul>
+    <p><br>
+    </p>
+    <img alt="" src="Pictures/Debian_Locale_Configuration-01.png"><br>
+    <br>
+    <br>
+    <ul>
+      <li>Next window asks you to decide which locale is the system default. In
+        the picture below I chose the default to be english us.</li>
+    </ul>
+    <p><br>
+    </p>
+    <img alt="" src="Pictures/Debian_Locale_Configuration-02.png"><br>
+    <br>
+    <br>
+    Now you need to log out and back in for the locale changes to take effect.<br>
+    <br>
+    <br>
+    <br>
+    <h2>Fixing history graphics file fonts</h2>
+    <br>
+    Install liberation fonts:&nbsp; <strong>sudo apt-get install
+      fonts-liberation</strong><br>
+    <br>
+    Next create a link for the font that is used when FreeLCS creates history
+    graphics files:<br>
+    <br>
+    <strong>sudo&nbsp; ln&nbsp;&nbsp;
+      /usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf&nbsp;&nbsp;
+      /usr/share/fonts/truetype/arial.ttf<br>
+      <br>
+      <br>
+      <br>
+    </strong>
   </body>
 </html>
