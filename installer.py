@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '061'
+version = '062'
 
 ###################################
 # Function definitions start here #
@@ -3069,10 +3069,10 @@ def define_program_installation_commands():
 		'cd libebur128']
 		
 		# Check if libebur128 is at version we need and add commands to get the version we want.
-		libebur128_simplified_build_and_install_commands_displayed_to_user = ['mkdir build', 'cd build', 'cmake -Wno-dev -DCMAKE_INSTALL_PREFIX:PATH=/usr ..', 'make -w', 'make install']
+		libebur128_simplified_build_and_install_commands_displayed_to_user = ['mkdir build', 'cd build', 'cmake -DUSE_AVFORMAT=False -Wno-dev -DCMAKE_INSTALL_PREFIX:PATH=/usr ..', 'make -w', 'make install']
 		check_libebur128_version_and_add_git_commands_to_checkout_specific_commit()
 
-		libebur128_cmake_commands = ['cd ' + directory_for_os_temporary_files + '/libebur128', 'mkdir build', 'cd build', 'cmake -Wno-dev -DCMAKE_INSTALL_PREFIX:PATH=/usr ..']
+		libebur128_cmake_commands = ['cd ' + directory_for_os_temporary_files + '/libebur128', 'mkdir build', 'cd build', 'cmake -DUSE_AVFORMAT=False -Wno-dev -DCMAKE_INSTALL_PREFIX:PATH=/usr ..']
 		libebur128_make_build_and_install_commands = ['cd ' + directory_for_os_temporary_files + '/libebur128/build', 'make -s -j 4', 'make install']
 
 
@@ -3119,7 +3119,7 @@ def check_libebur128_version_and_add_git_commands_to_checkout_specific_commit():
 		libebur128_is_installed.set('Not Installed')
 		loudness_path = '' # Empty value in the path-variable forces reinstallation of the 'loudness' program.
 		all_needed_external_programs_are_installed = False
-		libebur128_simplified_build_and_install_commands_displayed_to_user = ['git checkout --force 18d1b743b27b810ebf04e012c34105a71c1620b1', 'mkdir build', 'cd build', 'cmake -Wno-dev -DCMAKE_INSTALL_PREFIX:PATH=/usr ..', 'make -w', 'make install']
+		libebur128_simplified_build_and_install_commands_displayed_to_user = ['git checkout --force 18d1b743b27b810ebf04e012c34105a71c1620b1', 'mkdir build', 'cd build', 'cmake -DUSE_AVFORMAT=False -Wno-dev -DCMAKE_INSTALL_PREFIX:PATH=/usr ..', 'make -w', 'make install']
 	
 	if (libebur128_version_is_the_one_we_require == False) and (libebur128_git_commands != []):
 		
