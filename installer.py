@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '062'
+version = '063'
 
 ###################################
 # Function definitions start here #
@@ -1522,7 +1522,7 @@ def install_init_scripts_and_config_files(*args):
 	global loudnesscorrection_init_script_name
 	global loudnesscorrection_init_script_path
 	global loudnesscorrection_init_script_link_path
-	global os_version
+	global os_name
 	
 	try:
 		with open(directory_for_os_temporary_files + os.sep + loudnesscorrection_init_script_name, 'wt') as init_script_file_handler:
@@ -1601,9 +1601,9 @@ def install_init_scripts_and_config_files(*args):
 	# On Debian  we must run: insserv -d /etc/init.d/loudnesscorrection_init_script
 	# insserv links the init script to   /etc/rc2.d/  and it automatically adds a number to the link name (example:  S21loudnesscorrection_init_script)
 
-	if os_version == 'ubuntu':
+	if os_name == 'ubuntu':
 		commands_to_run = ['sudo', '-k', '-p', '', '-S', 'ln', '-s', '-f', loudnesscorrection_init_script_path, loudnesscorrection_init_script_link_path] # Create the commandline we need to run as root.
-	if os_version == 'debian':
+	if os_name == 'debian':
 		commands_to_run = ['sudo', '-k', '-p', '', '-S', 'insserv', '-d', loudnesscorrection_init_script_path] # Create the commandline we need to run as root.
 
 	# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
@@ -1753,14 +1753,14 @@ def show_error_message_on_root_password_window(error_in_string_format):
 
 def find_program_in_os_path(program_name_to_find):
 
-	global os_version
+	global os_name
 
 	# Find a program in the operating system path. Returns the full path to the program (search for python3 returns: '/usr/bin/python3').
 	program_path = ''
 	os_environment_list = os.environ["PATH"].split(os.pathsep)
 
 	# In Debian we must manually add path '/usr/sbin' to the path list, since smbd is installed there.
-	if os_version == 'debian':
+	if os_name == 'debian':
 		os_environment_list.append('/usr/sbin')
 
 	for os_path in os_environment_list:
@@ -4005,40 +4005,130 @@ def change_state_of_license_agreement_button():
 	else:
 		license_info_window_next_button['state'] = 'disabled'
 
-def find_if_we_are_running_on_ubuntu_or_debian():
+def find_os_name_and_version():
 
-        os_name_announced_by_uname = ''
+	path_to_os_release_file = '/etc/os-release'
+	os_name_announced_in_os_release = ''
+	os_version_announced_in_os_release = ''
+	error_message = ''
+	global supported_platforms
+	list_of_supported_versions_numbers = []
 
-        # Create the commandline we need to run.
-        commands_to_run = ['uname', '-a']                                                                                                                                                             
+	# Get names and versions of supported operating systems and construct a string that we later print on the window if we aren't running on a supported operating system.
+	names_of_supported_operating_systems = '\n\nSupported operating systems are:\n\n'
 
-        if debug == True:                                                                                                                                                                                
-                print()                                                                                                                                                                                  
-                print('Running commands:', commands_to_run)                                                                                                                                              
+	for name in supported_platforms:
+		for version in supported_platforms[name]:
+			names_of_supported_operating_systems = names_of_supported_operating_systems + str(name) + ' ' + str(version) + '\n'
 
-        # Run our command.                                                                                                                                                                           
-        stdout, stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()                                                                                               
-        stdout = str(stdout.decode('UTF-8')).lower() # Convert sudo possible error output from binary to UTF-8 text.                                                                                         
-        stderr = str(stderr.decode('UTF-8')).lower() # Convert sudo possible error output from binary to UTF-8 text.                                                                                         
+	# If the file /etc/os-release exists, then parse operating system name and version from it.
+	if os.path.exists(path_to_os_release_file):
 
-        if 'debian' in stdout.lower():
-                os_name_announced_by_uname = 'debian'
-        if 'ubuntu' in stdout.lower():
-                os_name_announced_by_uname = 'ubuntu'
+		text_lines_list = [] 
 
-        return(os_name_announced_by_uname)  
+		try:
+			with open(path_to_os_release_file, 'rt') as file_handler: # Open file, the 'with' method closes files when execution exits the with - block
+				file_handler.seek(0) # Make sure that the 'read' - pointer is at the beginning of the source file
+				text_lines_list.extend(file_handler.readlines())														   
+
+		except IOError:
+			error_message = 'Error reading file: ' + path_to_os_release_file
+		except OSError:
+			error_message = 'Error reading file: ' + path_to_os_release_file
+
+		if error_message == '':
+
+			# Find operating system name and version number from the text file.
+			for line in text_lines_list:
+				
+				# Strip line ending, tab - characters and white space.
+				line = line.strip('\n')
+				line = line.strip('\t')
+				line = line.strip()
+				
+				# If the first charecter on the text line is '#' (a comment line), or the line is empty, then skip the line.
+				if line == '':
+					continue
+				if line[0] == '#':
+					continue
+
+				# Get operating system name from the text line.
+				if 'ID=' == line[0:3]:
+					os_name_announced_in_os_release = line.split('=')[1].strip('"').strip().lower()
+				# Get operating system version number from the text line.
+				if 'VERSION_ID=' in line:
+					os_version_announced_in_os_release = line.split('=')[1].strip('"').strip()
+
+			# Test sanity of the text we parsed from /etc/os-release
+			if os_name_announced_in_os_release not in supported_platforms:
+				error_message = 'your "' + str(path_to_os_release_file)+ '" says your operating system is: "' + os_name_announced_in_os_release + ' ' + os_version_announced_in_os_release + '"\n\nThis version is not in the list of supported operating systems.' + names_of_supported_operating_systems
+			else:
+				list_of_supported_versions_numbers = supported_platforms[os_name_announced_in_os_release]
+
+				if os_version_announced_in_os_release not in list_of_supported_versions_numbers:
+					error_message = 'your "' + str(path_to_os_release_file)+ '" says your operating system is: "' + os_name_announced_in_os_release + ' ' + os_version_announced_in_os_release + '"\n\nThis version is not in the list of supported operating systems.' + names_of_supported_operating_systems
+	else:
+		error_message = 'Could not find file: "' + path_to_os_release_file + '"\n\nThis file is needed for determining what operating system and version we are running on.' 
+
+	if debug == True:
+		print()
+		print('os_name_announced_in_os_release =', os_name_announced_in_os_release)
+		print('os_version_announced_in_os_release =', os_version_announced_in_os_release)
+		print('error_message =', error_message)
+		print()
+
+	return(os_name_announced_in_os_release, os_version_announced_in_os_release, error_message)  
 
 
 ###############################
 # Main program starts here :) #
 ###############################
 
-# Set the following variable to True to print variable changes on the shell display as they happen.
+# Check if user gave the -debug option on the commandline
 debug = False
+
+for item in sys.argv[1:]:
+
+	if ('debug' in item.lower()):
+		debug = True
+
+if debug == True:
+	print()
+	print('FreeLCS installer version', version)
+	print('-' * 75)
+	print()
+	print('Debug mode is ON')
+	print('Commandline: ', sys.argv)
+	print()
+
+# Define supported operating systems and versions
+supported_platforms = {'debian': ['7'], 'ubuntu': ['12.04', '14.04']}
+
+# Find out what is the name and version of the operating system we are running on.
+temporary_list = []
+os_name = ''
+os_version = ''
+error_message_from_find_os_name_and_version = ''
+
+temporary_list = find_os_name_and_version()
+
+# If the error message is empty then we have found the name and version of the operating system. Assign this info to variables.
+error_message_from_find_os_name_and_version = temporary_list[2]
+
+if error_message_from_find_os_name_and_version == '':
+	os_name = temporary_list[0]
+	os_version = temporary_list[1]
+temporary_list = []
+
+if debug == True:
+	print()
+	print('os_name =', os_name)
+	print('os_version =', os_version)
+	print()
 
 # Create the root GUI window.
 root_window = tkinter.Tk()
-root_window.title("LoudnessCorrection Installer Program, version " + version + '.')
+root_window.title("FreeLCS Installer version " + version + ', running on ' + os_name[0].upper() + os_name[1:] + ' ' + os_version)
 #root_window.geometry('800x600')
 root_window.grid_columnconfigure(0, weight=1)
 root_window.grid_rowconfigure(0, weight=1)
@@ -4125,8 +4215,6 @@ showstopper_error_message = tkinter.StringVar()
 smtp_server_name.trace('w', define_smtp_server_name)
 smtp_server_port.trace('w', define_smtp_server_port)
 
-# Find out if we are running on Ubuntu or Debian
-os_version = find_if_we_are_running_on_ubuntu_or_debian()
 
 # Define some normal python variables
 gnu_gpl_3 = ''
@@ -5293,6 +5381,13 @@ if path_to_loudnesscorrection == '':
 	call_showstopper_frame_on_top()
 if path_to_heartbeat_checker == '':
 	showstopper_error_message.set('Error, can not find HeartBeat_Checker.py.\n\nLoudnessCorrection.py and HeartBeat_Checker.py must be in the same directory as the installer. Can not continue.')
+	call_showstopper_frame_on_top()
+
+# If we are running on a not supported operating system, then stop and inform user.
+if error_message_from_find_os_name_and_version != '':
+	error_message_text = 'Error, ' + error_message_from_find_os_name_and_version
+
+	showstopper_error_message.set(error_message_text)
 	call_showstopper_frame_on_top()
 
 # Start tkinter event - loop
