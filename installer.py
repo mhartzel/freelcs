@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '064'
+version = '065'
 
 ###################################
 # Function definitions start here #
@@ -982,6 +982,7 @@ def install_init_scripts_and_config_files(*args):
 	'		#############################################################################################', \
 	'		# Change directory ownerships and permissions so that network users can not delete important', \
 	'		# files and directories.', \
+	'		# Remove files that were possibly left in the temp - directory.', \
 	'		#############################################################################################', \
 	'', \
 	'		mkdir -p "$TARGET_PATH/$HOTFOLDER_NAME/$WEB_PAGE_PATH/.temporary_files"', \
@@ -996,6 +997,7 @@ def install_init_scripts_and_config_files(*args):
 	'', \
 	'		chown -R $USERNAME:$USERNAME "$TARGET_PATH/00-Loudness_Calculation_Temporary_Files"', \
 	'		chmod 1744 "$TARGET_PATH/00-Loudness_Calculation_Temporary_Files"', \
+	'		find "$TARGET_PATH/00-Loudness_Calculation_Temporary_Files/"  -type f -exec rm -f {} \\;', \
 	'', \
 	'		chown $USERNAME:$USERNAME "$TARGET_PATH/$HOTFOLDER_NAME"', \
 	'		chmod 1777 "$TARGET_PATH/$HOTFOLDER_NAME"', \
@@ -1025,6 +1027,7 @@ def install_init_scripts_and_config_files(*args):
 	loudness_correction_init_script_content_part_2_without_heartbeat = ['		#############################################################################################', \
 	'		# Change directory ownerships and permissions so that network users can not delete important', \
 	'		# files and directories.', \
+	'		# Remove files that were possibly left in the temp - directory.', \
 	'		#############################################################################################', \
 	'', \
 	'		mkdir -p "$TARGET_PATH/$HOTFOLDER_NAME/$WEB_PAGE_PATH/.temporary_files"', \
@@ -1039,6 +1042,7 @@ def install_init_scripts_and_config_files(*args):
 	'', \
 	'		chown -R $USERNAME:$USERNAME "$TARGET_PATH/00-Loudness_Calculation_Temporary_Files"', \
 	'		chmod 1744 "$TARGET_PATH/00-Loudness_Calculation_Temporary_Files"', \
+	'		find "$TARGET_PATH/00-Loudness_Calculation_Temporary_Files/"  -type f -exec rm -f {} \\;', \
 	'', \
 	'		chown $USERNAME:$USERNAME "$TARGET_PATH/$HOTFOLDER_NAME"', \
 	'		chmod 1777 "$TARGET_PATH/$HOTFOLDER_NAME"', \
