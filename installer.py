@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '067'
+version = '068'
 
 ###################################
 # Function definitions start here #
@@ -5133,7 +5133,7 @@ first_window_next_button.grid(column=3, row=1, padx=30, pady=10, sticky=(tkinter
 # Ask for root password
 
 # Create the label for the frame
-sixth_window_label_1 = tkinter.ttk.Label(sixth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='Root password is needed to write LoudnessCorrection init scripts to system directories:')
+sixth_window_label_1 = tkinter.ttk.Label(sixth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='Password is needed to write FreeLCS init scripts to system directories:')
 sixth_window_label_1.grid(column=0, row=0, columnspan=4, pady=10, padx=10, sticky=(tkinter.W, tkinter.N))
 
 root_password_entrybox = tkinter.ttk.Entry(sixth_frame_child_frame_1, width=35, textvariable=root_password, show='*')

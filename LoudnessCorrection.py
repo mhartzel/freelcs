@@ -37,7 +37,7 @@ import signal
 import traceback
 
 loudnesscorrection_version = '251'
-freelcs_version = '2.4'
+freelcs_version = '2.5'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
