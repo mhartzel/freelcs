@@ -36,7 +36,8 @@ import math
 import signal
 import traceback
 
-version = '250'
+loudnesscorrection_version = '251'
+freelcs_version = '2.4'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -2598,7 +2599,7 @@ def send_error_messages_by_email_thread(email_sending_details, english, finnish)
 	global error_messages_to_email_later_list # This global variable holds all the error messages we need to send.
 	global all_ip_addresses_of_the_machine
 	global loudness_correction_pid
-	global version
+	global freelcs_version
 	global critical_python_error_has_happened
 	global quit_all_threads_now
 	unix_time_in_ticks =float(0)
@@ -2632,7 +2633,7 @@ def send_error_messages_by_email_thread(email_sending_details, english, finnish)
 		
 		# Get IP-Addresses of the machine.
 		all_ip_addresses_of_the_machine = get_ip_addresses_of_the_host_machine()
-		machine_info = '\n\nLoudnessCorrection info:\n--------------------------------------\n' + 'Commandline: ' + ' '.join(sys.argv) + '\n' + 'IP-Addresses: ' + ','.join(all_ip_addresses_of_the_machine) + '\n' + 'PID: ' + str(loudness_correction_pid) + '\n' + 'LoudnessCorrection version: ' + version + '\n\n'
+		machine_info = '\n\nLoudnessCorrection info:\n--------------------------------------\n' + 'Commandline: ' + ' '.join(sys.argv) + '\n' + 'IP-Addresses: ' + ', '.join(all_ip_addresses_of_the_machine) + '\n' + 'PID: ' + str(loudness_correction_pid) + '\n' + 'FreeLCS version: ' + freelcs_version + '\n\n'
 		
 		if len(error_messages_to_email_later_list) > 0:
 			
@@ -2737,6 +2738,7 @@ def write_html_progress_report_thread(english, finnish):
 		global html_progress_report_write_interval
 		global silent
 		global quit_all_threads_now
+		global freelcs_version
 		
 		while True:
 			
@@ -2753,6 +2755,9 @@ def write_html_progress_report_thread(english, finnish):
 			html_code = [] # The finished html - page is stored in this list variable.
 			realtime = get_realtime(english, finnish)[1] # Get the current date and time of day.
 			
+			# Get IP-Addresses of the machine.
+			all_ip_addresses_of_the_machine = get_ip_addresses_of_the_host_machine()
+
 			# Create the start of the html page by putting the first static part of the html - code in to a list variable.
 			html_code_part_1 = ['<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">', \
 			'<html><head>', \
@@ -2760,7 +2765,8 @@ def write_html_progress_report_thread(english, finnish):
 			'<meta http-equiv="refresh" content="' + str(html_progress_report_write_interval) + '">', \
 			'<META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">', \
 			'<title>' + 'LoudnessCorrection_Process_Queue' * english + 'AanekkyysKorjauksen laskentajono' * finnish + '</title>', \
-			'<h1>' + 'LoudnessCorrection, version ' * english + '&Auml;&auml;nekkyysKorjaus, versio ' * finnish + version + '</h1><br>', \
+			'<h1>' + 'FreeLCS ' + freelcs_version + '</h1>', \
+			'<h3>' + 'Server ip-addresses: ' + ', '.join(all_ip_addresses_of_the_machine) + '</h3>', \
 			'</head><body style="background-color: rgb(255, 255, 255);">', \
 			'<h2><font color="#000000">' + str(len(files_queued_to_loudness_calculation)) + ' &nbsp ' + ' Files Waiting In The Queue' * english + 'Tiedostoa jonossa' * finnish + ' &nbsp ' + realtime.replace('_', ' ')  + '</font></h2>', \
 			'<hr style="width: 100%; height: 2px;"><font color="#000000"><br>']
@@ -2969,7 +2975,8 @@ def debug_lists_and_dictionaries_thread():
 	global debug_temporary_dict_for_all_file_processing_information
 	global debug_complete_final_information_for_all_file_processing_dict
 	global all_settings_dict
-	global version
+	global freelcs_version
+	global loudnesscorrection_version
 	global temp_loudness_results_for_automation
 	global final_loudness_results_for_automation
 	global ffmpeg_executable_found
@@ -2989,7 +2996,7 @@ def debug_lists_and_dictionaries_thread():
 	if all_settings_dict != {}:
 
 		# Store variables read from the configfile. This is useful for debugging settings previously saved in a file.
-		title_text = 'LoudnessCorrection version: ' + version + '\n\nffmpeg_executable_found = ' + str(ffmpeg_executable_found) + '\n\n\n\nLocal variable values after reading the configfile: ' + configfile_path + ' are:'
+		title_text = 'FreeLCS version: ' + freelcs_version +  '\n\nLoudnessCorrection version: ' + loudnesscorrection_version + '\n\nffmpeg_executable_found = ' + str(ffmpeg_executable_found) + '\n\n\n\nLocal variable values after reading the configfile: ' + configfile_path + ' are:'
 		values_read_from_configfile.append(str((len(title_text) + 1) * '-'))
 		values_read_from_configfile.append(title_text)
 		values_read_from_configfile.append('')
@@ -5377,7 +5384,7 @@ try:
 	# LoudnessCorrection to write a html - page to disk, he set the variable 'write_html_progress_report' to False and this value is also sent to HeartBeat_Checker so that it knows the
 	# Html - thread won't be updating it's timestamp.
 
-	loudness_correction_program_info_and_timestamps = {'loudnesscorrection_program_info' : [sys.argv, loudness_correction_pid, all_ip_addresses_of_the_machine, version], 'main_thread' : [True, 0], 'write_html_progress_report' : [write_html_progress_report, 0]}
+	loudness_correction_program_info_and_timestamps = {'loudnesscorrection_program_info' : [sys.argv, loudness_correction_pid, all_ip_addresses_of_the_machine, freelcs_version], 'main_thread' : [True, 0], 'write_html_progress_report' : [write_html_progress_report, 0]}
 
 	# Start in its own thread the subroutine that sends error messages by email.
 	if email_sending_details['send_error_messages_by_email'] == True:
@@ -5410,7 +5417,7 @@ try:
 	# Print version information to screen
 	if silent == False:
 		print()
-		version_string_to_print = 'LoudnessCorrection version ' + version
+		version_string_to_print = 'LoudnessCorrection version ' + loudnesscorrection_version
 		print(version_string_to_print)
 		print('-' * (len(version_string_to_print) + 1))
 		print()
@@ -5422,7 +5429,7 @@ try:
 	while True:
 		
 		loudness_correction_program_info_and_timestamps['main_thread'] = [True, int(time.time())] # Update the heartbeat timestamp for the main thread. This is used to keep track if the main thread has crashed.
-		loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'] = [sys.argv, loudness_correction_pid, all_ip_addresses_of_the_machine, version]
+		loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'] = [sys.argv, loudness_correction_pid, all_ip_addresses_of_the_machine, freelcs_version]
 		
 		try:
 			# Get directory listing for HotFolder. The 'break' statement stops the for - statement from recursing into subdirectories.

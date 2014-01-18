@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '065'
+version = '067'
 
 ###################################
 # Function definitions start here #
@@ -510,7 +510,7 @@ def send_test_email(*args):
 		return
 	if email_settings_are_complete == True:
 		current_time = parse_time(time.time())
-		message_text_string = '\nThis is a LoudnessCorrection test message sent ' + current_time + '.\n\nIP-Addresses of this machine are: ' + ' '.join(all_ip_addresses_of_the_machine) + '\n\n'
+		message_text_string = '\nThis is a LoudnessCorrection test message sent ' + current_time + '.\n\nIP-Addresses of this machine are: ' + ', '.join(all_ip_addresses_of_the_machine) + '\n\n'
 		email_sending_message_1.set('')
 		email_sending_message_2.set('')
 		third_window_label_15['foreground'] = 'black'
@@ -4097,14 +4097,14 @@ def find_os_name_and_version():
 
 			# Test sanity of the text we parsed from /etc/os-release
 			if os_name_announced_in_os_release not in supported_platforms:
-				error_message = 'your "' + str(path_to_os_release_file)+ '" says your operating system is: "' + os_name_announced_in_os_release + ' ' + os_version_announced_in_os_release + '"\n\nThis version is not in the list of supported operating systems.' + names_of_supported_operating_systems
+				error_message = 'your "' + str(path_to_os_release_file)+ '" says your operating system is: "' + os_name_announced_in_os_release + ' ' + os_version_announced_in_os_release + '"\n\nThis version is not in the list of supported operating systems.' + names_of_supported_operating_systems + '\nYou can force installation by giving a supported os name and version on the commandline. Note that installation on a unsupported platform may not work correctly.\n\nExample below forces os and version to Ubuntu 14.04\n\n' + './installer.py  -force-distro  ubuntu  14.04'
 			else:
 				list_of_supported_versions_numbers = supported_platforms[os_name_announced_in_os_release]
 
 				if os_version_announced_in_os_release not in list_of_supported_versions_numbers:
-					error_message = 'your "' + str(path_to_os_release_file)+ '" says your operating system is: "' + os_name_announced_in_os_release + ' ' + os_version_announced_in_os_release + '"\n\nThis version is not in the list of supported operating systems.' + names_of_supported_operating_systems
+					error_message = 'your "' + str(path_to_os_release_file)+ '" says your operating system is: "' + os_name_announced_in_os_release + ' ' + os_version_announced_in_os_release + '"\n\nThis version is not in the list of supported operating systems.' + names_of_supported_operating_systems + '\nYou can force installation by giving a supported os name and version on the commandline. Note that installation on a unsupported platform may not work correctly.\n\nExample below forces os and version to Ubuntu 14.04\n\n' + './installer.py  -force-distro  ubuntu  14.04'
 	else:
-		error_message = 'Could not find file: "' + path_to_os_release_file + '"\n\nThis file is needed for determining what operating system and version we are running on.' 
+		error_message = 'Could not find file: "' + path_to_os_release_file + '"\n\nThis file is needed for determining what operating system and version we are running on.' + names_of_supported_operating_systems + '\nYou can force installation by giving a supported os name and version on the commandline. Note that installation on a unsupported platform may not work correctly.\n\nExample below forces os and version to Ubuntu 14.04\n\n' + './installer.py  -force-distro  ubuntu  14.04'
 
 	if debug == True:
 		print()
@@ -4122,11 +4122,42 @@ def find_os_name_and_version():
 
 # Check if user gave the -debug option on the commandline
 debug = False
+force_distro_found = False
+os_name_found_on_commandline = False
+os_name = ''
+os_version = ''
 
+# Define supported operating systems and versions
+supported_platforms = {'debian': ['7'], 'ubuntu': ['12.04', '14.04']}
+
+# Parse commandline arguments.
 for item in sys.argv[1:]:
 
+	print('item', item)
+
+	if 'force-distro' in item.lower():
+		force_distro_found=True
+		continue
 	if ('debug' in item.lower()):
 		debug = True
+		continue
+	if force_distro_found==True:
+		os_name=item.lower()
+		os_name_found_on_commandline=True
+		force_distro_found=False
+		continue
+	if os_name_found_on_commandline==True:
+		os_version=item
+		os_name_found_on_commandline=False
+		continue
+
+# Check if user forced operating system name and version number on commandline. This is used to force installation on an unsupported platform.
+if (os_name != '') and (os_version != ''):
+	if not os_name in supported_platforms:
+		os_name = ''
+	else:
+		if not os_version in supported_platforms[os_name]:
+			os_version = ''
 
 if debug == True:
 	print()
@@ -4137,24 +4168,25 @@ if debug == True:
 	print('Commandline: ', sys.argv)
 	print()
 
-# Define supported operating systems and versions
-supported_platforms = {'debian': ['7'], 'ubuntu': ['12.04', '14.04']}
-
-# Find out what is the name and version of the operating system we are running on.
+# If user has not forced operating system name and version on the commandline, then find out the true os name and version by reading the /etc/os-release
 temporary_list = []
-os_name = ''
-os_version = ''
 error_message_from_find_os_name_and_version = ''
 
-temporary_list = find_os_name_and_version()
+if (os_name == '') or (os_version == ''):
 
-# If the error message is empty then we have found the name and version of the operating system. Assign this info to variables.
-error_message_from_find_os_name_and_version = temporary_list[2]
+	os_name = ''
+	os_version = ''
 
-if error_message_from_find_os_name_and_version == '':
-	os_name = temporary_list[0]
-	os_version = temporary_list[1]
-temporary_list = []
+	# Find out what is the name and version of the operating system we are running on.
+	temporary_list = find_os_name_and_version()
+
+	# If the error message is empty then we have found the name and version of the operating system. Assign this info to variables.
+	error_message_from_find_os_name_and_version = temporary_list[2]
+
+	if error_message_from_find_os_name_and_version == '':
+		os_name = temporary_list[0]
+		os_version = temporary_list[1]
+	temporary_list = []
 
 if debug == True:
 	print()
@@ -4164,7 +4196,10 @@ if debug == True:
 
 # Create the root GUI window.
 root_window = tkinter.Tk()
-root_window.title("FreeLCS Installer version " + version + ', running on ' + os_name[0].upper() + os_name[1:] + ' ' + os_version)
+if error_message_from_find_os_name_and_version == '':
+	root_window.title("FreeLCS Installer version " + version + ', running on ' + os_name[0].upper() + os_name[1:] + ' ' + os_version)
+else:
+	root_window.title("FreeLCS Installer version " + version)
 #root_window.geometry('800x600')
 root_window.grid_columnconfigure(0, weight=1)
 root_window.grid_rowconfigure(0, weight=1)
