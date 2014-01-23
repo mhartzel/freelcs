@@ -42,6 +42,33 @@ print('Settings read from:', configfile_path)
 print((len('Settings read from: ' + configfile_path) + 1) * '-')
 
 for item in sorted(all_settings_dict.items()):
+
+	if item[0] == 'unit_separator':
+
+		print('unit_separator (in ascii) = ', end = '')
+		variable_string = item[1]
+		characters_in_ascii = '' 
+
+		for item in variable_string:
+			characters_in_ascii = characters_in_ascii + str(ord(item)) + ', ' 
+		characters_in_ascii = characters_in_ascii[0:len(characters_in_ascii)-2]
+		print(characters_in_ascii)
+
+		continue
+
+	if item[0] == 'record_separator':
+
+		print('record_separator (in ascii) = ', end = '')
+		variable_string = item[1]
+		characters_in_ascii = '' 
+
+		for item in variable_string:
+			characters_in_ascii = characters_in_ascii + str(ord(item)) + ', ' 
+		characters_in_ascii = characters_in_ascii[0:len(characters_in_ascii)-2]
+		print(characters_in_ascii)
+
+		continue
+
 	print(item[0], '=', item[1])
 
 print()

@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '069'
+version = '070'
 freelcs_version = '2.5'
 
 ###################################
@@ -1113,9 +1113,13 @@ def install_init_scripts_and_config_files(*args):
 	'directory_for_error_logs' : directory_for_error_logs.get(), 'send_error_messages_to_logfile' : send_error_messages_to_logfile, 'heartbeat' : true_false_string[heartbeat.get()], \
 	'heartbeat_file_name' : heartbeat_file_name, 'heartbeat_write_interval' : int(heartbeat_write_interval), 'email_sending_details' : email_sending_details, \
 	'send_error_messages_by_email' : true_false_string[send_error_messages_by_email.get()], 'where_to_send_error_messages' : where_to_send_error_messages, \
-	'config_file_created_by_installer_version' : version, 'peak_measurement_method' : peak_measurement_method, 'freelcs_version' : freelcs_version }
+	'config_file_created_by_installer_version' : version, 'peak_measurement_method' : peak_measurement_method, 'freelcs_version' : freelcs_version, \
+	'write_loudness_calculation_results_to_a_machine_readable_file' : true_false_string[write_loudness_calculation_results_to_a_machine_readable_file.get()], \
+	'create_loudness_corrected_files' : true_false_string[create_loudness_corrected_files.get()], \
+	'create_loudness_history_graphics_files' : true_false_string[create_loudness_history_graphics_files.get()], 'delete_original_file_immediately' : true_false_string[delete_original_file_immediately.get()], \
+	'unit_separator' : unit_separator, 'record_separator' : record_separator }
 
-	# Get the total number of items in settings dictionary and save the number in the dictionary. The number can be used for degugging settings.
+	# Get the total number of items in settings dictionary and save the number in the dictionary. The number can be used for debugging settings.
 	number_of_all_items_in_dictionary = len(all_settings_dict)
 	all_settings_dict['number_of_all_items_in_dictionary'] = number_of_all_items_in_dictionary
 
@@ -1126,6 +1130,8 @@ def install_init_scripts_and_config_files(*args):
 		print()
 		print(title_text)
 		print((len(title_text) + 1) * '-' + '\n') # Print a line exactly the length of the title text line + 1.
+		print('freelcs_version =', all_settings_dict['freelcs_version'])
+		print()
 		print('language =', all_settings_dict['language'])
 		print('english =', all_settings_dict['english'])
 		print('finnish =', all_settings_dict['finnish'])
@@ -1161,6 +1167,35 @@ def install_init_scripts_and_config_files(*args):
 		print()
 		print('send_error_messages_by_email =', all_settings_dict['send_error_messages_by_email'])
 		print('email_sending_details =', all_settings_dict['email_sending_details'])
+		print()
+		print('write_loudness_calculation_results_to_a_machine_readable_file =', all_settings_dict['write_loudness_calculation_results_to_a_machine_readable_file'])
+		print()
+		print('create_loudness_corrected_files =', all_settings_dict['create_loudness_corrected_files'])
+		print()
+		print('create_loudness_history_graphics_files =', all_settings_dict['create_loudness_history_graphics_files'])
+		print()
+		print('delete_original_file_immediately =', all_settings_dict['delete_original_file_immediately'])
+		print()
+
+		print('unit_separator (in ascii)  = ', end = '')
+		variable_string = all_settings_dict['unit_separator']
+		characters_in_ascii = ''
+
+		for item in variable_string:
+			characters_in_ascii = characters_in_ascii + str(ord(item)) + ', '
+		characters_in_ascii = characters_in_ascii[0:len(characters_in_ascii)-2]
+		print(characters_in_ascii)
+		print()
+
+		print('record_separator (in ascii)  = ', end = '')
+		variable_string = all_settings_dict['record_separator']
+		characters_in_ascii = ''
+
+		for item in variable_string:
+			characters_in_ascii = characters_in_ascii + str(ord(item)) + ', '
+		characters_in_ascii = characters_in_ascii[0:len(characters_in_ascii)-2]
+		print(characters_in_ascii)
+
 		print()
 		print('number_of_all_items_in_dictionary =', all_settings_dict['number_of_all_items_in_dictionary'])
 		print()
@@ -4389,17 +4424,21 @@ ffmpeg_allowed_codec_formats = []
 ################################################
 
 # The variable 'write_loudness_calculation_results_to_a_machine_readable_file' defines if we should write loudness calculation results to individual text files to the target directory.
-write_loudness_calculation_results_to_a_machine_readable_file = False
+write_loudness_calculation_results_to_a_machine_readable_file  = tkinter.BooleanVar()
+write_loudness_calculation_results_to_a_machine_readable_file.set(False)
 
 # If LoudnessCorrection is used as part of a automation system, then we might not want to create loudness corrected audio files or result graphics.
-create_loudness_corrected_files = True 
-create_loudness_history_graphics_files = True
+create_loudness_corrected_files = tkinter.BooleanVar()
+create_loudness_corrected_files.set(True) 
+create_loudness_history_graphics_files = tkinter.BooleanVar()
+create_loudness_history_graphics_files.set(True)
 
 # If the input file is not in a format that is natively supported and one or more audio streams are extracted from it using FFmpeg, then the following
 # variable controls when the original file is deleted.
 # If this variable is 'True', then the original file is deleted immediately after all audio streams have been extracted from it.
 # If it is 'False' then the original file is deleted when the expiration time comes (controlled by the value stored in variable 'file_expiry_time' (default 8 hours)).
-delete_original_file_immediately = True
+delete_original_file_immediately = tkinter.BooleanVar()
+delete_original_file_immediately.set(True)
 
 # Define the characters used in machine readable results file to separate individual values.
 # Unit_separator is used to separate values for results for one mix.
@@ -4466,8 +4505,8 @@ config_file_created_by_installer_version = 0
 if 'config_file_created_by_installer_version' in previously_saved_settings_dict:
 	config_file_created_by_installer_version = previously_saved_settings_dict['config_file_created_by_installer_version']
 
-# Configfile needs to be created at least wth version 039 of installer to be compatible with current version of installer.
-if int(config_file_created_by_installer_version) >= 39:
+# Configfile needs to be created at least wth version 70 of installer to be compatible with current version of installer.
+if int(config_file_created_by_installer_version) >= 70:
 	if debug == True:
 		print('Values read from old configfile')
 		print('-' * 75)
@@ -4520,9 +4559,49 @@ if int(config_file_created_by_installer_version) >= 39:
 		if debug == True:
 				print('peak_measurement_method =', previously_saved_settings_dict['peak_measurement_method'])
 		set_sample_peak_measurement_method()
+
+	if 'write_loudness_calculation_results_to_a_machine_readable_file' in previously_saved_settings_dict:
+			write_loudness_calculation_results_to_a_machine_readable_file.set(previously_saved_settings_dict['write_loudness_calculation_results_to_a_machine_readable_file'])
+			if debug == True:
+				print('write_loudness_calculation_results_to_a_machine_readable_file =', previously_saved_settings_dict['write_loudness_calculation_results_to_a_machine_readable_file'])
+	if 'create_loudness_corrected_files' in previously_saved_settings_dict:
+			create_loudness_corrected_files.set(previously_saved_settings_dict['create_loudness_corrected_files'])
+			if debug == True:
+				print('create_loudness_corrected_files =', previously_saved_settings_dict['create_loudness_corrected_files'])
+	if 'create_loudness_history_graphics_files' in previously_saved_settings_dict:
+			create_loudness_history_graphics_files.set(previously_saved_settings_dict['create_loudness_history_graphics_files'])
+			if debug == True:
+				print('create_loudness_history_graphics_files =', previously_saved_settings_dict['create_loudness_history_graphics_files'])
+	if 'delete_original_file_immediately' in previously_saved_settings_dict:
+			delete_original_file_immediately.set(previously_saved_settings_dict['delete_original_file_immediately'])
+			if debug == True:
+				print('delete_original_file_immediately =', previously_saved_settings_dict['delete_original_file_immediately'])
+	if 'unit_separator' in previously_saved_settings_dict:
+			unit_separator = previously_saved_settings_dict['unit_separator']
+			if debug == True:
+				print('unit_separator (in ascii) = ', end = '')
+				variable_string = previously_saved_settings_dict['unit_separator']
+				characters_in_ascii = ''
+
+				for item in variable_string:
+					characters_in_ascii = characters_in_ascii + str(ord(item)) + ', '
+				characters_in_ascii = characters_in_ascii[0:len(characters_in_ascii)-2]
+				print(characters_in_ascii)
+	if 'record_separator' in previously_saved_settings_dict:
+			record_separator = previously_saved_settings_dict['record_separator']
+			if debug == True:
+				print('record_separator (in ascii) = ', end = '')
+				variable_string = previously_saved_settings_dict['record_separator']
+				characters_in_ascii = ''
+
+				for item in variable_string:
+					characters_in_ascii = characters_in_ascii + str(ord(item)) + ', '
+				characters_in_ascii = characters_in_ascii[0:len(characters_in_ascii)-2]
+				print(characters_in_ascii)
 	if debug == True:
 		print('-' * 75)
 
+##########################################################################################################################
 # Create frames inside the root window to hold other GUI elements. All frames and widgets must be created in the main program, otherwise they are not accessible in subroutines. 
 ##########################################################################################################################
 

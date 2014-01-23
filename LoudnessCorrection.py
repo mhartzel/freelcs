@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '252'
+loudnesscorrection_version = '253'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -350,31 +350,11 @@ if debug_all == True:
 	ffmpeg_allowed_wrapper_formats = ['all']
 	ffmpeg_allowed_codec_formats = ['all']
 
-# The variable 'write_loudness_calculation_results_to_a_machine_readable_file' defines if we should write loudness calculation results to individual text files to the target directory.
+# Set defaults for 'Machine Reabable Results' settings. These values will be overwritten by values that come from the installer program through the file Loudness_Correction_Settings.pickle
 write_loudness_calculation_results_to_a_machine_readable_file = False
-
-if debug_all == True:
-	write_loudness_calculation_results_to_a_machine_readable_file = True
-
-# If LoudnessCorrection is used as part of a automation system, then we might not want to create loudness corrected audio files or result graphics.
 create_loudness_corrected_files = True
 create_loudness_history_graphics_files = True
-
-# If the input file is not in a format that is natively supported and one or more audio streams are extracted from it using FFmpeg, then the following
-# variable controls when the original file is deleted.
-# If this variable is 'True', then the original file is deleted immediately after all audio streams have been extracted from it.
-# If it is 'False' then the original file is deleted when the expiration time comes (controlled by the value stored in variable 'file_expiry_time' (default 8 hours)).
 delete_original_file_immediately = True
-
-# Define the characters used in machine readable results file to separate individual values.
-# Unit_separator is used to separate values for results for one mix.
-# Record separator is used as the separator for different mixes.
-# A separator can be one character or a string.
-# The separators must not exist in file names or error messages, if they do then it becomes impossible to parse the results file correctly.
-# The ASCII and UTF-8 character sets both have values defined just for this purpose (31 and 30).
-# These characters are non-printable and therefore can never exist in file names.
-# However the default chosen for the record separator is not ASCII 30, but the windows 'new line' - string.
-# This makes the machine readable results file, more easy for humans to read, as it separates results for different mixes on their own text lines.
 unit_separator = chr(31) # This non printable ascii character is used to separate individual values for a mix.
 record_separator = chr(13) + chr(10) # This string is used to separate info for different mixes. This is by default the carriage return character followed by the line feed character. This sequence is used in windows to separate lines of text.
 
@@ -2237,7 +2217,7 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 
 
 
-		# Fixme: delete the following 6 lines when testfiles have been processed and it becomes clear that sox reported sample count is reliable. Sample count is used in calculating audio duration.
+		# FIXME: delete the following 6 lines when testfiles have been processed and it becomes clear that sox reported sample count is reliable. Sample count is used in calculating audio duration.
 		# Sox can not get duration from long files correctly, get audio duration with mediainfo.
 		not_used, not_used, not_used, not_used, mediainfo_audio_duration, not_used, not_used = get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish, save_debug_information = False)
 		if audio_duration != mediainfo_audio_duration:
@@ -2898,20 +2878,6 @@ def write_to_heartbeat_file_thread():
 
 			# Wait user defined number of seconds between writing to the heartbeat file.
 			time.sleep(heartbeat_write_interval)
-			
-
-
-
-
-			print('loudness_correction_program_info_and_timestamps:', loudness_correction_program_info_and_timestamps)
-
-
-
-
-
-
-
-
 
 			# Write timestamp to the heartbeat file, indicating that we are still alive :)
 			# Create the file in temp - directory and then move to the target location.
@@ -2996,6 +2962,13 @@ def debug_lists_and_dictionaries_thread():
 	global ffmpeg_executable_found
 	global peak_measurement_method
 	global quit_all_threads_now
+	global write_loudness_calculation_results_to_a_machine_readable_file
+	global create_loudness_corrected_files
+	global create_loudness_history_graphics_files
+	global delete_original_file_immediately
+	global unit_separator
+	global record_separator
+
 
 	list_printouts = []
 	list_printouts_old_values = []
@@ -3052,6 +3025,28 @@ def debug_lists_and_dictionaries_thread():
 		values_read_from_configfile.append('')
 		values_read_from_configfile.append('send_error_messages_by_email = ' + str(send_error_messages_by_email))
 		values_read_from_configfile.append('email_sending_details =' + ', '.join(email_sending_details))
+
+		values_read_from_configfile.append('write_loudness_calculation_results_to_a_machine_readable_file = ' + str(write_loudness_calculation_results_to_a_machine_readable_file))
+		values_read_from_configfile.append('create_loudness_corrected_files = ' + str(create_loudness_corrected_files))
+		values_read_from_configfile.append('create_loudness_history_graphics_files = ' + str(create_loudness_history_graphics_files))
+		values_read_from_configfile.append('delete_original_file_immediately = ' + str(delete_original_file_immediately))
+
+		variable_string = unit_separator
+		characters_in_ascii = '' 
+
+		for item in variable_string:
+			characters_in_ascii = characters_in_ascii + str(ord(item)) + ', ' 
+		characters_in_ascii = characters_in_ascii[0:len(characters_in_ascii)-2]
+		values_read_from_configfile.append('unit_separator (in ascii) = ' + characters_in_ascii)
+
+		variable_string = record_separator
+		characters_in_ascii = '' 
+
+		for item in variable_string:
+			characters_in_ascii = characters_in_ascii + str(ord(item)) + ', ' 
+		characters_in_ascii = characters_in_ascii[0:len(characters_in_ascii)-2]
+		values_read_from_configfile.append('record_separator (in ascii) = ' + characters_in_ascii)
+
 		values_read_from_configfile.append(str((len(title_text) + 1) * '-'))
 
 	while True:
@@ -5275,6 +5270,21 @@ try:
 		if 'freelcs_version' in all_settings_dict:
 			freelcs_version = all_settings_dict['freelcs_version']
 		
+		if 'write_loudness_calculation_results_to_a_machine_readable_file' in all_settings_dict:
+			write_loudness_calculation_results_to_a_machine_readable_file = all_settings_dict['write_loudness_calculation_results_to_a_machine_readable_file']
+		if 'create_loudness_corrected_files' in all_settings_dict:
+			create_loudness_corrected_files = all_settings_dict['create_loudness_corrected_files']
+		if 'create_loudness_history_graphics_files' in all_settings_dict:
+			create_loudness_history_graphics_files = all_settings_dict['create_loudness_history_graphics_files']
+		if 'delete_original_file_immediately' in all_settings_dict:
+			delete_original_file_immediately = all_settings_dict['delete_original_file_immediately']
+		if 'unit_separator' in all_settings_dict:
+			unit_separator = all_settings_dict['unit_separator']
+		if 'record_separator' in all_settings_dict:
+			record_separator = all_settings_dict['record_separator']
+
+		if debug_all == True:
+			write_loudness_calculation_results_to_a_machine_readable_file = True
 
 	# Test if the user given target path exists.
 	if (not os.path.exists(target_path)):
