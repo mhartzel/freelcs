@@ -21,7 +21,7 @@ import email.mime.text
 import email.mime.multipart
 import pickle
 
-version = '021'
+version = '022'
 
 # User can set some defaults here that are used if the program is started without giving it the path to a configfile.
 silent = False # Use True if you don't want this program to output anything to screen.
@@ -47,11 +47,12 @@ def send_email(message_recipients, message_title, message_text_string, message_a
 	global loudness_correction_pid
 	global all_ip_addresses_of_the_machine
 	global freelcs_version
+	global loudnesscorrection_version
 	global version
 	global heartbeat_checker_pid
 	
 	# Compile info about LoudnessCorrection and HeartBeat Checker. This info is inserted into the error email message.
-	program_info = '\nLoudnessCorrection info:\n--------------------------------------\n' + 'Commandline: ' + ' '.join(loudness_correction_commandline) + '\n' + 'IP-Addresses: ' + ', '.join(all_ip_addresses_of_the_machine) + '\n' + 'PID: ' + str(loudness_correction_pid) + '\n' + 'FreeLCS version: ' + freelcs_version +  '\n\n' + 'HeartBeat Checker info:\n--------------------------------------\n' + 'Commandline: ' + ' '.join(sys.argv) + '\n' + 'PID: ' + str(heartbeat_checker_pid) + '\n' +'HeartBeat Checker version: ' + version + '\n\n'
+	program_info = '\nFreeLCS version: ' + freelcs_version  + '\n\n\nLoudnessCorrection info:\n--------------------------------------\n' + 'Commandline: ' + ' '.join(loudness_correction_commandline) + '\n' + 'IP-Addresses: ' + ', '.join(all_ip_addresses_of_the_machine) + '\n' + 'PID: ' + str(loudness_correction_pid) + '\n' + 'LoudnessCorrection version: ' + loudnesscorrection_version +  '\n\n' + 'HeartBeat Checker info:\n--------------------------------------\n' + 'Commandline: ' + ' '.join(sys.argv) + '\n' + 'PID: ' + str(heartbeat_checker_pid) + '\n' +'HeartBeat Checker version: ' + version + '\n\n'
 	
 	# Compile the start of the email message.
 	email_message_content = email.mime.multipart.MIMEMultipart()
@@ -162,6 +163,7 @@ loudness_correction_commandline = ['Not known yet']
 loudness_correction_pid = 'Not known yet'
 all_ip_addresses_of_the_machine = ['Not known yet'] # This variable stores in a list all IP-Addresses of the machine LoudnessCorrection runs on. This info is inserted into error emails.
 freelcs_version = 'Not known yet'
+loudnesscorrection_version = 'Not known yet'
 
 heartbeat_file_name = '00-HeartBeat.pickle'
 heartbeat_file_was_found = False
@@ -328,6 +330,7 @@ while True:
 			loudness_correction_pid = loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'][1]
 			all_ip_addresses_of_the_machine = loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'][2]
 			freelcs_version = loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'][3]
+			loudnesscorrection_version = loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'][4]
 	
 			message_text_string = 'Heartbeat - file became readable again at: ' + time_string + '\n'
 			send_email(message_recipients, message_title, message_text_string, message_attachment_path)
@@ -347,6 +350,7 @@ while True:
 	loudness_correction_pid = loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'][1]
 	all_ip_addresses_of_the_machine = loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'][2]
 	freelcs_version = loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'][3]
+	loudnesscorrection_version = loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'][4]
 	
 	# Send an email telling HeartBeat_Checker has started.
 	if startup_message_has_been_sent == False:

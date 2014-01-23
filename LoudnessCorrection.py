@@ -36,8 +36,8 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '251'
-freelcs_version = '2.5'
+loudnesscorrection_version = '252'
+freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
 # All default values for settings are defined below. These variables define directory poll interval, number of processor cores to use, language of messages and file expiry time, etc. #
@@ -2899,6 +2899,20 @@ def write_to_heartbeat_file_thread():
 			# Wait user defined number of seconds between writing to the heartbeat file.
 			time.sleep(heartbeat_write_interval)
 			
+
+
+
+
+			print('loudness_correction_program_info_and_timestamps:', loudness_correction_program_info_and_timestamps)
+
+
+
+
+
+
+
+
+
 			# Write timestamp to the heartbeat file, indicating that we are still alive :)
 			# Create the file in temp - directory and then move to the target location.
 			try:
@@ -5257,6 +5271,9 @@ try:
 			directory_for_error_logs = all_settings_dict['directory_for_error_logs']
 		if 'peak_measurement_method' in all_settings_dict:
 			peak_measurement_method = all_settings_dict['peak_measurement_method']
+
+		if 'freelcs_version' in all_settings_dict:
+			freelcs_version = all_settings_dict['freelcs_version']
 		
 
 	# Test if the user given target path exists.
@@ -5374,7 +5391,7 @@ try:
 	# Get IP-Addresses of the machine.
 	all_ip_addresses_of_the_machine = get_ip_addresses_of_the_host_machine()
 
-	# The dictionary 'loudness_correction_program_info_and_timestamps' is used to send information to the HeartBeat_Checker - program that is run indipendently of the LoudnessCorrection - script.
+	# The dictionary 'loudness_correction_program_info_and_timestamps' is used to send information to the HeartBeat_Checker - program that is run independently of the LoudnessCorrection - script.
 	# Some threads in LoudnessCorrection write periodically a timestamp to this dictionary indicating they are still alive. 
 	# The dictionary gets written to disk periodically and the HeartBeat_Checker - program checks that the timestamps in it keeps changing and sends email to the user if they stop.
 	# The commandline used to start LoudnessCorrection - script and the PID it is currently running on is also recorded in this dictionary. This infomation may be used
@@ -5384,7 +5401,7 @@ try:
 	# LoudnessCorrection to write a html - page to disk, he set the variable 'write_html_progress_report' to False and this value is also sent to HeartBeat_Checker so that it knows the
 	# Html - thread won't be updating it's timestamp.
 
-	loudness_correction_program_info_and_timestamps = {'loudnesscorrection_program_info' : [sys.argv, loudness_correction_pid, all_ip_addresses_of_the_machine, freelcs_version], 'main_thread' : [True, 0], 'write_html_progress_report' : [write_html_progress_report, 0]}
+	loudness_correction_program_info_and_timestamps = {'loudnesscorrection_program_info' : [sys.argv, loudness_correction_pid, all_ip_addresses_of_the_machine, freelcs_version, loudnesscorrection_version], 'main_thread' : [True, 0], 'write_html_progress_report' : [write_html_progress_report, 0]}
 
 	# Start in its own thread the subroutine that sends error messages by email.
 	if email_sending_details['send_error_messages_by_email'] == True:
@@ -5429,7 +5446,7 @@ try:
 	while True:
 		
 		loudness_correction_program_info_and_timestamps['main_thread'] = [True, int(time.time())] # Update the heartbeat timestamp for the main thread. This is used to keep track if the main thread has crashed.
-		loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'] = [sys.argv, loudness_correction_pid, all_ip_addresses_of_the_machine, freelcs_version]
+		loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'] = [sys.argv, loudness_correction_pid, all_ip_addresses_of_the_machine, freelcs_version, loudnesscorrection_version]
 		
 		try:
 			# Get directory listing for HotFolder. The 'break' statement stops the for - statement from recursing into subdirectories.

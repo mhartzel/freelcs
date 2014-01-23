@@ -26,7 +26,8 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '068'
+version = '069'
+freelcs_version = '2.5'
 
 ###################################
 # Function definitions start here #
@@ -1112,7 +1113,7 @@ def install_init_scripts_and_config_files(*args):
 	'directory_for_error_logs' : directory_for_error_logs.get(), 'send_error_messages_to_logfile' : send_error_messages_to_logfile, 'heartbeat' : true_false_string[heartbeat.get()], \
 	'heartbeat_file_name' : heartbeat_file_name, 'heartbeat_write_interval' : int(heartbeat_write_interval), 'email_sending_details' : email_sending_details, \
 	'send_error_messages_by_email' : true_false_string[send_error_messages_by_email.get()], 'where_to_send_error_messages' : where_to_send_error_messages, \
-	'config_file_created_by_installer_version' : version, 'peak_measurement_method' : peak_measurement_method }
+	'config_file_created_by_installer_version' : version, 'peak_measurement_method' : peak_measurement_method, 'freelcs_version' : freelcs_version }
 
 	# Get the total number of items in settings dictionary and save the number in the dictionary. The number can be used for degugging settings.
 	number_of_all_items_in_dictionary = len(all_settings_dict)
@@ -4133,8 +4134,6 @@ supported_platforms = {'debian': ['7'], 'ubuntu': ['12.04', '14.04']}
 # Parse commandline arguments.
 for item in sys.argv[1:]:
 
-	print('item', item)
-
 	if 'force-distro' in item.lower():
 		force_distro_found=True
 		continue
@@ -4197,9 +4196,9 @@ if debug == True:
 # Create the root GUI window.
 root_window = tkinter.Tk()
 if error_message_from_find_os_name_and_version == '':
-	root_window.title("FreeLCS Installer version " + version + ', running on ' + os_name[0].upper() + os_name[1:] + ' ' + os_version)
+	root_window.title('FreeLCS ' + freelcs_version  + ' Installer, running on ' + os_name[0].upper() + os_name[1:] + ' ' + os_version)
 else:
-	root_window.title("FreeLCS Installer version " + version)
+	root_window.title('FreeLCS ' + freelcs_version  + ' Installer.')
 #root_window.geometry('800x600')
 root_window.grid_columnconfigure(0, weight=1)
 root_window.grid_rowconfigure(0, weight=1)
@@ -4359,6 +4358,60 @@ define_program_installation_commands()
 # Find the path to LoudnessCorrection.py and HeartBeat_Checker.py in the current directory.
 path_to_loudnesscorrection = find_program_in_current_dir('LoudnessCorrection.py')
 path_to_heartbeat_checker = find_program_in_current_dir('HeartBeat_Checker.py')
+
+#################################################
+# Define default options for MXF audio remixing #
+#################################################
+
+# Define the default channel map for remixing audio files found inside a mxf - file.
+# A map of [2, 6, 2, 2] means: if audio files with enough audio channels are found, then remix files to create the following mixes: stereo, 5.1, stereo, stereo.
+# Files left over after creating the remixes are discarded.
+# If mxf - channel map has been defined, then first remixes are created before loudness correction.
+# This global mxf remix map can be overwritten by a file specific remix map. If there is a text file with the same name as the source file but ending with '.remix_map', then the info inside this file is used for remixing just that specifi c mxf file.
+global_mxf_audio_remix_channel_map = [] # Example [2, 6, 2, 2]   Create stereo, 5.1, stereo and stereo mixes (if there are enough source audio channels).
+remix_map_file_extension = '.remix_map'
+
+# If FFmpeg is installed, then define what wrapper formats are allowed to be processed.
+# This helps to limit processing to patent free formats (mxf, mkv (matroska), webm, ogg, wav, flac) if needed.
+# The value of ['all'] means allow all ffmpeg supported formats to be processed.
+# Use only lower case characters for the format names.
+ffmpeg_allowed_wrapper_formats = ['mxf', 'mkv', 'matroska', 'webm', 'ogg', 'wav', 'flac']
+
+# Define what codec formats are allowed to be processed with FFmpeg.
+# The value of ['all'] means allow all ffmpeg supported formats to be processed.
+# The value of [] means allow all uncompressed pcm formats, flac and ogg vorbis.
+# Use only lower case characters for the format names.
+
+ffmpeg_allowed_codec_formats = []
+
+################################################
+# Define defaults for machine readable results #
+################################################
+
+# The variable 'write_loudness_calculation_results_to_a_machine_readable_file' defines if we should write loudness calculation results to individual text files to the target directory.
+write_loudness_calculation_results_to_a_machine_readable_file = False
+
+# If LoudnessCorrection is used as part of a automation system, then we might not want to create loudness corrected audio files or result graphics.
+create_loudness_corrected_files = True 
+create_loudness_history_graphics_files = True
+
+# If the input file is not in a format that is natively supported and one or more audio streams are extracted from it using FFmpeg, then the following
+# variable controls when the original file is deleted.
+# If this variable is 'True', then the original file is deleted immediately after all audio streams have been extracted from it.
+# If it is 'False' then the original file is deleted when the expiration time comes (controlled by the value stored in variable 'file_expiry_time' (default 8 hours)).
+delete_original_file_immediately = True
+
+# Define the characters used in machine readable results file to separate individual values.
+# Unit_separator is used to separate values for results for one mix.
+# Record separator is used as the separator for different mixes.
+# A separator can be one character or a string.
+# The separators must not exist in file names or error messages, if they do then it becomes impossible to parse the results file correctly.
+# The ASCII and UTF-8 character sets both have values defined just for this purpose (31 and 30).
+# These characters are non-printable and therefore can never exist in file names.
+# However the default chosen for the record separator is not ASCII 30, but the windows 'new line' - string.
+# This makes the machine readable results file, more easy for humans to read, as it separates results for different mixes on their own text lines.
+unit_separator = chr(31) # This non printable ascii character is used to separate individual values for a mix.
+record_separator = chr(13) + chr(10) # This string is used to separate info for different mixes. This is by default the carriage return character followed by the line feed character. This sequence is used in windows to separate lines of text.
 
 # Define initial samba configuration
 samba_configuration_file_content = ['# Samba Configuration File', \
