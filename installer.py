@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '070'
+version = '071'
 freelcs_version = '2.5'
 
 ###################################
@@ -1117,7 +1117,13 @@ def install_init_scripts_and_config_files(*args):
 	'write_loudness_calculation_results_to_a_machine_readable_file' : true_false_string[write_loudness_calculation_results_to_a_machine_readable_file.get()], \
 	'create_loudness_corrected_files' : true_false_string[create_loudness_corrected_files.get()], \
 	'create_loudness_history_graphics_files' : true_false_string[create_loudness_history_graphics_files.get()], 'delete_original_file_immediately' : true_false_string[delete_original_file_immediately.get()], \
-	'unit_separator' : unit_separator, 'record_separator' : record_separator }
+	'unit_separator' : unit_separator, 'record_separator' : record_separator, \
+	'enable_mxf_audio_remixing' : true_false_string[enable_mxf_audio_remixing.get()], 'remix_map_file_extension' : remix_map_file_extension.get(), \
+	'global_mxf_audio_remix_channel_map' : global_mxf_audio_remix_channel_map, 'ffmpeg_free_wrapper_formats' : ffmpeg_free_wrapper_formats, \
+	'ffmpeg_allowed_wrapper_formats' : ffmpeg_allowed_wrapper_formats, 'ffmpeg_free_codec_formats' : ffmpeg_free_codec_formats, \
+	'ffmpeg_allowed_codec_formats' : ffmpeg_allowed_codec_formats, \
+	'enable_nonfree_ffmpeg_codec_formats' : true_false_string[enable_nonfree_ffmpeg_codec_formats.get()],\
+	}
 
 	# Get the total number of items in settings dictionary and save the number in the dictionary. The number can be used for debugging settings.
 	number_of_all_items_in_dictionary = len(all_settings_dict)
@@ -1177,7 +1183,7 @@ def install_init_scripts_and_config_files(*args):
 		print('delete_original_file_immediately =', all_settings_dict['delete_original_file_immediately'])
 		print()
 
-		print('unit_separator (in ascii)  = ', end = '')
+		print('unit_separator (ascii numbers)  = ', end = '')
 		variable_string = all_settings_dict['unit_separator']
 		characters_in_ascii = ''
 
@@ -1187,7 +1193,7 @@ def install_init_scripts_and_config_files(*args):
 		print(characters_in_ascii)
 		print()
 
-		print('record_separator (in ascii)  = ', end = '')
+		print('record_separator (ascii numbers)  = ', end = '')
 		variable_string = all_settings_dict['record_separator']
 		characters_in_ascii = ''
 
@@ -1197,6 +1203,23 @@ def install_init_scripts_and_config_files(*args):
 		print(characters_in_ascii)
 
 		print()
+		print('enable_mxf_audio_remixing =', all_settings_dict['enable_mxf_audio_remixing'])
+		print()
+		print('remix_map_file_extension =', all_settings_dict['remix_map_file_extension'])
+		print()
+		print('global_mxf_audio_remix_channel_map =', all_settings_dict['global_mxf_audio_remix_channel_map'])
+		print()
+		print('ffmpeg_free_wrapper_formats =', all_settings_dict['ffmpeg_free_wrapper_formats'])
+		print()
+		print('ffmpeg_allowed_wrapper_formats =', all_settings_dict['ffmpeg_allowed_wrapper_formats'])
+		print()
+		print('ffmpeg_free_codec_formats =', all_settings_dict['ffmpeg_free_codec_formats'])
+		print()
+		print('ffmpeg_allowed_codec_formats =', all_settings_dict['ffmpeg_allowed_codec_formats'])
+		print()
+		print('enable_nonfree_ffmpeg_codec_formats =', all_settings_dict['enable_nonfree_ffmpeg_codec_formats'])
+		print()
+
 		print('number_of_all_items_in_dictionary =', all_settings_dict['number_of_all_items_in_dictionary'])
 		print()
 		print('config_file_created_by_installer_version =', all_settings_dict['config_file_created_by_installer_version'])
@@ -4394,6 +4417,13 @@ define_program_installation_commands()
 path_to_loudnesscorrection = find_program_in_current_dir('LoudnessCorrection.py')
 path_to_heartbeat_checker = find_program_in_current_dir('HeartBeat_Checker.py')
 
+# Define lists of supported pcm bit depths
+pcm_8_bit_formats = ['pcm_s8', 'pcm_s8_planar', 'pcm_u8']
+pcm_16_bit_formats = ['pcm_s16be', 'pcm_s16le', 'pcm_s16le_planar', 'pcm_u16be', 'pcm_u16le']
+pcm_24_bit_formats = ['pcm_dvd', 'pcm_lxf', 'pcm_s24be', 'pcm_s24daud', 'pcm_s24le', 'pcm_u24be', 'pcm_u24le']
+pcm_32_bit_formats = ['pcm_f32be', 'pcm_f32le', 'pcm_s32be', 'pcm_s32le', 'pcm_u32be', 'pcm_u32le']
+pcm_64_bit_formats = ['pcm_f64be', 'pcm_f64le']
+
 #################################################
 # Define default options for MXF audio remixing #
 #################################################
@@ -4401,23 +4431,38 @@ path_to_heartbeat_checker = find_program_in_current_dir('HeartBeat_Checker.py')
 # Define the default channel map for remixing audio files found inside a mxf - file.
 # A map of [2, 6, 2, 2] means: if audio files with enough audio channels are found, then remix files to create the following mixes: stereo, 5.1, stereo, stereo.
 # Files left over after creating the remixes are discarded.
-# If mxf - channel map has been defined, then first remixes are created before loudness correction.
-# This global mxf remix map can be overwritten by a file specific remix map. If there is a text file with the same name as the source file but ending with '.remix_map', then the info inside this file is used for remixing just that specifi c mxf file.
-global_mxf_audio_remix_channel_map = [] # Example [2, 6, 2, 2]   Create stereo, 5.1, stereo and stereo mixes (if there are enough source audio channels).
-remix_map_file_extension = '.remix_map'
+# If mxf - channel map has been defined, then remixes are created before loudness correction.
+# This global mxf remix map can be overwritten by a file specific remix map. If there is a text file with the same name as the source file but ending with '.remix_map', then the info inside this file is used for remixing just that specific mxf file.
+# You can define more mappings than you have channels in audio files since only mappings for existing channels are used.
+enable_mxf_audio_remixing = tkinter.BooleanVar()
+enable_mxf_audio_remixing.set(False)
+remix_map_file_extension = tkinter.StringVar()
+remix_map_file_extension.set('.remix_map')
+global_mxf_audio_remix_channel_map = [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2] # Example [2, 6, 2, 2]   Create stereo, 5.1, stereo and stereo mixes (if there are enough source audio channels).
 
-# If FFmpeg is installed, then define what wrapper formats are allowed to be processed.
-# This helps to limit processing to patent free formats (mxf, mkv (matroska), webm, ogg, wav, flac) if needed.
+# Define what wrapper formats are allowed to be processed with FFmpeg.
+# This definition helps to limit processing to patent free formats (mxf, mkv (matroska), webm, ogg, wav, flac) if needed.
 # The value of ['all'] means allow all ffmpeg supported formats to be processed.
 # Use only lower case characters for the format names.
-ffmpeg_allowed_wrapper_formats = ['mxf', 'mkv', 'matroska', 'webm', 'ogg', 'wav', 'flac']
+ffmpeg_free_wrapper_formats = ['mxf', 'mkv', 'matroska', 'webm', 'ogg', 'wav', 'flac']
+ffmpeg_allowed_wrapper_formats = ['all']
 
 # Define what codec formats are allowed to be processed with FFmpeg.
 # The value of ['all'] means allow all ffmpeg supported formats to be processed.
-# The value of [] means allow all uncompressed pcm formats, flac and ogg vorbis.
 # Use only lower case characters for the format names.
+ffmpeg_free_codec_formats = []
+ffmpeg_free_codec_formats.extend(pcm_8_bit_formats)
+ffmpeg_free_codec_formats.extend(pcm_16_bit_formats)
+ffmpeg_free_codec_formats.extend(pcm_24_bit_formats)
+ffmpeg_free_codec_formats.extend(pcm_32_bit_formats)
+ffmpeg_free_codec_formats.extend(pcm_64_bit_formats)
+ffmpeg_free_codec_formats.append('flac')
+ffmpeg_free_codec_formats.append('vorbis')
 
-ffmpeg_allowed_codec_formats = []
+enable_nonfree_ffmpeg_codec_formats = tkinter.BooleanVar()
+enable_nonfree_ffmpeg_codec_formats.set(True)
+
+ffmpeg_allowed_codec_formats = ['all']
 
 ################################################
 # Define defaults for machine readable results #
@@ -4505,8 +4550,8 @@ config_file_created_by_installer_version = 0
 if 'config_file_created_by_installer_version' in previously_saved_settings_dict:
 	config_file_created_by_installer_version = previously_saved_settings_dict['config_file_created_by_installer_version']
 
-# Configfile needs to be created at least wth version 70 of installer to be compatible with current version of installer.
-if int(config_file_created_by_installer_version) >= 70:
+# Configfile needs to be created at least wth version 39 of installer to be compatible with current version of installer.
+if int(config_file_created_by_installer_version) >= 39:
 	if debug == True:
 		print('Values read from old configfile')
 		print('-' * 75)
@@ -4579,7 +4624,7 @@ if int(config_file_created_by_installer_version) >= 70:
 	if 'unit_separator' in previously_saved_settings_dict:
 			unit_separator = previously_saved_settings_dict['unit_separator']
 			if debug == True:
-				print('unit_separator (in ascii) = ', end = '')
+				print('unit_separator (ascii numbers) = ', end = '')
 				variable_string = previously_saved_settings_dict['unit_separator']
 				characters_in_ascii = ''
 
@@ -4590,7 +4635,7 @@ if int(config_file_created_by_installer_version) >= 70:
 	if 'record_separator' in previously_saved_settings_dict:
 			record_separator = previously_saved_settings_dict['record_separator']
 			if debug == True:
-				print('record_separator (in ascii) = ', end = '')
+				print('record_separator (ascii numbers) = ', end = '')
 				variable_string = previously_saved_settings_dict['record_separator']
 				characters_in_ascii = ''
 
@@ -4598,8 +4643,43 @@ if int(config_file_created_by_installer_version) >= 70:
 					characters_in_ascii = characters_in_ascii + str(ord(item)) + ', '
 				characters_in_ascii = characters_in_ascii[0:len(characters_in_ascii)-2]
 				print(characters_in_ascii)
+
+	if 'enable_mxf_audio_remixing' in previously_saved_settings_dict:
+			enable_mxf_audio_remixing.set(previously_saved_settings_dict['enable_mxf_audio_remixing'])
+			if debug == True:
+				print('enable_mxf_audio_remixing =', previously_saved_settings_dict['enable_mxf_audio_remixing'])
+	if 'remix_map_file_extension' in previously_saved_settings_dict:
+			remix_map_file_extension.set(previously_saved_settings_dict['remix_map_file_extension'])
+			if debug == True:
+				print('remix_map_file_extension =', previously_saved_settings_dict['remix_map_file_extension'])
+
+	if 'global_mxf_audio_remix_channel_map' in previously_saved_settings_dict:
+			global_mxf_audio_remix_channel_map = previously_saved_settings_dict['global_mxf_audio_remix_channel_map']
+			if debug == True:
+				print('global_mxf_audio_remix_channel_map =', previously_saved_settings_dict['global_mxf_audio_remix_channel_map'])
+	if 'ffmpeg_free_wrapper_formats' in previously_saved_settings_dict:
+			ffmpeg_free_wrapper_formats = previously_saved_settings_dict['ffmpeg_free_wrapper_formats']
+			if debug == True:
+				print('ffmpeg_free_wrapper_formats =', previously_saved_settings_dict['ffmpeg_free_wrapper_formats'])
+	if 'ffmpeg_allowed_wrapper_formats' in previously_saved_settings_dict:
+			ffmpeg_allowed_wrapper_formats = previously_saved_settings_dict['ffmpeg_allowed_wrapper_formats']
+			if debug == True:
+				print('ffmpeg_allowed_wrapper_formats =', previously_saved_settings_dict['ffmpeg_allowed_wrapper_formats'])
+	if 'ffmpeg_free_codec_formats' in previously_saved_settings_dict:
+			ffmpeg_free_codec_formats = previously_saved_settings_dict['ffmpeg_free_codec_formats']
+			if debug == True:
+				print('ffmpeg_free_codec_formats =', previously_saved_settings_dict['ffmpeg_free_codec_formats'])
+	if 'ffmpeg_allowed_codec_formats' in previously_saved_settings_dict:
+			ffmpeg_allowed_codec_formats = previously_saved_settings_dict['ffmpeg_allowed_codec_formats']
+			if debug == True:
+				print('ffmpeg_allowed_codec_formats =', previously_saved_settings_dict['ffmpeg_allowed_codec_formats'])
+	if 'enable_nonfree_ffmpeg_codec_formats' in previously_saved_settings_dict:
+			enable_nonfree_ffmpeg_codec_formats.set(previously_saved_settings_dict['enable_nonfree_ffmpeg_codec_formats'])
+			if debug == True:
+				print('enable_nonfree_ffmpeg_codec_formats =', previously_saved_settings_dict['enable_nonfree_ffmpeg_codec_formats'])
 	if debug == True:
 		print('-' * 75)
+
 
 ##########################################################################################################################
 # Create frames inside the root window to hold other GUI elements. All frames and widgets must be created in the main program, otherwise they are not accessible in subroutines. 

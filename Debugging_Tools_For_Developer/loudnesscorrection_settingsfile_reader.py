@@ -45,7 +45,7 @@ for item in sorted(all_settings_dict.items()):
 
 	if item[0] == 'unit_separator':
 
-		print('unit_separator (in ascii) = ', end = '')
+		print('unit_separator (ascii numbers) = ', end = '')
 		variable_string = item[1]
 		characters_in_ascii = '' 
 
@@ -58,7 +58,7 @@ for item in sorted(all_settings_dict.items()):
 
 	if item[0] == 'record_separator':
 
-		print('record_separator (in ascii) = ', end = '')
+		print('record_separator (ascii numbers) = ', end = '')
 		variable_string = item[1]
 		characters_in_ascii = '' 
 

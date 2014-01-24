@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '253'
+loudnesscorrection_version = '254'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -316,41 +316,41 @@ pcm_24_bit_formats = ['pcm_dvd', 'pcm_lxf', 'pcm_s24be', 'pcm_s24daud', 'pcm_s24
 pcm_32_bit_formats = ['pcm_f32be', 'pcm_f32le', 'pcm_s32be', 'pcm_s32le', 'pcm_u32be', 'pcm_u32le']
 pcm_64_bit_formats = ['pcm_f64be', 'pcm_f64le']
 
-# Define the default channel map for remixing audio files found inside a mxf - file.
-# A map of [2, 6, 2, 2] means: if audio files with enough audio channels are found, then remix files to create the following mixes: stereo, 5.1, stereo, stereo.
-# Files left over after creating the remixes are discarded.
-# If mxf - channel map has been defined, then first remixes are created before loudness correction.
-# This global mxf remix map can be overwritten by a file specific remix map. If there is a text file with the same name as the source file but ending with '.remix_map', then the info inside this file is used for remixing just that specific mxf file.
-global_mxf_audio_remix_channel_map = [] # Example [2, 6, 2, 2]	 Create stereo, 5.1, stereo and stereo mixes (if there are enough source audio channels).
+#######################################
+# Set defaults for MXF audio remixing #
+#######################################
+enable_mxf_audio_remixing = False
 remix_map_file_extension = '.remix_map'
+global_mxf_audio_remix_channel_map = [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2] # Example [2, 6, 2, 2]	 Create stereo, 5.1, stereo and stereo mixes (if there are enough source audio channels).
 
-# If FFmpeg is installed, then define what wrapper formats are allowed to be processed.
-# This helps to limit processing to patent free formats (mxf, mkv (matroska), webm, ogg, wav, flac) if needed.
-# The value of ['all'] means allow all ffmpeg supported formats to be processed.
-# Use only lower case characters for the format names.
-ffmpeg_allowed_wrapper_formats = ['mxf', 'mkv', 'matroska', 'webm', 'ogg', 'wav', 'flac']
+ffmpeg_free_wrapper_formats = ['mxf', 'mkv', 'matroska', 'webm', 'ogg', 'wav', 'flac']
+ffmpeg_allowed_wrapper_formats = ['all']
 
-# Define what codec formats are allowed to be processed with FFmpeg.
-# The value of ['all'] means allow all ffmpeg supported formats to be processed.
-# The value of [] means allow all uncompressed pcm formats, flac and ogg vorbis.
-# Use only lower case characters for the format names.
+ffmpeg_free_codec_formats = []
+ffmpeg_free_codec_formats.extend(pcm_8_bit_formats)
+ffmpeg_free_codec_formats.extend(pcm_16_bit_formats)
+ffmpeg_free_codec_formats.extend(pcm_24_bit_formats)
+ffmpeg_free_codec_formats.extend(pcm_32_bit_formats)
+ffmpeg_free_codec_formats.extend(pcm_64_bit_formats)
+ffmpeg_free_codec_formats.append('flac')
+ffmpeg_free_codec_formats.append('vorbis')
 
-ffmpeg_allowed_codec_formats = []
+enable_nonfree_ffmpeg_codec_formats = True
 
-if ffmpeg_allowed_codec_formats == []:
-	ffmpeg_allowed_codec_formats.extend(pcm_8_bit_formats)
-	ffmpeg_allowed_codec_formats.extend(pcm_16_bit_formats)
-	ffmpeg_allowed_codec_formats.extend(pcm_24_bit_formats)
-	ffmpeg_allowed_codec_formats.extend(pcm_32_bit_formats)
-	ffmpeg_allowed_codec_formats.extend(pcm_64_bit_formats)
-	ffmpeg_allowed_codec_formats.append('flac')
-	ffmpeg_allowed_codec_formats.append('vorbis')
+if enable_nonfree_ffmpeg_codec_formats == True:
+	ffmpeg_allowed_codec_formats = ['all']
+else:
+	ffmpeg_allowed_codec_formats = ffmpeg_free_codec_formats
 
 if debug_all == True:
 	ffmpeg_allowed_wrapper_formats = ['all']
 	ffmpeg_allowed_codec_formats = ['all']
 
-# Set defaults for 'Machine Reabable Results' settings. These values will be overwritten by values that come from the installer program through the file Loudness_Correction_Settings.pickle
+########################################################
+# Set defaults for 'Machine Reabable Results' settings #
+########################################################
+
+# These values will be overwritten by values that come from the installer program through the file Loudness_Correction_Settings.pickle
 write_loudness_calculation_results_to_a_machine_readable_file = False
 create_loudness_corrected_files = True
 create_loudness_history_graphics_files = True
@@ -2968,7 +2968,14 @@ def debug_lists_and_dictionaries_thread():
 	global delete_original_file_immediately
 	global unit_separator
 	global record_separator
-
+	global enable_mxf_audio_remixing
+	global remix_map_file_extension
+	global enable_nonfree_ffmpeg_codec_formats
+	global global_mxf_audio_remix_channel_map
+	global ffmpeg_free_wrapper_formats
+	global ffmpeg_allowed_wrapper_formats
+	global ffmpeg_free_codec_formats
+	global ffmpeg_allowed_codec_formats
 
 	list_printouts = []
 	list_printouts_old_values = []
@@ -3025,7 +3032,7 @@ def debug_lists_and_dictionaries_thread():
 		values_read_from_configfile.append('')
 		values_read_from_configfile.append('send_error_messages_by_email = ' + str(send_error_messages_by_email))
 		values_read_from_configfile.append('email_sending_details =' + ', '.join(email_sending_details))
-
+		values_read_from_configfile.append('')
 		values_read_from_configfile.append('write_loudness_calculation_results_to_a_machine_readable_file = ' + str(write_loudness_calculation_results_to_a_machine_readable_file))
 		values_read_from_configfile.append('create_loudness_corrected_files = ' + str(create_loudness_corrected_files))
 		values_read_from_configfile.append('create_loudness_history_graphics_files = ' + str(create_loudness_history_graphics_files))
@@ -3037,7 +3044,7 @@ def debug_lists_and_dictionaries_thread():
 		for item in variable_string:
 			characters_in_ascii = characters_in_ascii + str(ord(item)) + ', ' 
 		characters_in_ascii = characters_in_ascii[0:len(characters_in_ascii)-2]
-		values_read_from_configfile.append('unit_separator (in ascii) = ' + characters_in_ascii)
+		values_read_from_configfile.append('unit_separator (ascii numbers) = ' + characters_in_ascii)
 
 		variable_string = record_separator
 		characters_in_ascii = '' 
@@ -3045,7 +3052,16 @@ def debug_lists_and_dictionaries_thread():
 		for item in variable_string:
 			characters_in_ascii = characters_in_ascii + str(ord(item)) + ', ' 
 		characters_in_ascii = characters_in_ascii[0:len(characters_in_ascii)-2]
-		values_read_from_configfile.append('record_separator (in ascii) = ' + characters_in_ascii)
+		values_read_from_configfile.append('record_separator (ascii numbers) = ' + characters_in_ascii)
+
+		values_read_from_configfile.append('enable_mxf_audio_remixing = ' + str(enable_mxf_audio_remixing))
+		values_read_from_configfile.append('remix_map_file_extension = ' + str(remix_map_file_extension))
+		values_read_from_configfile.append('global_mxf_audio_remix_channel_map = ' + str(global_mxf_audio_remix_channel_map))
+		values_read_from_configfile.append('ffmpeg_free_wrapper_formats = ' + str(ffmpeg_free_wrapper_formats))
+		values_read_from_configfile.append('ffmpeg_allowed_wrapper_formats = ' + str(ffmpeg_allowed_wrapper_formats))
+		values_read_from_configfile.append('ffmpeg_free_codec_formats = ' + str(ffmpeg_free_codec_formats))
+		values_read_from_configfile.append('ffmpeg_allowed_codec_formats = ' + str(ffmpeg_allowed_codec_formats))
+		values_read_from_configfile.append('enable_nonfree_ffmpeg_codec_formats = ' + str(enable_nonfree_ffmpeg_codec_formats))
 
 		values_read_from_configfile.append(str((len(title_text) + 1) * '-'))
 
@@ -5282,6 +5298,23 @@ try:
 			unit_separator = all_settings_dict['unit_separator']
 		if 'record_separator' in all_settings_dict:
 			record_separator = all_settings_dict['record_separator']
+
+		if 'enable_mxf_audio_remixing' in all_settings_dict:
+			enable_mxf_audio_remixing = all_settings_dict['enable_mxf_audio_remixing']
+		if 'remix_map_file_extension' in all_settings_dict:
+			remix_map_file_extension = all_settings_dict['remix_map_file_extension']
+		if 'global_mxf_audio_remix_channel_map' in all_settings_dict:
+			global_mxf_audio_remix_channel_map = all_settings_dict['global_mxf_audio_remix_channel_map']
+		if 'ffmpeg_free_wrapper_formats' in all_settings_dict:
+			ffmpeg_free_wrapper_formats = all_settings_dict['ffmpeg_free_wrapper_formats']
+		if 'ffmpeg_allowed_wrapper_formats' in all_settings_dict:
+			ffmpeg_allowed_wrapper_formats = all_settings_dict['ffmpeg_allowed_wrapper_formats']
+		if 'ffmpeg_free_codec_formats' in all_settings_dict:
+			ffmpeg_free_codec_formats = all_settings_dict['ffmpeg_free_codec_formats']
+		if 'ffmpeg_allowed_codec_formats' in all_settings_dict:
+			ffmpeg_allowed_codec_formats = all_settings_dict['ffmpeg_allowed_codec_formats']
+		if 'enable_nonfree_ffmpeg_codec_formats' in all_settings_dict:
+			enable_nonfree_ffmpeg_codec_formats = all_settings_dict['enable_nonfree_ffmpeg_codec_formats']
 
 		if debug_all == True:
 			write_loudness_calculation_results_to_a_machine_readable_file = True
