@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '071'
+version = '072'
 freelcs_version = '2.5'
 
 ###################################
@@ -104,11 +104,45 @@ def call_fourth_frame_on_top():
 	# This function can be called from two possible windows depending on did the user come here by clicking Next or Back buttons.
 	# Hide the the frames for other windows and raise the one we want.
 	third_frame.grid_forget()
-	fifth_frame.grid_forget()
+	tenth_frame.grid_forget()
 	fourth_frame.grid(column=0, row=0, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E))
 	
 	# Get Frame dimensions and resize root_window to fit the whole frame.
 	root_window.geometry(str(fourth_frame.winfo_reqwidth()+40) +'x'+ str(fourth_frame.winfo_reqheight()))
+	
+	# Get root window geometry and center it on screen.
+	root_window.update()
+	x_position = (root_window.winfo_screenwidth() / 2) - (root_window.winfo_width() / 2) - 8
+	y_position = (root_window.winfo_screenheight() / 2) - (root_window.winfo_height() / 2) - 20
+	root_window.geometry(str(root_window.winfo_width()) + 'x' +str(root_window.winfo_height()) + '+' + str(int(x_position)) + '+' + str(int(y_position)))
+
+def call_tenth_frame_on_top():
+	
+	# This function can be called from two possible windows depending on did the user come here by clicking Next or Back buttons.
+	# Hide the the frames for other windows and raise the one we want.
+	fourth_frame.grid_forget()
+	eleventh_frame.grid_forget()
+	tenth_frame.grid(column=0, row=0, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E))
+	
+	# Get Frame dimensions and resize root_window to fit the whole frame.
+	root_window.geometry(str(tenth_frame.winfo_reqwidth()+40) +'x'+ str(tenth_frame.winfo_reqheight()))
+	
+	# Get root window geometry and center it on screen.
+	root_window.update()
+	x_position = (root_window.winfo_screenwidth() / 2) - (root_window.winfo_width() / 2) - 8
+	y_position = (root_window.winfo_screenheight() / 2) - (root_window.winfo_height() / 2) - 20
+	root_window.geometry(str(root_window.winfo_width()) + 'x' +str(root_window.winfo_height()) + '+' + str(int(x_position)) + '+' + str(int(y_position)))
+
+def call_eleventh_frame_on_top():
+	
+	# This function can be called from two possible windows depending on did the user come here by clicking Next or Back buttons.
+	# Hide the the frames for other windows and raise the one we want.
+	tenth_frame.grid_forget()
+	fifth_frame.grid_forget()
+	eleventh_frame.grid(column=0, row=0, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E))
+	
+	# Get Frame dimensions and resize root_window to fit the whole frame.
+	root_window.geometry(str(eleventh_frame.winfo_reqwidth()+40) +'x'+ str(eleventh_frame.winfo_reqheight()))
 	
 	# Get root window geometry and center it on screen.
 	root_window.update()
@@ -718,6 +752,48 @@ def print_write_html_progress_report(*args):
 		true_false_string = [False, True]
 		print()
 		print('write_html_progress_report =', true_false_string[write_html_progress_report.get()])
+
+def print_write_machine_readable_results(*args):
+
+	if write_loudness_calculation_results_to_a_machine_readable_file.get() == 0:
+		unit_separator_combobox_1.state(['disabled'])
+		unit_separator_combobox_2.state(['disabled'])
+		record_separator_combobox_1.state(['disabled'])
+		record_separator_combobox_2.state(['disabled'])
+		tenth_window_label_8['foreground'] = 'dark gray'
+		tenth_window_label_6['foreground'] = 'dark gray'
+		tenth_window_label_7['foreground'] = 'dark gray'
+	else:
+		unit_separator_combobox_1.state(['!disabled'])
+		unit_separator_combobox_2.state(['!disabled'])
+		record_separator_combobox_1.state(['!disabled'])
+		record_separator_combobox_2.state(['!disabled'])
+		tenth_window_label_8['foreground'] = 'black'
+		tenth_window_label_6['foreground'] = 'black'
+		tenth_window_label_7['foreground'] = 'black'
+
+	if debug == True:
+		true_false_string = [False, True]
+		print()
+		print('write_loudness_calculation_results_to_a_machine_readable_file =', true_false_string[write_loudness_calculation_results_to_a_machine_readable_file.get()])
+
+def print_create_loudness_corrected_files(*args):
+	if debug == True:
+		true_false_string = [False, True]
+		print()
+		print('create_loudness_corrected_files =', true_false_string[create_loudness_corrected_files.get()])
+
+def print_create_loudness_history_graphics_files(*args):
+	if debug == True:
+		true_false_string = [False, True]
+		print()
+		print('create_loudness_history_graphics_files =', true_false_string[create_loudness_history_graphics_files.get()])
+
+def print_delete_original_file_immediately(*args):
+	if debug == True:
+		true_false_string = [False, True]
+		print()
+		print('delete_original_file_immediately =', true_false_string[delete_original_file_immediately.get()])
 
 def print_create_a_ram_disk_for_html_report_and_toggle_next_button_state(*args):
 	global list_of_ram_devices
@@ -4174,6 +4250,34 @@ def find_os_name_and_version():
 
 	return(os_name_announced_in_os_release, os_version_announced_in_os_release, error_message)  
 
+def print_unit_and_record_separators(*args):
+
+	global unit_separator
+	global record_separator
+
+	if unit_separator_value_2.get() == 'None':
+		unit_separator = chr(int(unit_separator_value_1.get()))
+	else:
+		unit_separator = chr(int(unit_separator_value_1.get())) + chr(int(unit_separator_value_2.get()))
+
+	if record_separator_value_2.get() == 'None':
+		record_separator = chr(int(record_separator_value_1.get()))
+	else:
+		record_separator = chr(int(record_separator_value_1.get())) + chr(int(record_separator_value_2.get()))
+
+	if debug == True:
+		print()
+		print('unit_separator: ', end='')
+		for item in unit_separator:
+			print(str(ord(item)) + '  ', end='')
+		print()
+
+		print('record_separator: ', end='')
+		for item in record_separator:
+			print(str(ord(item)) + '  ', end='')
+		print()
+
+
 
 ###############################
 # Main program starts here :) #
@@ -4250,6 +4354,7 @@ if debug == True:
 	print('os_name =', os_name)
 	print('os_version =', os_version)
 	print()
+
 
 # Create the root GUI window.
 root_window = tkinter.Tk()
@@ -4737,6 +4842,26 @@ fourth_frame_child_frame_1=tkinter.ttk.Frame(fourth_frame)
 fourth_frame_child_frame_1['borderwidth'] = 2
 fourth_frame_child_frame_1['relief'] = 'sunken'
 fourth_frame_child_frame_1.grid(column=0, row=0, columnspan=4, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E))
+
+##########################################################################################################################
+
+tenth_frame=tkinter.ttk.Frame(root_window)
+tenth_frame.grid(column=0, row=0, columnspan=4, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E))
+
+tenth_frame_child_frame_1=tkinter.ttk.Frame(tenth_frame)
+tenth_frame_child_frame_1['borderwidth'] = 2
+tenth_frame_child_frame_1['relief'] = 'sunken'
+tenth_frame_child_frame_1.grid(column=0, row=0, columnspan=4, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E))
+
+##########################################################################################################################
+
+eleventh_frame=tkinter.ttk.Frame(root_window)
+eleventh_frame.grid(column=0, row=0, columnspan=4, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E))
+
+eleventh_frame_child_frame_1=tkinter.ttk.Frame(eleventh_frame)
+eleventh_frame_child_frame_1['borderwidth'] = 2
+eleventh_frame_child_frame_1['relief'] = 'sunken'
+eleventh_frame_child_frame_1.grid(column=0, row=0, columnspan=4, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E))
 
 ##########################################################################################################################
 
@@ -5279,7 +5404,7 @@ peak_measurement_label.grid(column=0, row=12, pady=10, padx=10, columnspan=4, st
 # Create the buttons for the frame
 fourth_window_back_button = tkinter.Button(fourth_frame, text = "Back", command = call_third_frame_on_top)
 fourth_window_back_button.grid(column=1, row=1, padx=30, pady=10, sticky=(tkinter.E, tkinter.N))
-fourth_window_next_button = tkinter.Button(fourth_frame, text = "Next", command = call_fifth_frame_on_top)
+fourth_window_next_button = tkinter.Button(fourth_frame, text = "Next", command = call_tenth_frame_on_top)
 
 # If we were no successful in getting the list of ram device names from the os and create_ram_disk = True, disable the next button.
 if (len(list_of_ram_devices) == 0) and (create_a_ram_disk_for_html_report.get() == True):
@@ -5288,6 +5413,267 @@ if (len(list_of_ram_devices) == 0) and (create_a_ram_disk_for_html_report.get() 
 if len(list_of_normal_useraccounts) == 0:
 	fourth_window_next_button['state'] = 'disabled'
 fourth_window_next_button.grid(column=2, row=1, padx=30, pady=10, sticky=(tkinter.W, tkinter.N))
+
+
+###########################################################################################################
+# Window number 10                                                                                         #
+###########################################################################################################
+
+# This window lets the user define settings for machine readable results
+tenth_window_label_1 = tkinter.ttk.Label(tenth_frame_child_frame_1, text='Write loudness calculation results to a machine readable file')
+tenth_window_label_1.grid(column=0, row=0, columnspan=2, padx=10, sticky=(tkinter.W, tkinter.N))
+machine_readable_file_true_radiobutton = tkinter.ttk.Radiobutton(tenth_frame_child_frame_1, text='Yes', variable=write_loudness_calculation_results_to_a_machine_readable_file, value=True, command=print_write_machine_readable_results)
+machine_readable_file_false_radiobutton = tkinter.ttk.Radiobutton(tenth_frame_child_frame_1, text='No', variable=write_loudness_calculation_results_to_a_machine_readable_file, value=False, command=print_write_machine_readable_results)
+machine_readable_file_true_radiobutton.grid(column=3, row=0, padx=15)
+machine_readable_file_false_radiobutton.grid(column=4, row=0, padx=15)
+
+tenth_window_label_2 = tkinter.ttk.Label(tenth_frame_child_frame_1, text='Create loudness corrected audio files')
+tenth_window_label_2.grid(column=0, row=1, columnspan=2, padx=10, sticky=(tkinter.W, tkinter.N))
+machine_readable_file_true_radiobutton = tkinter.ttk.Radiobutton(tenth_frame_child_frame_1, text='Yes', variable=create_loudness_corrected_files, value=True, command=print_create_loudness_corrected_files)
+machine_readable_file_false_radiobutton = tkinter.ttk.Radiobutton(tenth_frame_child_frame_1, text='No', variable=create_loudness_corrected_files, value=False, command=print_create_loudness_corrected_files)
+machine_readable_file_true_radiobutton.grid(column=3, row=1, padx=15)
+machine_readable_file_false_radiobutton.grid(column=4, row=1, padx=15)
+
+tenth_window_label_3 = tkinter.ttk.Label(tenth_frame_child_frame_1, text='Create loudness history graphics files')
+tenth_window_label_3.grid(column=0, row=2, columnspan=2, padx=10, sticky=(tkinter.W, tkinter.N))
+machine_readable_file_true_radiobutton = tkinter.ttk.Radiobutton(tenth_frame_child_frame_1, text='Yes', variable=create_loudness_history_graphics_files, value=True, command=print_create_loudness_history_graphics_files)
+machine_readable_file_false_radiobutton = tkinter.ttk.Radiobutton(tenth_frame_child_frame_1, text='No', variable=create_loudness_history_graphics_files, value=False, command=print_create_loudness_history_graphics_files)
+machine_readable_file_true_radiobutton.grid(column=3, row=2, padx=15)
+machine_readable_file_false_radiobutton.grid(column=4, row=2, padx=15)
+
+tenth_window_label_4 = tkinter.ttk.Label(tenth_frame_child_frame_1, text='Delete original multistream file immediately after audio stream extraction')
+tenth_window_label_4.grid(column=0, row=3, columnspan=2, padx=10, sticky=(tkinter.W, tkinter.N))
+machine_readable_file_true_radiobutton = tkinter.ttk.Radiobutton(tenth_frame_child_frame_1, text='Yes', variable=delete_original_file_immediately, value=True, command=print_delete_original_file_immediately)
+machine_readable_file_false_radiobutton = tkinter.ttk.Radiobutton(tenth_frame_child_frame_1, text='No', variable=delete_original_file_immediately, value=False, command=print_delete_original_file_immediately)
+machine_readable_file_true_radiobutton.grid(column=3, row=3, padx=15)
+machine_readable_file_false_radiobutton.grid(column=4, row=3, padx=15)
+
+# Some explanatory texts.
+tenth_window_label_5 = tkinter.ttk.Label(tenth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text="These settings let's you define how FreeLCS outputs it's results. If your user is a human, then leave these settings to their default values.\n\nIf FreeLCS is part of a file processing chain and the results are interpreted by a machine that makes file processing decisions based on FreeLCS results, then enable the option to write results to a machine readable file. In this case you might wan't to disable some output file creation.")
+tenth_window_label_5.grid(column=0, row=4, pady=10, padx=10, columnspan=4, sticky=(tkinter.W, tkinter.N))
+
+# Define a horizontal line to space out groups of rows.
+tenth_window_separator_1 = tkinter.ttk.Separator(tenth_frame_child_frame_1, orient=tkinter.HORIZONTAL)
+tenth_window_separator_1.grid(column=0, row=5, padx=10, pady=10, columnspan=5, sticky=(tkinter.W, tkinter.E))
+
+# Define unit separator selection boxes.
+tenth_window_label_6 = tkinter.ttk.Label(tenth_frame_child_frame_1, text='Machine Readable Result - file Unit Separator (ASCII / UTF-8 values):')
+tenth_window_label_6.grid(column=0, row=6, padx=10, columnspan=1, sticky=(tkinter.W, tkinter.N))
+
+# Get unit separator values so that they can be displayed on the window.
+unit_separator_value_1 = tkinter.StringVar()
+unit_separator_value_2 = tkinter.StringVar()
+
+if len(unit_separator) == 2:
+	unit_separator_value_1.set(str(ord(unit_separator[0])))
+	unit_separator_value_2.set(str(ord(unit_separator[1])))
+
+if len(unit_separator) == 1:
+	unit_separator_value_1.set(str(ord(unit_separator[0])))
+	unit_separator_value_2.set('None')
+
+if len(unit_separator) == 0:
+	unit_separator_value_1.set('31')
+	unit_separator_value_2.set('None')
+
+# Get record separator values so that they can be displayed on the window.
+record_separator_value_1 = tkinter.StringVar()
+record_separator_value_2 = tkinter.StringVar()
+
+if len(record_separator) == 2:
+	record_separator_value_1.set(str(ord(record_separator[0])))
+	record_separator_value_2.set(str(ord(record_separator[1])))
+
+if len(record_separator) == 1:
+	record_separator_value_1.set(str(ord(record_separator[0])))
+	record_separator_value_2.set('None')
+
+if len(record_separator) == 0:
+	record_separator_value_1.set('13')
+	record_separator_value_2.set('10')
+
+unit_separator_combobox_1 = tkinter.ttk.Combobox(tenth_frame_child_frame_1, justify=tkinter.CENTER, width=4, textvariable=unit_separator_value_1)
+unit_separator_combobox_1['values'] = ('0','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31')
+
+unit_separator_combobox_1.bind('<<ComboboxSelected>>', print_unit_and_record_separators)
+unit_separator_combobox_1.grid(column=3, row=6, padx=10, columnspan=1, sticky=(tkinter.N, tkinter.E))
+
+unit_separator_combobox_2 = tkinter.ttk.Combobox(tenth_frame_child_frame_1, justify=tkinter.CENTER, width=4, textvariable=unit_separator_value_2)
+unit_separator_combobox_2['values'] = ('None','0','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31')
+
+unit_separator_combobox_2.bind('<<ComboboxSelected>>', print_unit_and_record_separators)
+unit_separator_combobox_2.grid(column=4, row=6, padx=10, sticky=(tkinter.N, tkinter.E))
+
+# Define record separator selection boxes.
+tenth_window_label_7 = tkinter.ttk.Label(tenth_frame_child_frame_1, text='Machine Readable Result - file Record Separator (ASCII / UTF-8 values):')
+tenth_window_label_7.grid(column=0, row=7, padx=10, columnspan=1, sticky=(tkinter.W, tkinter.N))
+
+record_separator_combobox_1 = tkinter.ttk.Combobox(tenth_frame_child_frame_1, justify=tkinter.CENTER, width=4, textvariable=record_separator_value_1)
+record_separator_combobox_1['values'] = ('0','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31')
+
+record_separator_combobox_1.bind('<<ComboboxSelected>>', print_unit_and_record_separators)
+record_separator_combobox_1.grid(column=3, row=7, padx=10, columnspan=1, sticky=(tkinter.N, tkinter.E))
+
+record_separator_combobox_2 = tkinter.ttk.Combobox(tenth_frame_child_frame_1, justify=tkinter.CENTER, width=4, textvariable=record_separator_value_2)
+record_separator_combobox_2['values'] = ('None','0','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31')
+
+record_separator_combobox_2.bind('<<ComboboxSelected>>', print_unit_and_record_separators)
+record_separator_combobox_2.grid(column=4, row=7, padx=10, sticky=(tkinter.N, tkinter.E))
+
+# Activate displayed values in unit and record separator boxes.
+unit_separator_combobox_1.set(unit_separator_value_1.get()) 
+unit_separator_combobox_2.set(unit_separator_value_2.get())
+
+record_separator_combobox_1.set(record_separator_value_1.get()) 
+record_separator_combobox_2.set(record_separator_value_2.get())
+
+# Some explanatory texts.
+tenth_window_label_8 = tkinter.ttk.Label(tenth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text="\nHere you can define strings used to separate values in the machine readable results file that FreeLCS outputs. You can define a 1 - 2 character separator string for the 'Unit' and 'Record' separators.\n\n'Unit Separator' is used to separate individual loudness measurement results from a single input file. 'Record Separator' is used between results of different input files. If you only want to have one character as the separator, then choose 'None' as the value for the second character.\n\nNote that you can only choose non printable characters as separators. Reading of the machine readable file would fail if a file name accidentally had the separator string in it's name. Non printable characters are safe to use since the operating system won't let these characters ever be used in a file name.")
+tenth_window_label_8.grid(column=0, row=8, pady=10, padx=10, columnspan=4, sticky=(tkinter.W, tkinter.N))
+
+# Create the buttons for the frame
+tenth_window_back_button = tkinter.Button(tenth_frame, text = "Back", command = call_fourth_frame_on_top)
+tenth_window_back_button.grid(column=1, row=1, padx=30, pady=10, sticky=(tkinter.E, tkinter.N))
+tenth_window_next_button = tkinter.Button(tenth_frame, text = "Next", command = call_fifth_frame_on_top)
+tenth_window_next_button.grid(column=2, row=1, padx=30, pady=10, sticky=(tkinter.W, tkinter.N))
+
+if write_loudness_calculation_results_to_a_machine_readable_file.get() == 0:
+	unit_separator_combobox_1.state(['disabled'])
+	unit_separator_combobox_2.state(['disabled'])
+	record_separator_combobox_1.state(['disabled'])
+	record_separator_combobox_2.state(['disabled'])
+	tenth_window_label_8['foreground'] = 'dark gray'
+	tenth_window_label_6['foreground'] = 'dark gray'
+	tenth_window_label_7['foreground'] = 'dark gray'
+else:
+	unit_separator_combobox_1.state(['!disabled'])
+	unit_separator_combobox_2.state(['!disabled'])
+	record_separator_combobox_1.state(['!disabled'])
+	record_separator_combobox_2.state(['!disabled'])
+	tenth_window_label_8['foreground'] = 'black'
+	tenth_window_label_6['foreground'] = 'black'
+	tenth_window_label_7['foreground'] = 'black' 
+
+
+############################################################################################################
+## Window number 11                                                                                         #
+############################################################################################################
+#
+## This window lets the user define if he want's html-report written on disk or and a ram disk created for writing it in.
+#
+## Html - report settings
+#fourth_window_label_1 = tkinter.ttk.Label(fourth_frame_child_frame_1, text='Write html progress report:')
+#fourth_window_label_1.grid(column=0, row=0, columnspan=2, padx=10, sticky=(tkinter.W, tkinter.N))
+#write_html_progress_report_true_radiobutton = tkinter.ttk.Radiobutton(fourth_frame_child_frame_1, text='Yes', variable=write_html_progress_report, value=True, command=print_write_html_progress_report)
+#write_html_progress_report_false_radiobutton = tkinter.ttk.Radiobutton(fourth_frame_child_frame_1, text='No', variable=write_html_progress_report, value=False, command=print_write_html_progress_report)
+#write_html_progress_report_true_radiobutton.grid(column=3, row=0, padx=15)
+#write_html_progress_report_false_radiobutton.grid(column=4, row=0, padx=15)
+#
+## Ram - disk.
+#fourth_window_label_2 = tkinter.ttk.Label(fourth_frame_child_frame_1, text='Create a ram - disk for html report:')
+#fourth_window_label_2.grid(column=0, row=2, columnspan=2, padx=10, sticky=(tkinter.W, tkinter.N))
+#create_a_ram_disk_for_html_report_true_radiobutton = tkinter.ttk.Radiobutton(fourth_frame_child_frame_1, text='Yes', variable=create_a_ram_disk_for_html_report, value=True, command=print_create_a_ram_disk_for_html_report_and_toggle_next_button_state)
+#create_a_ram_disk_for_html_report_false_radiobutton = tkinter.ttk.Radiobutton(fourth_frame_child_frame_1, text='No', variable=create_a_ram_disk_for_html_report, value=False, command=print_create_a_ram_disk_for_html_report_and_toggle_next_button_state)
+#create_a_ram_disk_for_html_report_true_radiobutton.grid(column=3, row=2, padx=15)
+#create_a_ram_disk_for_html_report_false_radiobutton.grid(column=4, row=2, padx=15)
+#
+## Some explanatory texts.
+#twentyfirst_label = tkinter.ttk.Label(fourth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='Html progress report is a live view into LoudnessCorrection process queue showing a list of files being processed, waiting in the queue and 100 last completed files.\n\nProgress report is a html-file in the HotFolder that can be viewed with a web-browser. The page updates every 5 seconds and because of this needs speedy access to the disk. During heavy disk traffic html-page cannot be updated frequently enough unless a ram disk is created and mounted as the directory where the html-page is written into.')
+#twentyfirst_label.grid(column=0, row=3, pady=10, padx=10, columnspan=4, sticky=(tkinter.W, tkinter.N))
+#
+## Define a horizontal line to space out groups of rows.
+#fourth_window_separator_1 = tkinter.ttk.Separator(fourth_frame_child_frame_1, orient=tkinter.HORIZONTAL)
+#fourth_window_separator_1.grid(column=0, row=4, padx=10, pady=10, columnspan=5, sticky=(tkinter.W, tkinter.E))
+#
+## Ram device name.
+#fourth_window_label_3 = tkinter.ttk.Label(fourth_frame_child_frame_1, text='Use this ram device for creating the ram disk:')
+#fourth_window_label_3.grid(column=0, row=5, columnspan=4, padx=10, sticky=(tkinter.W, tkinter.N))
+#ram_device_name_combobox = tkinter.ttk.Combobox(fourth_frame_child_frame_1, justify=tkinter.CENTER, textvariable=ram_device_name)
+## Get the ram device names from the os.
+#error_happened, error_message, list_of_ram_devices = get_list_of_ram_devices_from_os()
+#if error_happened == True:
+#	fourth_window_error_label_1 = tkinter.ttk.Label(fourth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, foreground='red', text=error_message)
+#	fourth_window_error_label_1.grid(column=0, row=10, columnspan=4, padx=10, pady=10, sticky=(tkinter.W, tkinter.N))
+#ram_device_name_combobox['values'] = list_of_ram_devices
+#if len(list_of_ram_devices) > 0:
+#	ram_device_name_combobox.set(list_of_ram_devices[0])
+#ram_device_name_combobox.bind('<<ComboboxSelected>>', print_ram_device_name)
+#ram_device_name_combobox.grid(column=3, row=5, columnspan=2, padx=10, sticky=(tkinter.N))
+#
+## Create another label with explanatory text on it.
+#fourth_window_label_4 = tkinter.ttk.Label(fourth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text="If you know you haven't used ram - devices for anything on this computer, then you can just select the first ram device /dev/ram1.")
+#fourth_window_label_4.grid(column=0, row=6, columnspan=4, pady=10, padx=10, sticky=(tkinter.W, tkinter.N))
+#
+## Define a horizontal line to space out groups of rows.
+#fourth_window_separator_1 = tkinter.ttk.Separator(fourth_frame_child_frame_1, orient=tkinter.HORIZONTAL)
+#fourth_window_separator_1.grid(column=0, row=7, padx=10, pady=10, columnspan=5, sticky=(tkinter.W, tkinter.E))
+#
+## Choose which username LoudnessCorrection will run under.
+#fourth_window_label_5 = tkinter.ttk.Label(fourth_frame_child_frame_1, text='Which user account LoudnessCorrection will use to run:')
+#fourth_window_label_5.grid(column=0, row=8, columnspan=4, pady=10, padx=10, sticky=(tkinter.W, tkinter.N))
+#username_combobox = tkinter.ttk.Combobox(fourth_frame_child_frame_1, justify=tkinter.CENTER, textvariable=user_account)
+## Get user account names from the os.
+#error_happened, error_message, list_of_normal_useraccounts = get_list_of_normal_user_accounts_from_os()
+#
+#if error_happened == True:
+#	fourth_window_error_label_2 = tkinter.ttk.Label(fourth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, foreground='red', text=error_message)
+#	fourth_window_error_label_2.grid(column=0, row=11, columnspan=4, padx=10, pady=10, sticky=(tkinter.W, tkinter.N))
+#	
+#username_combobox['values'] = list_of_normal_useraccounts
+#
+#if len(list_of_normal_useraccounts) > 0:
+#	username_combobox.set(list_of_normal_useraccounts[0])
+#	
+#username_combobox.bind('<<ComboboxSelected>>', print_user_account)
+#username_combobox.grid(column=3, row=8, columnspan=2, pady=10, padx=10, sticky=(tkinter.N))
+#
+#fourth_window_label_7 = tkinter.ttk.Label(fourth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='LoudnessCorrection will be run with non root privileges, you can choose here which user account to use.\n\nIf you choose the HotFolder to be shared to the network with Samba in the next screen, the HotFolder directory structure read and write permissions will be set so that only this user has write access to files in Hotfolder directories and all other users can only read.')
+#fourth_window_label_7.grid(column=0, row=9, columnspan=4, pady=10, padx=10, sticky=(tkinter.W, tkinter.N))
+#
+## Define a horizontal line to space out groups of rows.
+#fourth_window_separator_1 = tkinter.ttk.Separator(fourth_frame_child_frame_1, orient=tkinter.HORIZONTAL)
+#fourth_window_separator_1.grid(column=0, row=10, padx=10, pady=10, columnspan=5, sticky=(tkinter.W, tkinter.E))
+#
+## Peak metering settings
+#fourth_window_label_1 = tkinter.ttk.Label(fourth_frame_child_frame_1, text='Peak measurement method:')
+#fourth_window_label_1.grid(column=0, row=11, columnspan=2, padx=10, sticky=(tkinter.W, tkinter.N))
+#sample_peak_radiobutton = tkinter.ttk.Radiobutton(fourth_frame_child_frame_1, text='Sample Peak', variable=sample_peak, value=True, command=set_sample_peak_measurement_method)
+#true_peak_radiobutton = tkinter.ttk.Radiobutton(fourth_frame_child_frame_1, text='TruePeak', variable=sample_peak, value=False, command=set_sample_peak_measurement_method)
+#sample_peak_radiobutton.grid(column=3, row=11, padx=15)
+#true_peak_radiobutton.grid(column=4, row=11, padx=15)
+#
+## Some explanatory texts.
+#peak_measurement_label = tkinter.ttk.Label(fourth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='This options lets you choose if you want to use sample peak or TruePeak measurement. The peak value is important only in cases where file loudness is below target -23 LUFS and needs to be increased. If increasing volume would cause peaks to go over a set limit (-2 dBFS for TruePeak and -4 dB for sample peak) then a protective limiter is used. The resulting max peaks will be about 1 dB above the limit (-1 dBFS / -3 dBFS).\n\nNote that using TruePeak slows down file processing by a factor of 4. When using sample peak you still have about 3 dBs headroom for the true peaks to exist.')
+#peak_measurement_label.grid(column=0, row=12, pady=10, padx=10, columnspan=4, sticky=(tkinter.W, tkinter.N))
+#
+## Create the buttons for the frame
+#fourth_window_back_button = tkinter.Button(fourth_frame, text = "Back", command = call_third_frame_on_top)
+#fourth_window_back_button.grid(column=1, row=1, padx=30, pady=10, sticky=(tkinter.E, tkinter.N))
+#fourth_window_next_button = tkinter.Button(fourth_frame, text = "Next", command = call_fifth_frame_on_top)
+#
+## If we were no successful in getting the list of ram device names from the os and create_ram_disk = True, disable the next button.
+#if (len(list_of_ram_devices) == 0) and (create_a_ram_disk_for_html_report.get() == True):
+#	fourth_window_next_button['state'] = 'disabled'
+## If we were not successful in getting the list of user accounts from the os, disable the next button.
+#if len(list_of_normal_useraccounts) == 0:
+#	fourth_window_next_button['state'] = 'disabled'
+#fourth_window_next_button.grid(column=2, row=1, padx=30, pady=10, sticky=(tkinter.W, tkinter.N))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ###########################################################################################################
@@ -5637,6 +6023,8 @@ eigth_frame.grid_forget()
 seventh_frame.grid_forget()
 sixth_frame.grid_forget()
 fifth_frame.grid_forget()
+eleventh_frame.grid_forget()
+tenth_frame.grid_forget()
 fourth_frame.grid_forget()
 third_frame.grid_forget()
 second_frame.grid_forget()
