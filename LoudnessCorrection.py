@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '254'
+loudnesscorrection_version = '255'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -334,6 +334,10 @@ ffmpeg_free_codec_formats.extend(pcm_32_bit_formats)
 ffmpeg_free_codec_formats.extend(pcm_64_bit_formats)
 ffmpeg_free_codec_formats.append('flac')
 ffmpeg_free_codec_formats.append('vorbis')
+ffmpeg_free_codec_formats.append('mp1')
+ffmpeg_free_codec_formats.append('mp1float')
+ffmpeg_free_codec_formats.append('mp2')
+ffmpeg_free_codec_formats.append('mp2float')
 
 enable_nonfree_ffmpeg_codec_formats = True
 

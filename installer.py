@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '072'
+version = '073'
 freelcs_version = '2.5'
 
 ###################################
@@ -121,7 +121,8 @@ def call_tenth_frame_on_top():
 	# This function can be called from two possible windows depending on did the user come here by clicking Next or Back buttons.
 	# Hide the the frames for other windows and raise the one we want.
 	fourth_frame.grid_forget()
-	eleventh_frame.grid_forget()
+	#eleventh_frame.grid_forget()
+	fifth_frame.grid_forget()
 	tenth_frame.grid(column=0, row=0, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E))
 	
 	# Get Frame dimensions and resize root_window to fit the whole frame.
@@ -755,7 +756,12 @@ def print_write_html_progress_report(*args):
 
 def print_write_machine_readable_results(*args):
 
-	if write_loudness_calculation_results_to_a_machine_readable_file.get() == 0:
+	global create_loudness_corrected_files
+	global create_loudness_history_graphics_files
+	global write_loudness_calculation_results_to_a_machine_readable_file
+
+	if write_loudness_calculation_results_to_a_machine_readable_file.get() == False:
+
 		unit_separator_combobox_1.state(['disabled'])
 		unit_separator_combobox_2.state(['disabled'])
 		record_separator_combobox_1.state(['disabled'])
@@ -763,6 +769,14 @@ def print_write_machine_readable_results(*args):
 		tenth_window_label_8['foreground'] = 'dark gray'
 		tenth_window_label_6['foreground'] = 'dark gray'
 		tenth_window_label_7['foreground'] = 'dark gray'
+
+
+		if (create_loudness_corrected_files.get() == False) and (create_loudness_history_graphics_files.get() == False):
+			create_loudness_corrected_files.set(True)
+			create_loudness_history_graphics_files.set(True)
+			print_create_loudness_corrected_files()
+			print_create_loudness_history_graphics_files()
+
 	else:
 		unit_separator_combobox_1.state(['!disabled'])
 		unit_separator_combobox_2.state(['!disabled'])
@@ -778,12 +792,30 @@ def print_write_machine_readable_results(*args):
 		print('write_loudness_calculation_results_to_a_machine_readable_file =', true_false_string[write_loudness_calculation_results_to_a_machine_readable_file.get()])
 
 def print_create_loudness_corrected_files(*args):
+
+	global create_loudness_corrected_files
+	global create_loudness_history_graphics_files
+	global write_loudness_calculation_results_to_a_machine_readable_file
+
+	if (create_loudness_corrected_files.get() == False) and (create_loudness_history_graphics_files.get() == False):
+		write_loudness_calculation_results_to_a_machine_readable_file.set(True)
+		print_write_machine_readable_results()
+
 	if debug == True:
 		true_false_string = [False, True]
 		print()
 		print('create_loudness_corrected_files =', true_false_string[create_loudness_corrected_files.get()])
 
 def print_create_loudness_history_graphics_files(*args):
+
+	global create_loudness_corrected_files
+	global create_loudness_history_graphics_files
+	global write_loudness_calculation_results_to_a_machine_readable_file
+
+	if (create_loudness_corrected_files.get() == False) and (create_loudness_history_graphics_files.get() == False):
+		write_loudness_calculation_results_to_a_machine_readable_file.set(True)
+		print_write_machine_readable_results()
+
 	if debug == True:
 		true_false_string = [False, True]
 		print()
@@ -4277,6 +4309,67 @@ def print_unit_and_record_separators(*args):
 			print(str(ord(item)) + '  ', end='')
 		print()
 
+def print_use_defaults_for_freelcs_output(*args):
+	
+	global use_freelcs_file_output_defaults
+
+	if use_freelcs_file_output_defaults.get() == True:
+
+		write_loudness_calculation_results_to_a_machine_readable_file.set(False)
+		create_loudness_corrected_files.set(True)
+		create_loudness_history_graphics_files.set(True)
+		delete_original_file_immediately.set(True)
+		unit_separator_value_1.set('31')
+		unit_separator_value_2.set('None')
+		record_separator_value_1.set('13')
+		record_separator_value_2.set('10')
+
+		tenth_window_label_1['foreground'] = 'dark gray'
+		tenth_window_label_2['foreground'] = 'dark gray'
+		tenth_window_label_3['foreground'] = 'dark gray'
+		tenth_window_label_4['foreground'] = 'dark gray'
+		tenth_window_label_9['foreground'] = 'dark gray'
+
+		machine_readable_file_true_radiobutton.state(['disabled'])
+		machine_readable_file_false_radiobutton.state(['disabled'])
+		create_loudness_corrected_files_true_radiobutton.state(['disabled'])
+		create_loudness_corrected_files_false_radiobutton.state(['disabled'])
+		create_loudness_history_graphics_files_true_radiobutton.state(['disabled'])
+		create_loudness_history_graphics_files_false_radiobutton.state(['disabled'])
+		delete_original_file_immediately_true_radiobutton.state(['disabled'])
+		delete_original_file_immediately_false_radiobutton.state(['disabled'])
+
+	else:
+
+		tenth_window_label_1['foreground'] = 'black'
+		tenth_window_label_2['foreground'] = 'black'
+		tenth_window_label_3['foreground'] = 'black'
+		tenth_window_label_4['foreground'] = 'black'
+		tenth_window_label_9['foreground'] = 'black'
+
+		machine_readable_file_true_radiobutton.state(['!disabled'])
+		machine_readable_file_false_radiobutton.state(['!disabled'])
+		create_loudness_corrected_files_true_radiobutton.state(['!disabled'])
+		create_loudness_corrected_files_false_radiobutton.state(['!disabled'])
+		create_loudness_history_graphics_files_true_radiobutton.state(['!disabled'])
+		create_loudness_history_graphics_files_false_radiobutton.state(['!disabled'])
+		delete_original_file_immediately_true_radiobutton.state(['!disabled'])
+		delete_original_file_immediately_false_radiobutton.state(['!disabled'])
+
+	if debug == True:
+		true_false_string = [False, True]
+		print()
+		print('use_freelcs_file_output_defaults =', true_false_string[use_freelcs_file_output_defaults.get()])
+		print('create_loudness_corrected_files =', true_false_string[create_loudness_corrected_files.get()])
+		print('create_loudness_history_graphics_files =', true_false_string[create_loudness_history_graphics_files.get()])
+		print('delete_original_file_immediately =', true_false_string[delete_original_file_immediately.get()])
+		print('write_loudness_calculation_results_to_a_machine_readable_file =', true_false_string[write_loudness_calculation_results_to_a_machine_readable_file.get()])
+		print('unit_separator_value_1 =', unit_separator_value_1.get())
+		print('unit_separator_value_2 =', unit_separator_value_2.get())
+		print('record_separator_value_1', record_separator_value_1.get())
+		print('record_separator_value_2', record_separator_value_2.get())
+
+	print_write_machine_readable_results()
 
 
 ###############################
@@ -4563,6 +4656,10 @@ ffmpeg_free_codec_formats.extend(pcm_32_bit_formats)
 ffmpeg_free_codec_formats.extend(pcm_64_bit_formats)
 ffmpeg_free_codec_formats.append('flac')
 ffmpeg_free_codec_formats.append('vorbis')
+ffmpeg_free_codec_formats.append('mp1')
+ffmpeg_free_codec_formats.append('mp1float')
+ffmpeg_free_codec_formats.append('mp2')
+ffmpeg_free_codec_formats.append('mp2float')
 
 enable_nonfree_ffmpeg_codec_formats = tkinter.BooleanVar()
 enable_nonfree_ffmpeg_codec_formats.set(True)
@@ -4573,8 +4670,13 @@ ffmpeg_allowed_codec_formats = ['all']
 # Define defaults for machine readable results #
 ################################################
 
+# Define a varible that holds info about whether the user wants to use defaults or custom settings for FreeLCS output.
+# True = use defaults, False = use custom settings.
+use_freelcs_file_output_defaults = tkinter.BooleanVar()
+use_freelcs_file_output_defaults.set(True)
+
 # The variable 'write_loudness_calculation_results_to_a_machine_readable_file' defines if we should write loudness calculation results to individual text files to the target directory.
-write_loudness_calculation_results_to_a_machine_readable_file  = tkinter.BooleanVar()
+write_loudness_calculation_results_to_a_machine_readable_file = tkinter.BooleanVar()
 write_loudness_calculation_results_to_a_machine_readable_file.set(False)
 
 # If LoudnessCorrection is used as part of a automation system, then we might not want to create loudness corrected audio files or result graphics.
@@ -5420,45 +5522,53 @@ fourth_window_next_button.grid(column=2, row=1, padx=30, pady=10, sticky=(tkinte
 ###########################################################################################################
 
 # This window lets the user define settings for machine readable results
-tenth_window_label_1 = tkinter.ttk.Label(tenth_frame_child_frame_1, text='Write loudness calculation results to a machine readable file')
-tenth_window_label_1.grid(column=0, row=0, columnspan=2, padx=10, sticky=(tkinter.W, tkinter.N))
-machine_readable_file_true_radiobutton = tkinter.ttk.Radiobutton(tenth_frame_child_frame_1, text='Yes', variable=write_loudness_calculation_results_to_a_machine_readable_file, value=True, command=print_write_machine_readable_results)
-machine_readable_file_false_radiobutton = tkinter.ttk.Radiobutton(tenth_frame_child_frame_1, text='No', variable=write_loudness_calculation_results_to_a_machine_readable_file, value=False, command=print_write_machine_readable_results)
-machine_readable_file_true_radiobutton.grid(column=3, row=0, padx=15)
-machine_readable_file_false_radiobutton.grid(column=4, row=0, padx=15)
-
-tenth_window_label_2 = tkinter.ttk.Label(tenth_frame_child_frame_1, text='Create loudness corrected audio files')
-tenth_window_label_2.grid(column=0, row=1, columnspan=2, padx=10, sticky=(tkinter.W, tkinter.N))
-machine_readable_file_true_radiobutton = tkinter.ttk.Radiobutton(tenth_frame_child_frame_1, text='Yes', variable=create_loudness_corrected_files, value=True, command=print_create_loudness_corrected_files)
-machine_readable_file_false_radiobutton = tkinter.ttk.Radiobutton(tenth_frame_child_frame_1, text='No', variable=create_loudness_corrected_files, value=False, command=print_create_loudness_corrected_files)
-machine_readable_file_true_radiobutton.grid(column=3, row=1, padx=15)
-machine_readable_file_false_radiobutton.grid(column=4, row=1, padx=15)
-
-tenth_window_label_3 = tkinter.ttk.Label(tenth_frame_child_frame_1, text='Create loudness history graphics files')
-tenth_window_label_3.grid(column=0, row=2, columnspan=2, padx=10, sticky=(tkinter.W, tkinter.N))
-machine_readable_file_true_radiobutton = tkinter.ttk.Radiobutton(tenth_frame_child_frame_1, text='Yes', variable=create_loudness_history_graphics_files, value=True, command=print_create_loudness_history_graphics_files)
-machine_readable_file_false_radiobutton = tkinter.ttk.Radiobutton(tenth_frame_child_frame_1, text='No', variable=create_loudness_history_graphics_files, value=False, command=print_create_loudness_history_graphics_files)
-machine_readable_file_true_radiobutton.grid(column=3, row=2, padx=15)
-machine_readable_file_false_radiobutton.grid(column=4, row=2, padx=15)
-
-tenth_window_label_4 = tkinter.ttk.Label(tenth_frame_child_frame_1, text='Delete original multistream file immediately after audio stream extraction')
-tenth_window_label_4.grid(column=0, row=3, columnspan=2, padx=10, sticky=(tkinter.W, tkinter.N))
-machine_readable_file_true_radiobutton = tkinter.ttk.Radiobutton(tenth_frame_child_frame_1, text='Yes', variable=delete_original_file_immediately, value=True, command=print_delete_original_file_immediately)
-machine_readable_file_false_radiobutton = tkinter.ttk.Radiobutton(tenth_frame_child_frame_1, text='No', variable=delete_original_file_immediately, value=False, command=print_delete_original_file_immediately)
-machine_readable_file_true_radiobutton.grid(column=3, row=3, padx=15)
-machine_readable_file_false_radiobutton.grid(column=4, row=3, padx=15)
 
 # Some explanatory texts.
-tenth_window_label_5 = tkinter.ttk.Label(tenth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text="These settings let's you define how FreeLCS outputs it's results. If your user is a human, then leave these settings to their default values.\n\nIf FreeLCS is part of a file processing chain and the results are interpreted by a machine that makes file processing decisions based on FreeLCS results, then enable the option to write results to a machine readable file. In this case you might wan't to disable some output file creation.")
-tenth_window_label_5.grid(column=0, row=4, pady=10, padx=10, columnspan=4, sticky=(tkinter.W, tkinter.N))
+tenth_window_label_5 = tkinter.ttk.Label(tenth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text="These settings lets you define how FreeLCS outputs it's results. If all your users are 'human' then leave settings at their defaults. FreeLCS will by default output loudness corrected audio files and loudness history graphics files.")
+tenth_window_label_5.grid(column=0, row=0, pady=10, padx=10, columnspan=4, sticky=(tkinter.W, tkinter.N))
 
-# Define a horizontal line to space out groups of rows.
-tenth_window_separator_1 = tkinter.ttk.Separator(tenth_frame_child_frame_1, orient=tkinter.HORIZONTAL)
-tenth_window_separator_1.grid(column=0, row=5, padx=10, pady=10, columnspan=5, sticky=(tkinter.W, tkinter.E))
+tenth_window_label_0 = tkinter.ttk.Label(tenth_frame_child_frame_1, text='Use FreeLCS file output defaults')
+tenth_window_label_0.grid(column=0, row=1, columnspan=2, padx=10, pady=20, sticky=(tkinter.W, tkinter.N))
+use_defaults_for_freelcs_output_true_radiobutton = tkinter.ttk.Radiobutton(tenth_frame_child_frame_1, text='Yes', variable=use_freelcs_file_output_defaults, value=True, command=print_use_defaults_for_freelcs_output)
+use_defaults_for_freelcs_output_false_radiobutton = tkinter.ttk.Radiobutton(tenth_frame_child_frame_1, text='No', variable=use_freelcs_file_output_defaults, value=False, command=print_use_defaults_for_freelcs_output)
+use_defaults_for_freelcs_output_true_radiobutton.grid(column=3, row=1, padx=15, pady=20)
+use_defaults_for_freelcs_output_false_radiobutton.grid(column=4, row=1, padx=15, pady=20)
+
+tenth_window_label_2 = tkinter.ttk.Label(tenth_frame_child_frame_1, text='Create loudness corrected audio files')
+tenth_window_label_2.grid(column=0, row=2, columnspan=2, padx=10, sticky=(tkinter.W, tkinter.N))
+create_loudness_corrected_files_true_radiobutton = tkinter.ttk.Radiobutton(tenth_frame_child_frame_1, text='Yes', variable=create_loudness_corrected_files, value=True, command=print_create_loudness_corrected_files)
+create_loudness_corrected_files_false_radiobutton = tkinter.ttk.Radiobutton(tenth_frame_child_frame_1, text='No', variable=create_loudness_corrected_files, value=False, command=print_create_loudness_corrected_files)
+create_loudness_corrected_files_true_radiobutton.grid(column=3, row=2, padx=15)
+create_loudness_corrected_files_false_radiobutton.grid(column=4, row=2, padx=15)
+
+tenth_window_label_3 = tkinter.ttk.Label(tenth_frame_child_frame_1, text='Create loudness history graphics files')
+tenth_window_label_3.grid(column=0, row=3, columnspan=2, padx=10, sticky=(tkinter.W, tkinter.N))
+create_loudness_history_graphics_files_true_radiobutton = tkinter.ttk.Radiobutton(tenth_frame_child_frame_1, text='Yes', variable=create_loudness_history_graphics_files, value=True, command=print_create_loudness_history_graphics_files)
+create_loudness_history_graphics_files_false_radiobutton = tkinter.ttk.Radiobutton(tenth_frame_child_frame_1, text='No', variable=create_loudness_history_graphics_files, value=False, command=print_create_loudness_history_graphics_files)
+create_loudness_history_graphics_files_true_radiobutton.grid(column=3, row=3, padx=15)
+create_loudness_history_graphics_files_false_radiobutton.grid(column=4, row=3, padx=15)
+
+tenth_window_label_4 = tkinter.ttk.Label(tenth_frame_child_frame_1, text='Delete original multistream file immediately after audio stream extraction')
+tenth_window_label_4.grid(column=0, row=4, columnspan=2, padx=10, sticky=(tkinter.W, tkinter.N))
+delete_original_file_immediately_true_radiobutton = tkinter.ttk.Radiobutton(tenth_frame_child_frame_1, text='Yes', variable=delete_original_file_immediately, value=True, command=print_delete_original_file_immediately)
+delete_original_file_immediately_false_radiobutton = tkinter.ttk.Radiobutton(tenth_frame_child_frame_1, text='No', variable=delete_original_file_immediately, value=False, command=print_delete_original_file_immediately)
+delete_original_file_immediately_true_radiobutton.grid(column=3, row=4, padx=15)
+delete_original_file_immediately_false_radiobutton.grid(column=4, row=4, padx=15)
+
+# Some explanatory texts.
+tenth_window_label_9 = tkinter.ttk.Label(tenth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text="\nIf FreeLCS is part of a file processing chain and the results are interpreted by a machine that makes file processing decisions based on FreeLCS results, then enable the option to write results to a machine readable file. In this case you might want to disable some output file creation above.")
+tenth_window_label_9.grid(column=0, row=5, pady=10, padx=10, columnspan=4, sticky=(tkinter.W, tkinter.N))
+
+tenth_window_label_1 = tkinter.ttk.Label(tenth_frame_child_frame_1, text='Write loudness calculation results to a machine readable results - file')
+tenth_window_label_1.grid(column=0, row=6, columnspan=2, padx=10, pady=20, sticky=(tkinter.W, tkinter.N))
+machine_readable_file_true_radiobutton = tkinter.ttk.Radiobutton(tenth_frame_child_frame_1, text='Yes', variable=write_loudness_calculation_results_to_a_machine_readable_file, value=True, command=print_write_machine_readable_results)
+machine_readable_file_false_radiobutton = tkinter.ttk.Radiobutton(tenth_frame_child_frame_1, text='No', variable=write_loudness_calculation_results_to_a_machine_readable_file, value=False, command=print_write_machine_readable_results)
+machine_readable_file_true_radiobutton.grid(column=3, row=6, padx=15, pady=20)
+machine_readable_file_false_radiobutton.grid(column=4, row=6, padx=15, pady=20)
 
 # Define unit separator selection boxes.
 tenth_window_label_6 = tkinter.ttk.Label(tenth_frame_child_frame_1, text='Machine Readable Result - file Unit Separator (ASCII / UTF-8 values):')
-tenth_window_label_6.grid(column=0, row=6, padx=10, columnspan=1, sticky=(tkinter.W, tkinter.N))
+tenth_window_label_6.grid(column=0, row=7, padx=10, columnspan=1, sticky=(tkinter.W, tkinter.N))
 
 # Get unit separator values so that they can be displayed on the window.
 unit_separator_value_1 = tkinter.StringVar()
@@ -5496,29 +5606,29 @@ unit_separator_combobox_1 = tkinter.ttk.Combobox(tenth_frame_child_frame_1, just
 unit_separator_combobox_1['values'] = ('0','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31')
 
 unit_separator_combobox_1.bind('<<ComboboxSelected>>', print_unit_and_record_separators)
-unit_separator_combobox_1.grid(column=3, row=6, padx=10, columnspan=1, sticky=(tkinter.N, tkinter.E))
+unit_separator_combobox_1.grid(column=3, row=7, padx=10, columnspan=1, sticky=(tkinter.N, tkinter.E))
 
 unit_separator_combobox_2 = tkinter.ttk.Combobox(tenth_frame_child_frame_1, justify=tkinter.CENTER, width=4, textvariable=unit_separator_value_2)
 unit_separator_combobox_2['values'] = ('None','0','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31')
 
 unit_separator_combobox_2.bind('<<ComboboxSelected>>', print_unit_and_record_separators)
-unit_separator_combobox_2.grid(column=4, row=6, padx=10, sticky=(tkinter.N, tkinter.E))
+unit_separator_combobox_2.grid(column=4, row=7, padx=10, sticky=(tkinter.N, tkinter.E))
 
 # Define record separator selection boxes.
 tenth_window_label_7 = tkinter.ttk.Label(tenth_frame_child_frame_1, text='Machine Readable Result - file Record Separator (ASCII / UTF-8 values):')
-tenth_window_label_7.grid(column=0, row=7, padx=10, columnspan=1, sticky=(tkinter.W, tkinter.N))
+tenth_window_label_7.grid(column=0, row=8, padx=10, columnspan=1, sticky=(tkinter.W, tkinter.N))
 
 record_separator_combobox_1 = tkinter.ttk.Combobox(tenth_frame_child_frame_1, justify=tkinter.CENTER, width=4, textvariable=record_separator_value_1)
 record_separator_combobox_1['values'] = ('0','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31')
 
 record_separator_combobox_1.bind('<<ComboboxSelected>>', print_unit_and_record_separators)
-record_separator_combobox_1.grid(column=3, row=7, padx=10, columnspan=1, sticky=(tkinter.N, tkinter.E))
+record_separator_combobox_1.grid(column=3, row=8, padx=10, columnspan=1, sticky=(tkinter.N, tkinter.E))
 
 record_separator_combobox_2 = tkinter.ttk.Combobox(tenth_frame_child_frame_1, justify=tkinter.CENTER, width=4, textvariable=record_separator_value_2)
 record_separator_combobox_2['values'] = ('None','0','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31')
 
 record_separator_combobox_2.bind('<<ComboboxSelected>>', print_unit_and_record_separators)
-record_separator_combobox_2.grid(column=4, row=7, padx=10, sticky=(tkinter.N, tkinter.E))
+record_separator_combobox_2.grid(column=4, row=8, padx=10, sticky=(tkinter.N, tkinter.E))
 
 # Activate displayed values in unit and record separator boxes.
 unit_separator_combobox_1.set(unit_separator_value_1.get()) 
@@ -5528,8 +5638,8 @@ record_separator_combobox_1.set(record_separator_value_1.get())
 record_separator_combobox_2.set(record_separator_value_2.get())
 
 # Some explanatory texts.
-tenth_window_label_8 = tkinter.ttk.Label(tenth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text="\nHere you can define strings used to separate values in the machine readable results file that FreeLCS outputs. You can define a 1 - 2 character separator string for the 'Unit' and 'Record' separators.\n\n'Unit Separator' is used to separate individual loudness measurement results from a single input file. 'Record Separator' is used between results of different input files. If you only want to have one character as the separator, then choose 'None' as the value for the second character.\n\nNote that you can only choose non printable characters as separators. Reading of the machine readable file would fail if a file name accidentally had the separator string in it's name. Non printable characters are safe to use since the operating system won't let these characters ever be used in a file name.")
-tenth_window_label_8.grid(column=0, row=8, pady=10, padx=10, columnspan=4, sticky=(tkinter.W, tkinter.N))
+tenth_window_label_8 = tkinter.ttk.Label(tenth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text="\nHere you can define strings used to separate values in the machine readable results file that FreeLCS outputs. You can define a 1 - 2 character separator string for the 'Unit' and 'Record' separators.\n\n'Unit Separator' is used to separate individual loudness measurement results from a single input file. 'Record Separator' is used between results of different input files. If you only want to have one character as the separator, then choose 'None' as the value for the second character.\n\nNote that you can only choose non printable characters as separators. The machine readable results file can not be interpreted correctly if a file name has the separator string in it's name. Non printable characters are safe to use since the operating system won't let these characters ever be used in a file name.")
+tenth_window_label_8.grid(column=0, row=9, pady=10, padx=10, columnspan=4, sticky=(tkinter.W, tkinter.N))
 
 # Create the buttons for the frame
 tenth_window_back_button = tkinter.Button(tenth_frame, text = "Back", command = call_fourth_frame_on_top)
@@ -5554,6 +5664,7 @@ else:
 	tenth_window_label_6['foreground'] = 'black'
 	tenth_window_label_7['foreground'] = 'black' 
 
+print_use_defaults_for_freelcs_output()
 
 ############################################################################################################
 ## Window number 11                                                                                         #
@@ -5716,7 +5827,7 @@ samba_config_text_widget.configure(xscrollcommand=samba_config_text_widget_horiz
 samba_config_text_widget_horizontal_scrollbar.grid(column=0, row=2, columnspan=4, sticky=(tkinter.W, tkinter.E))
 
 # Create the buttons for the frame
-first_window_back_button = tkinter.Button(fifth_frame, text = "Back", command = call_fourth_frame_on_top)
+first_window_back_button = tkinter.Button(fifth_frame, text = "Back", command = call_tenth_frame_on_top)
 first_window_back_button.grid(column=1, row=1, padx=30, pady=10, sticky=(tkinter.W, tkinter.N))
 first_window_undo_button = tkinter.Button(fifth_frame, text = "Undo", command = undo_text_in_text_widget)
 first_window_undo_button.grid(column=2, row=1, padx=30, pady=10, sticky=(tkinter.W, tkinter.N))
