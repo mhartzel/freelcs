@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '073'
+version = '074'
 freelcs_version = '2.5'
 
 ###################################
@@ -121,8 +121,7 @@ def call_tenth_frame_on_top():
 	# This function can be called from two possible windows depending on did the user come here by clicking Next or Back buttons.
 	# Hide the the frames for other windows and raise the one we want.
 	fourth_frame.grid_forget()
-	#eleventh_frame.grid_forget()
-	fifth_frame.grid_forget()
+	eleventh_frame.grid_forget()
 	tenth_frame.grid(column=0, row=0, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E))
 	
 	# Get Frame dimensions and resize root_window to fit the whole frame.
@@ -154,7 +153,7 @@ def call_eleventh_frame_on_top():
 def call_fifth_frame_on_top():
 	# This function can be called from two possible windows depending on did the user come here by clicking Next or Back buttons.
 	# Hide the the frames for other windows and raise the one we want.
-	fourth_frame.grid_forget()
+	eleventh_frame.grid_forget()
 	sixth_frame.grid_forget()
 	fifth_frame.grid(column=0, row=0, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E, tkinter.S))
 	
@@ -4328,7 +4327,6 @@ def print_use_defaults_for_freelcs_output(*args):
 		tenth_window_label_2['foreground'] = 'dark gray'
 		tenth_window_label_3['foreground'] = 'dark gray'
 		tenth_window_label_4['foreground'] = 'dark gray'
-		tenth_window_label_9['foreground'] = 'dark gray'
 
 		machine_readable_file_true_radiobutton.state(['disabled'])
 		machine_readable_file_false_radiobutton.state(['disabled'])
@@ -4345,7 +4343,6 @@ def print_use_defaults_for_freelcs_output(*args):
 		tenth_window_label_2['foreground'] = 'black'
 		tenth_window_label_3['foreground'] = 'black'
 		tenth_window_label_4['foreground'] = 'black'
-		tenth_window_label_9['foreground'] = 'black'
 
 		machine_readable_file_true_radiobutton.state(['!disabled'])
 		machine_readable_file_false_radiobutton.state(['!disabled'])
@@ -4370,6 +4367,428 @@ def print_use_defaults_for_freelcs_output(*args):
 		print('record_separator_value_2', record_separator_value_2.get())
 
 	print_write_machine_readable_results()
+
+def print_ffmpeg_usage_options(*args):
+
+	global ffmpeg_free_wrapper_formats
+	global ffmpeg_allowed_wrapper_formats
+	global ffmpeg_free_codec_formats
+	global ffmpeg_allowed_codec_formats
+	global global_mxf_audio_remix_channel_map
+
+	if enable_nonfree_ffmpeg_wrapper_formats.get() == True:
+		ffmpeg_allowed_wrapper_formats = ['all']
+		eleventh_window_mxf_enable.configure(state='disabled')
+		eleventh_window_webm_enable.configure(state='disabled')
+	else:
+		ffmpeg_allowed_wrapper_formats = ffmpeg_free_wrapper_formats
+		eleventh_window_mxf_enable.configure(state='normal')
+		eleventh_window_webm_enable.configure(state='normal')
+
+		if enable_mxf_wrapper.get() == True:
+			if 'mxf' not in ffmpeg_allowed_wrapper_formats:
+				ffmpeg_allowed_wrapper_formats.append('mxf')
+		else:
+			if 'mxf' in ffmpeg_allowed_wrapper_formats:
+				ffmpeg_allowed_wrapper_formats.remove('mxf')
+
+		if enable_webm_wrapper.get() == True:
+			if 'webm' not in ffmpeg_allowed_wrapper_formats:
+				ffmpeg_allowed_wrapper_formats.append('webm')
+		else:
+			if 'webm' in ffmpeg_allowed_wrapper_formats:
+				ffmpeg_allowed_wrapper_formats.remove('webm')
+
+	if enable_nonfree_ffmpeg_codec_formats.get() == True:
+		ffmpeg_allowed_codec_formats = ['all']
+		eleventh_window_mp1_enable.configure(state='disabled')
+		eleventh_window_mp2_enable.configure(state='disabled')
+	else:
+		ffmpeg_allowed_codec_formats = ffmpeg_free_codec_formats
+		eleventh_window_mp1_enable.configure(state='normal')
+		eleventh_window_mp2_enable.configure(state='normal')
+
+		if enable_mp1_codec.get() == True:
+			if 'mp1' not in ffmpeg_allowed_codec_formats:
+				ffmpeg_allowed_codec_formats.append('mp1')
+			if 'mp1float' not in ffmpeg_allowed_codec_formats:
+				ffmpeg_allowed_codec_formats.append('mp1float')
+		else:
+			if 'mp1' in ffmpeg_allowed_codec_formats:
+				ffmpeg_allowed_codec_formats.remove('mp1')
+			if 'mp1float' in ffmpeg_allowed_codec_formats:
+				ffmpeg_allowed_codec_formats.remove('mp1float')
+
+		if enable_mp2_codec.get() == True:
+			if 'mp2' not in ffmpeg_allowed_codec_formats:
+				ffmpeg_allowed_codec_formats.append('mp2')
+			if 'mp2float' not in ffmpeg_allowed_codec_formats:
+				ffmpeg_allowed_codec_formats.append('mp2float')
+		else:
+			if 'mp2' in ffmpeg_allowed_codec_formats:
+				ffmpeg_allowed_codec_formats.remove('mp2')
+			if 'mp2float' in ffmpeg_allowed_codec_formats:
+				ffmpeg_allowed_codec_formats.remove('mp2float')
+
+	if enable_mxf_audio_remixing.get() == True:
+		remix_combobox_1.state(['!disabled'])
+		remix_combobox_2.state(['!disabled'])
+		remix_combobox_3.state(['!disabled'])
+		remix_combobox_4.state(['!disabled'])
+		remix_combobox_5.state(['!disabled'])
+		remix_combobox_6.state(['!disabled'])
+		remix_combobox_7.state(['!disabled'])
+		remix_combobox_8.state(['!disabled'])
+		remix_combobox_9.state(['!disabled'])
+		remix_combobox_10.state(['!disabled'])
+		remix_combobox_11.state(['!disabled'])
+		remix_combobox_12.state(['!disabled'])
+		remix_combobox_13.state(['!disabled'])
+		remix_combobox_14.state(['!disabled'])
+		remix_combobox_15.state(['!disabled'])
+		remix_combobox_16.state(['!disabled'])
+		remix_combobox_17.state(['!disabled'])
+		remix_combobox_18.state(['!disabled'])
+		remix_combobox_19.state(['!disabled'])
+		remix_combobox_20.state(['!disabled'])
+		remix_combobox_21.state(['!disabled'])
+		remix_combobox_22.state(['!disabled'])
+		remix_combobox_23.state(['!disabled'])
+		remix_combobox_24.state(['!disabled'])
+		remix_combobox_25.state(['!disabled'])
+		remix_combobox_26.state(['!disabled'])
+		remix_combobox_27.state(['!disabled'])
+		remix_combobox_28.state(['!disabled'])
+		remix_combobox_29.state(['!disabled'])
+		remix_combobox_30.state(['!disabled'])
+		remix_combobox_31.state(['!disabled'])
+		remix_combobox_32.state(['!disabled'])
+		remix_combobox_33.state(['!disabled'])
+		remix_combobox_34.state(['!disabled'])
+		remix_combobox_35.state(['!disabled'])
+		remix_combobox_36.state(['!disabled'])
+		remix_combobox_37.state(['!disabled'])
+		remix_combobox_38.state(['!disabled'])
+		remix_combobox_39.state(['!disabled'])
+		remix_combobox_40.state(['!disabled'])
+		remix_combobox_41.state(['!disabled'])
+		remix_combobox_42.state(['!disabled'])
+		remix_combobox_43.state(['!disabled'])
+		remix_combobox_44.state(['!disabled'])
+		remix_combobox_45.state(['!disabled'])
+		remix_combobox_46.state(['!disabled'])
+		remix_combobox_47.state(['!disabled'])
+		remix_combobox_48.state(['!disabled'])
+
+		remix_number_label_1['foreground'] = 'dark green'
+		remix_number_label_2['foreground'] = 'dark green'
+		remix_number_label_3['foreground'] = 'dark green'
+		remix_number_label_4['foreground'] = 'dark green'
+		remix_number_label_5['foreground'] = 'dark green'
+		remix_number_label_6['foreground'] = 'dark green'
+		remix_number_label_7['foreground'] = 'dark green'
+		remix_number_label_8['foreground'] = 'dark green'
+		remix_number_label_9['foreground'] = 'dark green'
+		remix_number_label_10['foreground'] = 'dark green'
+		remix_number_label_11['foreground'] = 'dark green'
+		remix_number_label_12['foreground'] = 'dark green'
+		remix_number_label_13['foreground'] = 'dark green'
+		remix_number_label_14['foreground'] = 'dark green'
+		remix_number_label_15['foreground'] = 'dark green'
+		remix_number_label_16['foreground'] = 'dark green'
+		remix_number_label_17['foreground'] = 'dark green'
+		remix_number_label_18['foreground'] = 'dark green'
+		remix_number_label_19['foreground'] = 'dark green'
+		remix_number_label_20['foreground'] = 'dark green'
+		remix_number_label_21['foreground'] = 'dark green'
+		remix_number_label_22['foreground'] = 'dark green'
+		remix_number_label_23['foreground'] = 'dark green'
+		remix_number_label_24['foreground'] = 'dark green'
+		remix_number_label_25['foreground'] = 'dark green'
+		remix_number_label_26['foreground'] = 'dark green'
+		remix_number_label_27['foreground'] = 'dark green'
+		remix_number_label_28['foreground'] = 'dark green'
+		remix_number_label_29['foreground'] = 'dark green'
+		remix_number_label_30['foreground'] = 'dark green'
+		remix_number_label_31['foreground'] = 'dark green'
+		remix_number_label_32['foreground'] = 'dark green'
+		remix_number_label_33['foreground'] = 'dark green'
+		remix_number_label_34['foreground'] = 'dark green'
+		remix_number_label_35['foreground'] = 'dark green'
+		remix_number_label_36['foreground'] = 'dark green'
+		remix_number_label_37['foreground'] = 'dark green'
+		remix_number_label_38['foreground'] = 'dark green'
+		remix_number_label_39['foreground'] = 'dark green'
+		remix_number_label_40['foreground'] = 'dark green'
+		remix_number_label_41['foreground'] = 'dark green'
+		remix_number_label_42['foreground'] = 'dark green'
+		remix_number_label_43['foreground'] = 'dark green'
+		remix_number_label_44['foreground'] = 'dark green'
+		remix_number_label_45['foreground'] = 'dark green'
+		remix_number_label_46['foreground'] = 'dark green'
+		remix_number_label_47['foreground'] = 'dark green'
+		remix_number_label_48['foreground'] = 'dark green'
+
+		eleventh_window_reset_button['state'] = 'normal'
+	else:
+		remix_combobox_1.state(['disabled'])
+		remix_combobox_2.state(['disabled'])
+		remix_combobox_3.state(['disabled'])
+		remix_combobox_4.state(['disabled'])
+		remix_combobox_5.state(['disabled'])
+		remix_combobox_6.state(['disabled'])
+		remix_combobox_7.state(['disabled'])
+		remix_combobox_8.state(['disabled'])
+		remix_combobox_9.state(['disabled'])
+		remix_combobox_10.state(['disabled'])
+		remix_combobox_11.state(['disabled'])
+		remix_combobox_12.state(['disabled'])
+		remix_combobox_13.state(['disabled'])
+		remix_combobox_14.state(['disabled'])
+		remix_combobox_15.state(['disabled'])
+		remix_combobox_16.state(['disabled'])
+		remix_combobox_17.state(['disabled'])
+		remix_combobox_18.state(['disabled'])
+		remix_combobox_19.state(['disabled'])
+		remix_combobox_20.state(['disabled'])
+		remix_combobox_21.state(['disabled'])
+		remix_combobox_22.state(['disabled'])
+		remix_combobox_23.state(['disabled'])
+		remix_combobox_24.state(['disabled'])
+		remix_combobox_25.state(['disabled'])
+		remix_combobox_26.state(['disabled'])
+		remix_combobox_27.state(['disabled'])
+		remix_combobox_28.state(['disabled'])
+		remix_combobox_29.state(['disabled'])
+		remix_combobox_30.state(['disabled'])
+		remix_combobox_31.state(['disabled'])
+		remix_combobox_32.state(['disabled'])
+		remix_combobox_33.state(['disabled'])
+		remix_combobox_34.state(['disabled'])
+		remix_combobox_35.state(['disabled'])
+		remix_combobox_36.state(['disabled'])
+		remix_combobox_37.state(['disabled'])
+		remix_combobox_38.state(['disabled'])
+		remix_combobox_39.state(['disabled'])
+		remix_combobox_40.state(['disabled'])
+		remix_combobox_41.state(['disabled'])
+		remix_combobox_42.state(['disabled'])
+		remix_combobox_43.state(['disabled'])
+		remix_combobox_44.state(['disabled'])
+		remix_combobox_45.state(['disabled'])
+		remix_combobox_46.state(['disabled'])
+		remix_combobox_47.state(['disabled'])
+		remix_combobox_48.state(['disabled'])
+
+		remix_number_label_1['foreground'] = 'dark gray'
+		remix_number_label_2['foreground'] = 'dark gray'
+		remix_number_label_3['foreground'] = 'dark gray'
+		remix_number_label_4['foreground'] = 'dark gray'
+		remix_number_label_5['foreground'] = 'dark gray'
+		remix_number_label_6['foreground'] = 'dark gray'
+		remix_number_label_7['foreground'] = 'dark gray'
+		remix_number_label_8['foreground'] = 'dark gray'
+		remix_number_label_9['foreground'] = 'dark gray'
+		remix_number_label_10['foreground'] = 'dark gray'
+		remix_number_label_11['foreground'] = 'dark gray'
+		remix_number_label_12['foreground'] = 'dark gray'
+		remix_number_label_13['foreground'] = 'dark gray'
+		remix_number_label_14['foreground'] = 'dark gray'
+		remix_number_label_15['foreground'] = 'dark gray'
+		remix_number_label_16['foreground'] = 'dark gray'
+		remix_number_label_17['foreground'] = 'dark gray'
+		remix_number_label_18['foreground'] = 'dark gray'
+		remix_number_label_19['foreground'] = 'dark gray'
+		remix_number_label_20['foreground'] = 'dark gray'
+		remix_number_label_21['foreground'] = 'dark gray'
+		remix_number_label_22['foreground'] = 'dark gray'
+		remix_number_label_23['foreground'] = 'dark gray'
+		remix_number_label_24['foreground'] = 'dark gray'
+		remix_number_label_25['foreground'] = 'dark gray'
+		remix_number_label_26['foreground'] = 'dark gray'
+		remix_number_label_27['foreground'] = 'dark gray'
+		remix_number_label_28['foreground'] = 'dark gray'
+		remix_number_label_29['foreground'] = 'dark gray'
+		remix_number_label_30['foreground'] = 'dark gray'
+		remix_number_label_31['foreground'] = 'dark gray'
+		remix_number_label_32['foreground'] = 'dark gray'
+		remix_number_label_33['foreground'] = 'dark gray'
+		remix_number_label_34['foreground'] = 'dark gray'
+		remix_number_label_35['foreground'] = 'dark gray'
+		remix_number_label_36['foreground'] = 'dark gray'
+		remix_number_label_37['foreground'] = 'dark gray'
+		remix_number_label_38['foreground'] = 'dark gray'
+		remix_number_label_39['foreground'] = 'dark gray'
+		remix_number_label_40['foreground'] = 'dark gray'
+		remix_number_label_41['foreground'] = 'dark gray'
+		remix_number_label_42['foreground'] = 'dark gray'
+		remix_number_label_43['foreground'] = 'dark gray'
+		remix_number_label_44['foreground'] = 'dark gray'
+		remix_number_label_45['foreground'] = 'dark gray'
+		remix_number_label_46['foreground'] = 'dark gray'
+		remix_number_label_47['foreground'] = 'dark gray'
+		remix_number_label_48['foreground'] = 'dark gray'
+
+		eleventh_window_reset_button['state'] = 'disabled'
+
+	if debug == True:
+		true_false_string = [False, True]
+		print()
+		print('enable_mxf_wrapper =', true_false_string[enable_mxf_wrapper.get()])
+		print('enable_webm_wrapper =', true_false_string[enable_webm_wrapper.get()])
+		print('enable_mp1_codec =', true_false_string[enable_mp1_codec.get()])
+		print('enable_mp2_codec =', true_false_string[enable_mp2_codec.get()])
+		print()
+		print('ffmpeg_allowed_wrapper_formats =', ffmpeg_allowed_wrapper_formats)
+		print('ffmpeg_allowed_codec_formats =', ffmpeg_allowed_codec_formats)
+		print('enable_mxf_audio_remixing =', true_false_string[enable_mxf_audio_remixing.get()])
+		print('global_mxf_audio_remix_channel_map =', global_mxf_audio_remix_channel_map)
+		print()
+
+def assing_mxf_remix_values_for_display(*args):
+
+	global global_mxf_audio_remix_channel_map
+
+	# If there are not enough item in the global remix map, then append default items until all values have been defined.
+	if len(global_mxf_audio_remix_channel_map) < 48:
+		for counter in range(len(global_mxf_audio_remix_channel_map), 48):
+			 global_mxf_audio_remix_channel_map.append(2)
+
+	# Define default values for window comboboxes that show MXF Audio Remix Map values.
+	remix_value_01.set(global_mxf_audio_remix_channel_map[0])
+	remix_value_02.set(global_mxf_audio_remix_channel_map[1])
+	remix_value_03.set(global_mxf_audio_remix_channel_map[2])
+	remix_value_04.set(global_mxf_audio_remix_channel_map[3])
+	remix_value_05.set(global_mxf_audio_remix_channel_map[4])
+	remix_value_06.set(global_mxf_audio_remix_channel_map[5])
+	remix_value_07.set(global_mxf_audio_remix_channel_map[6])
+	remix_value_08.set(global_mxf_audio_remix_channel_map[7])
+	remix_value_09.set(global_mxf_audio_remix_channel_map[8])
+	remix_value_10.set(global_mxf_audio_remix_channel_map[9])
+	remix_value_11.set(global_mxf_audio_remix_channel_map[10])
+	remix_value_12.set(global_mxf_audio_remix_channel_map[11])
+	remix_value_13.set(global_mxf_audio_remix_channel_map[12])
+	remix_value_14.set(global_mxf_audio_remix_channel_map[13])
+	remix_value_15.set(global_mxf_audio_remix_channel_map[14])
+	remix_value_16.set(global_mxf_audio_remix_channel_map[15])
+	remix_value_17.set(global_mxf_audio_remix_channel_map[16])
+	remix_value_18.set(global_mxf_audio_remix_channel_map[17])
+	remix_value_19.set(global_mxf_audio_remix_channel_map[18])
+	remix_value_20.set(global_mxf_audio_remix_channel_map[19])
+	remix_value_21.set(global_mxf_audio_remix_channel_map[20])
+	remix_value_22.set(global_mxf_audio_remix_channel_map[21])
+	remix_value_23.set(global_mxf_audio_remix_channel_map[22])
+	remix_value_24.set(global_mxf_audio_remix_channel_map[23])
+	remix_value_25.set(global_mxf_audio_remix_channel_map[24])
+	remix_value_26.set(global_mxf_audio_remix_channel_map[25])
+	remix_value_27.set(global_mxf_audio_remix_channel_map[26])
+	remix_value_28.set(global_mxf_audio_remix_channel_map[27])
+	remix_value_29.set(global_mxf_audio_remix_channel_map[28])
+	remix_value_30.set(global_mxf_audio_remix_channel_map[29])
+	remix_value_31.set(global_mxf_audio_remix_channel_map[30])
+	remix_value_32.set(global_mxf_audio_remix_channel_map[31])
+	remix_value_33.set(global_mxf_audio_remix_channel_map[32])
+	remix_value_34.set(global_mxf_audio_remix_channel_map[33])
+	remix_value_35.set(global_mxf_audio_remix_channel_map[34])
+	remix_value_36.set(global_mxf_audio_remix_channel_map[35])
+	remix_value_37.set(global_mxf_audio_remix_channel_map[36])
+	remix_value_38.set(global_mxf_audio_remix_channel_map[37])
+	remix_value_39.set(global_mxf_audio_remix_channel_map[38])
+	remix_value_40.set(global_mxf_audio_remix_channel_map[39])
+	remix_value_41.set(global_mxf_audio_remix_channel_map[40])
+	remix_value_42.set(global_mxf_audio_remix_channel_map[41])
+	remix_value_43.set(global_mxf_audio_remix_channel_map[42])
+	remix_value_44.set(global_mxf_audio_remix_channel_map[43])
+	remix_value_45.set(global_mxf_audio_remix_channel_map[44])
+	remix_value_46.set(global_mxf_audio_remix_channel_map[45])
+	remix_value_47.set(global_mxf_audio_remix_channel_map[46])
+	remix_value_48.set(global_mxf_audio_remix_channel_map[47])
+
+def assign_user_selected_values_to_remix_map_and_show_next_window(*args):
+
+	global ffmpeg_allowed_wrapper_formats
+	global ffmpeg_allowed_codec_formats
+	global global_mxf_audio_remix_channel_map
+
+	global_mxf_audio_remix_channel_map[0] = remix_value_01.get()
+	global_mxf_audio_remix_channel_map[1] = remix_value_02.get()
+	global_mxf_audio_remix_channel_map[2] = remix_value_03.get()
+	global_mxf_audio_remix_channel_map[3] = remix_value_04.get()
+	global_mxf_audio_remix_channel_map[4] = remix_value_05.get()
+	global_mxf_audio_remix_channel_map[5] = remix_value_06.get()
+	global_mxf_audio_remix_channel_map[6] = remix_value_07.get()
+	global_mxf_audio_remix_channel_map[7] = remix_value_08.get()
+	global_mxf_audio_remix_channel_map[8] = remix_value_09.get()
+	global_mxf_audio_remix_channel_map[9] = remix_value_10.get()
+	global_mxf_audio_remix_channel_map[10] = remix_value_11.get()
+	global_mxf_audio_remix_channel_map[11] = remix_value_12.get()
+	global_mxf_audio_remix_channel_map[12] = remix_value_13.get()
+	global_mxf_audio_remix_channel_map[13] = remix_value_14.get()
+	global_mxf_audio_remix_channel_map[14] = remix_value_15.get()
+	global_mxf_audio_remix_channel_map[15] = remix_value_16.get()
+	global_mxf_audio_remix_channel_map[16] = remix_value_17.get()
+	global_mxf_audio_remix_channel_map[17] = remix_value_18.get()
+	global_mxf_audio_remix_channel_map[18] = remix_value_19.get()
+	global_mxf_audio_remix_channel_map[19] = remix_value_20.get()
+	global_mxf_audio_remix_channel_map[20] = remix_value_21.get()
+	global_mxf_audio_remix_channel_map[21] = remix_value_22.get()
+	global_mxf_audio_remix_channel_map[22] = remix_value_23.get()
+	global_mxf_audio_remix_channel_map[23] = remix_value_24.get()
+	global_mxf_audio_remix_channel_map[24] = remix_value_25.get()
+	global_mxf_audio_remix_channel_map[25] = remix_value_26.get()
+	global_mxf_audio_remix_channel_map[26] = remix_value_27.get()
+	global_mxf_audio_remix_channel_map[27] = remix_value_28.get()
+	global_mxf_audio_remix_channel_map[28] = remix_value_29.get()
+	global_mxf_audio_remix_channel_map[29] = remix_value_30.get()
+	global_mxf_audio_remix_channel_map[30] = remix_value_31.get()
+	global_mxf_audio_remix_channel_map[31] = remix_value_32.get()
+	global_mxf_audio_remix_channel_map[32] = remix_value_33.get()
+	global_mxf_audio_remix_channel_map[33] = remix_value_34.get()
+	global_mxf_audio_remix_channel_map[34] = remix_value_35.get()
+	global_mxf_audio_remix_channel_map[35] = remix_value_36.get()
+	global_mxf_audio_remix_channel_map[36] = remix_value_37.get()
+	global_mxf_audio_remix_channel_map[37] = remix_value_38.get()
+	global_mxf_audio_remix_channel_map[38] = remix_value_39.get()
+	global_mxf_audio_remix_channel_map[39] = remix_value_40.get()
+	global_mxf_audio_remix_channel_map[40] = remix_value_41.get()
+	global_mxf_audio_remix_channel_map[41] = remix_value_42.get()
+	global_mxf_audio_remix_channel_map[42] = remix_value_43.get()
+	global_mxf_audio_remix_channel_map[43] = remix_value_44.get()
+	global_mxf_audio_remix_channel_map[44] = remix_value_45.get()
+	global_mxf_audio_remix_channel_map[45] = remix_value_46.get()
+	global_mxf_audio_remix_channel_map[46] = remix_value_47.get()
+	global_mxf_audio_remix_channel_map[47] = remix_value_48.get()
+
+	if debug == True:
+
+		true_false_string = [False, True]
+
+		print()
+
+		for counter in range(0, len(global_mxf_audio_remix_channel_map)):
+			print('global_mxf_audio_remix_channel_map[' + str(counter) + '] =', global_mxf_audio_remix_channel_map[counter])
+
+		print()
+		print('enable_mxf_wrapper =', true_false_string[enable_mxf_wrapper.get()])
+		print('enable_webm_wrapper =', true_false_string[enable_webm_wrapper.get()])
+		print('enable_mp1_codec =', true_false_string[enable_mp1_codec.get()])
+		print('enable_mp2_codec =', true_false_string[enable_mp2_codec.get()])
+		print()
+		print('ffmpeg_allowed_wrapper_formats =', ffmpeg_allowed_wrapper_formats)
+		print('ffmpeg_allowed_codec_formats =', ffmpeg_allowed_codec_formats)
+		print('enable_mxf_audio_remixing =', true_false_string[enable_mxf_audio_remixing.get()])
+		print('global_mxf_audio_remix_channel_map =', global_mxf_audio_remix_channel_map)
+		print()
+
+	call_fifth_frame_on_top()
+
+def reset_mxf_map_to_all_stereo(*args):
+
+	global global_mxf_audio_remix_channel_map
+
+	global_mxf_audio_remix_channel_map = [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2] # Example [2, 6, 2, 2]   Create stereo, 5.1, stereo and stereo mixes (if there are enough source audio channels).
+
+	assing_mxf_remix_values_for_display()
 
 
 ###############################
@@ -4636,14 +5055,17 @@ enable_mxf_audio_remixing = tkinter.BooleanVar()
 enable_mxf_audio_remixing.set(False)
 remix_map_file_extension = tkinter.StringVar()
 remix_map_file_extension.set('.remix_map')
-global_mxf_audio_remix_channel_map = [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2] # Example [2, 6, 2, 2]   Create stereo, 5.1, stereo and stereo mixes (if there are enough source audio channels).
+global_mxf_audio_remix_channel_map = [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2] # Example [2, 6, 2, 2]   Create stereo, 5.1, stereo and stereo mixes (if there are enough source audio channels).
+global_mxf_audio_remix_channel_map_string = tkinter.StringVar()
 
 # Define what wrapper formats are allowed to be processed with FFmpeg.
 # This definition helps to limit processing to patent free formats (mxf, mkv (matroska), webm, ogg, wav, flac) if needed.
 # The value of ['all'] means allow all ffmpeg supported formats to be processed.
 # Use only lower case characters for the format names.
-ffmpeg_free_wrapper_formats = ['mxf', 'mkv', 'matroska', 'webm', 'ogg', 'wav', 'flac']
+ffmpeg_free_wrapper_formats = ['wav', 'flac', 'ogg', 'mkv', 'matroska', 'mka']
 ffmpeg_allowed_wrapper_formats = ['all']
+enable_nonfree_ffmpeg_wrapper_formats = tkinter.BooleanVar()
+enable_nonfree_ffmpeg_wrapper_formats.set(True)
 
 # Define what codec formats are allowed to be processed with FFmpeg.
 # The value of ['all'] means allow all ffmpeg supported formats to be processed.
@@ -4656,15 +5078,73 @@ ffmpeg_free_codec_formats.extend(pcm_32_bit_formats)
 ffmpeg_free_codec_formats.extend(pcm_64_bit_formats)
 ffmpeg_free_codec_formats.append('flac')
 ffmpeg_free_codec_formats.append('vorbis')
-ffmpeg_free_codec_formats.append('mp1')
-ffmpeg_free_codec_formats.append('mp1float')
-ffmpeg_free_codec_formats.append('mp2')
-ffmpeg_free_codec_formats.append('mp2float')
 
 enable_nonfree_ffmpeg_codec_formats = tkinter.BooleanVar()
 enable_nonfree_ffmpeg_codec_formats.set(True)
 
 ffmpeg_allowed_codec_formats = ['all']
+
+enable_mxf_wrapper=tkinter.IntVar()
+enable_mxf_wrapper.set(0)
+enable_webm_wrapper=tkinter.IntVar()
+enable_webm_wrapper.set(0)
+enable_mp1_codec=tkinter.IntVar()
+enable_mp1_codec.set(0)
+enable_mp2_codec=tkinter.IntVar()
+enable_mp2_codec.set(0)
+
+
+# Define default values for window comboboxes that show MXF Audio Remix Map values.
+remix_value_01 = tkinter.IntVar()
+remix_value_02 = tkinter.IntVar()
+remix_value_03 = tkinter.IntVar()
+remix_value_04 = tkinter.IntVar()
+remix_value_05 = tkinter.IntVar()
+remix_value_06 = tkinter.IntVar()
+remix_value_07 = tkinter.IntVar()
+remix_value_08 = tkinter.IntVar()
+remix_value_09 = tkinter.IntVar()
+remix_value_10 = tkinter.IntVar()
+remix_value_11 = tkinter.IntVar()
+remix_value_12 = tkinter.IntVar()
+remix_value_13 = tkinter.IntVar()
+remix_value_14 = tkinter.IntVar()
+remix_value_15 = tkinter.IntVar()
+remix_value_16 = tkinter.IntVar()
+remix_value_17 = tkinter.IntVar()
+remix_value_18 = tkinter.IntVar()
+remix_value_19 = tkinter.IntVar()
+remix_value_20 = tkinter.IntVar()
+remix_value_21 = tkinter.IntVar()
+remix_value_22 = tkinter.IntVar()
+remix_value_23 = tkinter.IntVar()
+remix_value_24 = tkinter.IntVar()
+remix_value_25 = tkinter.IntVar()
+remix_value_26 = tkinter.IntVar()
+remix_value_27 = tkinter.IntVar()
+remix_value_28 = tkinter.IntVar()
+remix_value_29 = tkinter.IntVar()
+remix_value_30 = tkinter.IntVar()
+remix_value_31 = tkinter.IntVar()
+remix_value_32 = tkinter.IntVar()
+remix_value_33 = tkinter.IntVar()
+remix_value_34 = tkinter.IntVar()
+remix_value_35 = tkinter.IntVar()
+remix_value_36 = tkinter.IntVar()
+remix_value_37 = tkinter.IntVar()
+remix_value_38 = tkinter.IntVar()
+remix_value_39 = tkinter.IntVar()
+remix_value_40 = tkinter.IntVar()
+remix_value_41 = tkinter.IntVar()
+remix_value_42 = tkinter.IntVar()
+remix_value_43 = tkinter.IntVar()
+remix_value_44 = tkinter.IntVar()
+remix_value_45 = tkinter.IntVar()
+remix_value_46 = tkinter.IntVar()
+remix_value_47 = tkinter.IntVar()
+remix_value_48 = tkinter.IntVar()
+remix_value_49 = tkinter.IntVar()
+remix_value_50 = tkinter.IntVar()
 
 ################################################
 # Define defaults for machine readable results #
@@ -5169,6 +5649,7 @@ else:
 	
 number_of_processor_cores_combobox.bind('<<ComboboxSelected>>', print_number_of_processors_cores_to_use)
 number_of_processor_cores_combobox.grid(column=3, row=0, pady=10, padx=10, sticky=(tkinter.E))
+
 second_window_label_5 = tkinter.ttk.Label(second_frame_child_frame_3, wraplength=text_wrap_length_in_pixels, text='If your HotFolder is on a fast RAID, then selecting more processor cores here than you actually have speeds up processing (For Example select 6 cores, when you only have 2 real ones). Each file that is processed ties up two processor cores. Selecting more cores here results in more files being processed in parallel. It is adviced that you test different settings to find the sweet spot of your machine.')
 second_window_label_5.grid(column=0, row=1, columnspan=4, pady=10, padx=10, sticky=(tkinter.W, tkinter.N))
 
@@ -5524,7 +6005,7 @@ fourth_window_next_button.grid(column=2, row=1, padx=30, pady=10, sticky=(tkinte
 # This window lets the user define settings for machine readable results
 
 # Some explanatory texts.
-tenth_window_label_5 = tkinter.ttk.Label(tenth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text="These settings lets you define how FreeLCS outputs it's results. If all your users are 'human' then leave settings at their defaults. FreeLCS will by default output loudness corrected audio files and loudness history graphics files.")
+tenth_window_label_5 = tkinter.ttk.Label(tenth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text="These settings lets you define how FreeLCS outputs it's results. If all your users are 'human' then leave settings at their defaults. FreeLCS will by default output loudness corrected audio files and loudness history graphics files.\n\nIf FreeLCS is part of a file processing chain and the results are interpreted by a machine that makes file processing decisions based on FreeLCS results, then select 'No' for the option 'Use FreeLCS file output defaults' and enable the option to write results to a machine readable file. In this case you might also want to disable some output file creation.")
 tenth_window_label_5.grid(column=0, row=0, pady=10, padx=10, columnspan=4, sticky=(tkinter.W, tkinter.N))
 
 tenth_window_label_0 = tkinter.ttk.Label(tenth_frame_child_frame_1, text='Use FreeLCS file output defaults')
@@ -5555,20 +6036,16 @@ delete_original_file_immediately_false_radiobutton = tkinter.ttk.Radiobutton(ten
 delete_original_file_immediately_true_radiobutton.grid(column=3, row=4, padx=15)
 delete_original_file_immediately_false_radiobutton.grid(column=4, row=4, padx=15)
 
-# Some explanatory texts.
-tenth_window_label_9 = tkinter.ttk.Label(tenth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text="\nIf FreeLCS is part of a file processing chain and the results are interpreted by a machine that makes file processing decisions based on FreeLCS results, then enable the option to write results to a machine readable file. In this case you might want to disable some output file creation above.")
-tenth_window_label_9.grid(column=0, row=5, pady=10, padx=10, columnspan=4, sticky=(tkinter.W, tkinter.N))
-
-tenth_window_label_1 = tkinter.ttk.Label(tenth_frame_child_frame_1, text='Write loudness calculation results to a machine readable results - file')
-tenth_window_label_1.grid(column=0, row=6, columnspan=2, padx=10, pady=20, sticky=(tkinter.W, tkinter.N))
+tenth_window_label_1 = tkinter.ttk.Label(tenth_frame_child_frame_1, text='Write loudness calculation results to a machine readable file')
+tenth_window_label_1.grid(column=0, row=5, columnspan=2, padx=10, pady=20, sticky=(tkinter.W, tkinter.N))
 machine_readable_file_true_radiobutton = tkinter.ttk.Radiobutton(tenth_frame_child_frame_1, text='Yes', variable=write_loudness_calculation_results_to_a_machine_readable_file, value=True, command=print_write_machine_readable_results)
 machine_readable_file_false_radiobutton = tkinter.ttk.Radiobutton(tenth_frame_child_frame_1, text='No', variable=write_loudness_calculation_results_to_a_machine_readable_file, value=False, command=print_write_machine_readable_results)
-machine_readable_file_true_radiobutton.grid(column=3, row=6, padx=15, pady=20)
-machine_readable_file_false_radiobutton.grid(column=4, row=6, padx=15, pady=20)
+machine_readable_file_true_radiobutton.grid(column=3, row=5, padx=15, pady=20)
+machine_readable_file_false_radiobutton.grid(column=4, row=5, padx=15, pady=20)
 
 # Define unit separator selection boxes.
 tenth_window_label_6 = tkinter.ttk.Label(tenth_frame_child_frame_1, text='Machine Readable Result - file Unit Separator (ASCII / UTF-8 values):')
-tenth_window_label_6.grid(column=0, row=7, padx=10, columnspan=1, sticky=(tkinter.W, tkinter.N))
+tenth_window_label_6.grid(column=0, row=6, padx=10, columnspan=1, sticky=(tkinter.W, tkinter.N))
 
 # Get unit separator values so that they can be displayed on the window.
 unit_separator_value_1 = tkinter.StringVar()
@@ -5606,29 +6083,29 @@ unit_separator_combobox_1 = tkinter.ttk.Combobox(tenth_frame_child_frame_1, just
 unit_separator_combobox_1['values'] = ('0','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31')
 
 unit_separator_combobox_1.bind('<<ComboboxSelected>>', print_unit_and_record_separators)
-unit_separator_combobox_1.grid(column=3, row=7, padx=10, columnspan=1, sticky=(tkinter.N, tkinter.E))
+unit_separator_combobox_1.grid(column=3, row=6, padx=10, columnspan=1, sticky=(tkinter.N, tkinter.E))
 
 unit_separator_combobox_2 = tkinter.ttk.Combobox(tenth_frame_child_frame_1, justify=tkinter.CENTER, width=4, textvariable=unit_separator_value_2)
 unit_separator_combobox_2['values'] = ('None','0','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31')
 
 unit_separator_combobox_2.bind('<<ComboboxSelected>>', print_unit_and_record_separators)
-unit_separator_combobox_2.grid(column=4, row=7, padx=10, sticky=(tkinter.N, tkinter.E))
+unit_separator_combobox_2.grid(column=4, row=6, padx=10, sticky=(tkinter.N, tkinter.E))
 
 # Define record separator selection boxes.
 tenth_window_label_7 = tkinter.ttk.Label(tenth_frame_child_frame_1, text='Machine Readable Result - file Record Separator (ASCII / UTF-8 values):')
-tenth_window_label_7.grid(column=0, row=8, padx=10, columnspan=1, sticky=(tkinter.W, tkinter.N))
+tenth_window_label_7.grid(column=0, row=7, padx=10, columnspan=1, sticky=(tkinter.W, tkinter.N))
 
 record_separator_combobox_1 = tkinter.ttk.Combobox(tenth_frame_child_frame_1, justify=tkinter.CENTER, width=4, textvariable=record_separator_value_1)
 record_separator_combobox_1['values'] = ('0','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31')
 
 record_separator_combobox_1.bind('<<ComboboxSelected>>', print_unit_and_record_separators)
-record_separator_combobox_1.grid(column=3, row=8, padx=10, columnspan=1, sticky=(tkinter.N, tkinter.E))
+record_separator_combobox_1.grid(column=3, row=7, padx=10, columnspan=1, sticky=(tkinter.N, tkinter.E))
 
 record_separator_combobox_2 = tkinter.ttk.Combobox(tenth_frame_child_frame_1, justify=tkinter.CENTER, width=4, textvariable=record_separator_value_2)
 record_separator_combobox_2['values'] = ('None','0','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31')
 
 record_separator_combobox_2.bind('<<ComboboxSelected>>', print_unit_and_record_separators)
-record_separator_combobox_2.grid(column=4, row=8, padx=10, sticky=(tkinter.N, tkinter.E))
+record_separator_combobox_2.grid(column=4, row=7, padx=10, sticky=(tkinter.N, tkinter.E))
 
 # Activate displayed values in unit and record separator boxes.
 unit_separator_combobox_1.set(unit_separator_value_1.get()) 
@@ -5638,13 +6115,13 @@ record_separator_combobox_1.set(record_separator_value_1.get())
 record_separator_combobox_2.set(record_separator_value_2.get())
 
 # Some explanatory texts.
-tenth_window_label_8 = tkinter.ttk.Label(tenth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text="\nHere you can define strings used to separate values in the machine readable results file that FreeLCS outputs. You can define a 1 - 2 character separator string for the 'Unit' and 'Record' separators.\n\n'Unit Separator' is used to separate individual loudness measurement results from a single input file. 'Record Separator' is used between results of different input files. If you only want to have one character as the separator, then choose 'None' as the value for the second character.\n\nNote that you can only choose non printable characters as separators. The machine readable results file can not be interpreted correctly if a file name has the separator string in it's name. Non printable characters are safe to use since the operating system won't let these characters ever be used in a file name.")
-tenth_window_label_8.grid(column=0, row=9, pady=10, padx=10, columnspan=4, sticky=(tkinter.W, tkinter.N))
+tenth_window_label_8 = tkinter.ttk.Label(tenth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text="\nHere you can define strings used to separate values in the machine readable results file that FreeLCS outputs. The separator string tells the machine that tries to interpret the results file that one value ends here and another one starts after it.\n\nYou can define a 1 - 2 character separator string for the 'Unit' and 'Record' separators.\n\n'Unit Separator' is used between individual loudness measurement results from a single input file. 'Record Separator' is used when results from one input file end and results from another input file starts. If you only want to have one character as the separator, then choose 'None' as the value for the second character.\n\nNote that you can only choose non printable characters as separators. The machine readable results file can not be interpreted correctly if a file has the separator string in it's filename. Non printable characters are safe to use since the operating system won't let these characters ever be used in a file name.")
+tenth_window_label_8.grid(column=0, row=8, pady=10, padx=10, columnspan=4, sticky=(tkinter.W, tkinter.N))
 
 # Create the buttons for the frame
 tenth_window_back_button = tkinter.Button(tenth_frame, text = "Back", command = call_fourth_frame_on_top)
 tenth_window_back_button.grid(column=1, row=1, padx=30, pady=10, sticky=(tkinter.E, tkinter.N))
-tenth_window_next_button = tkinter.Button(tenth_frame, text = "Next", command = call_fifth_frame_on_top)
+tenth_window_next_button = tkinter.Button(tenth_frame, text = "Next", command = call_eleventh_frame_on_top)
 tenth_window_next_button.grid(column=2, row=1, padx=30, pady=10, sticky=(tkinter.W, tkinter.N))
 
 if write_loudness_calculation_results_to_a_machine_readable_file.get() == 0:
@@ -5666,125 +6143,602 @@ else:
 
 print_use_defaults_for_freelcs_output()
 
-############################################################################################################
-## Window number 11                                                                                         #
-############################################################################################################
-#
-## This window lets the user define if he want's html-report written on disk or and a ram disk created for writing it in.
-#
-## Html - report settings
-#fourth_window_label_1 = tkinter.ttk.Label(fourth_frame_child_frame_1, text='Write html progress report:')
-#fourth_window_label_1.grid(column=0, row=0, columnspan=2, padx=10, sticky=(tkinter.W, tkinter.N))
-#write_html_progress_report_true_radiobutton = tkinter.ttk.Radiobutton(fourth_frame_child_frame_1, text='Yes', variable=write_html_progress_report, value=True, command=print_write_html_progress_report)
-#write_html_progress_report_false_radiobutton = tkinter.ttk.Radiobutton(fourth_frame_child_frame_1, text='No', variable=write_html_progress_report, value=False, command=print_write_html_progress_report)
-#write_html_progress_report_true_radiobutton.grid(column=3, row=0, padx=15)
-#write_html_progress_report_false_radiobutton.grid(column=4, row=0, padx=15)
-#
-## Ram - disk.
-#fourth_window_label_2 = tkinter.ttk.Label(fourth_frame_child_frame_1, text='Create a ram - disk for html report:')
-#fourth_window_label_2.grid(column=0, row=2, columnspan=2, padx=10, sticky=(tkinter.W, tkinter.N))
-#create_a_ram_disk_for_html_report_true_radiobutton = tkinter.ttk.Radiobutton(fourth_frame_child_frame_1, text='Yes', variable=create_a_ram_disk_for_html_report, value=True, command=print_create_a_ram_disk_for_html_report_and_toggle_next_button_state)
-#create_a_ram_disk_for_html_report_false_radiobutton = tkinter.ttk.Radiobutton(fourth_frame_child_frame_1, text='No', variable=create_a_ram_disk_for_html_report, value=False, command=print_create_a_ram_disk_for_html_report_and_toggle_next_button_state)
-#create_a_ram_disk_for_html_report_true_radiobutton.grid(column=3, row=2, padx=15)
-#create_a_ram_disk_for_html_report_false_radiobutton.grid(column=4, row=2, padx=15)
-#
-## Some explanatory texts.
-#twentyfirst_label = tkinter.ttk.Label(fourth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='Html progress report is a live view into LoudnessCorrection process queue showing a list of files being processed, waiting in the queue and 100 last completed files.\n\nProgress report is a html-file in the HotFolder that can be viewed with a web-browser. The page updates every 5 seconds and because of this needs speedy access to the disk. During heavy disk traffic html-page cannot be updated frequently enough unless a ram disk is created and mounted as the directory where the html-page is written into.')
-#twentyfirst_label.grid(column=0, row=3, pady=10, padx=10, columnspan=4, sticky=(tkinter.W, tkinter.N))
-#
-## Define a horizontal line to space out groups of rows.
-#fourth_window_separator_1 = tkinter.ttk.Separator(fourth_frame_child_frame_1, orient=tkinter.HORIZONTAL)
-#fourth_window_separator_1.grid(column=0, row=4, padx=10, pady=10, columnspan=5, sticky=(tkinter.W, tkinter.E))
-#
-## Ram device name.
-#fourth_window_label_3 = tkinter.ttk.Label(fourth_frame_child_frame_1, text='Use this ram device for creating the ram disk:')
-#fourth_window_label_3.grid(column=0, row=5, columnspan=4, padx=10, sticky=(tkinter.W, tkinter.N))
-#ram_device_name_combobox = tkinter.ttk.Combobox(fourth_frame_child_frame_1, justify=tkinter.CENTER, textvariable=ram_device_name)
-## Get the ram device names from the os.
-#error_happened, error_message, list_of_ram_devices = get_list_of_ram_devices_from_os()
-#if error_happened == True:
-#	fourth_window_error_label_1 = tkinter.ttk.Label(fourth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, foreground='red', text=error_message)
-#	fourth_window_error_label_1.grid(column=0, row=10, columnspan=4, padx=10, pady=10, sticky=(tkinter.W, tkinter.N))
-#ram_device_name_combobox['values'] = list_of_ram_devices
-#if len(list_of_ram_devices) > 0:
-#	ram_device_name_combobox.set(list_of_ram_devices[0])
-#ram_device_name_combobox.bind('<<ComboboxSelected>>', print_ram_device_name)
-#ram_device_name_combobox.grid(column=3, row=5, columnspan=2, padx=10, sticky=(tkinter.N))
-#
-## Create another label with explanatory text on it.
-#fourth_window_label_4 = tkinter.ttk.Label(fourth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text="If you know you haven't used ram - devices for anything on this computer, then you can just select the first ram device /dev/ram1.")
-#fourth_window_label_4.grid(column=0, row=6, columnspan=4, pady=10, padx=10, sticky=(tkinter.W, tkinter.N))
-#
-## Define a horizontal line to space out groups of rows.
-#fourth_window_separator_1 = tkinter.ttk.Separator(fourth_frame_child_frame_1, orient=tkinter.HORIZONTAL)
-#fourth_window_separator_1.grid(column=0, row=7, padx=10, pady=10, columnspan=5, sticky=(tkinter.W, tkinter.E))
-#
-## Choose which username LoudnessCorrection will run under.
-#fourth_window_label_5 = tkinter.ttk.Label(fourth_frame_child_frame_1, text='Which user account LoudnessCorrection will use to run:')
-#fourth_window_label_5.grid(column=0, row=8, columnspan=4, pady=10, padx=10, sticky=(tkinter.W, tkinter.N))
-#username_combobox = tkinter.ttk.Combobox(fourth_frame_child_frame_1, justify=tkinter.CENTER, textvariable=user_account)
-## Get user account names from the os.
-#error_happened, error_message, list_of_normal_useraccounts = get_list_of_normal_user_accounts_from_os()
-#
-#if error_happened == True:
-#	fourth_window_error_label_2 = tkinter.ttk.Label(fourth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, foreground='red', text=error_message)
-#	fourth_window_error_label_2.grid(column=0, row=11, columnspan=4, padx=10, pady=10, sticky=(tkinter.W, tkinter.N))
-#	
-#username_combobox['values'] = list_of_normal_useraccounts
-#
-#if len(list_of_normal_useraccounts) > 0:
-#	username_combobox.set(list_of_normal_useraccounts[0])
-#	
-#username_combobox.bind('<<ComboboxSelected>>', print_user_account)
-#username_combobox.grid(column=3, row=8, columnspan=2, pady=10, padx=10, sticky=(tkinter.N))
-#
-#fourth_window_label_7 = tkinter.ttk.Label(fourth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='LoudnessCorrection will be run with non root privileges, you can choose here which user account to use.\n\nIf you choose the HotFolder to be shared to the network with Samba in the next screen, the HotFolder directory structure read and write permissions will be set so that only this user has write access to files in Hotfolder directories and all other users can only read.')
-#fourth_window_label_7.grid(column=0, row=9, columnspan=4, pady=10, padx=10, sticky=(tkinter.W, tkinter.N))
-#
-## Define a horizontal line to space out groups of rows.
-#fourth_window_separator_1 = tkinter.ttk.Separator(fourth_frame_child_frame_1, orient=tkinter.HORIZONTAL)
-#fourth_window_separator_1.grid(column=0, row=10, padx=10, pady=10, columnspan=5, sticky=(tkinter.W, tkinter.E))
-#
-## Peak metering settings
-#fourth_window_label_1 = tkinter.ttk.Label(fourth_frame_child_frame_1, text='Peak measurement method:')
-#fourth_window_label_1.grid(column=0, row=11, columnspan=2, padx=10, sticky=(tkinter.W, tkinter.N))
-#sample_peak_radiobutton = tkinter.ttk.Radiobutton(fourth_frame_child_frame_1, text='Sample Peak', variable=sample_peak, value=True, command=set_sample_peak_measurement_method)
-#true_peak_radiobutton = tkinter.ttk.Radiobutton(fourth_frame_child_frame_1, text='TruePeak', variable=sample_peak, value=False, command=set_sample_peak_measurement_method)
-#sample_peak_radiobutton.grid(column=3, row=11, padx=15)
-#true_peak_radiobutton.grid(column=4, row=11, padx=15)
-#
-## Some explanatory texts.
-#peak_measurement_label = tkinter.ttk.Label(fourth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='This options lets you choose if you want to use sample peak or TruePeak measurement. The peak value is important only in cases where file loudness is below target -23 LUFS and needs to be increased. If increasing volume would cause peaks to go over a set limit (-2 dBFS for TruePeak and -4 dB for sample peak) then a protective limiter is used. The resulting max peaks will be about 1 dB above the limit (-1 dBFS / -3 dBFS).\n\nNote that using TruePeak slows down file processing by a factor of 4. When using sample peak you still have about 3 dBs headroom for the true peaks to exist.')
-#peak_measurement_label.grid(column=0, row=12, pady=10, padx=10, columnspan=4, sticky=(tkinter.W, tkinter.N))
-#
-## Create the buttons for the frame
-#fourth_window_back_button = tkinter.Button(fourth_frame, text = "Back", command = call_third_frame_on_top)
-#fourth_window_back_button.grid(column=1, row=1, padx=30, pady=10, sticky=(tkinter.E, tkinter.N))
-#fourth_window_next_button = tkinter.Button(fourth_frame, text = "Next", command = call_fifth_frame_on_top)
-#
-## If we were no successful in getting the list of ram device names from the os and create_ram_disk = True, disable the next button.
-#if (len(list_of_ram_devices) == 0) and (create_a_ram_disk_for_html_report.get() == True):
-#	fourth_window_next_button['state'] = 'disabled'
-## If we were not successful in getting the list of user accounts from the os, disable the next button.
-#if len(list_of_normal_useraccounts) == 0:
-#	fourth_window_next_button['state'] = 'disabled'
-#fourth_window_next_button.grid(column=2, row=1, padx=30, pady=10, sticky=(tkinter.W, tkinter.N))
+###########################################################################################################
+# Window number 11                                                                                         #
+###########################################################################################################
 
+# This window lets the user define allowed FFmpeg formats and MXF remix options.
+row_counter = -1
 
+# Some explanatory texts.
+row_counter = row_counter + 1
+eleventh_window_label_1 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=int(text_wrap_length_in_pixels * 1.7), text='When you store a program in a MXF wrapper, then audio mixes are usually split up and saved as separate mono files. For a program with stereo and 5.1 mix, eight separate audio files are stored in the MXF. This complicates things when you want to measure loudness of those mixes, audio files needs to be combined back to full mixes before this is possible.\n\nThis FreeLCS feature allows you to enable remixing audio inside a MXF file back to original mixes before loudness measurement.\n\nThe boxes below allow you to define a default "MXF Remix Map" that is used if no other information about the mixes is available. The numbers above the boxes correspond to the mix number that you want to create and the boxes below lets you define how many input audio channels are combined to form the mix. You can have more mixes defined than you have physical audio files available, since only mixes that have all needed channels available will be created. It is also possible to create file specific remix maps, see the user manual for more information about it.\n\nNote that you need to install FFmpeg for this feature to work.\n')
+eleventh_window_label_1.grid(column=0, row=row_counter, pady=10, padx=10, columnspan=16, sticky=(tkinter.W, tkinter.N))
 
+row_counter = row_counter + 1
+eleventh_window_label_10 = tkinter.ttk.Label(eleventh_frame_child_frame_1, text='Enable MXF Audio Remixing:')
+eleventh_window_label_10.grid(column=0, row=row_counter, columnspan=4, padx=10, sticky=(tkinter.W))
+ffmpeg_wrapper_formats_true_radiobutton = tkinter.ttk.Radiobutton(eleventh_frame_child_frame_1, text='Yes', variable=enable_mxf_audio_remixing, value=True, command=print_ffmpeg_usage_options)
+ffmpeg_wrapper_formats_false_radiobutton = tkinter.ttk.Radiobutton(eleventh_frame_child_frame_1, text='No', variable=enable_mxf_audio_remixing, value=False, command=print_ffmpeg_usage_options)
+ffmpeg_wrapper_formats_true_radiobutton.grid(column=4, row=row_counter, padx=15, columnspan=2, sticky=(tkinter.W))
+ffmpeg_wrapper_formats_false_radiobutton.grid(column=6, row=row_counter, padx=15, columnspan=2, sticky=(tkinter.W))
 
+# Add a button that resets the MXF Audio Remix Map values all to stereo.
+#row_counter = row_counter + 1
+eleventh_window_reset_button = tkinter.Button(eleventh_frame_child_frame_1, text = "Reset All Mixes To Stereo", command = reset_mxf_map_to_all_stereo)
+eleventh_window_reset_button.grid(column=10, row=row_counter, padx=15, columnspan=4, sticky=(tkinter.W, tkinter.N))
 
+# Define a dummy label to space out groups of rows.
+row_counter = row_counter + 1
+remix_spacer_label_1 = tkinter.ttk.Label(eleventh_frame_child_frame_1,  text='')
+remix_spacer_label_1.grid(column=0, row=row_counter, sticky=(tkinter.W, tkinter.E))
 
+row_counter = row_counter + 1
+column_counter = -1
+column_counter = column_counter + 1
+remix_number_label_1 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='01')
+remix_number_label_1.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_2 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='02')
+remix_number_label_2.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_3 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='03')
+remix_number_label_3.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_4 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='04')
+remix_number_label_4.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_5 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='05')
+remix_number_label_5.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_6 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='06')
+remix_number_label_6.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_7 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='07')
+remix_number_label_7.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_8 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='08')
+remix_number_label_8.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_9 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='09')
+remix_number_label_9.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_10 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='10')
+remix_number_label_10.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_11 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='11')
+remix_number_label_11.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_12 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='12')
+remix_number_label_12.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_13 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='13')
+remix_number_label_13.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_14 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='14')
+remix_number_label_14.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_15 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='15')
+remix_number_label_15.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_16 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='16')
+remix_number_label_16.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
 
+remix_number_label_1['foreground'] = 'dark green'
+remix_number_label_2['foreground'] = 'dark green'
+remix_number_label_3['foreground'] = 'dark green'
+remix_number_label_4['foreground'] = 'dark green'
+remix_number_label_5['foreground'] = 'dark green'
+remix_number_label_6['foreground'] = 'dark green'
+remix_number_label_7['foreground'] = 'dark green'
+remix_number_label_8['foreground'] = 'dark green'
+remix_number_label_9['foreground'] = 'dark green'
+remix_number_label_10['foreground'] = 'dark green'
+remix_number_label_11['foreground'] = 'dark green'
+remix_number_label_12['foreground'] = 'dark green'
+remix_number_label_13['foreground'] = 'dark green'
+remix_number_label_14['foreground'] = 'dark green'
+remix_number_label_15['foreground'] = 'dark green'
+remix_number_label_16['foreground'] = 'dark green'
 
+# Create a boxes to input values for the MXF Audio Remix Map.
+column_counter = -1
+column_counter = column_counter + 1
+row_counter = row_counter + 1
+remix_combobox_1 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_01)
+remix_combobox_1['values'] = (1,2,3,4,5,6)
+remix_combobox_1.set(remix_value_01.get())
+remix_combobox_1.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
 
+column_counter = column_counter + 1
+remix_combobox_2 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_02)
+remix_combobox_2['values'] = (1,2,3,4,5,6)
+remix_combobox_2.set(remix_value_01.get())
+remix_combobox_2.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
 
+column_counter = column_counter + 1
+remix_combobox_3 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_03)
+remix_combobox_3['values'] = (1,2,3,4,5,6)
+remix_combobox_3.set(remix_value_01.get())
+remix_combobox_3.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
 
+column_counter = column_counter + 1
+remix_combobox_4 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_04)
+remix_combobox_4['values'] = (1,2,3,4,5,6)
+remix_combobox_4.set(remix_value_01.get())
+remix_combobox_4.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
 
+column_counter = column_counter + 1
+remix_combobox_5 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_05)
+remix_combobox_5['values'] = (1,2,3,4,5,6)
+remix_combobox_5.set(remix_value_01.get())
+remix_combobox_5.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
 
+column_counter = column_counter + 1
+remix_combobox_6 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_06)
+remix_combobox_6['values'] = (1,2,3,4,5,6)
+remix_combobox_6.set(remix_value_01.get())
+remix_combobox_6.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
 
+column_counter = column_counter + 1
+remix_combobox_7 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_07)
+remix_combobox_7['values'] = (1,2,3,4,5,6)
+remix_combobox_7.set(remix_value_01.get())
+remix_combobox_7.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
 
+column_counter = column_counter + 1
+remix_combobox_8 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_08)
+remix_combobox_8['values'] = (1,2,3,4,5,6)
+remix_combobox_8.set(remix_value_01.get())
+remix_combobox_8.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
 
+column_counter = column_counter + 1
+remix_combobox_9 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_09)
+remix_combobox_9['values'] = (1,2,3,4,5,6)
+remix_combobox_9.set(remix_value_01.get())
+remix_combobox_9.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+column_counter = column_counter + 1
+remix_combobox_10 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_10)
+remix_combobox_10['values'] = (1,2,3,4,5,6)
+remix_combobox_10.set(remix_value_01.get())
+remix_combobox_10.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+column_counter = column_counter + 1
+remix_combobox_11 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_11)
+remix_combobox_11['values'] = (1,2,3,4,5,6)
+remix_combobox_11.set(remix_value_01.get())
+remix_combobox_11.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+column_counter = column_counter + 1
+remix_combobox_12 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_12)
+remix_combobox_12['values'] = (1,2,3,4,5,6)
+remix_combobox_12.set(remix_value_01.get())
+remix_combobox_12.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+column_counter = column_counter + 1
+remix_combobox_13 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_13)
+remix_combobox_13['values'] = (1,2,3,4,5,6)
+remix_combobox_13.set(remix_value_01.get())
+remix_combobox_13.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+column_counter = column_counter + 1
+remix_combobox_14 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_14)
+remix_combobox_14['values'] = (1,2,3,4,5,6)
+remix_combobox_14.set(remix_value_01.get())
+remix_combobox_14.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+column_counter = column_counter + 1
+remix_combobox_15 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_15)
+remix_combobox_15['values'] = (1,2,3,4,5,6)
+remix_combobox_15.set(remix_value_01.get())
+remix_combobox_15.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+column_counter = column_counter + 1
+remix_combobox_16 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_16)
+remix_combobox_16['values'] = (1,2,3,4,5,6)
+remix_combobox_16.set(remix_value_01.get())
+remix_combobox_16.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+# Define a dummy label to space out groups of rows.
+row_counter = row_counter + 1
+remix_spacer_label_2 = tkinter.ttk.Label(eleventh_frame_child_frame_1,  text='')
+remix_spacer_label_2.grid(column=0, row=row_counter, sticky=(tkinter.W, tkinter.E))
+
+row_counter = row_counter + 1
+column_counter = -1
+column_counter = column_counter + 1
+remix_number_label_17 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='17')
+remix_number_label_17.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_18 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='18')
+remix_number_label_18.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_19 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='19')
+remix_number_label_19.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_20 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='20')
+remix_number_label_20.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_21 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='21')
+remix_number_label_21.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_22 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='22')
+remix_number_label_22.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_23 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='23')
+remix_number_label_23.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_24 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='24')
+remix_number_label_24.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_25 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='25')
+remix_number_label_25.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_26 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='26')
+remix_number_label_26.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_27 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='27')
+remix_number_label_27.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_28 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='28')
+remix_number_label_28.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_29 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='29')
+remix_number_label_29.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_30 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='30')
+remix_number_label_30.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_31 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='31')
+remix_number_label_31.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_32 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='32')
+remix_number_label_32.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+
+remix_number_label_16['foreground'] = 'dark green'
+remix_number_label_17['foreground'] = 'dark green'
+remix_number_label_18['foreground'] = 'dark green'
+remix_number_label_19['foreground'] = 'dark green'
+remix_number_label_20['foreground'] = 'dark green'
+remix_number_label_21['foreground'] = 'dark green'
+remix_number_label_22['foreground'] = 'dark green'
+remix_number_label_23['foreground'] = 'dark green'
+remix_number_label_24['foreground'] = 'dark green'
+remix_number_label_25['foreground'] = 'dark green'
+remix_number_label_26['foreground'] = 'dark green'
+remix_number_label_27['foreground'] = 'dark green'
+remix_number_label_28['foreground'] = 'dark green'
+remix_number_label_29['foreground'] = 'dark green'
+remix_number_label_30['foreground'] = 'dark green'
+remix_number_label_31['foreground'] = 'dark green'
+remix_number_label_32['foreground'] = 'dark green'
+
+column_counter = -1
+row_counter = row_counter + 1
+column_counter = column_counter + 1
+remix_combobox_17 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_17)
+remix_combobox_17['values'] = (1,2,3,4,5,6)
+remix_combobox_17.set(remix_value_01.get())
+remix_combobox_17.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+column_counter = column_counter + 1
+remix_combobox_18 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_18)
+remix_combobox_18['values'] = (1,2,3,4,5,6)
+remix_combobox_18.set(remix_value_01.get())
+remix_combobox_18.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+column_counter = column_counter + 1
+remix_combobox_19 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_19)
+remix_combobox_19['values'] = (1,2,3,4,5,6)
+remix_combobox_19.set(remix_value_01.get())
+remix_combobox_19.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+column_counter = column_counter + 1
+remix_combobox_20 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_20)
+remix_combobox_20['values'] = (1,2,3,4,5,6)
+remix_combobox_20.set(remix_value_01.get())
+remix_combobox_20.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+column_counter = column_counter + 1
+remix_combobox_21 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_21)
+remix_combobox_21['values'] = (1,2,3,4,5,6)
+remix_combobox_21.set(remix_value_01.get())
+remix_combobox_21.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+column_counter = column_counter + 1
+remix_combobox_22 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_22)
+remix_combobox_22['values'] = (1,2,3,4,5,6)
+remix_combobox_22.set(remix_value_01.get())
+remix_combobox_22.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+column_counter = column_counter + 1
+remix_combobox_23 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_23)
+remix_combobox_23['values'] = (1,2,3,4,5,6)
+remix_combobox_23.set(remix_value_01.get())
+remix_combobox_23.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+column_counter = column_counter + 1
+remix_combobox_24 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_24)
+remix_combobox_24['values'] = (1,2,3,4,5,6)
+remix_combobox_24.set(remix_value_01.get())
+remix_combobox_24.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+column_counter = column_counter + 1
+remix_combobox_25 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_25)
+remix_combobox_25['values'] = (1,2,3,4,5,6)
+remix_combobox_25.set(remix_value_01.get())
+remix_combobox_25.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+column_counter = column_counter + 1
+remix_combobox_26 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_26)
+remix_combobox_26['values'] = (1,2,3,4,5,6)
+remix_combobox_26.set(remix_value_01.get())
+remix_combobox_26.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+column_counter = column_counter + 1
+remix_combobox_27 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_27)
+remix_combobox_27['values'] = (1,2,3,4,5,6)
+remix_combobox_27.set(remix_value_01.get())
+remix_combobox_27.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+column_counter = column_counter + 1
+remix_combobox_28 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_28)
+remix_combobox_28['values'] = (1,2,3,4,5,6)
+remix_combobox_28.set(remix_value_01.get())
+remix_combobox_28.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+column_counter = column_counter + 1
+remix_combobox_29 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_29)
+remix_combobox_29['values'] = (1,2,3,4,5,6)
+remix_combobox_29.set(remix_value_01.get())
+remix_combobox_29.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+column_counter = column_counter + 1
+remix_combobox_30 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_30)
+remix_combobox_30['values'] = (1,2,3,4,5,6)
+remix_combobox_30.set(remix_value_01.get())
+remix_combobox_30.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+column_counter = column_counter + 1
+remix_combobox_31 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_31)
+remix_combobox_31['values'] = (1,2,3,4,5,6)
+remix_combobox_31.set(remix_value_01.get())
+remix_combobox_31.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+column_counter = column_counter + 1
+remix_combobox_32 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_32)
+remix_combobox_32['values'] = (1,2,3,4,5,6)
+remix_combobox_32.set(remix_value_01.get())
+remix_combobox_32.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+# Define a dummy label to space out groups of rows.
+row_counter = row_counter + 1
+remix_spacer_label_3 = tkinter.ttk.Label(eleventh_frame_child_frame_1,  text='')
+remix_spacer_label_3.grid(column=0, row=row_counter, sticky=(tkinter.W, tkinter.E))
+
+row_counter = row_counter + 1
+column_counter = -1
+column_counter = column_counter + 1
+remix_number_label_33 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='33')
+remix_number_label_33.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_34 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='34')
+remix_number_label_34.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_35 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='35')
+remix_number_label_35.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_36 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='36')
+remix_number_label_36.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_37 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='37')
+remix_number_label_37.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_38 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='38')
+remix_number_label_38.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_39 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='39')
+remix_number_label_39.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_40 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='40')
+remix_number_label_40.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_41 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='41')
+remix_number_label_41.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_42 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='42')
+remix_number_label_42.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_43 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='43')
+remix_number_label_43.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_44 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='44')
+remix_number_label_44.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_45 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='45')
+remix_number_label_45.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_46 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='46')
+remix_number_label_46.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_47 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='47')
+remix_number_label_47.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+column_counter = column_counter + 1
+remix_number_label_48 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='48')
+remix_number_label_48.grid(column=column_counter, row=row_counter, pady=1, padx=10, columnspan=1)
+
+remix_number_label_32['foreground'] = 'dark green'
+remix_number_label_33['foreground'] = 'dark green'
+remix_number_label_34['foreground'] = 'dark green'
+remix_number_label_35['foreground'] = 'dark green'
+remix_number_label_36['foreground'] = 'dark green'
+remix_number_label_37['foreground'] = 'dark green'
+remix_number_label_38['foreground'] = 'dark green'
+remix_number_label_39['foreground'] = 'dark green'
+remix_number_label_40['foreground'] = 'dark green'
+remix_number_label_41['foreground'] = 'dark green'
+remix_number_label_42['foreground'] = 'dark green'
+remix_number_label_43['foreground'] = 'dark green'
+remix_number_label_44['foreground'] = 'dark green'
+remix_number_label_45['foreground'] = 'dark green'
+remix_number_label_46['foreground'] = 'dark green'
+remix_number_label_47['foreground'] = 'dark green'
+remix_number_label_48['foreground'] = 'dark green'
+
+column_counter = -1
+row_counter = row_counter + 1
+column_counter = column_counter + 1
+remix_combobox_33 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_33)
+remix_combobox_33['values'] = (1,2,3,4,5,6)
+remix_combobox_33.set(remix_value_01.get())
+remix_combobox_33.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+column_counter = column_counter + 1
+remix_combobox_34 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_34)
+remix_combobox_34['values'] = (1,2,3,4,5,6)
+remix_combobox_34.set(remix_value_01.get())
+remix_combobox_34.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+column_counter = column_counter + 1
+remix_combobox_35 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_35)
+remix_combobox_35['values'] = (1,2,3,4,5,6)
+remix_combobox_35.set(remix_value_01.get())
+remix_combobox_35.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+column_counter = column_counter + 1
+remix_combobox_36 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_36)
+remix_combobox_36['values'] = (1,2,3,4,5,6)
+remix_combobox_36.set(remix_value_01.get())
+remix_combobox_36.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+column_counter = column_counter + 1
+remix_combobox_37 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_37)
+remix_combobox_37['values'] = (1,2,3,4,5,6)
+remix_combobox_37.set(remix_value_01.get())
+remix_combobox_37.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+column_counter = column_counter + 1
+remix_combobox_38 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_38)
+remix_combobox_38['values'] = (1,2,3,4,5,6)
+remix_combobox_38.set(remix_value_01.get())
+remix_combobox_38.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+column_counter = column_counter + 1
+remix_combobox_39 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_39)
+remix_combobox_39['values'] = (1,2,3,4,5,6)
+remix_combobox_39.set(remix_value_01.get())
+remix_combobox_39.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+column_counter = column_counter + 1
+remix_combobox_40 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_40)
+remix_combobox_40['values'] = (1,2,3,4,5,6)
+remix_combobox_40.set(remix_value_01.get())
+remix_combobox_40.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+column_counter = column_counter + 1
+remix_combobox_41 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_41)
+remix_combobox_41['values'] = (1,2,3,4,5,6)
+remix_combobox_41.set(remix_value_01.get())
+remix_combobox_41.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+column_counter = column_counter + 1
+remix_combobox_42 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_42)
+remix_combobox_42['values'] = (1,2,3,4,5,6)
+remix_combobox_42.set(remix_value_01.get())
+remix_combobox_42.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+column_counter = column_counter + 1
+remix_combobox_43 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_43)
+remix_combobox_43['values'] = (1,2,3,4,5,6)
+remix_combobox_43.set(remix_value_01.get())
+remix_combobox_43.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+column_counter = column_counter + 1
+remix_combobox_44 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_44)
+remix_combobox_44['values'] = (1,2,3,4,5,6)
+remix_combobox_44.set(remix_value_01.get())
+remix_combobox_44.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+column_counter = column_counter + 1
+remix_combobox_45 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_45)
+remix_combobox_45['values'] = (1,2,3,4,5,6)
+remix_combobox_45.set(remix_value_01.get())
+remix_combobox_45.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+column_counter = column_counter + 1
+remix_combobox_46 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_46)
+remix_combobox_46['values'] = (1,2,3,4,5,6)
+remix_combobox_46.set(remix_value_01.get())
+remix_combobox_46.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+column_counter = column_counter + 1
+remix_combobox_47 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_47)
+remix_combobox_47['values'] = (1,2,3,4,5,6)
+remix_combobox_47.set(remix_value_01.get())
+remix_combobox_47.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+column_counter = column_counter + 1
+remix_combobox_48 = tkinter.ttk.Combobox(eleventh_frame_child_frame_1, width=2, textvariable=remix_value_48)
+remix_combobox_48['values'] = (1,2,3,4,5,6)
+remix_combobox_48.set(remix_value_01.get())
+remix_combobox_48.grid(column=column_counter, row=row_counter, pady=5, padx=10, columnspan=1)
+
+# Define a horizontal line to space out groups of rows.
+row_counter = row_counter + 1
+eleventh_window_separator_1 = tkinter.ttk.Separator(eleventh_frame_child_frame_1, orient=tkinter.HORIZONTAL)
+eleventh_window_separator_1.grid(column=0, row=row_counter, padx=10, pady=10, columnspan=16, sticky=(tkinter.W, tkinter.E))
+
+# Some explanatory texts.
+row_counter = row_counter + 1
+eleventh_window_label_3 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=int(text_wrap_length_in_pixels * 1.7), text="If you decide to install FFmpeg, then you can define here what wrapper and codec formats you allow it to process. You can allow FFmpeg to process all formats it supports or you can limit processing to royalty / patent free formats (Please see FAQ about format patents). If you don't install FFmpeg, then these settings won't have any effect.\n\nIf you enabled 'Mxf Remix Map' above, then you need to allow FFmpeg to process MXF here.\n")
+eleventh_window_label_3.grid(column=0, row=row_counter, pady=10, padx=10, columnspan=16, sticky=(tkinter.W, tkinter.N))
+
+row_counter = row_counter + 1
+eleventh_window_label_5 = tkinter.ttk.Label(eleventh_frame_child_frame_1, text='FFmpeg allowed wrapper formats')
+eleventh_window_label_5.grid(column=0, row=row_counter, columnspan=4, padx=10, sticky=(tkinter.W))
+ffmpeg_wrapper_formats_true_radiobutton = tkinter.ttk.Radiobutton(eleventh_frame_child_frame_1, text='All', variable=enable_nonfree_ffmpeg_wrapper_formats, value=True, command=print_ffmpeg_usage_options)
+ffmpeg_wrapper_formats_false_radiobutton = tkinter.ttk.Radiobutton(eleventh_frame_child_frame_1, text='Only Wav, Flac, Ogg, Matroska and wrappers:', variable=enable_nonfree_ffmpeg_wrapper_formats, value=False, command=print_ffmpeg_usage_options)
+ffmpeg_wrapper_formats_true_radiobutton.grid(column=4, row=row_counter, padx=15, columnspan=2, sticky=(tkinter.W))
+ffmpeg_wrapper_formats_false_radiobutton.grid(column=5, row=row_counter, padx=15, columnspan=8, sticky=(tkinter.W))
+
+column_counter = 11
+eleventh_window_mxf_enable = tkinter.Checkbutton(eleventh_frame_child_frame_1, text="Mxf", variable=enable_mxf_wrapper, command=print_ffmpeg_usage_options)
+eleventh_window_mxf_enable.grid(row=row_counter, column=column_counter, pady=5, padx=10, columnspan=2, sticky=(tkinter.W))
+
+column_counter = column_counter + 1
+eleventh_window_webm_enable = tkinter.Checkbutton(eleventh_frame_child_frame_1, text="Webm", variable=enable_webm_wrapper, command=print_ffmpeg_usage_options)
+eleventh_window_webm_enable.grid(row=row_counter, column=column_counter, pady=5, padx=10, columnspan=2, sticky=(tkinter.W))
+
+row_counter = row_counter + 1
+eleventh_window_label_6 = tkinter.ttk.Label(eleventh_frame_child_frame_1, text='FFmpeg allowed codec formats')
+eleventh_window_label_6.grid(column=0, row=row_counter, columnspan=4, padx=10, sticky=(tkinter.W))
+ffmpeg_codec_formats_true_radiobutton = tkinter.ttk.Radiobutton(eleventh_frame_child_frame_1, text='All', variable=enable_nonfree_ffmpeg_codec_formats, value=True, command=print_ffmpeg_usage_options)
+ffmpeg_codec_formats_false_radiobutton = tkinter.ttk.Radiobutton(eleventh_frame_child_frame_1, text='Only PCM, Flac, Vorbis and codecs:', variable=enable_nonfree_ffmpeg_codec_formats, value=False, command=print_ffmpeg_usage_options)
+ffmpeg_codec_formats_true_radiobutton.grid(column=4, row=row_counter, padx=15, columnspan=2, sticky=(tkinter.W))
+ffmpeg_codec_formats_false_radiobutton.grid(column=5, row=row_counter, padx=15, columnspan=7, sticky=(tkinter.W))
+
+column_counter = 10
+eleventh_window_mp1_enable = tkinter.Checkbutton(eleventh_frame_child_frame_1, text="Mpeg Layer 1 Audio", variable=enable_mp1_codec, command=print_ffmpeg_usage_options)
+eleventh_window_mp1_enable.grid(row=row_counter, column=column_counter, pady=5, padx=10, columnspan=3, sticky=(tkinter.W))
+
+column_counter = column_counter + 3
+eleventh_window_mp2_enable = tkinter.Checkbutton(eleventh_frame_child_frame_1, text="Mpeg Layer 2 Audio", variable=enable_mp2_codec, command=print_ffmpeg_usage_options)
+eleventh_window_mp2_enable.grid(row=row_counter, column=column_counter, pady=5, padx=10, columnspan=3, sticky=(tkinter.W))
+
+# Define a horizontal line to space out groups of rows.
+row_counter = row_counter + 1
+eleventh_window_separator_1 = tkinter.ttk.Separator(eleventh_frame_child_frame_1, orient=tkinter.HORIZONTAL)
+eleventh_window_separator_1.grid(column=0, row=row_counter, padx=10, pady=10, columnspan=16, sticky=(tkinter.W, tkinter.E))
+
+# Create the buttons for the frame
+eleventh_window_back_button = tkinter.Button(eleventh_frame, text = "Back", command = call_tenth_frame_on_top)
+eleventh_window_back_button.grid(column=1, row=1, padx=30, pady=10, sticky=(tkinter.E, tkinter.N))
+eleventh_window_next_button = tkinter.Button(eleventh_frame, text = "Next", command = assign_user_selected_values_to_remix_map_and_show_next_window)
+eleventh_window_next_button.grid(column=2, row=1, padx=30, pady=10, sticky=(tkinter.W, tkinter.N))
+
+assing_mxf_remix_values_for_display()
+print_ffmpeg_usage_options()
 
 
 ###########################################################################################################
@@ -5827,7 +6781,7 @@ samba_config_text_widget.configure(xscrollcommand=samba_config_text_widget_horiz
 samba_config_text_widget_horizontal_scrollbar.grid(column=0, row=2, columnspan=4, sticky=(tkinter.W, tkinter.E))
 
 # Create the buttons for the frame
-first_window_back_button = tkinter.Button(fifth_frame, text = "Back", command = call_tenth_frame_on_top)
+first_window_back_button = tkinter.Button(fifth_frame, text = "Back", command = call_eleventh_frame_on_top)
 first_window_back_button.grid(column=1, row=1, padx=30, pady=10, sticky=(tkinter.W, tkinter.N))
 first_window_undo_button = tkinter.Button(fifth_frame, text = "Undo", command = undo_text_in_text_widget)
 first_window_undo_button.grid(column=2, row=1, padx=30, pady=10, sticky=(tkinter.W, tkinter.N))
