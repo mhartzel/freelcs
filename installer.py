@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '077'
+version = '078'
 freelcs_version = '2.5'
 
 ###################################
@@ -3493,6 +3493,7 @@ def check_sox_version_and_add_git_commands_to_checkout_specific_commit():
 	global sox_simplified_build_and_install_commands_displayed_to_user
 	global force_reinstallation_of_all_programs
 	global sox_path
+	global install_sox_from_os_repository
 	sox_version = []
 	sox_command_output_string = ''
 	sox_required_version = ['14', '4', '0']
@@ -3522,56 +3523,60 @@ def check_sox_version_and_add_git_commands_to_checkout_specific_commit():
 		sox_path = '' # Empty value in the path-variable forces reinstallation of the 'sox' program.
 		sox_is_installed.set('Not Installed')
 		all_needed_external_programs_are_installed = False
-		sox_simplified_build_and_install_commands_displayed_to_user = ['git clone http://github.com/mhartzel/sox_personal_fork.git', 'cd sox_personal_fork', 'git checkout --force 6dff9411961cc8686aa75337a78b7df334606820', 'autoreconf -i', './configure --prefix=/usr', 'make -s && make install']
 		
-		# Remove sox from apt-get install commands since the version in repository is too old, we build a newer one from source.
-		if 'sox' in needed_packages_install_commands:
-			needed_packages_install_commands.remove('sox')
+		# Remove sox from apt-get install commands if sox version in os repository is not working properly for us and we need to build sox from source.
+		if install_sox_from_os_repository == False:
+
+			if 'sox' in needed_packages_install_commands:
+				needed_packages_install_commands.remove('sox')
 		
-		# Check if sox build dependencies are already in apt-get install list, if not add them.
-		for item in ['automake', 'autoconf', 'libtool']:
-			if item not in needed_packages_install_commands:
-				needed_packages_install_commands.append(item)
+			sox_simplified_build_and_install_commands_displayed_to_user = ['git clone http://github.com/mhartzel/sox_personal_fork.git', 'cd sox_personal_fork', 'git checkout --force 6dff9411961cc8686aa75337a78b7df334606820', 'autoreconf -i', './configure --prefix=/usr', 'make -s && make install']
+
+			# Check if sox build dependencies are already in apt-get install list, if not add them.
+			for item in ['automake', 'autoconf', 'libtool']:
+				if item not in needed_packages_install_commands:
+					needed_packages_install_commands.append(item)
 	else:
 		# Sox is at the version we require.
 		sox_is_installed.set('Installed')
 	
 	# Add sox source download and install commands.
-	if (sox_version_is_the_one_we_require == False) and (sox_download_make_build_and_install_commands == []):
-		
-		sox_download_make_build_and_install_commands.extend(['', \
-		'# Remove sox if it was installed from repositories since that version is too old', \
-		'apt-get remove -y sox', \
-		'', \
-		'# Download sox source', \
-		'if [ -e "' +  directory_for_os_temporary_files + os.sep + 'sox_personal_fork" ] ; then rm -rf "' + directory_for_os_temporary_files + os.sep + 'sox_personal_fork" ; fi', \
-		'cd ' + directory_for_os_temporary_files, \
-		'git clone http://github.com/mhartzel/sox_personal_fork.git', \
-		'cd sox_personal_fork', \
-		'echo', \
-		'echo "Checking out required version of sox from git project"', \
-		'echo', \
-		'SOX_REQUIRED_GIT_COMMIT_VERSION="6dff9411961cc8686aa75337a78b7df334606820"', \
-		'git checkout --force $SOX_REQUIRED_GIT_COMMIT_VERSION', \
-		'', \
-		'# Check that we have the correct version after checkout', \
-		'SOX_CURRENT_COMMIT=`git rev-parse HEAD`', \
-		'', \
-		'if [ "$SOX_CURRENT_COMMIT" == "$SOX_REQUIRED_GIT_COMMIT_VERSION" ] ; then', \
-		'	echo "Checkout was successful"', \
-		'	echo', \
-		'else', \
-		'	echo "There was an error when trying to check out the correct sox version from the local git repository !!!!!!!"', \
-		'	echo', \
-		'	exit', \
-		'fi', \
-		'', \
-		'# Build and install sox from source', \
-		'autoreconf -i', \
-		'./configure --prefix=/usr', \
-		'make -s -j 4', \
-		'make install', \
-		''])
+	if install_sox_from_os_repository == False:
+		if (sox_version_is_the_one_we_require == False) and (sox_download_make_build_and_install_commands == []):
+			
+			sox_download_make_build_and_install_commands.extend(['', \
+			'# Remove sox if it was installed from repositories since that version is too old', \
+			'apt-get remove -y sox', \
+			'', \
+			'# Download sox source', \
+			'if [ -e "' +  directory_for_os_temporary_files + os.sep + 'sox_personal_fork" ] ; then rm -rf "' + directory_for_os_temporary_files + os.sep + 'sox_personal_fork" ; fi', \
+			'cd ' + directory_for_os_temporary_files, \
+			'git clone http://github.com/mhartzel/sox_personal_fork.git', \
+			'cd sox_personal_fork', \
+			'echo', \
+			'echo "Checking out required version of sox from git project"', \
+			'echo', \
+			'SOX_REQUIRED_GIT_COMMIT_VERSION="6dff9411961cc8686aa75337a78b7df334606820"', \
+			'git checkout --force $SOX_REQUIRED_GIT_COMMIT_VERSION', \
+			'', \
+			'# Check that we have the correct version after checkout', \
+			'SOX_CURRENT_COMMIT=`git rev-parse HEAD`', \
+			'', \
+			'if [ "$SOX_CURRENT_COMMIT" == "$SOX_REQUIRED_GIT_COMMIT_VERSION" ] ; then', \
+			'	echo "Checkout was successful"', \
+			'	echo', \
+			'else', \
+			'	echo "There was an error when trying to check out the correct sox version from the local git repository !!!!!!!"', \
+			'	echo', \
+			'	exit', \
+			'fi', \
+			'', \
+			'# Build and install sox from source', \
+			'autoreconf -i', \
+			'./configure --prefix=/usr', \
+			'make -s -j 4', \
+			'make install', \
+			''])
 	
 	if debug == True:
 		print()
@@ -5063,6 +5068,13 @@ libebur128_make_build_and_install_commands = []
 libebur128_simplified_build_and_install_commands_displayed_to_user = []
 sox_download_make_build_and_install_commands = []
 sox_simplified_build_and_install_commands_displayed_to_user = []
+
+# Define which os versions don't have a properly working sox in their repositories
+# In these cases sox is installed by compiling a proper version from source
+install_sox_from_os_repository = True
+
+if (os_name == 'ubuntu') and (os_version == '12.04'):
+	install_sox_from_os_repository = False
 
 # Find paths to all critical programs we need to run LoudnessCorrection
 find_paths_to_all_external_programs_we_need()
