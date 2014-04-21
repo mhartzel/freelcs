@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '075'
+version = '077'
 freelcs_version = '2.5'
 
 ###################################
@@ -4221,10 +4221,6 @@ def store_gnu_gpl3_to_a_global_variable():
 			     END OF TERMS AND CONDITIONS\n\
 	\n\ "
 
-	if debug == True:
-		print()
-		print(gnu_gpl_3)
-		print()
 
 def change_state_of_license_agreement_button():
 
@@ -4955,7 +4951,7 @@ use_samba  = tkinter.BooleanVar()
 use_samba.set(True)
 web_page_name = tkinter.StringVar()
 sample_peak = tkinter.BooleanVar()
-sample_peak.set(True)
+sample_peak.set(False)
 accept_license = tkinter.IntVar()
 accept_license.set(0)
 
@@ -5036,7 +5032,7 @@ eight_window_textwidget_text_content  = ''
 all_installation_messages = ''
 all_ip_addresses_of_the_machine = []
 all_ip_addresses_of_the_machine = get_ip_addresses_of_the_host_machine()
-peak_measurement_method = '--peak=sample'
+peak_measurement_method = '--peak=true'
 installation_is_running = False
 libebur128_repository_url = "http://github.com/mhartzel/libebur128_fork_for_freelcs_2.4.git"
 
