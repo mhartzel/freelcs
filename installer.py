@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '074'
+version = '075'
 freelcs_version = '2.5'
 
 ###################################
@@ -401,6 +401,8 @@ def set_directory_names_according_to_language():
 	
 	global english
 	global finnish
+	global os_name
+	global os_version
 	
 	path = target_path.get()
 	
@@ -460,6 +462,30 @@ def set_directory_names_according_to_language():
 	'path = ' + hotfolder_path.get(), \
 	'guest ok = yes', \
 	'browseable = yes']
+
+	if (os_name == 'ubuntu') and (os_version == '14.04'):
+		samba_configuration_file_content = ['# Samba Configuration File', \
+		'', \
+		'[global]', \
+		'workgroup = WORKGROUP', \
+		'server string = %h server (Samba, ' + hotfolder_name_to_use + ')', \
+		'force create mode = 0777', \
+		'unix extensions = no', \
+		'log file = /var/log/samba/log.%m', \
+		'max log size = 1000', \
+		'syslog = 0', \
+		'panic action = /usr/share/samba/panic-action %d', \
+		'security = user', \
+		'map to guest = Bad Password', \
+		'socket options = TCP_NODELAY', \
+		'', \
+		'[' + hotfolder_name_to_use + ']', \
+		'comment = ' + hotfolder_name_to_use, \
+		'read only = no', \
+		'locking = no', \
+		'path = ' + hotfolder_path.get(), \
+		'guest ok = yes', \
+		'browseable = yes']
 	
 	samba_configuration_file_content_as_a_string = '\n'.join(samba_configuration_file_content)
 	
@@ -4286,6 +4312,8 @@ def print_unit_and_record_separators(*args):
 	global unit_separator
 	global record_separator
 
+	# Assign unit and record separators to variables.
+
 	if unit_separator_value_2.get() == 'None':
 		unit_separator = chr(int(unit_separator_value_1.get()))
 	else:
@@ -4376,55 +4404,70 @@ def print_ffmpeg_usage_options(*args):
 	global ffmpeg_allowed_codec_formats
 	global global_mxf_audio_remix_channel_map
 
+	# Assign ffmpeg allowed wrapper formats to variables.
 	if enable_nonfree_ffmpeg_wrapper_formats.get() == True:
+		# User wants to enable all FFmpeg wrapper formats.
 		ffmpeg_allowed_wrapper_formats = ['all']
 		eleventh_window_mxf_enable.configure(state='disabled')
 		eleventh_window_webm_enable.configure(state='disabled')
 	else:
+		# User wants to only enable a limited set of formats.
 		ffmpeg_allowed_wrapper_formats = ffmpeg_free_wrapper_formats
 		eleventh_window_mxf_enable.configure(state='normal')
 		eleventh_window_webm_enable.configure(state='normal')
 
 		if enable_mxf_wrapper.get() == True:
+			# User wants to enable MXF decoding add MXF to list of allowed formats.
 			if 'mxf' not in ffmpeg_allowed_wrapper_formats:
 				ffmpeg_allowed_wrapper_formats.append('mxf')
 		else:
+			# User wants to disable MXF decoding remove MXF from list of allowed formats.
 			if 'mxf' in ffmpeg_allowed_wrapper_formats:
 				ffmpeg_allowed_wrapper_formats.remove('mxf')
 
 		if enable_webm_wrapper.get() == True:
+			# User wants to enable Webm decoding add MXF to list of allowed formats.
 			if 'webm' not in ffmpeg_allowed_wrapper_formats:
 				ffmpeg_allowed_wrapper_formats.append('webm')
 		else:
+			# User wants to disable Webm decoding remove MXF from list of allowed formats.
 			if 'webm' in ffmpeg_allowed_wrapper_formats:
 				ffmpeg_allowed_wrapper_formats.remove('webm')
 
+	# Assign ffmpeg allowed codec formats to variables.
 	if enable_nonfree_ffmpeg_codec_formats.get() == True:
+		# User wants to enable all FFmpeg codec formats.
+		ffmpeg_allowed_wrapper_formats = ['all']
 		ffmpeg_allowed_codec_formats = ['all']
 		eleventh_window_mp1_enable.configure(state='disabled')
 		eleventh_window_mp2_enable.configure(state='disabled')
 	else:
+		# User wants to only enable a limited set of formats.
 		ffmpeg_allowed_codec_formats = ffmpeg_free_codec_formats
 		eleventh_window_mp1_enable.configure(state='normal')
 		eleventh_window_mp2_enable.configure(state='normal')
 
 		if enable_mp1_codec.get() == True:
+			# User wants to enable mpeg layer 1 decoding add mp1 to list of allowed formats.
 			if 'mp1' not in ffmpeg_allowed_codec_formats:
 				ffmpeg_allowed_codec_formats.append('mp1')
 			if 'mp1float' not in ffmpeg_allowed_codec_formats:
 				ffmpeg_allowed_codec_formats.append('mp1float')
 		else:
+			# User wants to disable mpeg layer 1 decoding remove mp1 from list of allowed formats.
 			if 'mp1' in ffmpeg_allowed_codec_formats:
 				ffmpeg_allowed_codec_formats.remove('mp1')
 			if 'mp1float' in ffmpeg_allowed_codec_formats:
 				ffmpeg_allowed_codec_formats.remove('mp1float')
 
 		if enable_mp2_codec.get() == True:
+			# User wants to enable mpeg layer 2 decoding add mp2 to list of allowed formats.
 			if 'mp2' not in ffmpeg_allowed_codec_formats:
 				ffmpeg_allowed_codec_formats.append('mp2')
 			if 'mp2float' not in ffmpeg_allowed_codec_formats:
 				ffmpeg_allowed_codec_formats.append('mp2float')
 		else:
+			# User wants to disable mpeg layer 2 decoding remove mp2 from list of allowed formats.
 			if 'mp2' in ffmpeg_allowed_codec_formats:
 				ffmpeg_allowed_codec_formats.remove('mp2')
 			if 'mp2float' in ffmpeg_allowed_codec_formats:
@@ -4710,6 +4753,7 @@ def assign_user_selected_values_to_remix_map_and_show_next_window(*args):
 	global ffmpeg_allowed_codec_formats
 	global global_mxf_audio_remix_channel_map
 
+	# Assign values that user selected for the Mxf Remix Map to variables.
 	global_mxf_audio_remix_channel_map[0] = remix_value_01.get()
 	global_mxf_audio_remix_channel_map[1] = remix_value_02.get()
 	global_mxf_audio_remix_channel_map[2] = remix_value_03.get()
@@ -5056,7 +5100,6 @@ enable_mxf_audio_remixing.set(False)
 remix_map_file_extension = tkinter.StringVar()
 remix_map_file_extension.set('.remix_map')
 global_mxf_audio_remix_channel_map = [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2] # Example [2, 6, 2, 2]   Create stereo, 5.1, stereo and stereo mixes (if there are enough source audio channels).
-global_mxf_audio_remix_channel_map_string = tkinter.StringVar()
 
 # Define what wrapper formats are allowed to be processed with FFmpeg.
 # This definition helps to limit processing to patent free formats (mxf, mkv (matroska), webm, ogg, wav, flac) if needed.
@@ -5094,7 +5137,7 @@ enable_mp2_codec=tkinter.IntVar()
 enable_mp2_codec.set(0)
 
 
-# Define default values for window comboboxes that show MXF Audio Remix Map values.
+# Define variables for window comboboxes that show MXF Audio Remix Map values.
 remix_value_01 = tkinter.IntVar()
 remix_value_02 = tkinter.IntVar()
 remix_value_03 = tkinter.IntVar()
@@ -5143,8 +5186,6 @@ remix_value_45 = tkinter.IntVar()
 remix_value_46 = tkinter.IntVar()
 remix_value_47 = tkinter.IntVar()
 remix_value_48 = tkinter.IntVar()
-remix_value_49 = tkinter.IntVar()
-remix_value_50 = tkinter.IntVar()
 
 ################################################
 # Define defaults for machine readable results #
@@ -5206,6 +5247,31 @@ samba_configuration_file_content = ['# Samba Configuration File', \
 'path = /LoudnessCorrection', \
 'guest ok = yes', \
 'browseable = yes']
+
+if (os_name == 'ubuntu') and (os_version == '14.04'):
+	samba_configuration_file_content = ['# Samba Configuration File', \
+	'', \
+	'[global]', \
+	'workgroup = WORKGROUP', \
+	'server string = %h server (Samba, LoudnessCorrection)', \
+	'force create mode = 0777', \
+	'unix extensions = no', \
+	'log file = /var/log/samba/log.%m', \
+	'max log size = 1000', \
+	'syslog = 0', \
+	'panic action = /usr/share/samba/panic-action %d', \
+	'security = user', \
+	'map to guest = Bad Password', \
+	'socket options = TCP_NODELAY', \
+	'', \
+	'[LoudnessCorrection]', \
+	'comment = LoudnessCorrection', \
+	'read only = no', \
+	'locking = no', \
+	'path = /LoudnessCorrection', \
+	'guest ok = yes', \
+	'browseable = yes']
+
 samba_configuration_file_content_as_a_string = '\n'.join(samba_configuration_file_content)
 
 # If there is a previously saved settings-file then read in settings from that and assign values to variables.
