@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '257'
+loudnesscorrection_version = '258'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -259,9 +259,9 @@ if number_of_processor_cores / 2 != int(number_of_processor_cores / 2): # If the
 file_expiry_time = 60*60*8 # This number (in seconds) defines how long the files are allowed to exist in HotFolder and results - directory. File creation time is not taken into account only the time this program first saw the file in the directory. Files are automatically deleted when they are 'expired'.
 
 natively_supported_file_formats = ['.wav', '.flac', '.ogg'] # Natively supported formats may be processed without first decoding to flac with ffmpeg, since libebur128 and sox both support these formats.
-ffmpeg_output_format = 'wav' # Possible values are 'flac' and 'wav'. This only affects formats that are first decodec with ffmpeg (all others but wav, flac, ogg).
-if not ffmpeg_output_format == 'wav':
-	ffmpeg_output_format = 'flac'
+ffmpeg_output_wrapper_format = 'wav' # Possible values are 'flac' and 'wav'. This only affects formats that are first decodec with ffmpeg (all others but wav, flac, ogg).
+if not ffmpeg_output_wrapper_format == 'wav':
+	ffmpeg_output_wrapper_format = 'flac'
 
 # Write calculation queue progress report to a html-page on disk.
 write_html_progress_report = True # Controls if the program writes loudness calculation queue information to a web page on disk.
@@ -2216,21 +2216,6 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 			# Calculate file duration from sample count.
 			audio_duration = int(sample_count / sample_rate)
 
-
-
-
-
-
-		# FIXME: delete the following 6 lines when testfiles have been processed and it becomes clear that sox reported sample count is reliable. Sample count is used in calculating audio duration.
-		# Sox can not get duration from long files correctly, get audio duration with mediainfo.
-		not_used, not_used, not_used, not_used, mediainfo_audio_duration, not_used, not_used = get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish, save_debug_information = False)
-		if audio_duration != mediainfo_audio_duration:
-			error_message = 'ERROR !!! Sox audio duration: ' + str(audio_duration)	+ ' differs from mediainfo audio duration: ' + str(mediainfo_audio_duration) + ': ' + filename
-			send_error_messages_to_screen_logfile_email(error_message, [])
-
-
-
-
 		if not os.path.exists(file_to_process): # Check if the audio file still exists, user may have deleted it. If True start loudness calculation.
 			error_message = 'Sox: Error accessing file' * english + 'Sox: Tiedoston lukemisessa tapahtui virhe' * finnish 
 			sox_encountered_an_error = True
@@ -2943,7 +2928,7 @@ def debug_lists_and_dictionaries_thread():
 	global number_of_processor_cores
 	global file_expiry_time
 	global natively_supported_file_formats
-	global ffmpeg_output_format
+	global ffmpeg_output_wrapper_format
 	global write_html_progress_report
 	global html_progress_report_write_interval
 	global web_page_name
@@ -2964,6 +2949,9 @@ def debug_lists_and_dictionaries_thread():
 	global temp_loudness_results_for_automation
 	global final_loudness_results_for_automation
 	global ffmpeg_executable_found
+	global avconv_executable_found
+	global ffmpeg_executable_name
+	global ffprobe_executable_name
 	global peak_measurement_method
 	global quit_all_threads_now
 	global write_loudness_calculation_results_to_a_machine_readable_file
@@ -2980,6 +2968,8 @@ def debug_lists_and_dictionaries_thread():
 	global ffmpeg_allowed_wrapper_formats
 	global ffmpeg_free_codec_formats
 	global ffmpeg_allowed_codec_formats
+	global os_name
+	global os_version
 
 	list_printouts = []
 	list_printouts_old_values = []
@@ -2994,9 +2984,12 @@ def debug_lists_and_dictionaries_thread():
 	if all_settings_dict != {}:
 
 		# Store variables read from the configfile. This is useful for debugging settings previously saved in a file.
-		title_text = 'FreeLCS version: ' + freelcs_version +  '\n\nLoudnessCorrection version: ' + loudnesscorrection_version + '\n\nffmpeg_executable_found = ' + str(ffmpeg_executable_found) + '\n\n\n\nLocal variable values after reading the configfile: ' + configfile_path + ' are:'
+		title_text = 'FreeLCS version: ' + freelcs_version +  '\n\nLoudnessCorrection version: ' + loudnesscorrection_version + '\n\nffmpeg_executable_name = ' + str(ffmpeg_executable_name) + ' ffprobe_executable_name = ' + str(ffprobe_executable_name)  + '\n\n\n\nLocal variable values after reading the configfile: ' + configfile_path + ' are:'
 		values_read_from_configfile.append(str((len(title_text) + 1) * '-'))
 		values_read_from_configfile.append(title_text)
+		values_read_from_configfile.append('')
+		values_read_from_configfile.append('os_name = ' + os_name)
+		values_read_from_configfile.append('os_version = ' + os_version)
 		values_read_from_configfile.append('')
 		values_read_from_configfile.append('language = ' + language)
 		values_read_from_configfile.append('english = ' + str(english))
@@ -3013,7 +3006,7 @@ def debug_lists_and_dictionaries_thread():
 		values_read_from_configfile.append('file_expiry_time = ' + str(file_expiry_time))
 		values_read_from_configfile.append('')
 		values_read_from_configfile.append('natively_supported_file_formats = ' + ', '.join(natively_supported_file_formats))
-		values_read_from_configfile.append('ffmpeg_output_format = ' + ffmpeg_output_format)
+		values_read_from_configfile.append('ffmpeg_output_wrapper_format = ' + ffmpeg_output_wrapper_format)
 		values_read_from_configfile.append('peak_measurement_method stored to the settings file = ' + all_settings_dict['peak_measurement_method'])
 		if (force_truepeak == True) or (force_samplepeak == True):
 			values_read_from_configfile.append('peak_measurement_method forced with commandline option: ' + peak_measurement_method)
@@ -3246,7 +3239,7 @@ def get_ip_addresses_of_the_host_machine():
 	return(all_ip_addresses_of_the_machine)
 	
 		
-def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(filename, hotfolder_path, directory_for_temporary_files, ffmpeg_output_format, english, finnish):
+def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(filename, hotfolder_path, directory_for_temporary_files, ffmpeg_output_wrapper_format, english, finnish):
 	
 	# This subprocess works like this:
 	# ---------------------------------
@@ -3280,12 +3273,11 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		file_to_process = hotfolder_path + os.sep + filename
 		filename_and_extension = os.path.splitext(filename)
 		target_filenames = []
-		ffmpeg_stream_mapping_commands = []
 		ffmpeg_commandline = []
 		bit_depth = 0
 		sample_rate = 0
-		input_audiostream_format = ''
-		output_audiostream_format = ''
+		input_audiostream_codec_format = ''
+		output_audiostream_codec_format = ''
 		map_number = ''
 		number_of_audio_channels = '0'
 		estimated_uncompressed_size_for_single_mono_file = 0
@@ -3329,7 +3321,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			with open(stdout_for_external_command, 'wb') as stdout_commandfile_handler:
 		
 				# Examine the file in HotFolder with ffmpeg.
-				subprocess.Popen(['ffmpeg', '-i', file_to_process], stdout=stdout_commandfile_handler, stderr=stdout_commandfile_handler, stdin=None, close_fds=True).communicate()[0] # Run ffmpeg.
+				subprocess.Popen([ffmpeg_executable_name, '-i', file_to_process], stdout=stdout_commandfile_handler, stderr=stdout_commandfile_handler, stdin=None, close_fds=True).communicate()[0] # Run ffmpeg.
 		
 				# Make sure all data written to temporary stdout - file is flushed from the os cache and written to disk.
 				stdout_commandfile_handler.flush() # Flushes written data to os cache
@@ -3496,45 +3488,45 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 					continue
 				
 				# Find audio stream format information
-				input_audiostream_format = item.split('Audio:')[1].split(',')[0].strip()
-				output_audiostream_format = 'pcm_s16le' # Default audio extraction bit depth is 16 bits if input file bit depth is not known.
+				input_audiostream_codec_format = item.split('Audio:')[1].split(',')[0].strip()
+				output_audiostream_codec_format = 'pcm_s16le' # Default audio extraction bit depth is 16 bits if input file bit depth is not known.
 				bit_depth = 16 # Default bit depth.
 				
 				# If allowed audio codec format is 'all' then process all formats that FFmpeg supports, otherwise limit processing to user defined codec formats.
 				if 'all' not in ffmpeg_allowed_codec_formats:
 
-					if input_audiostream_format not in ffmpeg_allowed_codec_formats:
+					if input_audiostream_codec_format not in ffmpeg_allowed_codec_formats:
 
 						# Create error message to the results graphics file and skip the stream.
 						unsupported_stream_name = filename_and_extension[0] + '-AudioStream-' * english + '-Miksaus-' * finnish + str(audio_stream_number) + '-ChannelCount-' * english + '-AaniKanavia-' * finnish + number_of_audio_channels
-						error_message = 'Audio compression codec ' * english + 'Audion kompressioformaatti ' * finnish + str(input_audiostream_format) + ' is not supported' * english + ' ei ole tuettu' * finnish
+						error_message = 'Audio compression codec ' * english + 'Audion kompressioformaatti ' * finnish + str(input_audiostream_codec_format) + ' is not supported' * english + ' ei ole tuettu' * finnish
 						error_code = 8
 						list_of_error_messages_for_unsupported_streams.append([unsupported_stream_name, error_message, error_code, audio_stream_number])
 						continue
 
 				# Check if the stream format is a supported PCM - format and assign output format and bit depth according to input bit depth.
-				if input_audiostream_format in pcm_8_bit_formats:
-					output_audiostream_format = 'pcm_u8'
+				if input_audiostream_codec_format in pcm_8_bit_formats:
+					output_audiostream_codec_format = 'pcm_u8'
 					bit_depth = 8
 					
-				if input_audiostream_format in pcm_16_bit_formats:
-					output_audiostream_format = 'pcm_s16le'
+				if input_audiostream_codec_format in pcm_16_bit_formats:
+					output_audiostream_codec_format = 'pcm_s16le'
 					bit_depth = 16
 					
-				if input_audiostream_format in pcm_24_bit_formats:
-					output_audiostream_format = 'pcm_s24le'
+				if input_audiostream_codec_format in pcm_24_bit_formats:
+					output_audiostream_codec_format = 'pcm_s24le'
 					bit_depth = 24
 					
-				if input_audiostream_format in pcm_32_bit_formats:
-					output_audiostream_format = 'pcm_s32le'
+				if input_audiostream_codec_format in pcm_32_bit_formats:
+					output_audiostream_codec_format = 'pcm_s32le'
 					bit_depth = 32
 					
-				if input_audiostream_format in pcm_64_bit_formats: # Bit depth is bigger than 32 bits, convert to 32 bits because sox does not support bit depth over 32 bits.
-					output_audiostream_format = 'pcm_s32le'
+				if input_audiostream_codec_format in pcm_64_bit_formats: # Bit depth is bigger than 32 bits, convert to 32 bits because sox does not support bit depth over 32 bits.
+					output_audiostream_codec_format = 'pcm_s32le'
 					bit_depth = 32
 					
 				# If audio format is flac, then try to find out the bit depth of flac audio from FFmpeg text output.
-				if input_audiostream_format == 'flac':
+				if input_audiostream_codec_format == 'flac':
 				
 					# Find audio bit depth from FFmpeg stream info output.
 					bit_depth_info_field = str(item.split(',')[3].strip())
@@ -3565,29 +3557,22 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 					
 					# FFmpeg displays flac bit depths 24 bits and 32 bits both as 32 bits. Force flac bit depth to 24 if it is 32.
 					if bit_depth == 32:
-						output_audiostream_format = 'pcm_s24le'
+						output_audiostream_codec_format = 'pcm_s24le'
 						bit_depth = 24
 
 				# Find out what is FFmpegs map number for the audio stream.
 				map_number = ''
-				for map_number_counter in range(item.find('#') + 1, len(item)):
-					if item[map_number_counter] == '.':
-						continue
-					if item[map_number_counter].isnumeric() == False:
-						break
 
-				map_number = item[item.find('#') + 1:map_number_counter]
-				
+				temp_number = item.split('#')[1].split('Audio:')[0].strip()[:-1]
+
+				if '.' in temp_number: # On FFmpeg / Avconv 0.8 mapnumbers are separated by a comma.
+					map_number = temp_number.split('.')[1]
+				if ':' in temp_number:  # On FFmpeg / Avconv 0.9 and later mapnumbers are separated by a colon
+					map_number = temp_number.split(':')[1]
+
 				# Test if we really have found the stream map number.
-				mapnumber_digit_1 = ''
-				mapnumber_digit_2 = ''
-				map_number_test_list = map_number.split('.')
-				
 				try:
-					mapnumber_digit_1 = map_number_test_list[0]
-					mapnumber_digit_2 = map_number_test_list[1]
-					
-					if (mapnumber_digit_1.isnumeric() == False) or (mapnumber_digit_2.isnumeric() == False):
+					if map_number.isnumeric() == False:
 						error_message = 'Error: stream map number found in FFmpeg output is not a number: ' * english + 'Virhe: FFmpegin tulosteesta löydetty streamin numero ei ole numero: ' * finnish + map_number
 
 						# Save some debug information.
@@ -3628,7 +3613,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 					send_error_messages_to_screen_logfile_email(error_message, [])
 				
 				number_of_ffmpeg_supported_audiostreams = number_of_ffmpeg_supported_audiostreams + 1
-				details_of_ffmpeg_supported_audiostreams.append([str(item.strip()), str(audio_stream_number), number_of_audio_channels, input_audiostream_format, output_audiostream_format, sample_rate, bit_depth, map_number])
+				details_of_ffmpeg_supported_audiostreams.append([str(item.strip()), str(audio_stream_number), number_of_audio_channels, input_audiostream_codec_format, output_audiostream_codec_format, sample_rate, bit_depth, map_number])
 				
 			if 'Duration:' in item:
 				audio_duration_string = str(item).split(',')[0].strip() # The first item on the line is the duration, get it.
@@ -3674,7 +3659,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		for counter in range(0, number_of_ffmpeg_supported_audiostreams):
 			
 			# Get info about supported audio streams from a list.
-			ffmpeg_stream_info, audio_stream_number, number_of_audio_channels, input_audiostream_format, output_audiostream_format, sample_rate, bit_depth, map_number = details_of_ffmpeg_supported_audiostreams[counter]
+			ffmpeg_stream_info, audio_stream_number, number_of_audio_channels, input_audiostream_codec_format, output_audiostream_codec_format, sample_rate, bit_depth, map_number = details_of_ffmpeg_supported_audiostreams[counter]
 			
 			# Calculate estimated uncompressed file size. Add one second of data to the file size (sample_rate = 1 second of audio data) to be on the safe side.
 			estimated_uncompressed_size_for_single_mono_file = int((sample_rate * audio_duration * int(bit_depth / 8)) + sample_rate)
@@ -3686,31 +3671,31 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			# The output format for a file is stored in variable: output_format_for_final_file
 	
 			# Use Flac always if possible, since the lossless compression it uses also speeds up disk writes (resulting files are smaller).
-			ffmpeg_output_format = 'flac'
+			ffmpeg_output_wrapper_format = 'flac'
 
 			# Flac can not be used as the FFmpeg output format in the following cases since these would result in bit depth conversion
 			# Flac supports only bit depths 16 and 24.
 			if (estimated_uncompressed_size_for_combined_channels < wav_format_maximum_file_size) and (bit_depth == 8):
-				ffmpeg_output_format = 'wav'
+				ffmpeg_output_wrapper_format = 'wav'
 			if (estimated_uncompressed_size_for_combined_channels < wav_format_maximum_file_size) and (bit_depth == 32):
-				ffmpeg_output_format = 'wav'
+				ffmpeg_output_wrapper_format = 'wav'
 			# Ubuntu 12.04 and Debian 7 ships with a FFmpeg version that always converts bit depths bigger than 16 to 16 when storing output to Flac.
 			# On these distros use wav when using flac would result in bit depth conversion.
 			if (estimated_uncompressed_size_for_combined_channels < wav_format_maximum_file_size) and (bit_depth == 24) and (os_name == 'ubuntu') and (os_version == '12.04'):
-				ffmpeg_output_format = 'wav'
+				ffmpeg_output_wrapper_format = 'wav'
 			if (estimated_uncompressed_size_for_combined_channels < wav_format_maximum_file_size) and (bit_depth == 24) and (os_name == 'debian') and (os_version == '7'):
-				ffmpeg_output_format = 'wav'
+				ffmpeg_output_wrapper_format = 'wav'
 
 			# Assign the start of FFmpeg audio extract commandline to the list.
 			if len(ffmpeg_commandline) == 0:
-				ffmpeg_commandline = ['ffmpeg', '-y', '-i', file_to_process, '-vn']
+				ffmpeg_commandline = [ffmpeg_executable_name, '-y', '-i', file_to_process, '-vn']
 			
 			# Compile the name of output files to a list.
 			# If we are going to remix audio from a mxf - file before processing it, then the output files are temporary and needs to have names that don't conflict with the final names.
 			# Also if mxf - audio needs to be remixed, then gather file names and channel counts to a list that is needed for doing the remixes.
 			if (file_type == 'mxf') and (mxf_audio_remixing == True):
 				# Define names for temporary output files demuxed from a mxf - file.
-				supported_file_name = filename_and_extension[0] + '-TempOutputFile-' + audio_stream_number + '.' + ffmpeg_output_format
+				supported_file_name = filename_and_extension[0] + '-TempOutputFile-' + audio_stream_number + '.' + ffmpeg_output_wrapper_format
 				target_filenames.append(supported_file_name)
 
 				# Gather output filenames and channel counts to a list, that is later used to remix mxf audio files to mixes defined in list 'mxf_audio_remix_channel_map'.
@@ -3721,7 +3706,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 
 			else:
 				# File is not mxf, define names for the final output files.
-				supported_file_name = filename_and_extension[0] + '-AudioStream-' * english + '-Miksaus-' * finnish + audio_stream_number + '-ChannelCount-' * english + '-AaniKanavia-' * finnish + number_of_audio_channels + '.' + ffmpeg_output_format
+				supported_file_name = filename_and_extension[0] + '-AudioStream-' * english + '-Miksaus-' * finnish + audio_stream_number + '-ChannelCount-' * english + '-AaniKanavia-' * finnish + number_of_audio_channels + '.' + ffmpeg_output_wrapper_format
 				target_filenames.append(supported_file_name)
 
 				# Add info for all mixes found in the file to dictionary that is used to write the machine readable results file.
@@ -3761,12 +3746,12 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				debug_information_list.append(estimated_uncompressed_size_for_single_mono_file)
 				debug_information_list.append('estimated_uncompressed_size_for_combined_channels')
 				debug_information_list.append(estimated_uncompressed_size_for_combined_channels)
-				debug_information_list.append('input_audiostream_format')
-				debug_information_list.append(input_audiostream_format)
-				debug_information_list.append('output_audiostream_format')
-				debug_information_list.append(output_audiostream_format)
-				debug_information_list.append('ffmpeg_output_format')
-				debug_information_list.append(ffmpeg_output_format)
+				debug_information_list.append('input_audiostream_codec_format')
+				debug_information_list.append(input_audiostream_codec_format)
+				debug_information_list.append('output_audiostream_codec_format')
+				debug_information_list.append(output_audiostream_codec_format)
+				debug_information_list.append('ffmpeg_output_wrapper_format')
+				debug_information_list.append(ffmpeg_output_wrapper_format)
 				debug_information_list.append('mxf_audio_remixing')
 				debug_information_list.append(mxf_audio_remixing)
 				debug_information_list.append('filenames_and_channel_counts_for_mxf_audio_remixing')
@@ -3775,24 +3760,24 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				debug_information_list.append(audio_remix_channel_map)
 				debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 
+
+			# Add audio stream mapping command to the commandline.
+			# This command selects the correct audiostream from the input file for writing to a outputfile.
+			ffmpeg_commandline.extend('-map', '0:' + str(map_number))
+
+
 			# Generate FFmpeg extract options for audio stream.
 			ffmpeg_commandline.append('-acodec')
 			
-			if ffmpeg_output_format == 'flac':
+			if ffmpeg_output_wrapper_format == 'flac':
 				ffmpeg_commandline.append('flac')
 			else:
 				# If output format is not flac, then use pcm format with bit depth that was decided earlier in this subroutine.
-				ffmpeg_commandline.append(output_audiostream_format)
+				ffmpeg_commandline.append(output_audiostream_codec_format)
 				
 			ffmpeg_commandline.append('-f')
-			ffmpeg_commandline.append(ffmpeg_output_format)
+			ffmpeg_commandline.append(ffmpeg_output_wrapper_format)
 			ffmpeg_commandline.append(directory_for_temporary_files + os.sep + target_filenames[counter])
-		
-			# Create a audio stream mapping command list that will be appended at the end of ffmpeg commandline. Without this the streams would be extracted in random order and our stream numbers wouldn't match the streams.
-			ffmpeg_stream_mapping_commands.extend(['-map',	str(map_number) + ':0.' + str(counter)])
-		
-		# Complete the FFmpeg commandline by adding stream mapping commands at the end of it. The commandline is later used to extract all valid audio streams from the file (only if the audio file is not natively supported by libebur128 and sox and needs to be processed with FFmpeg first).
-		ffmpeg_commandline.extend(ffmpeg_stream_mapping_commands)
 		
 		if number_of_ffmpeg_supported_audiostreams >= 1:
 			ffmpeg_supported_fileformat = True
@@ -3870,11 +3855,11 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			# If there are more than 1 streams in ogg then extract streams with FFmpeg.
 			natively_supported_file_format = False
 		
-		if (str(os.path.splitext(filename)[1]).lower() == '.wav') and (input_audiostream_format not in ['pcm_u8', 'pcm_s16le', 'pcm_s24le', 'pcm_s32le']):
+		if (str(os.path.splitext(filename)[1]).lower() == '.wav') and (input_audiostream_codec_format not in ['pcm_u8', 'pcm_s16le', 'pcm_s24le', 'pcm_s32le']):
 			# Wav container might contain other data than uncompressed pcm, if this is the case then first decompress audio / convert streams with FFmpeg.
 			natively_supported_file_format = False
 		
-		if input_audiostream_format in pcm_64_bit_formats:
+		if input_audiostream_codec_format in pcm_64_bit_formats:
 			# Bit depth is bigger than 32 bits the file must be converted before processing because sox only supports up to 32 bits.
 			natively_supported_file_format = False
 		
@@ -5275,9 +5260,9 @@ try:
 
 		if 'natively_supported_file_formats' in all_settings_dict:
 			natively_supported_file_formats = all_settings_dict['natively_supported_file_formats']
-		if 'ffmpeg_output_format' in all_settings_dict:
-			if all_settings_dict['ffmpeg_output_format'] != '': # If installer.py did not define a value for the variable, then don't assing anything to it here. The variable has a default value defined elsewhere in LoudnessCorrection.py, the default gets used if not defined here.
-				ffmpeg_output_format = all_settings_dict['ffmpeg_output_format']
+		if 'ffmpeg_output_wrapper_format' in all_settings_dict:
+			if all_settings_dict['ffmpeg_output_wrapper_format'] != '': # If installer.py did not define a value for the variable, then don't assing anything to it here. The variable has a default value defined elsewhere in LoudnessCorrection.py, the default gets used if not defined here.
+				ffmpeg_output_wrapper_format = all_settings_dict['ffmpeg_output_wrapper_format']
 			
 		if 'silent' in all_settings_dict:
 			silent = all_settings_dict['silent']
@@ -5393,6 +5378,9 @@ try:
 	gnuplot_executable_found = False
 	sox_executable_found = False
 	ffmpeg_executable_found = False
+	ffprobe_executable_found = False
+	avconv_executable_found = False
+	avprobe_executable_found = False
 	mediainfo_executable_found = False
 	smbstatus_executable_found = False
 	libebur128_loudness_executable_found = False
@@ -5412,6 +5400,18 @@ try:
 		if ffmpeg_true_or_false == True:
 			ffmpeg_executable_found = True
 			
+		ffprobe_true_or_false = os.path.exists(os_path + os.sep + 'ffprobe') and os.access(os_path + os.sep + 'ffprobe', os.X_OK)
+		if ffprobe_true_or_false == True:
+			ffprobe_executable_found = True
+		
+		avconv_true_or_false = os.path.exists(os_path + os.sep + 'avconv') and os.access(os_path + os.sep + 'avconv', os.X_OK)
+		if avconv_true_or_false == True:
+			avconv_executable_found = True
+			
+		avprobe_true_or_false = os.path.exists(os_path + os.sep + 'avprobe') and os.access(os_path + os.sep + 'avprobe', os.X_OK)
+		if avprobe_true_or_false == True:
+			avprobe_executable_found = True
+		
 		mediainfo_true_or_false = os.path.exists(os_path + os.sep + 'mediainfo') and os.access(os_path + os.sep + 'mediainfo', os.X_OK)
 		if mediainfo_true_or_false == True:
 			mediainfo_executable_found = True
@@ -5450,15 +5450,38 @@ try:
 			send_error_messages_to_screen_logfile_email(error_message, [])
 			sys.exit(1)
 
+	# If both FFmpeg and Avconv are found then decide which one to use.
+	# Default is = If both avconv and avprobe are found then use them, not FFmpeg.
+	# This is because avconv is available on Ubuntu and Debian repositories, not because avconv is better.
+	# In fact it might be the opposite, but the Debian / Ubuntu maintainer has chosen to support only avconv
+	# for his egoistic reasons (he is part of the avconv developer group, that forked FFmpeg to start the libav - project).
+	ffmpeg_executable_name = ''
+	ffprobe_executable_name = ''
+
+	# If user has forced no_ffmpeg on the command line, don't use FFmpeg or avconv.
+	if force_no_ffmpeg == True:
+		ffmpeg_executable_found = False
+		avconv_executable_found = False
+
+	# If FFmpeg or avconv is installed, we must also find it's companion tool ffprobe or avprobe, since we use it to find information about audiostreams in a file.
+	if (ffmpeg_executable_found == True) and (ffprobe_executable_found == True):
+		ffmpeg_executable_name = 'ffmpeg'
+		ffprobe_executable_name = 'ffprobe'
+	else:
+		ffmpeg_executable_found = False
+
+	if (avconv_executable_found == True) and (avprobe_executable_found == True):
+		ffmpeg_executable_name = 'avconv'
+		ffprobe_executable_name = 'avprobe'
+	else:
+		avconv_executable_found = False
+
 	# Override some variables, if user gave same debug options on the commandline.
 	if force_samplepeak == True:
 		peak_measurement_method = '--peak=sample'
 
 	if force_truepeak == True:
 		peak_measurement_method = '--peak=true'
-
-	if force_no_ffmpeg == True:
-		ffmpeg_executable_found = False
 
 	# Define the name of the loudness calculation logfile.
 	loudness_calculation_logfile_path = '' 
@@ -5823,10 +5846,10 @@ try:
 						if we_have_true_read_access_to_the_file == True:
 
 							# Test if FFmpeg is installed.
-							if ffmpeg_executable_found == True:
+							if (ffmpeg_executable_found == True) or (avconv_executable_found == True):
 								
 								# Call a subroutine to inspect file with FFmpeg to get audio stream information.
-								ffmpeg_parsed_audio_stream_information, ffmpeg_error_message, send_ffmpeg_error_message_by_email = get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(filename, hotfolder_path, directory_for_temporary_files, ffmpeg_output_format, english, finnish)
+								ffmpeg_parsed_audio_stream_information, ffmpeg_error_message, send_ffmpeg_error_message_by_email = get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(filename, hotfolder_path, directory_for_temporary_files, ffmpeg_output_wrapper_format, english, finnish)
 								# Assign audio stream information to variables.
 								natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames, mxf_audio_remixing, filenames_and_channel_counts_for_mxf_audio_remixing, audio_remix_channel_map, number_of_unsupported_streams_in_file = ffmpeg_parsed_audio_stream_information
 							else:

@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '079'
+version = '080'
 freelcs_version = '2.5'
 
 ###################################
@@ -1223,7 +1223,7 @@ def install_init_scripts_and_config_files(*args):
 	global file_expiry_time
 	global natively_supported_file_formats
 	global loudness_path
-	global ffmpeg_output_format
+	global ffmpeg_output_wrapper_format
 	global silent
 	global html_progress_report_write_interval
 	global send_error_messages_to_logfile
@@ -1243,7 +1243,7 @@ def install_init_scripts_and_config_files(*args):
 	all_settings_dict = { 'language' : language.get(), 'english' : english, 'finnish' : finnish, 'target_path' : target_path.get(), 'hotfolder_path' : hotfolder_path.get(), \
 	'directory_for_temporary_files' : directory_for_temporary_files.get(), 'directory_for_results' : directory_for_results.get(), 'delay_between_directory_reads' : int(delay_between_directory_reads), \
 	'number_of_processor_cores' : int(number_of_processor_cores.get()), 'file_expiry_time' : int(file_expiry_time), 'natively_supported_file_formats' : natively_supported_file_formats, \
-	'libebur128_path' : loudness_path, 'ffmpeg_output_format' : ffmpeg_output_format, 'silent' : silent, 'write_html_progress_report' : true_false_string[write_html_progress_report.get()], \
+	'libebur128_path' : loudness_path, 'ffmpeg_output_wrapper_format' : ffmpeg_output_wrapper_format, 'silent' : silent, 'write_html_progress_report' : true_false_string[write_html_progress_report.get()], \
 	'html_progress_report_write_interval' : int(html_progress_report_write_interval), 'web_page_name' : web_page_name.get(), 'web_page_path' : web_page_path.get(), \
 	'directory_for_error_logs' : directory_for_error_logs.get(), 'send_error_messages_to_logfile' : send_error_messages_to_logfile, 'heartbeat' : true_false_string[heartbeat.get()], \
 	'heartbeat_file_name' : heartbeat_file_name, 'heartbeat_write_interval' : int(heartbeat_write_interval), 'email_sending_details' : email_sending_details, \
@@ -1292,7 +1292,7 @@ def install_init_scripts_and_config_files(*args):
 		print('file_expiry_time =', all_settings_dict['file_expiry_time'])
 		print()
 		print('natively_supported_file_formats =', all_settings_dict['natively_supported_file_formats'])
-		print('ffmpeg_output_format =', all_settings_dict['ffmpeg_output_format'])
+		print('ffmpeg_output_wrapper_format =', all_settings_dict['ffmpeg_output_wrapper_format'])
 		print('peak_measurement_method =', all_settings_dict['peak_measurement_method'])
 		print()	
 		print('silent =', all_settings_dict['silent'])
@@ -5024,7 +5024,7 @@ loudness_correction_init_script_content = []
 ram_disk_mount_commands = []
 delay_between_directory_reads = 5
 natively_supported_file_formats = ['.wav', '.flac', '.ogg']
-ffmpeg_output_format = ''
+ffmpeg_output_wrapper_format = ''
 silent = True
 html_progress_report_write_interval = 5
 send_error_messages_to_logfile = True
