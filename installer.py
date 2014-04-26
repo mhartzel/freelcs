@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '080'
+version = '081'
 freelcs_version = '2.5'
 
 ###################################
@@ -1257,9 +1257,9 @@ def install_init_scripts_and_config_files(*args):
 	'global_mxf_audio_remix_channel_map' : global_mxf_audio_remix_channel_map, 'ffmpeg_free_wrapper_formats' : ffmpeg_free_wrapper_formats, \
 	'ffmpeg_allowed_wrapper_formats' : ffmpeg_allowed_wrapper_formats, 'ffmpeg_free_codec_formats' : ffmpeg_free_codec_formats, \
 	'ffmpeg_allowed_codec_formats' : ffmpeg_allowed_codec_formats, \
-	'enable_nonfree_ffmpeg_codec_formats' : true_false_string[enable_nonfree_ffmpeg_codec_formats.get(),\
-	'os_name' : os_name,\
-	'os_version' : os_version],\
+	'enable_nonfree_ffmpeg_codec_formats' : true_false_string[enable_nonfree_ffmpeg_codec_formats.get()], \
+	'os_name' : os_name, \
+	'os_version' : os_version \
 	}
 
 	# Get the total number of items in settings dictionary and save the number in the dictionary. The number can be used for debugging settings.

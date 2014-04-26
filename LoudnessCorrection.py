@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '258'
+loudnesscorrection_version = '259'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -2951,7 +2951,6 @@ def debug_lists_and_dictionaries_thread():
 	global ffmpeg_executable_found
 	global avconv_executable_found
 	global ffmpeg_executable_name
-	global ffprobe_executable_name
 	global peak_measurement_method
 	global quit_all_threads_now
 	global write_loudness_calculation_results_to_a_machine_readable_file
@@ -2984,7 +2983,7 @@ def debug_lists_and_dictionaries_thread():
 	if all_settings_dict != {}:
 
 		# Store variables read from the configfile. This is useful for debugging settings previously saved in a file.
-		title_text = 'FreeLCS version: ' + freelcs_version +  '\n\nLoudnessCorrection version: ' + loudnesscorrection_version + '\n\nffmpeg_executable_name = ' + str(ffmpeg_executable_name) + ' ffprobe_executable_name = ' + str(ffprobe_executable_name)  + '\n\n\n\nLocal variable values after reading the configfile: ' + configfile_path + ' are:'
+		title_text = 'FreeLCS version: ' + freelcs_version +  '\n\nLoudnessCorrection version: ' + loudnesscorrection_version + '\n\nffmpeg_executable_name = ' + str(ffmpeg_executable_name) + '\n\n\n\nLocal variable values after reading the configfile: ' + configfile_path + ' are:'
 		values_read_from_configfile.append(str((len(title_text) + 1) * '-'))
 		values_read_from_configfile.append(title_text)
 		values_read_from_configfile.append('')
@@ -3763,7 +3762,10 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 
 			# Add audio stream mapping command to the commandline.
 			# This command selects the correct audiostream from the input file for writing to a outputfile.
-			ffmpeg_commandline.extend('-map', '0:' + str(map_number))
+			temp_list = []
+			temp_list = ['-map', '0:' + str(map_number)]
+			ffmpeg_commandline.extend(temp_list)
+			temp_list = []
 
 
 			# Generate FFmpeg extract options for audio stream.
@@ -5456,25 +5458,17 @@ try:
 	# In fact it might be the opposite, but the Debian / Ubuntu maintainer has chosen to support only avconv
 	# for his egoistic reasons (he is part of the avconv developer group, that forked FFmpeg to start the libav - project).
 	ffmpeg_executable_name = ''
-	ffprobe_executable_name = ''
 
 	# If user has forced no_ffmpeg on the command line, don't use FFmpeg or avconv.
 	if force_no_ffmpeg == True:
 		ffmpeg_executable_found = False
 		avconv_executable_found = False
 
-	# If FFmpeg or avconv is installed, we must also find it's companion tool ffprobe or avprobe, since we use it to find information about audiostreams in a file.
-	if (ffmpeg_executable_found == True) and (ffprobe_executable_found == True):
+	if ffmpeg_executable_found == True:
 		ffmpeg_executable_name = 'ffmpeg'
-		ffprobe_executable_name = 'ffprobe'
-	else:
-		ffmpeg_executable_found = False
 
-	if (avconv_executable_found == True) and (avprobe_executable_found == True):
+	if avconv_executable_found == True:
 		ffmpeg_executable_name = 'avconv'
-		ffprobe_executable_name = 'avprobe'
-	else:
-		avconv_executable_found = False
 
 	# Override some variables, if user gave same debug options on the commandline.
 	if force_samplepeak == True:
