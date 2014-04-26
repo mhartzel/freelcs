@@ -613,6 +613,11 @@ echo
 echo "Please note that the restoration script '00-restore_freelcs_configuration.sh'"
 echo "will not ask for confirmation but starts restoration right away when you start the script."
 echo
+echo "NOTE !!!!!!! It is very important that you restore FreeLCS onto the same Linux distro"
+echo "and version that it was originally installed on. There are some differences between"
+echo "Linux versions and FreeLCS adjusts the installation according to these differences."
+echo "FreeLCS might not work correctly if restored onto a wrong distro or version."
+echo
 
 exit
 

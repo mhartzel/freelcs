@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '078'
+version = '079'
 freelcs_version = '2.5'
 
 ###################################
@@ -1235,6 +1235,8 @@ def install_init_scripts_and_config_files(*args):
 	global gnuplot_path
 	global all_ip_addresses_of_the_machine
 	global peak_measurement_method
+	global os_name
+	global os_version
 	
 	put_email_details_in_a_dictionary()
 
@@ -1255,7 +1257,9 @@ def install_init_scripts_and_config_files(*args):
 	'global_mxf_audio_remix_channel_map' : global_mxf_audio_remix_channel_map, 'ffmpeg_free_wrapper_formats' : ffmpeg_free_wrapper_formats, \
 	'ffmpeg_allowed_wrapper_formats' : ffmpeg_allowed_wrapper_formats, 'ffmpeg_free_codec_formats' : ffmpeg_free_codec_formats, \
 	'ffmpeg_allowed_codec_formats' : ffmpeg_allowed_codec_formats, \
-	'enable_nonfree_ffmpeg_codec_formats' : true_false_string[enable_nonfree_ffmpeg_codec_formats.get()],\
+	'enable_nonfree_ffmpeg_codec_formats' : true_false_string[enable_nonfree_ffmpeg_codec_formats.get(),\
+	'os_name' : os_name,\
+	'os_version' : os_version],\
 	}
 
 	# Get the total number of items in settings dictionary and save the number in the dictionary. The number can be used for debugging settings.
@@ -1270,6 +1274,8 @@ def install_init_scripts_and_config_files(*args):
 		print(title_text)
 		print((len(title_text) + 1) * '-' + '\n') # Print a line exactly the length of the title text line + 1.
 		print('freelcs_version =', all_settings_dict['freelcs_version'])
+		print('os_name =', all_settings_dict['os_name'])
+		print('os_version] =', all_settings_dict['os_version'])
 		print()
 		print('language =', all_settings_dict['language'])
 		print('english =', all_settings_dict['english'])
@@ -1718,7 +1724,6 @@ def install_init_scripts_and_config_files(*args):
 	global loudnesscorrection_init_script_name
 	global loudnesscorrection_init_script_path
 	global loudnesscorrection_init_script_link_path
-	global os_name
 	
 	try:
 		with open(directory_for_os_temporary_files + os.sep + loudnesscorrection_init_script_name, 'wt') as init_script_file_handler:
@@ -4853,7 +4858,7 @@ supported_platforms = {'debian': ['7'], 'ubuntu': ['12.04', '14.04']}
 # Parse commandline arguments.
 for item in sys.argv[1:]:
 
-	if 'force-distro' in item.lower():
+	if ('force-distro' in item.lower()) or ('force_distro' in item.lower()):
 		force_distro_found=True
 		continue
 	if ('debug' in item.lower()):
@@ -5311,7 +5316,7 @@ config_file_created_by_installer_version = 0
 if 'config_file_created_by_installer_version' in previously_saved_settings_dict:
 	config_file_created_by_installer_version = previously_saved_settings_dict['config_file_created_by_installer_version']
 
-# Configfile needs to be created at least wth version 39 of installer to be compatible with current version of installer.
+# Configfile needs to be created at least with version 39 of installer to be compatible with current version of installer.
 if int(config_file_created_by_installer_version) >= 39:
 	if debug == True:
 		print('Values read from old configfile')

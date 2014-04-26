@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '256'
+loudnesscorrection_version = '257'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -247,6 +247,10 @@ else:
 
 directory_for_temporary_files = target_path + os.sep + '00-Loudness_Calculation_Temporary_Files'
 directory_for_results = hotfolder_path + os.sep + '00-Corrected_Files' * english + '00-Korjatut_Tiedostot' * finnish # This directory always needs to be a subdirectory for the hotfolder, otherwise deleting files from the results directory won't work.
+
+
+os_name = '' # Create variable to store distro information.
+os_version = '' # Create variable to store os version information.
 
 delay_between_directory_reads = 5 # HotFolder poll interval (seconds) (how ofter the directory is checked for new files).
 number_of_processor_cores = 6 # The number of processor cores to use for simultaneous file processing and loudness calculation. Only use even numbers. Slightly too big number often results in better performance. If you have 4 cores try defining 6 or 8 here and check the time it takes processing same set of files.
@@ -3260,6 +3264,8 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		global write_loudness_calculation_results_to_a_machine_readable_file
 		dummy_initial_data_for_machine_readable_results_file = {}
 		global temp_loudness_results_for_automation 
+		global os_name
+		global os_version
 		
 		audio_duration_string = ''
 		audio_duration_fractions_string = ''
@@ -3444,9 +3450,21 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 					number_of_audio_channels = '1'
 				if number_of_audio_channels_as_text == 'stereo':
 					number_of_audio_channels = '2'
+				if number_of_audio_channels_as_text == '2.1':
+					number_of_audio_channels = '3'
+				if number_of_audio_channels_as_text == '3.0':
+					number_of_audio_channels = '3'
+				if number_of_audio_channels_as_text == '3.1':
+					number_of_audio_channels = '4'
+				if number_of_audio_channels_as_text == '4.0':
+					number_of_audio_channels = '4'
 				if number_of_audio_channels_as_text == 'quad':
 					number_of_audio_channels = '4'
+				if number_of_audio_channels_as_text == '5.0':
+					number_of_audio_channels = '5'
 				if number_of_audio_channels_as_text == '5.1':
+					number_of_audio_channels = '6'
+				if number_of_audio_channels_as_text == '6.0':
 					number_of_audio_channels = '6'
 				if number_of_audio_channels_as_text == '7.1':
 					number_of_audio_channels = '8'
@@ -3661,17 +3679,28 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			# Calculate estimated uncompressed file size. Add one second of data to the file size (sample_rate = 1 second of audio data) to be on the safe side.
 			estimated_uncompressed_size_for_single_mono_file = int((sample_rate * audio_duration * int(bit_depth / 8)) + sample_rate)
 			estimated_uncompressed_size_for_combined_channels = estimated_uncompressed_size_for_single_mono_file * int(number_of_audio_channels)
-			
-			# Test if output file will exceed the max size of wav format and assign sox commands and output formats accordingly.
-			if estimated_uncompressed_size_for_combined_channels < wav_format_maximum_file_size:
-				# In this case the output filesize does not exceed the maximum size, so we can use wav.
+		
+			# Determine the output format that FFmpeg uses when writing the audio file.
+			# The format defined here is only for the temporary file that is used to store the audio stream before loudness correction.
+			# The ouput format for the final loudness corrected file is defined in subroutine: get_audiofile_info_with_sox_and_determine_output_format
+			# The output format for a file is stored in variable: output_format_for_final_file
+	
+			# Use Flac always if possible, since the lossless compression it uses also speeds up disk writes (resulting files are smaller).
+			ffmpeg_output_format = 'flac'
+
+			# Flac can not be used as the FFmpeg output format in the following cases since these would result in bit depth conversion
+			# Flac supports only bit depths 16 and 24.
+			if (estimated_uncompressed_size_for_combined_channels < wav_format_maximum_file_size) and (bit_depth == 8):
 				ffmpeg_output_format = 'wav'
-				
-			if (estimated_uncompressed_size_for_combined_channels >= wav_format_maximum_file_size) or (bit_depth == 16):
-				# Use lossless flac compression if input file bit depth is 16 bits or if estimated output file size is bigger that wav max 4 GB.
-				# Note this forces output bitdepth to 16 bits since FFmpeg always uses bit depth of 16 when writing flac. This is an internal limitation in FFmpeg.
-				ffmpeg_output_format = 'flac'
-			
+			if (estimated_uncompressed_size_for_combined_channels < wav_format_maximum_file_size) and (bit_depth == 32):
+				ffmpeg_output_format = 'wav'
+			# Ubuntu 12.04 and Debian 7 ships with a FFmpeg version that always converts bit depths bigger than 16 to 16 when storing output to Flac.
+			# On these distros use wav when using flac would result in bit depth conversion.
+			if (estimated_uncompressed_size_for_combined_channels < wav_format_maximum_file_size) and (bit_depth == 24) and (os_name == 'ubuntu') and (os_version == '12.04'):
+				ffmpeg_output_format = 'wav'
+			if (estimated_uncompressed_size_for_combined_channels < wav_format_maximum_file_size) and (bit_depth == 24) and (os_name == 'debian') and (os_version == '7'):
+				ffmpeg_output_format = 'wav'
+
 			# Assign the start of FFmpeg audio extract commandline to the list.
 			if len(ffmpeg_commandline) == 0:
 				ffmpeg_commandline = ['ffmpeg', '-y', '-i', file_to_process, '-vn']
@@ -5315,6 +5344,11 @@ try:
 			ffmpeg_allowed_codec_formats = all_settings_dict['ffmpeg_allowed_codec_formats']
 		if 'enable_nonfree_ffmpeg_codec_formats' in all_settings_dict:
 			enable_nonfree_ffmpeg_codec_formats = all_settings_dict['enable_nonfree_ffmpeg_codec_formats']
+
+		if 'os_name' in all_settings_dict:
+			os_name = all_settings_dict['os_name']
+		if 'os_version' in all_settings_dict:
+			os_version = all_settings_dict['os_version']
 
 		if debug_all == True:
 			write_loudness_calculation_results_to_a_machine_readable_file = True

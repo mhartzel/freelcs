@@ -324,14 +324,16 @@
         preserved except that 64 bit audio will be converted to 32 bits because
         sox supports bit depths only up to 32 bits.</li>
       <li>If audio has been compressed using a lossy codec then the audio has no
-        real bit depth anymore and audio will be extracted using bit depth of 16
-        bits.</li>
-      <li>If output file size would exceed 4 GBs then FreeLCS must store the
-        audio in flac format when processing it. Bit depths bigger than 16 will
-        be converted to 16 bits. This is caused by internal limitation in
-        FFmpeg, it always uses 16 bits when storing in flac format. Also 8 bit
-        audio stored in flac format will be converted to 16 bits.<br>
-      </li>
+        real bit depth anymore and audio will be extracted using 16 bits.</li>
+      <li>If output file size exceeds 4 GBs then FreeLCS must store the audio in
+        flac format when processing it. Bit depths bigger than 16 will be
+        converted to 16 bits on <strong>Ubuntu 12.04</strong> and <strong>Debian
+          7</strong>. This is caused by an internal limitation in FFmpeg version
+        distributed with Ubuntu 12.04 and Debian 7, it always uses 16 bits when
+        storing in flac format. Ubuntu 14.04 replaced FFmpeg with Libav that is
+        able to store 24 bit flac files. Bit depths bigger than 24 will be
+        converted to 24 bits. 8 bit audio will be converted to 16 bits on all
+        supported platforms if output file size exceeds 4 GB.</li>
     </ul>
     <u><strong></strong></u><br>
     <h2><a id="What happens if output file size exceeds wav format 4 GB size limit ?">What
