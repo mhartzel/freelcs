@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '259'
+loudnesscorrection_version = '260'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -3284,6 +3284,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		global wav_format_maximum_file_size
 		file_type = ''
 		list_of_error_messages_for_unsupported_streams = []
+		error_message = ''
 		error_code = 0
 		filenames_and_channel_counts_for_mxf_audio_remixing = []
 		audio_remix_channel_map = []
@@ -3560,41 +3561,57 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 						bit_depth = 24
 
 				# Find out what is FFmpegs map number for the audio stream.
+				# There usually is some unwanted cruft right behing the map numer, so we need to find the cut point by advancing characrer by character.
+				# Example for a line that we are tring to parse here (ffmpeg 0.8 / avconv 0.9 and later):   Stream #0.1(eng): Audio: ac3, 48000 Hz, 5.1, s16, 448 kb/s
+				# Example for a line that we are tring to parse here (ffmpeg 2.x):   Stream #0:1: Audio: ac3, 48000 Hz, 5.1, s16, 448 kb/s
+				# The first number (0) in the map means input stream number (there can be many input file. The second (1) number means the stream in the file.
 				map_number = ''
+				separator_character_found = False
 
-				temp_number = item.split('#')[1].split('Audio:')[0].strip()[:-1]
-
-				if '.' in temp_number: # On FFmpeg / Avconv 0.8 mapnumbers are separated by a comma.
-					map_number = temp_number.split('.')[1]
-				if ':' in temp_number:  # On FFmpeg / Avconv 0.9 and later mapnumbers are separated by a colon
-					map_number = temp_number.split(':')[1]
+				for map_number_counter in range(item.find('#') + 1, len(item)):
+					if (separator_character_found == False) and (item[map_number_counter] == '.'): # FFmpeg / Avconv 0.8 uses . as map number separator.
+						separator_character_found = True # Match separator character only once.
+						continue
+					if (separator_character_found == False) and (item[map_number_counter] == ':'): # FFmpeg 2.x uses : as map number separator.
+						separator_character_found = True # Match separator character only once.
+						continue
+					if item[map_number_counter].isnumeric() == False:
+						break
+					
+				temp_map_number_string = item[item.find('#') + 1:map_number_counter]
 
 				# Test if we really have found the stream map number.
 				try:
+
+					if '.' in temp_map_number_string: # FFmpeg 0.8 / Avconv 0.8 and later uses . as map number separator.
+						map_number = temp_map_number_string.split('.')[1]
+					if ':' in temp_map_number_string: # FFmpeg 2.x uses : as map number separator.
+						map_number = temp_map_number_string.split(':')[1]
+				
+					
 					if map_number.isnumeric() == False:
 						error_message = 'Error: stream map number found in FFmpeg output is not a number: ' * english + 'Virhe: FFmpegin tulosteesta löydetty streamin numero ei ole numero: ' * finnish + map_number
-
+					
 						# Save some debug information.
 						if debug_file_processing == True:
 							debug_information_list.append('error_message')
 							debug_information_list.append(error_message)
-
+							
 						send_error_messages_to_screen_logfile_email(error_message, [])
 
 						continue # If map number is not found then skip the stream.
 
 				except IndexError:
-					error_message = 'Error: stream map number found in FFmpeg output is not in correct format: ' * english + 'Virhe: FFmpegin tulosteesta löydetty streamin numero ei ole oikeassa formaatissa: ' * finnish + map_number
-
+					error_message = 'Error: stream map number found in FFmpeg output is not in correct format: ' * english + 'Virhe: FFmpegin tulosteesta löydetty streamin numero ei ole oikeassa formaatissa: ' * finnish + map_number		   
+					
 					# Save some debug information.
 					if debug_file_processing == True:
 						debug_information_list.append('error_message')
 						debug_information_list.append(error_message)
-
+						
 					send_error_messages_to_screen_logfile_email(error_message, [])
-
+					
 					continue # If map number is not found then skip the stream.
-
 
 				# Find audio sample rate from FFmpeg stream info.
 				sample_rate_as_text = str(item.split(',')[1].strip().split(' ')[0].strip())
@@ -5380,9 +5397,7 @@ try:
 	gnuplot_executable_found = False
 	sox_executable_found = False
 	ffmpeg_executable_found = False
-	ffprobe_executable_found = False
 	avconv_executable_found = False
-	avprobe_executable_found = False
 	mediainfo_executable_found = False
 	smbstatus_executable_found = False
 	libebur128_loudness_executable_found = False
@@ -5402,18 +5417,10 @@ try:
 		if ffmpeg_true_or_false == True:
 			ffmpeg_executable_found = True
 			
-		ffprobe_true_or_false = os.path.exists(os_path + os.sep + 'ffprobe') and os.access(os_path + os.sep + 'ffprobe', os.X_OK)
-		if ffprobe_true_or_false == True:
-			ffprobe_executable_found = True
-		
 		avconv_true_or_false = os.path.exists(os_path + os.sep + 'avconv') and os.access(os_path + os.sep + 'avconv', os.X_OK)
 		if avconv_true_or_false == True:
 			avconv_executable_found = True
 			
-		avprobe_true_or_false = os.path.exists(os_path + os.sep + 'avprobe') and os.access(os_path + os.sep + 'avprobe', os.X_OK)
-		if avprobe_true_or_false == True:
-			avprobe_executable_found = True
-		
 		mediainfo_true_or_false = os.path.exists(os_path + os.sep + 'mediainfo') and os.access(os_path + os.sep + 'mediainfo', os.X_OK)
 		if mediainfo_true_or_false == True:
 			mediainfo_executable_found = True
@@ -5453,7 +5460,7 @@ try:
 			sys.exit(1)
 
 	# If both FFmpeg and Avconv are found then decide which one to use.
-	# Default is = If both avconv and avprobe are found then use them, not FFmpeg.
+	# Default is = If both are found then use avconv, not FFmpeg.
 	# This is because avconv is available on Ubuntu and Debian repositories, not because avconv is better.
 	# In fact it might be the opposite, but the Debian / Ubuntu maintainer has chosen to support only avconv
 	# for his egoistic reasons (he is part of the avconv developer group, that forked FFmpeg to start the libav - project).
