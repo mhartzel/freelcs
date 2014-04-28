@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '081'
+version = '082'
 freelcs_version = '2.5'
 
 ###################################
@@ -571,7 +571,7 @@ def send_test_email(*args):
 		return
 	if email_settings_are_complete == True:
 		current_time = parse_time(time.time())
-		message_text_string = '\nThis is a LoudnessCorrection test message sent ' + current_time + '.\n\nIP-Addresses of this machine are: ' + ', '.join(all_ip_addresses_of_the_machine) + '\n\n'
+		message_text_string = '\nThis is a FreeLCS test message sent ' + current_time + '.\n\nIP-Addresses of this machine are: ' + ', '.join(all_ip_addresses_of_the_machine) + '\n\n'
 		email_sending_message_1.set('')
 		email_sending_message_2.set('')
 		third_window_label_15['foreground'] = 'black'
@@ -642,7 +642,7 @@ def put_email_details_in_a_dictionary():
 	email_sending_details['smtp_password'] = smtp_password.get()
 	email_sending_details['message_recipients'] = message_recipients
 	email_sending_details['email_sending_interval'] = email_sending_interval
-	email_sending_details['message_title'] = 'LoudnessCorrection Error Message' # The title of the email message.
+	email_sending_details['message_title'] = 'FreeLCS Error Message' # The title of the email message.
 	
 	if (true_false_string[send_error_messages_by_email.get()] == True) and ('email' not in where_to_send_error_messages):
 		where_to_send_error_messages.append('email')
@@ -674,7 +674,7 @@ def connect_to_smtp_server():
 	global email_sending_details
 	
 	message_recipients = email_sending_details['message_recipients']
-	message_title = 'LoudnessCorrection Test Message'
+	message_title = 'FreeLCS Test Message'
 	message_attachment_path =''
 	smtp_server_name = email_sending_details['smtp_server_name']
 	smtp_server_port = email_sending_details['smtp_server_port']

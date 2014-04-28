@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '260'
+loudnesscorrection_version = '261'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -3437,30 +3437,43 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				except ValueError:
 					pass
 			
-				# FFmpeg sometimes reports some channel counts differently. Test for these cases and convert the channel count to an simple number.
-				if number_of_audio_channels_as_text == 'mono':
+				# FFmpeg  avconv sometimes reports some channel counts differently. Test for these cases and convert the channel count to an simple number.
+				# These values are from avconv source: libavutil/channel_layout.c
+				if 'mono' in number_of_audio_channels_as_text:
 					number_of_audio_channels = '1'
-				if number_of_audio_channels_as_text == 'stereo':
+				if 'stereo' in number_of_audio_channels_as_text:
 					number_of_audio_channels = '2'
-				if number_of_audio_channels_as_text == '2.1':
+				if 'downmix' in number_of_audio_channels_as_text:
+					number_of_audio_channels = '2'
+				if '2.1' in number_of_audio_channels_as_text:
 					number_of_audio_channels = '3'
-				if number_of_audio_channels_as_text == '3.0':
+				if '3.0' in number_of_audio_channels_as_text:
 					number_of_audio_channels = '3'
-				if number_of_audio_channels_as_text == '3.1':
+				if '3.1' in number_of_audio_channels_as_text:
 					number_of_audio_channels = '4'
-				if number_of_audio_channels_as_text == '4.0':
+				if '4.0' in number_of_audio_channels_as_text:
 					number_of_audio_channels = '4'
-				if number_of_audio_channels_as_text == 'quad':
+				if 'quad' in number_of_audio_channels_as_text:
 					number_of_audio_channels = '4'
-				if number_of_audio_channels_as_text == '5.0':
+				if '4.1' in number_of_audio_channels_as_text:
 					number_of_audio_channels = '5'
-				if number_of_audio_channels_as_text == '5.1':
+				if '5.0' in number_of_audio_channels_as_text:
+					number_of_audio_channels = '5'
+				if '5.1' in number_of_audio_channels_as_text:
 					number_of_audio_channels = '6'
-				if number_of_audio_channels_as_text == '6.0':
+				if '6.0' in number_of_audio_channels_as_text:
 					number_of_audio_channels = '6'
-				if number_of_audio_channels_as_text == '7.1':
+				if 'hexagonal' in number_of_audio_channels_as_text:
+					number_of_audio_channels = '6'
+				if '6.1' in number_of_audio_channels_as_text:
+					number_of_audio_channels = '7'
+				if '7.0' in number_of_audio_channels_as_text:
+					number_of_audio_channels = '7'
+				if '7.1' in number_of_audio_channels_as_text:
 					number_of_audio_channels = '8'
-				
+				if 'octagonal' in number_of_audio_channels_as_text:
+					number_of_audio_channels = '8'
+
 				if number_of_audio_channels == '0':
 					error_message = 'ERROR !!! I could not parse FFmpeg channel count string: ' * english + 'VIRHE !!! En osannut tulkita ffmpeg:in antamaa tietoa kanavien lukumäärästä: ' * finnish + '\'' + str(number_of_audio_channels_as_text_split_to_a_list[0]) + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
 
