@@ -1249,6 +1249,7 @@ def install_init_scripts_and_config_files(*args):
 	'heartbeat_file_name' : heartbeat_file_name, 'heartbeat_write_interval' : int(heartbeat_write_interval), 'email_sending_details' : email_sending_details, \
 	'send_error_messages_by_email' : true_false_string[send_error_messages_by_email.get()], 'where_to_send_error_messages' : where_to_send_error_messages, \
 	'config_file_created_by_installer_version' : version, 'peak_measurement_method' : peak_measurement_method, 'freelcs_version' : freelcs_version, \
+	'use_freelcs_file_output_defaults' : true_false_string[use_freelcs_file_output_defaults.get()], \
 	'write_loudness_calculation_results_to_a_machine_readable_file' : true_false_string[write_loudness_calculation_results_to_a_machine_readable_file.get()], \
 	'create_loudness_corrected_files' : true_false_string[create_loudness_corrected_files.get()], \
 	'create_loudness_history_graphics_files' : true_false_string[create_loudness_history_graphics_files.get()], 'delete_original_file_immediately' : true_false_string[delete_original_file_immediately.get()], \
@@ -1266,103 +1267,101 @@ def install_init_scripts_and_config_files(*args):
 	number_of_all_items_in_dictionary = len(all_settings_dict)
 	all_settings_dict['number_of_all_items_in_dictionary'] = number_of_all_items_in_dictionary
 
+	# Gather info about user defined configuration options to list. This list will be saved to the installation logfile in /var/log/
+	user_defined_configuration_options = []
+	user_defined_configuration_options.append('')
+	title_text = '\nConfiguration variables written to ' + configfile_path + ' are:'
+	user_defined_configuration_options.append(title_text)
+	user_defined_configuration_options.append(str((len(title_text) + 1) * '-')) # Print a line exactly the length of the title text line + 1.
+	user_defined_configuration_options.append('freelcs_version = ' + all_settings_dict['freelcs_version'])
+	user_defined_configuration_options.append('os_name = ' + all_settings_dict['os_name'])
+	user_defined_configuration_options.append('os_version] = ' + all_settings_dict['os_version'])
+	user_defined_configuration_options.append('libebur128_path = ' + all_settings_dict['libebur128_path'])
+	user_defined_configuration_options.append('----------------------------------------------------------------------------------------------------')
+	user_defined_configuration_options.append('')
+	user_defined_configuration_options.append('target_path = ' + all_settings_dict['target_path'])
+	user_defined_configuration_options.append('language = ' + all_settings_dict['language'])
+	user_defined_configuration_options.append('english = ' + str(all_settings_dict['english']))
+	user_defined_configuration_options.append('finnish = ' + str(all_settings_dict['finnish']))
+	user_defined_configuration_options.append('hotfolder_path = ' + all_settings_dict['hotfolder_path'])
+	user_defined_configuration_options.append('directory_for_temporary_files = ' + all_settings_dict['directory_for_temporary_files'])
+	user_defined_configuration_options.append('directory_for_results = ' + all_settings_dict['directory_for_results'])
+	user_defined_configuration_options.append('directory_for_error_logs = ' + all_settings_dict['directory_for_error_logs'])
+	user_defined_configuration_options.append('delay_between_directory_reads = ' + str(all_settings_dict['delay_between_directory_reads']))
+	user_defined_configuration_options.append('number_of_processor_cores = ' + str(all_settings_dict['number_of_processor_cores']))
+	user_defined_configuration_options.append('file_expiry_time = ' + str(all_settings_dict['file_expiry_time']))
+	user_defined_configuration_options.append('----------------------------------------------------------------------------------------------------')
+	user_defined_configuration_options.append('')
+	user_defined_configuration_options.append('send_error_messages_by_email = ' + str(all_settings_dict['send_error_messages_by_email']))
+
+	email_details_dict = all_settings_dict['email_sending_details']
+	for item in list(email_details_dict):
+		if item == 'smtp_password':
+			user_defined_configuration_options.append('password: **********')
+		else:
+			user_defined_configuration_options.append(item + ': ' + str(email_details_dict[item]))
+
+	user_defined_configuration_options.append('where_to_send_error_messages = ' + ', '.join(all_settings_dict['where_to_send_error_messages']))
+	user_defined_configuration_options.append('send_error_messages_to_logfile = '+ str(all_settings_dict['send_error_messages_to_logfile']))
+	user_defined_configuration_options.append('heartbeat = ' + str(all_settings_dict['heartbeat']))
+	user_defined_configuration_options.append('heartbeat_file_name = ' + all_settings_dict['heartbeat_file_name'])
+	user_defined_configuration_options.append('heartbeat_write_interval = ' + str(all_settings_dict['heartbeat_write_interval']))
+	user_defined_configuration_options.append('----------------------------------------------------------------------------------------------------')
+	user_defined_configuration_options.append('')
+	user_defined_configuration_options.append('write_html_progress_report = ' + str(all_settings_dict['write_html_progress_report']))
+	user_defined_configuration_options.append('html_progress_report_write_interval = ' + str(all_settings_dict['html_progress_report_write_interval']))
+	user_defined_configuration_options.append('web_page_name = ' + all_settings_dict['web_page_name'])
+	user_defined_configuration_options.append('web_page_path = ' + all_settings_dict['web_page_path'])
+	user_defined_configuration_options.append('peak_measurement_method = ' + all_settings_dict['peak_measurement_method'])
+	user_defined_configuration_options.append('----------------------------------------------------------------------------------------------------')
+	user_defined_configuration_options.append('')
+	user_defined_configuration_options.append('create_loudness_corrected_files = ' + str(all_settings_dict['create_loudness_corrected_files']))
+	user_defined_configuration_options.append('create_loudness_history_graphics_files = ' + str(all_settings_dict['create_loudness_history_graphics_files']))
+	user_defined_configuration_options.append('delete_original_file_immediately = ' + str(all_settings_dict['delete_original_file_immediately']))
+	user_defined_configuration_options.append('write_loudness_calculation_results_to_a_machine_readable_file = ' + str(all_settings_dict['write_loudness_calculation_results_to_a_machine_readable_file']))
+
+	variable_string = all_settings_dict['unit_separator']
+	characters_in_ascii = ''
+
+	for item in variable_string:
+		characters_in_ascii = characters_in_ascii + str(ord(item)) + ', '
+	characters_in_ascii = characters_in_ascii[0:len(characters_in_ascii)-2]
+	user_defined_configuration_options.append('unit_separator (ascii numbers)  = ' + characters_in_ascii)
+
+	variable_string = all_settings_dict['record_separator']
+	characters_in_ascii = ''
+
+	for item in variable_string:
+		characters_in_ascii = characters_in_ascii + str(ord(item)) + ', '
+	characters_in_ascii = characters_in_ascii[0:len(characters_in_ascii)-2]
+	user_defined_configuration_options.append('record_separator (ascii numbers)  = ' + characters_in_ascii)
+	user_defined_configuration_options.append('----------------------------------------------------------------------------------------------------')
+	user_defined_configuration_options.append('')
+	user_defined_configuration_options.append('enable_mxf_audio_remixing = ' + str(all_settings_dict['enable_mxf_audio_remixing']))
+	user_defined_configuration_options.append('remix_map_file_extension = ' + all_settings_dict['remix_map_file_extension'])
+	temporary_string_list = []
+	for number in all_settings_dict['global_mxf_audio_remix_channel_map']:
+		temporary_string_list.append(str(number))
+	user_defined_configuration_options.append('global_mxf_audio_remix_channel_map = ' + ', '.join(temporary_string_list))
+	temporary_string_list = []
+	user_defined_configuration_options.append('natively_supported_file_formats = ' + ', '.join(all_settings_dict['natively_supported_file_formats']))
+	user_defined_configuration_options.append('ffmpeg_free_wrapper_formats = ' + ', '.join(all_settings_dict['ffmpeg_free_wrapper_formats']))
+	user_defined_configuration_options.append('ffmpeg_free_codec_formats = ' + ', '.join(all_settings_dict['ffmpeg_free_codec_formats']))
+	user_defined_configuration_options.append('ffmpeg_allowed_wrapper_formats = ' + ', '.join(all_settings_dict['ffmpeg_allowed_wrapper_formats']))
+	user_defined_configuration_options.append('ffmpeg_allowed_codec_formats = ' + ', '.join(all_settings_dict['ffmpeg_allowed_codec_formats']))
+	user_defined_configuration_options.append('enable_nonfree_ffmpeg_codec_formats = ' + str(all_settings_dict['enable_nonfree_ffmpeg_codec_formats']))
+	user_defined_configuration_options.append('ffmpeg_output_wrapper_format = ' + all_settings_dict['ffmpeg_output_wrapper_format'])
+	user_defined_configuration_options.append('----------------------------------------------------------------------------------------------------')
+	user_defined_configuration_options.append('')
+	user_defined_configuration_options.append('silent = ' + str(all_settings_dict['silent']))
+	user_defined_configuration_options.append('number_of_all_items_in_dictionary = ' + str(all_settings_dict['number_of_all_items_in_dictionary']))
+	user_defined_configuration_options.append('config_file_created_by_installer_version = ' + all_settings_dict['config_file_created_by_installer_version'])
+	user_defined_configuration_options.append('----------------------------------------------------------------------------------------------------')
+	user_defined_configuration_options.append('')
+
 	if debug == True:
 		# Print variables.
-		title_text = '\nConfiguration variables written to ' + configfile_path + ' are:'
-		
-		print()
-		print(title_text)
-		print((len(title_text) + 1) * '-' + '\n') # Print a line exactly the length of the title text line + 1.
-		print('freelcs_version =', all_settings_dict['freelcs_version'])
-		print('os_name =', all_settings_dict['os_name'])
-		print('os_version] =', all_settings_dict['os_version'])
-		print()
-		print('language =', all_settings_dict['language'])
-		print('english =', all_settings_dict['english'])
-		print('finnish =', all_settings_dict['finnish'])
-		print()	
-		print('target_path =', all_settings_dict['target_path'])
-		print('hotfolder_path =', all_settings_dict['hotfolder_path'])
-		print('directory_for_temporary_files =', all_settings_dict['directory_for_temporary_files'])
-		print('directory_for_results =', all_settings_dict['directory_for_results'])
-		print('libebur128_path =', all_settings_dict['libebur128_path'])
-		print()
-		print('delay_between_directory_reads =', all_settings_dict['delay_between_directory_reads'])	
-		print('number_of_processor_cores =', all_settings_dict['number_of_processor_cores'])
-		print('file_expiry_time =', all_settings_dict['file_expiry_time'])
-		print()
-		print('natively_supported_file_formats =', all_settings_dict['natively_supported_file_formats'])
-		print('ffmpeg_output_wrapper_format =', all_settings_dict['ffmpeg_output_wrapper_format'])
-		print('peak_measurement_method =', all_settings_dict['peak_measurement_method'])
-		print()	
-		print('silent =', all_settings_dict['silent'])
-		print()	
-		print('write_html_progress_report =', all_settings_dict['write_html_progress_report'])
-		print('html_progress_report_write_interval =', all_settings_dict['html_progress_report_write_interval'])
-		print('web_page_name =', all_settings_dict['web_page_name'])
-		print('web_page_path =', all_settings_dict['web_page_path'])
-		print()
-		print('heartbeat =', all_settings_dict['heartbeat'])
-		print('heartbeat_file_name =', all_settings_dict['heartbeat_file_name'])
-		print('heartbeat_write_interval =', all_settings_dict['heartbeat_write_interval'])
-		print()
-		print('where_to_send_error_messages =', all_settings_dict['where_to_send_error_messages'])
-		print('send_error_messages_to_logfile =', all_settings_dict['send_error_messages_to_logfile'])
-		print('directory_for_error_logs =', all_settings_dict['directory_for_error_logs'])
-		print()
-		print('send_error_messages_by_email =', all_settings_dict['send_error_messages_by_email'])
-		print('email_sending_details =', all_settings_dict['email_sending_details'])
-		print()
-		print('write_loudness_calculation_results_to_a_machine_readable_file =', all_settings_dict['write_loudness_calculation_results_to_a_machine_readable_file'])
-		print()
-		print('create_loudness_corrected_files =', all_settings_dict['create_loudness_corrected_files'])
-		print()
-		print('create_loudness_history_graphics_files =', all_settings_dict['create_loudness_history_graphics_files'])
-		print()
-		print('delete_original_file_immediately =', all_settings_dict['delete_original_file_immediately'])
-		print()
-
-		print('unit_separator (ascii numbers)  = ', end = '')
-		variable_string = all_settings_dict['unit_separator']
-		characters_in_ascii = ''
-
-		for item in variable_string:
-			characters_in_ascii = characters_in_ascii + str(ord(item)) + ', '
-		characters_in_ascii = characters_in_ascii[0:len(characters_in_ascii)-2]
-		print(characters_in_ascii)
-		print()
-
-		print('record_separator (ascii numbers)  = ', end = '')
-		variable_string = all_settings_dict['record_separator']
-		characters_in_ascii = ''
-
-		for item in variable_string:
-			characters_in_ascii = characters_in_ascii + str(ord(item)) + ', '
-		characters_in_ascii = characters_in_ascii[0:len(characters_in_ascii)-2]
-		print(characters_in_ascii)
-
-		print()
-		print('enable_mxf_audio_remixing =', all_settings_dict['enable_mxf_audio_remixing'])
-		print()
-		print('remix_map_file_extension =', all_settings_dict['remix_map_file_extension'])
-		print()
-		print('global_mxf_audio_remix_channel_map =', all_settings_dict['global_mxf_audio_remix_channel_map'])
-		print()
-		print('ffmpeg_free_wrapper_formats =', all_settings_dict['ffmpeg_free_wrapper_formats'])
-		print()
-		print('ffmpeg_allowed_wrapper_formats =', all_settings_dict['ffmpeg_allowed_wrapper_formats'])
-		print()
-		print('ffmpeg_free_codec_formats =', all_settings_dict['ffmpeg_free_codec_formats'])
-		print()
-		print('ffmpeg_allowed_codec_formats =', all_settings_dict['ffmpeg_allowed_codec_formats'])
-		print()
-		print('enable_nonfree_ffmpeg_codec_formats =', all_settings_dict['enable_nonfree_ffmpeg_codec_formats'])
-		print()
-
-		print('number_of_all_items_in_dictionary =', all_settings_dict['number_of_all_items_in_dictionary'])
-		print()
-		print('config_file_created_by_installer_version =', all_settings_dict['config_file_created_by_installer_version'])
-		print()
+		print('\n'.join(user_defined_configuration_options))
 
 	##############################################################################
 	# Copy scripts and write init scripts and config files to system directories #
@@ -4344,8 +4343,6 @@ def print_unit_and_record_separators(*args):
 
 def print_use_defaults_for_freelcs_output(*args):
 	
-	global use_freelcs_file_output_defaults
-
 	if use_freelcs_file_output_defaults.get() == True:
 
 		write_loudness_calculation_results_to_a_machine_readable_file.set(False)
@@ -4370,6 +4367,9 @@ def print_use_defaults_for_freelcs_output(*args):
 		create_loudness_history_graphics_files_false_radiobutton.state(['disabled'])
 		delete_original_file_immediately_true_radiobutton.state(['disabled'])
 		delete_original_file_immediately_false_radiobutton.state(['disabled'])
+
+		# Call a subroutine to update the unit and record separator string variables.
+		print_unit_and_record_separators()
 
 	else:
 
@@ -5387,6 +5387,10 @@ if int(config_file_created_by_installer_version) >= 39:
 			delete_original_file_immediately.set(previously_saved_settings_dict['delete_original_file_immediately'])
 			if debug == True:
 				print('delete_original_file_immediately =', previously_saved_settings_dict['delete_original_file_immediately'])
+	if 'use_freelcs_file_output_defaults' in previously_saved_settings_dict:
+			use_freelcs_file_output_defaults.set(previously_saved_settings_dict['use_freelcs_file_output_defaults'])
+			if debug == True:
+				print('use_freelcs_file_output_defaults =', previously_saved_settings_dict['use_freelcs_file_output_defaults'])
 	if 'unit_separator' in previously_saved_settings_dict:
 			unit_separator = previously_saved_settings_dict['unit_separator']
 			if debug == True:
