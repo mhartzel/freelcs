@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '082'
+version = '083'
 freelcs_version = '2.5'
 
 ###################################
@@ -1297,7 +1297,7 @@ def install_init_scripts_and_config_files(*args):
 	email_details_dict = all_settings_dict['email_sending_details']
 	for item in list(email_details_dict):
 		if item == 'smtp_password':
-			user_defined_configuration_options.append('password: **********')
+			user_defined_configuration_options.append('smtp_password: **********')
 		else:
 			user_defined_configuration_options.append(item + ': ' + str(email_details_dict[item]))
 
@@ -1821,7 +1821,84 @@ def install_init_scripts_and_config_files(*args):
 	# Our scripts were installed successfully, update the label to tell it to the user.
 	loudnesscorrection_scripts_are_installed.set('Installed')
 	seventh_window_loudnesscorrection_label['foreground'] = 'dark green'
+
+	###############################################################################################################
+	# Write settings that user defined during the installation to /var/log/freelcs_date_time_installation_log.txt #
+	###############################################################################################################
+
+	# Define logfile name
+	current_time = time.time()
+	installation_logfile_name = 'freelcs_installation_log_' + str(parse_time(current_time)).replace(' ','_').replace(':','.') + '.txt'
+	installation_logfile_path = '/var/log'
 	
+	try:
+		with open(directory_for_os_temporary_files + os.sep + installation_logfile_name, 'wt') as installation_logfile_handler:
+			installation_logfile_handler.write('\n'.join(user_defined_configuration_options))
+			installation_logfile_handler.flush() # Flushes written data to os cache
+			os.fsync(installation_logfile_handler.fileno()) # Flushes os cache to disk
+	except IOError as reason_for_error:
+		error_in_string_format = 'Error opening installation logfile for writing ' + str(reason_for_error)
+		show_error_message_on_seventh_window(error_in_string_format)
+		return(True) # There was an error, exit this subprogram.
+	except OSError as reason_for_error:
+		error_in_string_format = 'Error opening installation logfile for writing ' + str(reason_for_error)
+		show_error_message_on_seventh_window(error_in_string_format)
+		return(True) # There was an error, exit this subprogram.
+	
+	#################################################################
+	# Move installation logfile from '/tmp/' to '/var/log/' as root #
+	#################################################################
+	
+	commands_to_run = ['sudo', '-k', '-p', '', '-S', 'mv', '-f', directory_for_os_temporary_files + os.sep + installation_logfile_name, installation_logfile_path + os.sep + installation_logfile_name] # Create the commandline we need to run as root.
+
+	# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
+	sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
+	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+	
+	# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
+	if len(sudo_stderr_string) != 0:
+		show_error_message_on_seventh_window(sudo_stderr_string)
+		return(True) # There was an error, exit this subprogram.
+	
+	# Password was accepted and our command was successfully run as root.
+	root_password_was_not_accepted_message.set('') # Remove possible error message from the screen.
+	
+	###########################################
+	# Change installation logfile permissions #
+	###########################################
+	
+	commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chmod', '644', installation_logfile_path + os.sep + installation_logfile_name] # Create the commandline we need to run as root.
+
+	# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
+	sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
+	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+	
+	# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
+	if len(sudo_stderr_string) != 0:
+		show_error_message_on_seventh_window(sudo_stderr_string)
+		return(True) # There was an error, exit this subprogram.
+	
+	# Password was accepted and our command was successfully run as root.
+	root_password_was_not_accepted_message.set('') # Remove possible error message from the screen.
+	
+	#####################################
+	# Change installation logfile owner #
+	#####################################
+	
+	commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chown', 'root:root', installation_logfile_path + os.sep + installation_logfile_name] # Create the commandline we need to run as root.
+
+	# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
+	sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
+	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+	
+	# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
+	if len(sudo_stderr_string) != 0:
+		show_error_message_on_seventh_window(sudo_stderr_string)
+		return(True) # There was an error, exit this subprogram.
+	
+	# Password was accepted and our command was successfully run as root.
+	root_password_was_not_accepted_message.set('') # Remove possible error message from the screen.
+		
 	return(False) # False means 'No errors happened everything was installed successfully :)'.
 	
 def test_if_root_password_is_valid(*args):
