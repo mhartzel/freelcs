@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '085'
+version = '087'
 freelcs_version = '2.5'
 
 ###################################
@@ -1044,7 +1044,8 @@ def install_init_scripts_and_config_files(*args):
 	'TARGET_PATH="' + target_path.get() + '"', \
 	'HOTFOLDER_NAME="' + os.path.basename(hotfolder_path.get()) + '"', \
 	'WEB_PAGE_PATH="' + os.path.basename(web_page_path.get()) + '"', \
-	'DIRECTORY_FOR_RESULTS="' + directory_for_results.get() + '"', \
+	'DIRECTORY_FOR_RESULTS="' + os.path.basename(directory_for_results.get()) + '"', \
+	'FULL_PATH_TO_DIRECTORY_FOR_RESULTS="' + directory_for_results.get() + '"', \
 	'PYTHON3_PATH="' + python3_path + '"', \
 	'LOUDNESSCORRECTION_SCRIPT_PATH="/usr/bin/LoudnessCorrection.py"', \
 	'HEARTBEAT_PATH="/usr/bin/HeartBeat_Checker.py"', \
@@ -1093,9 +1094,14 @@ def install_init_scripts_and_config_files(*args):
 	'		#############################################################################################', \
 	'', \
 	'		mkdir -p "$TARGET_PATH/$HOTFOLDER_NAME/$WEB_PAGE_PATH/"', \
-	'		mkdir -p "$DIRECTORY_FOR_RESULTS"', \
+	'		mkdir -p "$FULL_PATH_TO_DIRECTORY_FOR_RESULTS"', \
 	'		mkdir -p "$TARGET_PATH/00-Error_Logs"', \
 	'		mkdir -p "$TARGET_PATH/00-Loudness_Calculation_Temporary_Files"', \
+	'', \
+	'		#############################################################################################', \
+	'		# Remove directories users might have created in the HotFolder during the last run', \
+	'		#############################################################################################', \
+	'		find "$TARGET_PATH/$HOTFOLDER_NAME" -maxdepth 1 -not -name "$WEB_PAGE_PATH" -not -name "$DIRECTORY_FOR_RESULTS" -not -name "$HOTFOLDER_NAME" -type d -exec rm -rf {} \\;', \
 	'']
 
 
@@ -1136,8 +1142,8 @@ def install_init_scripts_and_config_files(*args):
 	'		chown $USERNAME:$USERNAME "$TARGET_PATH/$HOTFOLDER_NAME"', \
 	'		chmod 1777 "$TARGET_PATH/$HOTFOLDER_NAME"', \
 	'', \
-	'		chown $USERNAME:$USERNAME "$DIRECTORY_FOR_RESULTS"', \
-	'		chmod 1777 "$DIRECTORY_FOR_RESULTS"', \
+	'		chown $USERNAME:$USERNAME "$FULL_PATH_TO_DIRECTORY_FOR_RESULTS"', \
+	'		chmod 1777 "$FULL_PATH_TO_DIRECTORY_FOR_RESULTS"', \
 	'', \
 	'		#############################################################################################', \
 	'		# Run LoudnessCorrection and HeartBeat - scripts as a normal user without root privileges.', \
@@ -1181,8 +1187,8 @@ def install_init_scripts_and_config_files(*args):
 	'		chown $USERNAME:$USERNAME "$TARGET_PATH/$HOTFOLDER_NAME"', \
 	'		chmod 1777 "$TARGET_PATH/$HOTFOLDER_NAME"', \
 	'', \
-	'		chown $USERNAME:$USERNAME "$DIRECTORY_FOR_RESULTS"', \
-	'		chmod 1777 "$DIRECTORY_FOR_RESULTS"', \
+	'		chown $USERNAME:$USERNAME "$FULL_PATH_TO_DIRECTORY_FOR_RESULTS"', \
+	'		chmod 1777 "$FULL_PATH_TO_DIRECTORY_FOR_RESULTS"', \
 	'', \
 	'		#############################################################################################', \
 	'		# Run LoudnessCorrection and HeartBeat - scripts as a normal user without root privileges.', \
