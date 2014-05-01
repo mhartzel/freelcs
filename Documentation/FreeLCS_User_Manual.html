@@ -86,8 +86,8 @@
     Sata disks in software RAID 0. <br>
     <br>
     FreeLCS uses other open source programs to get the job done (Linux,
-    libebur128, gnuplot, FFmpeg (optional), sox, mediainfo). All software is
-    free and Open Source.<br>
+    libebur128, gnuplot, libav-tools (optional), sox, mediainfo). All software
+    is free and Open Source.<br>
     <br>
     <br>
     <h2> <a id="Features">Features</a></h2>
@@ -100,13 +100,13 @@
       <li>Natively supports <strong>wav</strong>, <strong>flac</strong> and <strong>ogg</strong>
         formats.<br>
       </li>
-      <li>If user installs FFmpeg, then all formats supported by it can be
-        processed. FFmpeg supports a large number of formats.<br>
+      <li>If user installs libav-tools, then all formats supported by it can be
+        processed. libav-tools supports a large number of formats.<br>
       </li>
       <li> Supports files with several audio streams. Each stream is demuxed to
         a separate file and loudness corrected.</li>
       <li>Even video files can be dropped in for processing. Audio streams are
-        demuxed from the file and processed (requires FFmpeg).<br>
+        demuxed from the file and processed (requires libav-tools).<br>
       </li>
       <li> Supports channel counts from mono to 5.1.</li>
       <li> Takes advantage of multiple processor cores to run calculations
@@ -450,9 +450,9 @@
         dBFS and cause distortion when the digital signal is converted back to
         analog. TruePeak measurement calculates new samples in between existing
         audio samples and finds these hidden peaks. EBU R128 recoommends always
-        using TruePeak&nbsp; method to measure audio peaks. TruePeak calculation
-        is about four time slower than finding the highest existing audio sample
-        in a file.<br>
+        using TruePeak method to measure audio peaks. TruePeak calculation is
+        about four time slower than finding the highest existing audio sample in
+        a file.<br>
       </li>
       <li>FreeLCS uses peak limiting in cases where loudness is below -23 LUFS
         and peaks are so high that distortion would be introduced when file
@@ -540,7 +540,7 @@
     <p><br>
     </p>
     <ul>
-      <li>The next window shows how you can install FFmpeg if you need it.</li>
+      <li>The next window shows how you can install libav-tools if you need it.</li>
     </ul>
     <p><br>
     </p>

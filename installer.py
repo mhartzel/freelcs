@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '084'
+version = '085'
 freelcs_version = '2.5'
 
 ###################################
@@ -1830,12 +1830,9 @@ def install_init_scripts_and_config_files(*args):
 	###############################################################################################################
 	# Write settings that user defined during the installation to /var/log/freelcs_date_time_installation_log.txt #
 	###############################################################################################################
+	global installation_logfile_path
+	global installation_logfile_name
 
-	# Define logfile name
-	current_time = time.time()
-	installation_logfile_name = 'freelcs_installation_log_' + str(parse_time(current_time)).replace(' ','_').replace(':','.') + '.txt'
-	installation_logfile_path = '/var/log'
-	
 	try:
 		with open(directory_for_os_temporary_files + os.sep + installation_logfile_name, 'wt') as installation_logfile_handler:
 			installation_logfile_handler.write('\n'.join(user_defined_configuration_options))
@@ -5127,6 +5124,10 @@ all_ip_addresses_of_the_machine = get_ip_addresses_of_the_host_machine()
 peak_measurement_method = '--peak=true'
 installation_is_running = False
 libebur128_repository_url = "http://github.com/mhartzel/libebur128_fork_for_freelcs_2.4.git"
+# Define logfile name
+current_time = time.time()
+installation_logfile_name = 'freelcs_installation_log_' + str(parse_time(current_time)).replace(' ','_').replace(':','.') + '.txt'
+installation_logfile_path = '/var/log'
 
 # Get the directory the os uses for storing temporary files.
 directory_for_os_temporary_files = tempfile.gettempdir()
@@ -6317,7 +6318,7 @@ row_counter = -1
 
 # Some explanatory texts.
 row_counter = row_counter + 1
-eleventh_window_label_1 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=int(text_wrap_length_in_pixels * 1.7), text='When you store a program in a MXF wrapper, then audio mixes are usually split up and saved as separate mono files. For a program with stereo and 5.1 mix, eight separate audio files are stored in the MXF. This complicates things when you want to measure loudness of those mixes, audio files needs to be combined back to full mixes before this is possible.\n\nThis FreeLCS feature allows you to enable remixing audio inside a MXF file back to original mixes before loudness measurement.\n\nThe boxes below allow you to define a default "MXF Remix Map" that is used if no other information about the mixes is available. The numbers above the boxes correspond to the mix number that you want to create and the boxes below lets you define how many input audio channels are combined to form the mix. You can have more mixes defined than you have physical audio files available, since only mixes that have all needed channels available will be created. It is also possible to create file specific remix maps, see the user manual for more information about it.\n\nNote that you need to install FFmpeg for this feature to work.\n')
+eleventh_window_label_1 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=int(text_wrap_length_in_pixels * 1.7), text='When you store a program in a MXF wrapper, then audio mixes are usually split up and saved as separate mono files. For a program with stereo and 5.1 mix, eight separate audio files are stored in the MXF. This complicates things when you want to measure loudness of those mixes, audio files needs to be combined back to full mixes before this is possible.\n\nThis FreeLCS feature allows you to enable remixing audio inside a MXF file back to original mixes before loudness measurement.\n\nThe boxes below allow you to define a default "MXF Remix Map" that is used if no other information about the mixes is available. The numbers above the boxes correspond to the mix number that you want to create and the boxes below lets you define how many input audio channels are combined to form the mix. You can have more mixes defined than you have physical audio files available, since only mixes that have all needed channels available will be created. It is also possible to create file specific remix maps, see the user manual for more information about it.\n\nNote that you need to install libav-tools for this feature to work.\n')
 eleventh_window_label_1.grid(column=0, row=row_counter, pady=10, padx=10, columnspan=16, sticky=(tkinter.W, tkinter.N))
 
 row_counter = row_counter + 1
@@ -6856,11 +6857,11 @@ eleventh_window_separator_1.grid(column=0, row=row_counter, padx=10, pady=10, co
 
 # Some explanatory texts.
 row_counter = row_counter + 1
-eleventh_window_label_3 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=int(text_wrap_length_in_pixels * 1.7), text="If you decide to install FFmpeg, then you can define here what wrapper and codec formats you allow it to process. You can allow FFmpeg to process all formats it supports or you can limit processing to royalty / patent free formats (Please see FAQ about format patents). If you don't install FFmpeg, then these settings won't have any effect.\n\nIf you enabled 'Mxf Remix Map' above, then you need to allow FFmpeg to process MXF here.\n")
+eleventh_window_label_3 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=int(text_wrap_length_in_pixels * 1.7), text="If you decide to install libav-tools, then you can define here what wrapper and codec formats you allow it to process. You can allow libav-tools to process all formats it supports or you can limit processing to royalty / patent free formats (Please see FAQ about format patents). If you don't install libav-tools, then these settings won't have any effect.\n\nIf you enabled 'Mxf Remix Map' above, then you need to allow libav-tools to process MXF here.\n")
 eleventh_window_label_3.grid(column=0, row=row_counter, pady=10, padx=10, columnspan=16, sticky=(tkinter.W, tkinter.N))
 
 row_counter = row_counter + 1
-eleventh_window_label_5 = tkinter.ttk.Label(eleventh_frame_child_frame_1, text='FFmpeg allowed wrapper formats')
+eleventh_window_label_5 = tkinter.ttk.Label(eleventh_frame_child_frame_1, text='Libav-tools allowed wrapper formats')
 eleventh_window_label_5.grid(column=0, row=row_counter, columnspan=4, padx=10, sticky=(tkinter.W))
 ffmpeg_wrapper_formats_true_radiobutton = tkinter.ttk.Radiobutton(eleventh_frame_child_frame_1, text='All', variable=enable_nonfree_ffmpeg_wrapper_formats, value=True, command=print_ffmpeg_usage_options)
 ffmpeg_wrapper_formats_false_radiobutton = tkinter.ttk.Radiobutton(eleventh_frame_child_frame_1, text='Only Wav, Flac, Ogg, Matroska and wrappers:', variable=enable_nonfree_ffmpeg_wrapper_formats, value=False, command=print_ffmpeg_usage_options)
@@ -6876,7 +6877,7 @@ eleventh_window_webm_enable = tkinter.Checkbutton(eleventh_frame_child_frame_1, 
 eleventh_window_webm_enable.grid(row=row_counter, column=column_counter, pady=5, padx=10, columnspan=2, sticky=(tkinter.W))
 
 row_counter = row_counter + 1
-eleventh_window_label_6 = tkinter.ttk.Label(eleventh_frame_child_frame_1, text='FFmpeg allowed codec formats')
+eleventh_window_label_6 = tkinter.ttk.Label(eleventh_frame_child_frame_1, text='Libav-tools allowed codec formats')
 eleventh_window_label_6.grid(column=0, row=row_counter, columnspan=4, padx=10, sticky=(tkinter.W))
 ffmpeg_codec_formats_true_radiobutton = tkinter.ttk.Radiobutton(eleventh_frame_child_frame_1, text='All', variable=enable_nonfree_ffmpeg_codec_formats, value=True, command=print_ffmpeg_usage_options)
 ffmpeg_codec_formats_false_radiobutton = tkinter.ttk.Radiobutton(eleventh_frame_child_frame_1, text='Only PCM, Flac, Vorbis and codecs:', variable=enable_nonfree_ffmpeg_codec_formats, value=False, command=print_ffmpeg_usage_options)
@@ -7117,7 +7118,7 @@ eigth_window_back_button.grid(column=2, row=1, padx=30, pady=10, sticky=(tkinter
 ###########################################################################################################
 
 # Create the label for the frame
-ninth_window_label_1 = tkinter.ttk.Label(ninth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text="Everything was installed successfully :)\n\nLoudnessCorrection will be started when you boot up your computer, or you can start it now manually running the following command:\n")
+ninth_window_label_1 = tkinter.ttk.Label(ninth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text="Everything was installed successfully :)\n\nInstallation log has been written to:\n\n" + installation_logfile_path + os.sep + installation_logfile_name + "\n\nLoudnessCorrection will be started when you boot up your computer, or you can start it now manually running the following command:\n")
 ninth_window_label_1.grid(column=0, row=0, columnspan=4, pady=10, padx=10, sticky=(tkinter.N))
 
 loudness_correction_manual_startup_commands = "sudo   -b   /etc/init.d/loudnesscorrection_init_script   restart"
@@ -7136,7 +7137,7 @@ startup_commands_text_widget.focus()
 startup_commands_text_widget.grid(column=0, row=1, columnspan=4, sticky=(tkinter.N, tkinter.S))
 
 ninth_window_label_2 = tkinter.ttk.Label(ninth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text="\nCopy the command in a terminal window and press enter to run.\n\nNote that there will be 90 seconds delay before LoudnessCorrection starts, HearBeat_Checker will start 60 seconds after LoudnessCorrection.")
-ninth_window_label_2.grid(column=0, row=2, columnspan=4, pady=10, padx=10, sticky=(tkinter.N))
+ninth_window_label_2.grid(column=0, row=2, columnspan=4, pady=10, padx=10, sticky=(tkinter.N, tkinter.W))
 
 # Create the buttons for the frame
 ninth_window_back_button = tkinter.Button(ninth_frame, text = "Back", command = call_ffmpeg_info_frame_on_top)
@@ -7150,13 +7151,13 @@ ninth_window_finish_button.grid(column=2, row=3, padx=30, pady=10, sticky=(tkint
 ###########################################################################################################
 
 # Create the label for the frame
-ffmpeg_info_window_label_1 = tkinter.ttk.Label(ffmpeg_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text="Installer no longer automatically installs FFmpeg for you, but you can do it easily yourself by copy / pasting the following command in a terminal window:\n")
+ffmpeg_info_window_label_1 = tkinter.ttk.Label(ffmpeg_frame_child_frame_1, wraplength=text_wrap_length_in_pixels + 10, text="If you want FreeLCS to be able to decompress virtually any audio format, then you need to install libav-tools. You can do it by copy / pasting the following command in a terminal window and executing it:\n")
 ffmpeg_info_window_label_1.grid(column=0, row=0, columnspan=4, pady=10, padx=10, sticky=(tkinter.N))
 
-ffmpeg_manual_installation_command = "sudo apt-get -y install ffmpeg"
+ffmpeg_manual_installation_command = "sudo apt-get -y install libav-tools"
 
 # Create a text widget to display text that can be copy pasted.
-ffmpeg_info_window_text_widget = tkinter.Text(ffmpeg_frame_child_frame_1, width=31, height=1, wrap='none', undo=False)
+ffmpeg_info_window_text_widget = tkinter.Text(ffmpeg_frame_child_frame_1, width=40, height=1, wrap='none', undo=False)
 ffmpeg_info_window_text_widget.insert('1.0', ffmpeg_manual_installation_command)
 ffmpeg_info_window_text_widget.columnconfigure(0, weight=1)
 ffmpeg_info_window_text_widget.rowconfigure(0, weight=1)
@@ -7168,7 +7169,7 @@ ffmpeg_info_window_text_widget.focus()
 
 ffmpeg_info_window_text_widget.grid(column=0, row=1, columnspan=4, sticky=(tkinter.N, tkinter.S))
 
-ffmpeg_info_window_label_2 = tkinter.ttk.Label(ffmpeg_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text="\nDecompressing patented formats with FFmpeg may require a license from the rights holders. However FFmpeg may also be used to process free formats (MXF, MKV, WebM and others) or formats with possibly expired patents (Mpeg1 Layer1, Mpeg 1 Layer2) without aquiring licenses. (Disclaimer: This is not legal advice, if in doubt ask a lawyer).\n\nFFmpeg is used to process files if it's installed before starting LoudnessCorrection. So you can always install it later and reboot your server to take advantage of FFmpeg.\n\nSupported formats without FFmpeg are: Wav, Flac, Ogg.\n\nThe command to uninstall FFmpeg is: sudo apt-get remove ffmpeg libav-tools")
+ffmpeg_info_window_label_2 = tkinter.ttk.Label(ffmpeg_frame_child_frame_1, wraplength=text_wrap_length_in_pixels + 10, text="\nDecompressing patented formats with libav-tools may require a license from the rights holders. However libav-tools may also be used to process free formats (MXF, MKV, WebM and others) or formats with possibly expired patents (Mpeg1 Layer1, Mpeg 1 Layer2) without aquiring licenses. (Disclaimer: This is not legal advice, if in doubt ask a lawyer).\n\nLibav-tools is used to process files if it's installed before starting LoudnessCorrection. So you can always install it later and reboot your server to take advantage of libav-tools.\n\nSupported formats without libav-tools are: Wav, Flac, Ogg.\n\nThe command to uninstall libav-tools is: sudo apt-get remove libav-tools")
 ffmpeg_info_window_label_2.grid(column=0, row=2, columnspan=4, pady=10, padx=10, sticky=(tkinter.N))
 
 # Create the buttons for the frame

@@ -19,7 +19,10 @@
     <a href="#What%20filetypes%20are%20supported%20?"></a><a href="#What%20formats%20are%20supported%20?">What
       formats are supported ?</a><br>
     <br>
-    <a href="#FFmpeg%20and%20patents">FFmpeg and patents</a><br>
+    <a href="#Libav-tools_vs_FFmpeg">Libav-tools vs. FFmpeg</a><br>
+    <br>
+    <a href="FreeLCS_FAQ.html#Libav-tools%20/%20FFmpeg%20and%20patents">Libav-tools
+      / FFmpeg and patents</a><br>
     <br>
     <a href="#How%20many%20audio%20streams%20in%20a%20file%20are%20supported%20?">How
       many audio streams in a file are supported ?</a><br>
@@ -99,9 +102,9 @@
         are used to process audio files ?</a></h2>
     <ul>
       <li>Natively supported formats are <strong>wav</strong>, <strong>flac</strong>
-        and <strong>ogg</strong>. If <strong>FFmpeg</strong> is installed then
-        it's used to extract and convert audio from unsupported formats to wav
-        and flac.<br>
+        and <strong>ogg</strong>. If <strong>libav-tools</strong> is installed
+        then it's used to extract and convert audio from unsupported formats to
+        wav and flac.<br>
       </li>
       <li><strong>Mediainfo</strong> gets duration info from mpeg transport
         stream files.<br>
@@ -119,22 +122,60 @@
     <ul>
       <li><strong>Wav</strong>, <strong>flac</strong> and <strong>ogg</strong>
         are natively supported.</li>
-      <li>If FFmpeg is installed then it is used to convert other formats to
-        supported formats before processing. FFmpeg supports a large number of
-        formats: <strong>mp4</strong>, <strong>mp3</strong>, <strong>mp2</strong>,
+      <li>If libav-tools is installed then it is used to convert other formats
+        to supported formats before processing. Libav-tools supports a large
+        number of formats: <strong>mp4</strong>, <strong>mp3</strong>, <strong>mp2</strong>,
         <strong>avi</strong>, <strong>mov</strong>, <strong>aac</strong>, <strong>h264</strong>,
-        <strong>vob</strong>, <strong>mkv</strong> to name a few. FFmpeg is
-        able to extract all audio streams from supported file types including
+        <strong>vob</strong>, <strong>mkv</strong> to name a few. libav-tools
+        is able to extract all audio streams from supported file types including
         video files. <br>
       </li>
       <li>Note that all channels of one mix must be in the same file. If your
         5.1 mix consists of 6 files, then you must combine them before dropping
-        the mix into loudness correction.<br>
-      </li>
+        the mix into loudness correction.</li>
     </ul>
     <p><br>
     </p>
-    <h2><a id="FFmpeg and patents">FFmpeg and patents</a><br>
+    <h2><a id="Libav-tools_vs_FFmpeg">Libav-tools vs. FFmpeg</a></h2>
+    <ul>
+      <li>On 2011 a group of FFmpeg developers decided to take FFmpeg's source
+        code and start a new project with it. The reason for this "fork" was the
+        group was unhappy with the way the main FFmpeg developer managed the
+        project. The group named the new project Libav and renamed the video
+        and&nbsp; audio conversion program from <strong>ffmpeg</strong> to <strong>avconv</strong>.
+        This "fork" created a new project that continued development of the
+        FFmpeg source code base parallel to the FFmpeg - project. Both projects
+        have slowly evolved their own way creating a puzzling situation for the
+        users. Tools that both projects develop (FFmpeg and avconv) are quite
+        similar by features, but there are differences in capabilites and usage
+        here and there.</li>
+      <li>Ubuntu and Debian no longer make FFmpeg available in their package
+        repositories, only libav is available for easy installation. This
+        decision was influenced by the Debian / Ubuntu maintainer. He probably
+        had a strong view about the issue, because he himself was part of the
+        group that forked FFmpeg to start the libav - project.</li>
+      <li>FreeLCS 2.5 uses libav by default. Not because I think that libav is
+        better than FFmpeg, but because libav is easily available to Debian and
+        Ubuntu users and FFmpeg is not. I quite strongly disagree with the way
+        the group that created the libav fork handled the situation. They tried
+        to hijack FFmpeg website, stated that they are the successor of the
+        FFmpeg project (they are not) and influenced Debian and Ubuntu not to
+        include FFmpeg in their package repositories anymore, thus removing
+        freedom of choice from the user. In the open source world it is quite ok
+        to fork a project and developed it to a new direction. But you must earn
+        your reputation by making a superior product. When you have something
+        good to offer then people will start to use it. It seems to me that the
+        libav - group tried to hijack users of the FFmpeg - project, and that is
+        not acceptable.</li>
+      <li>FreeLCS searches for both the ffmpeg and avconv executables and if
+        both are found in the path, then avconv is used to process files. If
+        only ffmpeg is found, then it is used.</li>
+      <li>More on the FFmpeg vs. libav situation can be read <a href="http://blog.pkh.me/p/13-the-ffmpeg-libav-situation.html">here</a>.</li>
+    </ul>
+    <p><br>
+    </p>
+    <h2><a id="Libav-tools / FFmpeg and patents">Libav-tools / FFmpeg and
+        patents</a><br>
     </h2>
     <ul>
       <li>Most audio post production is done in <strong>Wav</strong> format
@@ -144,18 +185,18 @@
         FreeLCS supports wav and two royalty / patent free formats <strong>flac</strong>
         and <strong>ogg </strong>(license: <a href="http://flac.sourceforge.net/license.html">http://flac.sourceforge.net/license.html</a>).
         If your post production is done in wav then you don't ever need to
-        install FFmpeg.</li>
-      <li>FFmpeg is a video and audio conversion tool that can be used to
-        convert media to many different formats. Using FFmpeg to decompress
+        install libav-tools.</li>
+      <li>Libav-tools is a video and audio conversion tool that can be used to
+        convert media to many different formats. Using libav-tools to decompress
         audio from patented formats may require a license from the rights
-        holders. However FFmpeg may also be used to process free formats (MXF,
-        MKV, WebM and others) or formats with possibly expired patents (Mpeg1
-        Layer1, Mpeg 1 Layer2) without aquiring licenses (source: <a href="http://en.wikipedia.org/wiki/MPEG-1#Patents">https://en.wikipedia.org/wiki/MPEG-1#Patents</a>).
+        holders. However libav-tools may also be used to process free formats
+        (MXF, MKV, WebM and others) or formats with possibly expired patents
+        (Mpeg1 Layer1, Mpeg 1 Layer2) without aquiring licenses (source: <a href="http://en.wikipedia.org/wiki/MPEG-1#Patents">https://en.wikipedia.org/wiki/MPEG-1#Patents</a>).
         To more complicate things some patented formats may be patented in some
         countries but not in others. Also the expiration dates for these patents
         may vary between countries.</li>
-      <li>FreeLCS uses FFmpeg if it's installed but works fine without it with
-        wav, flac and ogg formats.<br>
+      <li>FreeLCS uses libav-tools if it's installed but works fine without it
+        with wav, flac and ogg formats.<br>
       </li>
     </ul>
     <p><br>
@@ -163,12 +204,12 @@
     <h2> <a id="How many audio streams in a file are supported ?">How many
         audio streams in a file are supported ?</a></h2>
     <ul>
-      <li>When FFmpeg is not installed: 1 audio stream.<br>
+      <li>When libav-tools is not installed: 1 audio stream.<br>
       </li>
-      <li>When FFmpeg is installed: the limit for the number of audio streams in
-        a single file has not been tested. I personally have tested files with
-        16 streams with no problems. Upper limit is propably set by a possible
-        limit in FFmpeg or file format in question.<br>
+      <li>When libav-tools is installed: the limit for the number of audio
+        streams in a single file has not been tested. I personally have tested
+        files with 16 streams with no problems. Upper limit is propably set by a
+        possible limit in libav-tools or file format in question.<br>
       </li>
     </ul>
     <br>
@@ -204,12 +245,13 @@
       <li>First incoming files are searched for supported audio streams.</li>
       <li>FreeLCS natively supports wav, flac and ogg formats and one audio
         stream per file. If there are more streams or the audio format is
-        unsupported then FFmpeg is used (only if FFmpeg is installed) to convert
-        streams to a supported format.<br>
+        unsupported then libav-tools is used (only if libav-tools is installed)
+        to convert streams to a supported format.<br>
       </li>
-      <li>FFmpeg places extracted streams back to FreeLCS HotFolder so that they
-        are seen as new files coming into processing. When all streams have been
-        extracted then the original file is deleted as it is no longer needed.<br>
+      <li>Libav-tools places extracted streams back to FreeLCS HotFolder so that
+        they are seen as new files coming into processing. When all streams have
+        been extracted then the original file is deleted as it is no longer
+        needed.<br>
       </li>
       <li>Then two simultaneous loudness calculation processes are started for
         the file. One measures integrated loudness and the other momentary
@@ -302,9 +344,9 @@
     Sample rate should be preserved in all cases. <br>
     <br>
     The following rules for bit depth conversion comes from internal limitations
-    in sox and FFmpeg.<br>
+    in sox and libav-tools.<br>
     <br>
-    <u><strong>When FFmpeg is not installed:</strong></u><br>
+    <u><strong>When </strong></u><u><strong>libav-tools is not installed:</strong></u><br>
     <ul>
       <li>64 bit audio is not supported.</li>
       <li>If audio is in uncompressed PCM - format, then bit depth will be
@@ -318,7 +360,7 @@
         bits.<br>
       </li>
     </ul>
-    <u><strong>When FFmpeg is installed:</strong></u><br>
+    <u><strong>When </strong></u><u><strong>libav-tools is installed:</strong></u><br>
     <ul>
       <li>If audio is in uncompressed PCM - format, then bit depth will be
         preserved except that 64 bit audio will be converted to 32 bits because
@@ -328,12 +370,13 @@
       <li>If output file size exceeds 4 GBs then FreeLCS must store the audio in
         flac format when processing it. Bit depths bigger than 16 will be
         converted to 16 bits on <strong>Ubuntu 12.04</strong> and <strong>Debian
-          7</strong>. This is caused by an internal limitation in FFmpeg version
-        distributed with Ubuntu 12.04 and Debian 7, it always uses 16 bits when
-        storing in flac format. Ubuntu 14.04 replaced FFmpeg with Libav that is
-        able to store 24 bit flac files. Bit depths bigger than 24 will be
-        converted to 24 bits. 8 bit audio will be converted to 16 bits on all
-        supported platforms if output file size exceeds 4 GB.</li>
+          7</strong>. This is caused by an internal limitation in libav-tools
+        version distributed with Ubuntu 12.04 and Debian 7, it always uses 16
+        bits when storing in flac format. Ubuntu 14.04 ships with a new version
+        of libav-tools that is able to store 24 bit flac files. Bit depths
+        bigger than 24 will be converted to 24 bits. 8 bit audio will be
+        converted to 16 bits on all supported platforms if output file size
+        exceeds 4 GB.</li>
     </ul>
     <u><strong></strong></u><br>
     <h2><a id="What happens if output file size exceeds wav format 4 GB size limit ?">What
@@ -363,7 +406,7 @@
     <br>
     <h2><a id="Is MXF supported ?">Is MXF supported ?</a></h2>
     <ul>
-      <li>FFmpeg seems to have some support for MXF and I've been able to
+      <li>Libav-tools seems to have some support for MXF and I've been able to
         extract audio from MXF with it. However as all channels of a mix must be
         in one file this might be impractical. If the audio inside MXF is stored
         as separate channels, then the user must combine them to a single file
