@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '083'
+version = '084'
 freelcs_version = '2.5'
 
 ###################################
@@ -1295,9 +1295,14 @@ def install_init_scripts_and_config_files(*args):
 	user_defined_configuration_options.append('send_error_messages_by_email = ' + str(all_settings_dict['send_error_messages_by_email']))
 
 	email_details_dict = all_settings_dict['email_sending_details']
-	for item in list(email_details_dict):
+	keys_in_email_details_dict = list(email_details_dict)
+	keys_in_email_details_dict.sort()
+	for item in keys_in_email_details_dict:
 		if item == 'smtp_password':
-			user_defined_configuration_options.append('smtp_password: **********')
+			if email_details_dict['smtp_password'] == '':
+				user_defined_configuration_options.append('smtp_password:')
+			else:
+				user_defined_configuration_options.append('smtp_password: **********')
 		else:
 			user_defined_configuration_options.append(item + ': ' + str(email_details_dict[item]))
 
