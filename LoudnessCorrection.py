@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '262'
+loudnesscorrection_version = '263'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -5739,7 +5739,7 @@ try:
 		try:
 			for filename in list_of_files:
 
-				if filename.startswith('.'): # If filename starts with an '.' queue the file for deletion and continue to process next filename.
+				if (filename.startswith('.')) and (not filename.startswith('.nfs')): # If filename starts with an '.' queue the file for deletion and continue to process next filename. Don't try to delete files that start with .nfs since these might be false files that actually are caused by a file deleted on a nfs mount. Ilmeisesti meidän BackupSysteemi tekee tiedostojärjestelmän varmuuskopiot nfs - mountin yli ja siksi näitä tiedostoja välillä ilmestyy HotFolderiin. Lisätietoa: https://stackoverflow.com/questions/8192605/how-delete-nfs-in-linux
 					files_queued_for_deletion.append(filename)
 					continue
 
