@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '087'
+version = '088'
 freelcs_version = '2.5'
 
 ###################################
@@ -1102,6 +1102,7 @@ def install_init_scripts_and_config_files(*args):
 	'		# Remove directories users might have created in the HotFolder during the last run', \
 	'		#############################################################################################', \
 	'		find "$TARGET_PATH/$HOTFOLDER_NAME" -maxdepth 1 -not -name "$WEB_PAGE_PATH" -not -name "$DIRECTORY_FOR_RESULTS" -not -name "$HOTFOLDER_NAME" -type d -exec rm -rf {} \\;', \
+	'		find "$TARGET_PATH/$HOTFOLDER_NAME/$DIRECTORY_FOR_RESULTS" -maxdepth 1 -not -name "$DIRECTORY_FOR_RESULTS" -type d -exec rm -rf {} \\;', \
 	'']
 
 
