@@ -436,9 +436,13 @@ def read_loudnesscorrection_config_file():
 		directory_for_error_logs = all_settings_dict['directory_for_error_logs']
 	if 'email_sending_details' in all_settings_dict:
 		email_sending_details = all_settings_dict['email_sending_details']
+	if 'os_name' in all_settings_dict:
+		os_name = all_settings_dict['os_name']
+	if 'os_version' in all_settings_dict:
+		os_version = all_settings_dict['os_version']
 
 
-	return(hotfolder_path, directory_for_results, directory_for_error_logs, email_sending_details)
+	return(hotfolder_path, directory_for_results, directory_for_error_logs, email_sending_details, os_name, os_version)
 
 def run_external_program(commands_to_run):
 
@@ -874,12 +878,13 @@ if os.path.exists(mediainfo_path) == False:
 	print()
 	sys.exit(1)
 
-# Check if ffmpeg is installed.
+# Check that either avconv or ffmpeg is installed. Otherwise we can not run the tests.
+avconv_path = '/usr/bin/avconv'
 ffmpeg_path = '/usr/bin/ffmpeg'
 
-if os.path.exists(ffmpeg_path) == False:
+if (os.path.exists(avconv_path) == False) and (os.path.exists(ffmpeg_path) == False):
 	print()
-	print("Error: '" + ffmpeg_path + "' can not be found")
+	print("Error: Neither '" + avconv_path + "' or '" + ffmpeg_path  + "' can be found")
 	print()
 	sys.exit(1)
 
@@ -938,8 +943,20 @@ for line in list_of_command_output:
 
 			list_of_command_output, error_happened, list_of_errors = run_external_program(['/bin/kill', pid_of_program_to_stop])
 
+# This variable can hold one of two values: desktop, server
+# This script tries to find if package: xserver-xorg-core  is installed, and if it is then the we are running on a 'Desktop' - version of the os.
+os_is_server_or_desktop_version = 'unknown'
+commands_to_run = ['dpkg', '-l', 'xserver-xorg-core']
+list_of_command_output, error_happened, list_of_errors = run_external_program(commands_to_run)
+
+if error_happened == False:
+	if 'no packages found matching' in list_of_command_output:
+		os_is_server_or_desktop_version = 'server'
+	if 'no packages found matching' not in list_of_command_output:
+		os_is_server_or_desktop_version = 'desktop'
+
 # Read in settings from LoudnessCorrection settings file.
-hotfolder_path, directory_for_results, directory_for_error_logs, email_sending_details = read_loudnesscorrection_config_file()
+hotfolder_path, directory_for_results, directory_for_error_logs, email_sending_details, os_name, os_version = read_loudnesscorrection_config_file()
 directory_for_old_error_logs = directory_for_error_logs + os.sep + '00-Old_Error_Logs'
 
 # Check if path defined in LoudnessCorrection settings file exist, if not create
@@ -1012,9 +1029,9 @@ if len(list_of_testfile_paths) == 0:
 
 # Check if regression test result dir already exists, if true then delete it.
 if '-no-result-comparison' not in sys.argv:
-	regression_test_results_target_dir = os.path.split(path_to_known_good_results_dir)[0] + os.sep + loudness_correction_version
+	regression_test_results_target_dir = os.path.split(path_to_known_good_results_dir)[0] + os.sep + loudness_correction_version + '-'  + os_name + '_' + os_version + '_' + os_is_server_or_desktop_version
 else:
-	regression_test_results_target_dir = path_to_known_good_results_dir + os.sep + loudness_correction_version
+	regression_test_results_target_dir = path_to_known_good_results_dir + os.sep + loudness_correction_version + '-'  + os_name + '_' + os_version + '_' + os_is_server_or_desktop_version
 
 if os.path.exists(regression_test_results_target_dir) == True:
 	shutil.rmtree(regression_test_results_target_dir)
@@ -1219,9 +1236,12 @@ for test_counter in range(0,4):
 	list_of_command_output, error_happened, list_of_errors = run_external_program(loudness_scanner_commands)
 
 	# Remove last item because it is the loudness sum of all files and we only need individual results.
-	del list_of_command_output[-1]
-	# Sort the list of results
-	list_of_command_output.sort()
+	if len(list_of_command_output) > 0:
+
+		del list_of_command_output[-1]
+
+		# Sort the list of results
+		list_of_command_output.sort()
 
 	# Write results to the log.
 
@@ -1311,10 +1331,10 @@ for test_counter in range(0,4):
 	last_printed_test_result_text_line = len(list_of_test_result_text_lines)
 
 	################################################################################################################
-	# Compare results to reults of a previous regression test run                                                  #
+	# Compare results to results of a previous regression test run                                                  #
 	################################################################################################################
 
-	# Only compare results previous results, if the user told us so :)
+	# Only compare results to previous results, if the user told us so :)
 	if '-no-result-comparison' not in sys.argv:
 
 		##########################################
@@ -1368,6 +1388,8 @@ for test_counter in range(0,4):
 		mediainfo_files_only_in_path_1_dict = {}
 		mediainfo_files_only_in_path_2_dict = {}
 
+		# Only compare these mediainfo items.
+		accepted_mediainfo_items = ['Complete name', 'Format', 'File size', 'Duration', 'Overall bit rate', 'Bit rate', 'Channel(s)', 'Channel count', 'Sampling rate', 'Stream size', 'Bit depth']
 
 		# Split text in mediainfo file and store results in a dictionary (key = field 0 in text line, value = field 1 in text line).
 		for file_name in common_filenames_set:
@@ -1382,6 +1404,8 @@ for test_counter in range(0,4):
 			results_for_file_2_list = mediainfo_results_2_dict[file_name]
 
 			headline = ''
+			text_field_1 = ''
+			text_field_2 = ''
 
 			for item1 in results_for_file_1_list:
 
@@ -1393,8 +1417,22 @@ for test_counter in range(0,4):
 					continue # This text line is the headline, skip it.
 
 				splitted_text_1 =  item1.split(':')
+				text_field_1 = splitted_text_1[0].strip()
+				text_field_2 = splitted_text_1[1].strip()
 
-				results_for_file_1_dict[headline + ' ' + splitted_text_1[0].strip()] = splitted_text_1[1].strip()
+				# Only compare the mediainfo items we are interested for.
+				if text_field_1 not in accepted_mediainfo_items:
+					continue
+				# Mediainfo version 0.7.64 uses 'Channel count' when the newer version 0.7.67 uses 'Channel(s)'.
+				# These are the same data, always use 'Channel count' for this field as it is more descriptive.
+				if text_field_1 == 'Channel(s)':
+					text_field_1 = 'Channel count'
+
+				results_for_file_1_dict[headline + ' ' + text_field_1] = text_field_2
+
+			headline = ''
+			text_field_1 = ''
+			text_field_2 = ''
 
 			for item2 in results_for_file_2_list:
 
@@ -1403,8 +1441,18 @@ for test_counter in range(0,4):
 					continue # This text line is the headline, skip it.
 
 				splitted_text_2 =  item2.split(':')
+				text_field_1 = splitted_text_2[0].strip()
+				text_field_2 = splitted_text_2[1].strip()
 
-				results_for_file_2_dict[headline + ' ' + splitted_text_2[0].strip()] = splitted_text_2[1].strip()
+				# Only compare the mediainfo items we are interested for.
+				if text_field_1 not in accepted_mediainfo_items:
+					continue
+				# Mediainfo version 0.7.64 uses 'Channel count' when the newer version 0.7.67 uses 'Channel(s)'.
+				# These are the same data, always use 'Channel count' for this field as it is more descriptive.
+				if text_field_1 == 'Channel(s)':
+					text_field_1 = 'Channel count'
+
+				results_for_file_2_dict[headline + ' ' + text_field_1] = text_field_2
 
 			# Mediainfo: Compare results in the two dictionaries and store results in four dictionaries.
 			# Note this compares individual mediainfo result text lines.
@@ -1448,6 +1496,7 @@ for test_counter in range(0,4):
 
 					adjust_printing1 = ''
 					adjust_printing2 = ''
+					adjust_printing3 = ' ' * 14
 					if len(individual_item + ':') < 40:
 						adjust_printing1 = ' ' * int(40 - len(individual_item + ':'))
 					if len(str(text_lines_only_in_path_1_dict[individual_item]) + '|') < 25:
@@ -1469,6 +1518,7 @@ for test_counter in range(0,4):
 
 					adjust_printing1 = ''
 					adjust_printing2 = ''
+					adjust_printing3 = ' ' * 14
 					if len(individual_item + ':') < 40:
 						adjust_printing1 = ' ' * int(40 - len(individual_item + ':'))
 					if len('<No value>'  + '|') < 25:
@@ -1860,8 +1910,10 @@ if error_happened == True:
 	print()
 
 # Send regression test result to the admin by email.
-message_text_string = '\n'.join(list_of_test_result_text_lines)
-send_email('Regression Test Report', message_text_string, '', email_sending_details)
+if len(email_sending_details['message_recipients']) > 0:
+	if email_sending_details['message_recipients'][0] != '':
+		message_text_string = '\n'.join(list_of_test_result_text_lines)
+		send_email('Regression Test Report', message_text_string, '', email_sending_details)
 
 # If email sending encounters errors, then the email subroutine appends errors to the results list. Check for this and write the test results log again, if necessary.
 if len(list_of_test_result_text_lines) > last_printed_test_result_text_line:

@@ -393,8 +393,8 @@ if len(files_with_differing_results_dict) != 0:
 
 	# Report any mismatch found.
 	print()
-	print(str(len(files_with_differing_results_dict)), "Calculation results don't match")
-	print('-' * len(str(len(files_with_differing_results_dict)) + " Calculation results don't match ") + '-')
+	print("Calculation results for " + str(len(files_with_differing_results_dict)) + " files don't match")
+	print('-' * len("Calculation results for " + str(len(files_with_differing_results_dict)) + " files don't match") + '--')
 	print()
 
 	list_of_non_matching_filenames = list(files_with_differing_results_dict)

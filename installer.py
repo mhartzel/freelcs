@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '088'
+version = '089'
 freelcs_version = '2.5'
 
 ###################################
@@ -305,7 +305,7 @@ def add_email_addresses_to_list(*args):
 			break
 		if not len(item) == 0: # If item lenght is 0, then the item is not valid, skip it.
 			message_recipients.append(item.strip())
-	# Assign each item (email address) to a separate variable thet is only used to display the item on the GUI.
+	# Assign each item (email address) to a separate variable that is only used to display the item on the GUI.
 	if len(message_recipients) > 0:
 		email_address_1.set(message_recipients[0])
 	else:
@@ -1282,7 +1282,7 @@ def install_init_scripts_and_config_files(*args):
 	user_defined_configuration_options.append(str((len(title_text) + 1) * '-')) # Print a line exactly the length of the title text line + 1.
 	user_defined_configuration_options.append('freelcs_version = ' + all_settings_dict['freelcs_version'])
 	user_defined_configuration_options.append('os_name = ' + all_settings_dict['os_name'])
-	user_defined_configuration_options.append('os_version] = ' + all_settings_dict['os_version'])
+	user_defined_configuration_options.append('os_version = ' + all_settings_dict['os_version'])
 	user_defined_configuration_options.append('libebur128_path = ' + all_settings_dict['libebur128_path'])
 	user_defined_configuration_options.append('----------------------------------------------------------------------------------------------------')
 	user_defined_configuration_options.append('')

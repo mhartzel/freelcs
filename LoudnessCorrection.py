@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '263'
+loudnesscorrection_version = '264'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -3803,6 +3803,13 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			
 			if ffmpeg_output_wrapper_format == 'flac':
 				ffmpeg_commandline.append('flac')
+
+				# avconv on Ubuntu 14.04 defaults to 24 bits when saving to flac. This is waste of space if inputfile bit depth is 16 or the inputfile is a lossy compression format.
+				# Force flac output to (signed) 16 bits, when input is 16 bits or lossy compression format.
+				if bit_depth == 16:
+					ffmpeg_commandline.append('-sample_fmt')
+					ffmpeg_commandline.append('s16')
+
 			else:
 				# If output format is not flac, then use pcm format with bit depth that was decided earlier in this subroutine.
 				ffmpeg_commandline.append(output_audiostream_codec_format)
@@ -5081,7 +5088,7 @@ def write_user_defined_configuration_settings_to_logfile():
 	user_defined_configuration_options.append(str((len(title_text) + 1) * '-')) # Print a line exactly the length of the title text line + 1.
 	user_defined_configuration_options.append('freelcs_version = ' + all_settings_dict['freelcs_version'])
 	user_defined_configuration_options.append('os_name = ' + all_settings_dict['os_name'])
-	user_defined_configuration_options.append('os_version] = ' + all_settings_dict['os_version'])
+	user_defined_configuration_options.append('os_version = ' + all_settings_dict['os_version'])
 	user_defined_configuration_options.append('libebur128_path = ' + all_settings_dict['libebur128_path'])
 	user_defined_configuration_options.append('----------------------------------------------------------------------------------------------------')
 	user_defined_configuration_options.append('')
