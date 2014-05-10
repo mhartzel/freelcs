@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '089'
+version = '090'
 freelcs_version = '2.5'
 
 ###################################
@@ -5019,6 +5019,7 @@ text_wrap_length_in_pixels = 500
 
 # Define some tkinter variables
 first_window_label_text = tkinter.StringVar()
+first_window_label_2_text = tkinter.StringVar()
 language = tkinter.StringVar()
 language.set('english')
 target_path = tkinter.StringVar()
@@ -5725,7 +5726,12 @@ showstopper_frame_child_frame_1.grid(column=0, row=0, columnspan=4, padx=20, pad
 # This is the introcution window, with nothing but text on it.
 first_window_label_text.set('This program lets you configure LoudnessCorrection settings and install all needed Linux init scripts.\n\nAfter configuration LoudnessCorrection starts automatically every time the computer starts up. There will be a 1 - 2 minute delay after boot before LoudnessCorrection is started. This makes sure all needed Linux services are up when we start up.')
 first_window_label = tkinter.ttk.Label(first_frame_child_frame_1, textvariable=first_window_label_text, wraplength=text_wrap_length_in_pixels)
-first_window_label.grid(column=0, row=0, columnspan=4, pady=10, padx=20, sticky=(tkinter.E, tkinter.N))
+first_window_label.grid(column=0, row=0, columnspan=4, pady=10, padx=20, sticky=(tkinter.E, tkinter.N, tkinter.W))
+
+first_window_label_2_text.set('Important !!!!!!!\n\nIf you are installing on Debian or Ubuntu Server, then you MUST make some changes to your operating system configuration before FreeLCS installation, otherwise the installation will fail. See the User Manual for more information.\n')
+first_window_label_2 = tkinter.ttk.Label(first_frame_child_frame_1, textvariable=first_window_label_2_text, wraplength=text_wrap_length_in_pixels)
+first_window_label_2['foreground'] = 'dark green'
+first_window_label_2.grid(column=0, row=1, columnspan=4, pady=10, padx=20, sticky=(tkinter.E, tkinter.N, tkinter.W))
 
 # Create the buttons for the frame
 first_window_quit_button = tkinter.Button(first_frame, text = "Quit", command = quit_program)
