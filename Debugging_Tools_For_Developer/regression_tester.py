@@ -946,13 +946,13 @@ for line in list_of_command_output:
 # This variable can hold one of two values: desktop, server
 # This script tries to find if package: xserver-xorg-core  is installed, and if it is then the we are running on a 'Desktop' - version of the os.
 os_is_server_or_desktop_version = 'unknown'
-commands_to_run = ['dpkg', '-l', 'xserver-xorg-core']
+commands_to_run = ['dpkg', '-l', 'pulseaudio']
 list_of_command_output, error_happened, list_of_errors = run_external_program(commands_to_run)
 
 if error_happened == False:
 	if 'no packages found matching' in list_of_command_output:
 		os_is_server_or_desktop_version = 'server'
-	if 'no packages found matching' not in list_of_command_output:
+	else:
 		os_is_server_or_desktop_version = 'desktop'
 
 # Read in settings from LoudnessCorrection settings file.
