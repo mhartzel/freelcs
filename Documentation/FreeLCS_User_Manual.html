@@ -38,6 +38,8 @@
     <h3> <a href="#%20Optimizing%20processing%20speed">Optimizing processing
         speed</a></h3>
     <h3> <a href="#Configuring%20software%20Raid">Configuring software Raid</a></h3>
+    <h3><a href="#How_to_partition_disks_bigger_than_2_TB_on_Linux">How to
+        partition disks bigger than 2 TB on Linux</a></h3>
     <h3> <a href="#Notes%20on%20loudness%20correction%20usage">Notes on
         loudness correction usage</a></h3>
     <h3><a href="#Setting%20up%20automatic%20security%20updates">Setting up
@@ -150,7 +152,7 @@
     <ul>
     </ul>
     <br>
-    The installation instruction below apply to <strong>Ubuntu Desktop</strong>.
+    The installation instructions below apply to <strong>Ubuntu Desktop</strong>.
     This is the most user friendly of the supported operating systems.
     Installation on other supported platforms differs from the instructions
     below.<br>
@@ -170,6 +172,14 @@
       <li>If you don't know whether to choose 32 or 64 bit Linux version, use
         the 32 bit one if you have less than 4 GB of ram and 64 bit if you have
         more.</li>
+      <li>If you are planning to install Debian or Ubuntu on a virtual machine,
+        then choose the 32 bit version of the operating system since it will
+        need less ram than the 64 bit version. A good starting point for a
+        company server might be assigning 2 GB of ram and 6 processor cores for
+        the virtual machine running FreeLCS. All cores will only be used when
+        there are 3 files to process simultaneously. When FreeLCS virtual server
+        is idle, the cores are available to other virtual machines running on
+        the same hardware.</li>
       <li>It is recommended to use the JFS - filesystem for all disks, since the
         default filesystem ext4 has some quite serious bugs / design flaws that
         are probably never going to be fixed. JFS was designed by IBM to be a
@@ -717,8 +727,7 @@
     </ul>
     <p><br>
     </p>
-    <p><img src="Pictures/01A.wav-Loudness_Results_Graphics.jpg"><br>
-    </p>
+    <img alt="" src="Pictures/Beethoven-Coriolan_Overture_Op_62.wav-Loudness_Results_Graphics-small.png">
     <br>
     <br>
     <h2> <a id="Mounting the server HotFolder from OS X">Mounting the server
@@ -1100,7 +1109,9 @@
       <li>Get root-permission with the command: <strong>sudo su</strong><br>
       </li>
       <li>Partition each disk as type: <strong>Primary</strong>, &nbsp; <strong>fd
-          (Linux raid autodetect)</strong>.</li>
+          (Linux raid autodetect)</strong>. If your disks are bigger than 2 TB
+        then <a href="#How_to_partition_disks_bigger_than_2_TB_on_Linux">see
+          here how to partition them.</a></li>
       <li>Install Linux raid software: <strong>apt-get install mdadm</strong></li>
       <li>Create a raid 0 device from the three disks: <strong>mdadm --verbose
           --create /dev/md0 --level=0 --raid-devices=3 /dev/sdb1 /dev/sdc1
@@ -1167,6 +1178,25 @@
         writable for everyone: <strong>chmod -R 777 &nbsp;</strong><strong>
           /mountpoint</strong></li>
     </ul>
+    <br>
+    <h2><a id="How_to_partition_disks_bigger_than_2_TB_on_Linux">How to
+        partition disks bigger than 2 TB on Linux</a></h2>
+    <ul>
+      <li>If you use hard disks bigger than 2 TB, then the disks must be
+        partitioned using the <a href="https://en.wikipedia.org/wiki/GUID_Partition_Table">GPT</a>
+        format. Use <strong>parted</strong> to create GPT partitions on the
+        disks. The easiest way is to install and use the graphical version of
+        parted called:&nbsp; <strong>gparted</strong></li>
+      <li>The commandline procedure to use the text based <strong>parted</strong>
+        to create a partition spanning the whole disk <strong>/dev/sdb</strong>
+        and setting the partition type to Raid is:</li>
+    </ul>
+    <div style="margin-left: 80px;"><strong>sudo parted -a optimal /dev/sdb<br>
+        mklabel gpt<br>
+        mkpart primary 0% 100% <br>
+        set 1 raid on<br>
+        quit<br>
+      </strong></div>
     <br>
     <h2> <a id="Notes on loudness correction usage">Notes on loudness
         correction usage</a></h2>
@@ -1452,6 +1482,11 @@
     <br>
     <h3> Important notes:</h3>
     <ul>
+      <li>It is very important that you restore FreeLCS onto the same Linux
+        distro and version that it was originally installed on. There are some
+        differences between Linux versions and FreeLCS adjusts the installation
+        according to these differences. FreeLCS might not work correctly if
+        restored onto a wrong distro or version.</li>
       <li>When you first run the FreeLCS installer you define which user account
         is used to run FreeLCS programs. It is important that you create this
         same user on all machines where you restore a FreeLCS backup. If the

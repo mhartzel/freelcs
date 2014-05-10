@@ -21,6 +21,9 @@
     <br>
     <a href="#Libav-tools_vs_FFmpeg">Libav-tools vs. FFmpeg</a><br>
     <br>
+    <a href="#How_to_use_FFmpeg_instead_of_libav-tools">How to use FFmpeg
+      instead of libav-tools</a><br>
+    <br>
     <a href="FreeLCS_FAQ.html#Libav-tools%20/%20FFmpeg%20and%20patents">Libav-tools
       / FFmpeg and patents</a><br>
     <br>
@@ -154,24 +157,54 @@
         decision was influenced by the Debian / Ubuntu maintainer. He probably
         had a strong view about the issue, because he himself was part of the
         group that forked FFmpeg to start the libav - project.</li>
-      <li>FreeLCS 2.5 uses libav by default. Not because I think that libav is
-        better than FFmpeg, but because libav is easily available to Debian and
-        Ubuntu users and FFmpeg is not. I quite strongly disagree with the way
-        the group that created the libav fork handled the situation. They tried
-        to hijack FFmpeg website, stated that they are the successor of the
-        FFmpeg project (they are not) and influenced Debian and Ubuntu not to
-        include FFmpeg in their package repositories anymore, thus removing
-        freedom of choice from the user. In the open source world it is quite ok
-        to fork a project and developed it to a new direction. But you must earn
-        your reputation by making a superior product. When you have something
-        good to offer then people will start to use it. It seems to me that the
-        libav - group tried to hijack users of the FFmpeg - project, and that is
-        not acceptable.</li>
+      <li>FreeLCS 2.5 uses libav by default. Not because I think libav is better
+        than FFmpeg, but because libav is easily available to Debian and Ubuntu
+        users and FFmpeg is not. This due to the maintainer in Debian and
+        Ubuntu. He is part of the group that forked FFmpeg source code to start
+        the libav - project. More on the FFmpeg vs. libav situation can be read
+        <a href="http://blog.pkh.me/p/13-the-ffmpeg-libav-situation.html">here</a>.</li>
       <li>FreeLCS searches for both the ffmpeg and avconv executables and if
         both are found in the path, then avconv is used to process files. If
         only ffmpeg is found, then it is used.</li>
-      <li>More on the FFmpeg vs. libav situation can be read <a href="http://blog.pkh.me/p/13-the-ffmpeg-libav-situation.html">here</a>.</li>
     </ul>
+    <p><br>
+    </p>
+    <h2><a id="How_to_use_FFmpeg_instead_of_libav-tools">How to use FFmpeg
+        instead of libav-tools</a></h2>
+    <ul>
+      <li>Libav-tools should be fine for most users of FreeLCS. Libav is based
+        on the same codebase as FFmpeg and development is mostly focused on the
+        video side of the tools. Audio functionality rarely changes. If you
+        however need to use FFmpeg for some reason, for example for the small
+        bug that is in avconv shipped with Ubuntu 14.04 (<a href="known_problems.txt">read
+          about it in here</a>), here are some instructions for how to install
+        FFmpeg. <strong>Note that I have not tested FreeLCS with the current
+          versions of FFmpeg, you are on your own here :)</strong></li>
+      <li>Stop FreeLCS: &nbsp; <strong>sudo&nbsp;
+          /etc/init.d/loudnesscorrection_init_script&nbsp; stop</strong></li>
+      <li>When FreeLCS starts, it checks if it can find FFmpeg or avconv. If
+        both are found then avconv is always used instead of FFmpeg. Because of
+        this you must first remove avconv and libav-tools:&nbsp; <strong>sudo&nbsp;
+          apt-get&nbsp; remove&nbsp; libav-tools</strong></li>
+      <li>Navigate to: <a href="http://ffmpeg.gusari.org/static/">http://ffmpeg.gusari.org/static/</a>&nbsp;
+        and download a current version of FFmpeg, 32 bit or 64 bit version
+        depending on the version of the operating system you are going to
+        install it on. FFmpeg is built daily from current source code by
+        automation and put on the site for download. The site seems to hold
+        about two months of latest versions. Choose any package, the version
+        that has the text "latest" in its name is always the latest one.</li>
+      <li>Open the tar package (substitute the name of the file you downloaded
+        here): <strong>tar&nbsp; xzvf&nbsp; ffmpeg.static.32bit.latest.tar.gz</strong></li>
+      <li>Copy ffmpeg to a system directory so that FreeLCS can find it:&nbsp; <strong>sudo&nbsp;
+          cp&nbsp; ffmpeg&nbsp; /usr/bin/</strong></li>
+      <li>Make sure FFmpeg file permissions are correct:&nbsp; <strong>sudo&nbsp;
+          chmod&nbsp; 755&nbsp; /usr/bin/ffmpeg</strong></li>
+      <li>Restart FreeLCS either by rebooting your machine or by giving this
+        command:&nbsp; <strong>sudo&nbsp; -b&nbsp;
+          /etc/init.d/loudnesscorrection_init_script&nbsp; restart</strong></li>
+    </ul>
+    <p><br>
+    </p>
     <p><br>
     </p>
     <h2><a id="Libav-tools / FFmpeg and patents">Libav-tools / FFmpeg and
@@ -407,12 +440,17 @@
     <h2><a id="Is MXF supported ?">Is MXF supported ?</a></h2>
     <ul>
       <li>Libav-tools seems to have some support for MXF and I've been able to
-        extract audio from MXF with it. However as all channels of a mix must be
-        in one file this might be impractical. If the audio inside MXF is stored
-        as separate channels, then the user must combine them to a single file
-        before loudness correction.</li>
+        extract audio from MXF - wrapped files with it. FreeLCS 2.5 allows the
+        user to define channel mappings and extract audio from MXF files using
+        these mappings. However MXF is not one format, but a family of formats.
+        Every hardware and software vendor seem to have their own version of
+        MXF. MXF files created with one device might not be compatible with a
+        device created by another vendor. Because of this there is no guarantee
+        that FreeLCS can process every MXF - file you encounter. It is best to
+        do a thorough test with a large set of different MXF files before you
+        make this feature part of your permanent workflow. More about the MXF
+        remix mapping feature can be found in the user manual.</li>
     </ul>
-    <br>
     <br>
     <h2><a id="Any suggestion for free tools to manipulate the Flac format ?">Any
         suggestion for free tools to manipulate the Flac format ?</a></h2>
@@ -457,8 +495,8 @@
     <br>
     LTS stands for <strong>L</strong>ong <strong>T</strong>erm <strong>S</strong>upport.
     Ubuntu LTS releses get security updates for 5 years from the first release
-    date. <strong>Ubuntu 12.04 LTS</strong> that was released at April 2012 and
-    it will get security updates until April 2017.<br>
+    date. <strong>Ubuntu 12.04 LTS</strong> will get security updates until
+    April 2017 and <strong>Ubuntu 14.04 LTS </strong>until April 2019.<br>
     <br>
     Canonical releases a new Ubuntu LTS version every 2 years. If you install
     FreeLCS on Ubuntu 12.04 then you will need to upgrade the software not

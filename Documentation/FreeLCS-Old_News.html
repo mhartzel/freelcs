@@ -3,9 +3,26 @@
   <head>
     <meta content="text/html; charset=utf-8" http-equiv="content-type">
     <title>FreeLCS-Old_News</title>
+    <link href="Stylesheets/freelcs_stylesheet.css" rel="stylesheet" type="text/css">
   </head>
   <body>
     <h2><strong>Old news:</strong> </h2>
+    <strong>2013.03.10 FreeLCS 2.2 released.<br>
+    </strong>
+    <ul>
+      <li><strong></strong>This is a maintenance bug fix release. This version
+        fixes a couple of bugs that sometimes caused file processing to hang.
+        This release also adds code that catches possible Python error messages
+        and sends them to the user. This helps to identify what situation caused
+        the error.</li>
+      <li>Addition to the manual "How to synchronize server clock to a NTP
+        server".</li>
+      <li>Correction to manual: "Use UUID as the device name when configuring
+        software raid". This solves the problem where raid device number
+        sometimes changes when a kernel update is installed.</li>
+      <li>The installer no longer installs FFmpeg, but if the user does, then
+        FFmpeg is used for file processing.</li>
+    </ul>
     <strong>2012.10.11</strong> FreeLCS 2.1 released.
     <ul>
       <li>This release fixes a bug: bit depth was not preserved if input file

@@ -4,15 +4,16 @@
     <meta content="text/html; charset=UTF-8" http-equiv="content-type">
     <title>FreeLCS</title>
     <meta content="Mikael Hartzell" name="author">
-    <link href="freelcs_stylesheet.css" rel="stylesheet" type="text/css">
     <meta content="Free EBU R128 Loudness Correction Server" name="description">
     <meta content="Free EBU R128 automatic loudness correction" name="keywords">
+    <link href="Stylesheets/freelcs_stylesheet.css" rel="stylesheet" type="text/css">
   </head>
   <body>
     <h1><big>FreeLCS</big> <small>Free Loudness Correction Server <br>
       </small></h1>
-    <hr> [<a href="FreeLCS_FAQ.html">FAQ</a>]&nbsp; [<a href="FreeLCS_User_Manual.html">Manual</a>]&nbsp;
-    [<a href="https://sourceforge.net/projects/freelcs/files/">Downloads</a>]&nbsp;<br>
+    <hr> [<a href="FreeLCS_FAQ.html">FAQ</a>]&nbsp; [<a href="FreeLCS_User_Manual.html">User
+      Manual</a>]&nbsp; [<a href="https://sourceforge.net/projects/freelcs/files/">Downloads</a>]&nbsp;
+    [<a href="Changelog.txt">Changelog</a>]&nbsp; <br>
     <br>
     <br>
     FreeLCS stands for <strong>Free Loudness Correction Server</strong>.
@@ -37,7 +38,23 @@
     More detailed information can be found in the <a href="FreeLCS_FAQ.html">FAQ</a>
     and <a href="FreeLCS_User_Manual.html">User Manual</a>.<br>
     <h1><strong>Latest news:</strong></h1>
-    <h2>2013.12.04 FreeLCS 2.4 released.</h2>
+    <h4>2014.05.20 FreeLCS 2.5 released.</h4>
+    <ul>
+      <li>This is new release adds major new features. If you are happy with
+        your current FreeLCS 2.3 or 2.4 installation then there is no reason to
+        upgrade.</li>
+      <li>Support for Debian 7, Ubuntu 12.04 Server, Ubuntu 14.04 Desktop and
+        Server added. Note that installation on Debian 7 or Ubuntu Server
+        requires some modifications to the operating system configuration before
+        installation.</li>
+      <li>FreeLCS is no longer tested with FFmpeg since FFmpeg is no longer
+        easily available in Ubuntu 14.04 repositories. The only common tool
+        easily avaible to Debian 7 and Ubuntu 12.04 and 14.04 users is avconv
+        from libav-tools. FreeLCS uses avconv if it is installed by the user. There
+        is a small known problem with avconv that ships with Ubuntu 14.04 , <a
+          href="known_problems.txt">read about it here</a>.</li>
+    </ul>
+    <h4>2013.12.04 FreeLCS 2.4 released.</h4>
     <ul>
       <li>Libebur128 source code repository that FreeLCS uses during
         installation was reorganized by its author. The change broke
@@ -78,25 +95,6 @@
         FreeLCS usage in the point of view of a common user.&nbsp; Read it here:
         <a href="Introduction_To_Loudness_Correction/html/Aanekkyyden%20Hallinta.html">Äänekkyyden
           Hallinta</a>.</span></h4>
-    <p><strong>2013.03.10</strong> FreeLCS 2.2 released.</p>
-    <ul>
-      <li>This is a maintenance bug fix release. This version fixes a couple of
-        bugs that sometimes caused file processing to hang. This release also
-        adds code that catches possible Python error messages and sends them to
-        the user. This helps to identify what situation caused the error.<br>
-      </li>
-      <li>Addition to the manual "<a href="FreeLCS_User_Manual.html#Synchronizing%20clock%20to%20a%20NTP%20time%20server">How
-          to synchronize server clock to a NTP server</a>".</li>
-      <li>Correction to manual: "<a href="FreeLCS_User_Manual.html#Configuring%20software%20Raid">Use
-          UUID as the device name when configuring software raid</a>". This
-        solves the problem where raid device number sometimes changes when a
-        kernel update is installed.<br>
-      </li>
-      <li><a href="FreeLCS_FAQ.html#What%20formats%20are%20supported%20?">The
-          installer no longer installs FFmpeg</a>, but if the user does, then
-        FFmpeg is used for file processing.</li>
-      <li><a href="Changelog.txt">Changelog</a>.</li>
-    </ul>
     Older news can be found <a href="FreeLCS-Old_News.html">here</a>.<br>
     <br>
     <h1> <a id="Features">Features</a></h1>

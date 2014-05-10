@@ -1,0 +1,7 @@
+Ubuntu 14.04
+-------------
+Ubuntu 14.04 ships with avconv version 9.11 and I encountered the following problem with it while doing regression testing with my 150 test files:
+
+- Avconv 9.11 detects micosoft gsm audio codec format (microsoft GSM 6.10) sample rate incorrectly. 32 KHz is recognized as 8 KHz. The playback speed of the resulting output file is incorrect. This codec format is not widely used, so the impact of this bug is very low. If this format is important to you, then you might consider uninstalling libav-tools and installing a current version of FFMpeg instead. See FAQ if you want to use FFmpeg instead of avconv.
+
+
