@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="en">
+  <head>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type">
+    <title>Machine readable results and MXF audio remix mapping</title>
+  </head>
+  <body> <a href="#Machine_readable_results">Machine readable results</a><br>
+    <br>
+    <a href="#Separator_characters_in_the_machine_readable_results_file">Separator
+      characters in the machine readable results file</a><br>
+    <br>
+    <a href="#Machine_readable_results_file_format">Machine readable results
+      file format</a><br>
+    <br>
+    <a href="#MXF_audio_remixing">MXF audio remixing</a><br>
+    <br>
+    <br>
+    <br>
+    <h2><a id="Machine_readable_results">Machine readable results</a></h2>
+    <p>FreeLCS 2.5 lets you define how it outputs its results. Most users will
+      want the old behavior from FreeLCS version up to 2.4 that is: create a
+      loudness corrected audio file, a history graphics file and delete
+      multistream files immediately after all audiostreams have been extracted
+      to individual files (multistream extraction requires the installation of
+      libav-tools). This behaviour is achieved by setting <strong>"Yes"</strong>&nbsp;
+      in "<strong>Use FreeLCS file output defaults</strong>".</p>
+    <p>If you would like to integrate FreeLCS as a loudness measurement step in
+      your automated workflow, then you might want to change the defaults.</p>
+    <p><br>
+    </p>
+    <img alt="" src="Pictures/Installation-17.jpg"><br>
+    <br>
+    <br>
+    When you set "<strong>Use FreeLCS file output defaults</strong>" to "<strong>No</strong>",
+    then you can change settings for the output files.<br>
+    <br>
+    If your FreeLCS - machine is the loudness measurement step in an automated
+    workflow, then you might want to disable some output file creation. You can
+    prevent creation of loudness corrected files and history graphics files. You
+    can also prevent FreeLCS from deleting multistream input files after audio
+    extraction if you need the original file to remain on the disk for further
+    processing.<br>
+    <br>
+    FreeLCS 2.5 is also able to output loudness measurement results in a machine
+    readable file. You might want this if some other device needs to read in
+    loudness measurement results to make a decision about how the file is
+    processed further.<br>
+    <p><br>
+    </p>
+    <img alt="" src="Pictures/Installation-18.jpg">
+    <p><br>
+    </p>
+    <h2><a id="Separator_characters_in_the_machine_readable_results_file">Separator
+        characters in the machine readable results file</a></h2>
+    <p>One input file can hold many audio streams in it and FreeLCS splits these
+      streams to individual files for loudness processing (if libav-tools is
+      installed). So a single input file can result in many output files whose
+      loudness is individually measured. Because of this the machine readable
+      results file may consist of loudness results of many audio files. </p>
+    <p>The results for a single file needs to be separated by a known character
+      or group of characters so that it is easy for a machine to know which
+      value is the integrated loudness result and which is the LRA result and so
+      on. In addition to this if the input file was split to many output files,
+      then we need to separate the results for individual files with a known
+      character or group of characters.<br>
+    </p>
+    <p>The separator characters must be chosen so that they can never appear in
+      a file name. If our separator character happens to be part of a file name,
+      then the machine trying to interpret our results will split the filename
+      at this character and the values following the split will be interpreted
+      incorrectly.</p>
+    <p>This problem has been solved when the <a href="https://en.wikipedia.org/wiki/ASCII">ASCII
+        character set</a> was designed. The designers assigned two <a href="https://en.wikipedia.org/wiki/Delimiter#ASCII_delimited_text">characters
+        for this job</a>: <strong>ASCII character 31</strong> is meant for
+      separating different values from each other and <strong>ASCII character
+        30</strong> is meant for separating different sets of data from each
+      other. Character 31 is called <strong>Unit Separator</strong> and
+      character 30 is called the <strong>Record Separator</strong>. The
+      operating system don't allow users to use these characters in file names,
+      so these characters are safe to use as data separator characters.</p>
+    <p>The machine readable results file is only a text file with the loudness
+      measurement values in it separated by know characters. However there might
+      sometimes be reason for a person to open a machine readable results file
+      in a text editor to check the values inside it. This is not possible if
+      the ASCII character 30 is used as the separator for results for different
+      files. In this case the user sees the results as one big line of text
+      because the text editor is not clever enough to split results for
+      different files to separate lines of text. This is why I chose to use the
+      windows line feed string (ASCII character 13 followed with character 10)
+      as the default record separator. When this record separator is used, then
+      a machine readable results file becomes much more readable when opened in
+      a text editor, because the editor splits the results for individual files
+      as separate lines of text.</p>
+    <p>However you can select any non printable ASCII character as the unit and
+      record separator. You can use 1 or 2 character strings for each.</p>
+    <p><br>
+    </p>
+    <h2><a id="Machine_readable_results_file_format">Machine readable results
+        file format</a></h2>
+    <p>The machine readable results file name is always:&nbsp;<strong>
+        InputFileName-machine_readable_results.txt</strong></p>
+    <p>Example: Input file name is:&nbsp; <strong>Euroviisut-2007-Final.mp4</strong></p>
+    <p>Machine readable results file name is:&nbsp; <strong>Euroviisut-2007-Final.mp4-machine_readable_results.txt</strong></p>
+    <p>This means that if you know the name of the input file, you can get the
+      machine readable results file name just by appending "<strong>-machine_readable_results.txt</strong>"
+      to it.<br>
+      <strong></strong></p>
+    <p><strong><br>
+      </strong></p>
+    <p>A machine readable results file always has information about all audio
+      streams of the input file. Values for one output file are separated with
+      the unit separator string and the record separator string is used when
+      results for one ouput file ends and results for another starts. Unit and
+      record separator strings are both defined during FreeLCS installation.</p>
+    <p><br>
+    </p>
+    <p><strong style="text-decoration: underline;">The items in the machine
+        readable results file are:</strong></p>
+    <p>Note: the item count starts from zero.</p>
+    <p><br>
+      <strong>00</strong> = The number of this mix. <br>
+      <strong>01</strong> = Total number of supported streams in the input file.<br>
+      <strong>02</strong> = Total number of streams in the input file.<br>
+      <strong>03</strong> = Create Loudness Corrected Files (True / False).<br>
+      <strong>04</strong> = Number of files in this mix.<br>
+      <br>
+      <strong>05</strong> = Integrated Loudness (If loudness is below
+      measurement threshhold, then this value is 'inf').<br>
+      <strong>06</strong> = Loudness Range.<br>
+      <strong>07</strong> = Highest Peak (dBFS or dBTP depending what user
+      selected during installation).<br>
+      <strong>08</strong> = Number Of Channels in this mix. <br>
+      <strong>09</strong> = Sample Rate.<br>
+      <strong>10</strong> = Bit Depth.<br>
+      <strong>11</strong> = Duration rounded to seconds.</p>
+    <p><br>
+      <strong>12</strong> = Loudness calculation error code (Codes explained
+      below).<br>
+      <strong>13</strong> = Reason for error (text string).</p>
+    <p><br>
+      <strong>14</strong> = List of output filenames for the mix.</p>
+    <p><br>
+      <br>
+      <strong style="text-decoration: underline;">The item number 12 above holds
+        an error code that is explained here:</strong><br>
+      <br>
+      <strong>0</strong> = No Errors<br>
+      <strong>1</strong> = Loudness is below measurement threshold (-70 LUFS)<br>
+      <strong>2</strong> = Error in integrated loudness calculation<br>
+      <strong>3</strong> = File transfer failed<br>
+      <strong>4</strong> = Audio duration less than 1 second<br>
+      <strong>5</strong> = Zero channels in audio stream<br>
+      <strong>6</strong> = Channel count bigger than 6 is unsupported<br>
+      <strong>7</strong> = No Audio Streams Found In File <br>
+      <strong>8</strong> = Sox encountered an error<br>
+      <strong>9</strong> = There are unsupported audio streams in input MXF -
+      file while remix function is on. This may create unwanted results<br>
+      <strong>100</strong> = Unknown Error</p>
+    <br>
+    <strong style="text-decoration: underline;">Detailed explanations of the
+      values:</strong><br>
+    <br>
+    <strong style="text-decoration: underline;">Values 00 - 04:</strong><br>
+    <ul>
+      <li><strong>Item 0:</strong> The number of the mix. If there are many
+        audio streams in the input file, then this number tells you which one of
+        these streams this mix is.</li>
+      <li><strong>Item 1</strong>: Total number of supported streams in the
+        input file. There can be both unsupported and supported streams in a
+        input file. FreeLCS is not able to process unsupported streams. This
+        value tells you how many streams FreeLCS is able to process from the
+        input file.</li>
+      <li><strong>Item 2</strong>: Total number of streams in the input file.
+        This number contains both the unsupported and supported streams in a
+        input file.</li>
+      <li><strong>Item 3</strong>: Create Loudness Corrected Files (True /
+        False). The value tells you if the user has instructed FreeLCS to create
+        loudness corrected files or not (this is set during FreeLCS
+        installation). If this is "False" then FreeLCS will not produce loudness
+        corrected audio files.</li>
+      <li><strong>Item 4</strong>: Number of files in this mix. This tells you
+        how many audio files this mix resulted to. This number is always 1
+        except in two cases. It is 0 when an error happened and FreeLCS was not
+        able to process the file. In this case this number tells you that there
+        are zero resulting output files.&nbsp; The other case when this value
+        differs from 0 is when the output file size is so big that FreeLCS needs
+        to split the file to one file per audio channel. In this case this number
+        tells you the number of audio files the mix was split into. The items
+        from number 14-&gt; will tell you the names of output files.</li>
+    </ul>
+    <strong style="text-decoration: underline;">Values 05 - 11:</strong><br>
+    <br>
+    <ul>
+      <li><strong>Item 5</strong>: Integrated Loudness of the uncorrected input
+        file. If loudness is below measurement threshhold, then this value is
+        'inf'.</li>
+      <li>
+        <strong>Item 6</strong>: Loudness Range of the uncorrected input file.</li>
+      <li>
+        <strong>Item 7</strong>: Highest Peak of the uncorrected input file
+        (dBFS or dBTP depending what user selected during installation).</li>
+      <li>
+        <strong>Item 8</strong>: Number Of Channels in this mix. This tells you
+        how many channels there are in this mix.</li>
+      <li>
+        <strong>Item 9</strong>: Sample Rate.</li>
+      <li>
+        <strong>Item 10</strong>: Bit Depth.</li>
+      <li>
+        <strong>Item 11</strong>: Duration rounded to seconds.</li>
+    </ul>
+    <strong style="text-decoration: underline;">Values 12 - 13:</strong><br>
+    <br>
+    <ul>
+      <li><strong>Item 12:</strong> This value holds possible error codes. If
+        this value is 0 then FreeLCS successfully processed the stream,
+        otherwise processing failed and there will be no loudness calculation
+        results nor loudness corrected files for this stream. Error code <strong>9</strong>
+        means that in addition of supported files, there are some audio files
+        inside the MXF wrapper that FreeLCS is not able to process. When MXF
+        audio remixing feature is on, then this situation may produce unexpected
+        results meaning that audio channel inside the MXF file might be combined
+        in ways that the user did not anticipate. MXF audio remixing works
+        correctly only when FreeLCS is able to process all files inside the MXF
+        wrapper. Other error codes are explained above.</li>
+      <li><strong>Item 13:</strong> This item is the error message text. If there
+        is no error then this item is empty. </li>
+    </ul>
+    <strong style="text-decoration: underline;">Value 14:</strong><br>
+    <br>
+    <ul>
+      <li><strong>Item 14:</strong> The items from number 14-&gt; will tell you
+        the names of output files. If the output file has been split to one file
+        per audio channel, then here are all the output file names separated by
+        the unit separator.</li>
+    </ul>
+    <p><br>
+    </p>
+    <p><strong>Record Separator:</strong></p>
+    <ul>
+      <li>This is by default ASCII characters 13 and 10. When you encounter this
+        string in the machine readable results file it means that values for one
+        input stream ends here and values for the next stream starts.</li>
+    </ul>
+    <br>
+    <br>
+    <h3>Example 1:</h3>
+    FreeLCS has processed a input file that has only one audio stream in it. It
+    is a wav file named: <strong>Test_File-01.wav</strong>&nbsp; The machine
+    readable results file name is:&nbsp; <strong>Test_File-01.wav-machine_readable_results.txt</strong><br>
+    <br>
+    The values inside the machine readable results file are below. Note that I
+    have changed the unit separator character to comma here to make the text
+    more human readable :)<br>
+    <br>
+    <strong style="font-family: monospace;">1, 1, 1, True, 1, -22.9, 12.2, -6.7,
+      2, 48000, 16, 3070, 0,&nbsp; , Test_File-01_-23_LUFS.wav</strong><br>
+    <br>
+    <br>
+    If you want a machine to interpret the values inside the machine readable
+    file, then you first must check the item <strong>12</strong>. If it is non
+    zero, then an error happened and there are no loudness calculation results
+    to read. The error number tells you what the the error was and the error
+    message text is located in value <strong>13</strong>. If item <strong>12</strong>
+    is zero, then FreeLCS successfully processed the file. Then you must check
+    item <strong>1</strong> because it tells you how many output files resulted
+    from the input file. This item tells you how many loudness results you need
+    to read (one set of results for each output file). In this case there is
+    only 1 output file. Now you can read in the loudness measurement results
+    from items numbered 5 - 7.<br>
+    <br>
+    <br>
+    <h3>Example 2:</h3>
+    FreeLCS has processed a transport stream file that had 14 audio streams in
+    it. All streams were first saved to separate files and then went through
+    loudness processing.<br>
+    <br>
+    The input file name was:&nbsp; <strong>20120712-2000-0000091191.mpg</strong>&nbsp;
+    and the machine readable results file name was:&nbsp; <strong>20120712-2000-0000091191.mpg-machine_readable_results.txt</strong><br>
+    <br>
+    The result sets for each file are separeted by the record separator, in this
+    case it is ASCII characters 13 and 10 which is the code that instructs a
+    text editor to split the text to separate text lines.<br>
+    <br>
+    There are now 14 sets of results because the one input file did result in 14
+    output files. Note that there was an error processing streams 4 and 6. The
+    streams were present in the transport stream, but they had zero audio
+    channels.<br>
+    <br>
+    The values inside the machine readable results file are below. Note that I
+    have changed the unit separator character to comma here to make the text
+    more human readable :)<br>
+    <br>
+    <br>
+    <strong><span style="font-family: monospace;">1, 12, 14, True, 1, -21.5,
+        10.7, -8.5, 2, 48000, 16, 600, 0,&nbsp; ,
+        20120712-2000-0000091191-AudioStream-1-ChannelCount-2_-23_LUFS.wav<br>
+        2, 12, 14, True, 1, -18.0, 4.2, -0.6, 2, 48000, 16, 600, 0,&nbsp; ,
+        20120712-2000-0000091191-AudioStream-2-ChannelCount-2_-23_LUFS.wav<br>
+        3, 12, 14, True, 1, -24.0, 13.0, -5.8, 2, 48000, 16, 600, 0,&nbsp; ,
+        20120712-2000-0000091191-AudioStream-3-ChannelCount-2_-23_LUFS.wav<br>
+        4, 12, 14, True, 0, 0, 0, 0, 0, 0, 0, 0, 5, There are zero audio
+        channels in stream number 4,&nbsp;<br>
+        5, 12, 14, True, 1, -20.7, 11.3, -6.7, 2, 48000, 16, 600, 0,&nbsp; ,
+        20120712-2000-0000091191-AudioStream-5-ChannelCount-2_-23_LUFS.wav<br>
+        6, 12, 14, True, 0, 0, 0, 0, 0, 0, 0, 0, 5, There are zero audio
+        channels in stream number 6,&nbsp;<br>
+        7, 12, 14, True, 1, -17.2, 12.6, -6.1, 2, 48000, 16, 600, 0,&nbsp; ,
+        20120712-2000-0000091191-AudioStream-7-ChannelCount-2_-23_LUFS.wav<br>
+        8, 12, 14, True, 1, -24.8, 10.7, -10.1, 2, 48000, 16, 58, 0,&nbsp; ,
+        20120712-2000-0000091191-AudioStream-8-ChannelCount-2_-23_LUFS.wav<br>
+        9, 12, 14, True, 1, -23.9, 3.1, -9.7, 2, 48000, 16, 600, 0,&nbsp; ,
+        20120712-2000-0000091191-AudioStream-9-ChannelCount-2_-23_LUFS.wav<br>
+        10, 12, 14, True, 1, -23.4, 10.0, -4.2, 2, 48000, 16, 600, 0,&nbsp; ,
+        20120712-2000-0000091191-AudioStream-10-ChannelCount-2_-23_LUFS.wav<br>
+        11, 12, 14, True, 1, -22.6, 6.6, -7.5, 2, 48000, 16, 600, 0,&nbsp; ,
+        20120712-2000-0000091191-AudioStream-11-ChannelCount-2_-23_LUFS.wav<br>
+        12, 12, 14, True, 1, -18.8, 14.1, -1.6, 2, 48000, 16, 600, 0,&nbsp; ,
+        20120712-2000-0000091191-AudioStream-12-ChannelCount-2_-23_LUFS.wav<br>
+        13, 12, 14, True, 1, -20.0, 2.8, -8.2, 2, 48000, 16, 600, 0,&nbsp; ,
+        20120712-2000-0000091191-AudioStream-13-ChannelCount-2_-23_LUFS.wav<br>
+        14, 12, 14, True, 1, -21.4, 8.2, -3.5, 2, 48000, 16, 600, 0,&nbsp; ,
+        20120712-2000-0000091191-AudioStream-14-ChannelCount-2_-23_LUFS.wav</span></strong><br>
+    <br>
+    <br>
+    <h3>Example 3:</h3>
+    FreeLCS has processed a file that had 16 audio streams in it. EBU R128 only
+    supports channel counts up to 6, but streams 1 - 10 had more than 6 channels
+    each resulting in an error. The name of the input file was:&nbsp; <strong>16_audio_streams.mkv</strong>&nbsp;
+    and the name of the machine readable results file was:&nbsp; <strong>16_audio_streams.mkv-machine_readable_results.txt</strong><br>
+    <br>
+    The values inside the machine readable results file are below. Unit
+    separator character has been changed to comma here to make the text more
+    human readable.<br>
+    <br>
+    <br>
+    <strong><span style="font-family: monospace;">1, 6, 16, True, 0, 0, 0, 0, 0,
+        0, 0, 0, 6, There are 12 channels in stream 1, only channel counts from
+        one to six are supported,&nbsp;<br>
+        2, 6, 16, True, 0, 0, 0, 0, 0, 0, 0, 0, 6, There are 15 channels in
+        stream 2, only channel counts from one to six are supported,&nbsp;<br>
+        3, 6, 16, True, 0, 0, 0, 0, 0, 0, 0, 0, 6, There are 13 channels in
+        stream 3, only channel counts from one to six are supported,&nbsp;<br>
+        4, 6, 16, True, 0, 0, 0, 0, 0, 0, 0, 0, 6, There are 14 channels in
+        stream 4, only channel counts from one to six are supported,&nbsp;<br>
+        5, 6, 16, True, 0, 0, 0, 0, 0, 0, 0, 0, 6, There are 11 channels in
+        stream 5, only channel counts from one to six are supported,&nbsp;<br>
+        6, 6, 16, True, 0, 0, 0, 0, 0, 0, 0, 0, 6, There are 16 channels in
+        stream 6, only channel counts from one to six are supported,&nbsp;<br>
+        7, 6, 16, True, 0, 0, 0, 0, 0, 0, 0, 0, 6, There are 10 channels in
+        stream 7, only channel counts from one to six are supported,&nbsp;<br>
+        8, 6, 16, True, 0, 0, 0, 0, 0, 0, 0, 0, 6, There are 9 channels in
+        stream 8, only channel counts from one to six are supported,&nbsp;<br>
+        9, 6, 16, True, 0, 0, 0, 0, 0, 0, 0, 0, 6, There are 8 channels in
+        stream 9, only channel counts from one to six are supported,&nbsp;<br>
+        10, 6, 16, True, 0, 0, 0, 0, 0, 0, 0, 0, 6, There are 7 channels in
+        stream 10, only channel counts from one to six are supported,&nbsp;<br>
+        11, 6, 16, True, 1, -18.4, 0.0, -23.0, 6, 48000, 24, 20, 0,&nbsp; ,
+        16_audio_streams-AudioStream-11-ChannelCount-6_-23_LUFS.wav<br>
+        12, 6, 16, True, 1, -18.4, 0.0, -23.0, 5, 48000, 32, 20, 0,&nbsp; ,
+        16_audio_streams-AudioStream-12-ChannelCount-5_-23_LUFS.wav<br>
+        13, 6, 16, True, 1, -19.2, 0.0, -22.1, 4, 48000, 8, 20, 0,&nbsp; ,
+        16_audio_streams-AudioStream-13-ChannelCount-4_-23_LUFS.wav<br>
+        14, 6, 16, True, 1, -21.2, 0.0, -23.0, 3, 48000, 16, 20, 0,&nbsp; ,
+        16_audio_streams-AudioStream-14-ChannelCount-3_-23_LUFS.wav<br>
+        15, 6, 16, True, 1, -23.0, 0.0, -23.0, 2, 48000, 24, 20, 0,&nbsp; ,
+        16_audio_streams-AudioStream-15-ChannelCount-2_-23_LUFS.wav<br>
+        16, 6, 16, True, 1, -26.0, 0.0, -23.0, 1, 48000, 32, 20, 0,&nbsp; ,
+        16_audio_streams-AudioStream-16-ChannelCount-1_-23_LUFS.wav</span></strong><br>
+    <br>
+    <br>
+    <strong style="text-decoration: underline;">Example 4:</strong><br>
+    <br>
+    FreeLCS has processed a file that had 3 streams in it. The file is 3 hous 12
+    minutes long and first stream is 5.1 audio. The first stream is so big that
+    the output file would exeed wav format max size of 4 GB, so FreeLCS did
+    split this file to one file per audio channel resulting in 6 output files.<br>
+    <br>
+    The name of the input file was:&nbsp; <strong>Euroviisut-2007-Final.mp4&nbsp;</strong>
+    and the name of the machine readable results file was:&nbsp; <strong>Euroviisut-2007-Final.mp4-machine_readable_results.txt<br>
+    </strong><br>
+    The values inside the machine readable results file are below. Unit
+    separator character has been changed to comma here to make the text more
+    human readable.<strong> </strong>Also note that the first line of text is
+    so long that its wraps around to the next line, the 3 different audio
+    streams are separated by an empty line here for better readability.<strong><br>
+      <br>
+    </strong><br>
+    <strong><span style="font-family: monospace;">1, 3, 3, True, 6, -14.8, 4.4,
+        -0.8, 6, 48000, 16, 11554, 0,&nbsp; ,
+        Euroviisut-2007-Final-AudioStream-1-ChannelCount-6-Channel-1_-23_LUFS.wav,
+        Euroviisut-2007-Final-AudioStream-1-ChannelCount-6-Channel-2_-23_LUFS.wav,
+        Euroviisut-2007-Final-AudioStream-1-ChannelCount-6-Channel-3_-23_LUFS.wav,
+        Euroviisut-2007-Final-AudioStream-1-ChannelCount-6-Channel-4_-23_LUFS.wav,
+        Euroviisut-2007-Final-AudioStream-1-ChannelCount-6-Channel-5_-23_LUFS.wav,
+        Euroviisut-2007-Final-AudioStream-1-ChannelCount-6-Channel-6_-23_LUFS.wav
+        <br>
+        <br>
+        2, 3, 3, True, 1, -10.4, 8.5, 1.3, 2, 48000, 16, 11554, 0,&nbsp; ,
+        Euroviisut-2007-Final-AudioStream-2-ChannelCount-2_-23_LUFS.wav<br>
+        <br>
+        3, 3, 3, True, 1, -16.8, 7.8, -3.1, 2, 48000, 16, 11554, 0,&nbsp; ,
+        Euroviisut-2007-Final-AudioStream-3-ChannelCount-2_-23_LUFS.wav</span></strong><br>
+    <br>
+    <br>
+    <br>
+    <h2><a id="MXF_audio_remixing">MXF audio remixing</a></h2>
+    <p><br>
+    </p>
+    <p><br>
+    </p>
+    <p><br>
+    </p>
+    <p><br>
+    </p>
+    <p><br>
+    </p>
+    <p><br>
+    </p>
+    <p><br>
+    </p>
+    <p><br>
+    </p>
+  </body>
+</html>

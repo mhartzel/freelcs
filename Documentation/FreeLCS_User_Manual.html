@@ -18,6 +18,8 @@
         Server modifications needed before FreeLCS installation</a></h3>
     <h3> </h3>
     <h3><a href="#Installation">Installation</a></h3>
+    <h3><a href="Machine_readable_results_and_MXF_audio_remix_mapping.html"><span
+          style="text-decoration: underline;"><strong>Machine readable results</strong></span></a></h3>
     <h3><a href="Ubuntu_Server_modifications_needed_before_FreeLCS_installation.html#Installing%20FreeLCS%20on%20a%20computer%20without%20a%20graphical%20user%20interface">Installing
         FreeLCS on a computer without a graphical user interface</a></h3>
     <h3> <a href="#Files%20that%20FreeLCS%20creates%20in%20your%20system">Files
@@ -347,8 +349,7 @@
     </ul>
     <p><br>
     </p>
-    <p><img src="Pictures/Installation-03.jpg"><br>
-    </p>
+    <img src="Pictures/Installation-03.jpg">
     <p><br>
     </p>
     <ul>
@@ -483,6 +484,27 @@
     <p><br>
     </p>
     <ul>
+      <li>The next window will allow you to define how FreeLCS ouputs its
+        results. Most users will use the defaults meaning FreeLCS creates a
+        loudness corrected&nbsp; audio file, a history graphics file and deletes
+        multistream files immediately after all audiostreams have been extracted
+        to individual files (multistream extraction requires you to install
+        libav-tools). This is how FreeLCS versions up to 2.4 worked. If you are
+        one of these users, then just make sure "<strong>Use FreeLCS file output
+          defaults</strong>" is "<strong>Yes</strong>" and go to the next
+        screen.</li>
+      <li>If you however would like to integrate FreeLCS as a loudness
+        measurement step in your automated workflow, then you might want to
+        change the defaults. FreeLCS 2.5 is able to output loudness measurement
+        results in a machine readable file. <a href="Machine_readable_results_and_MXF_audio_remix_mapping.html">Read
+          more about it here</a>.</li>
+    </ul>
+    <p><br>
+    </p>
+    <img alt="" src="Pictures/Installation-17.jpg">
+    <p><br>
+    </p>
+    <ul>
       <li>The next window will let you share the "HotFolder" to the network.
         Select "Yes" if you want users to be able to drop in files to the
         HotFolder through the network.</li>
@@ -495,8 +517,7 @@
     </ul>
     <p><br>
     </p>
-    <p><img src="Pictures/Installation-08.jpg"><br>
-    </p>
+    <img src="Pictures/Installation-08.jpg">
     <p><br>
     </p>
     <ul>
@@ -912,7 +933,8 @@
     what you selected as the "<strong>Number Of Processor Cores To Use</strong>"
     in the installer. Each file is simultaneously processed by two processor
     cores so if you selected six cores to be used, then three files are
-    processed at the same time (as in the example picture below).<br>
+    processed at the same time (in the example picture below 14 cores are
+    assigned, so seven files can be processed simultaneously).<br>
     <br>
     The bottom of the page shows the last 100 files that were processed.<br>
     <br>
