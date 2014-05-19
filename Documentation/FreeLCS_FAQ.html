@@ -388,17 +388,17 @@
     <br>
     <h2><a id="Is MXF supported ?">Is MXF supported ?</a></h2>
     <ul>
-      <li>Libav-tools seems to have some support for MXF and I've been able to
-        extract audio from MXF - wrapped files with it. FreeLCS 2.5 allows the
-        user to define channel mappings and extract audio from MXF files using
-        these mappings. However MXF is not one format, but a family of formats.
-        Every hardware and software vendor seem to have their own version of
-        MXF. MXF files created with one device might not be compatible with a
-        device created by another vendor. Because of this there is no guarantee
-        that FreeLCS can process every MXF - file you feed it. It is best to do
-        a thorough test with a large set of different MXF files before you make
-        this feature part of your workflow. More about the MXF remix mapping
-        feature can be found in the <a href="Machine_readable_results_and_MXF_audio_remix_mapping.html#MXF_audio_remixing">user
+      <li>Libav-tools supports MXF and I've been able to extract audio from MXF
+        - wrapped files with it. FreeLCS 2.5 allows the user to define MXF audio
+        remix maps that define how audio is to be recombined to different mixes
+        before loudness processing. However MXF is not one format, but a family
+        of formats. Every hardware and software vendor seem to have their own
+        version of it. MXF files created with one device might not be compatible
+        with a device created by another vendor. Because of this there is no
+        guarantee that FreeLCS can process every MXF - file you feed it. It
+        might be a good idea to do a thorough test with a large set of different
+        MXF files before you make this feature part of your workflow. More about
+        the MXF remix mapping feature can be found in the <a href="Machine_readable_results_and_MXF_audio_remix_mapping.html#MXF_audio_remixing">user
           manual</a>.</li>
     </ul>
     <br>
@@ -439,12 +439,12 @@
       <li>Ubuntu 14.04 LTS Server</li>
       <li>Debian 7</li>
     </ul>
-    The plan is to support all <strong>Debian </strong>releses from version <strong>7
-    </strong>and<strong> </strong>all future <strong>Ubuntu</strong> <strong>LTS</strong>
-    releases.<br>
+    The plan is to support all stable <strong>Debian </strong>releases from
+    version <strong>7 </strong>and<strong> </strong>all future <strong>Ubuntu</strong>
+    <strong>LTS</strong> releases.<br>
     <br>
     LTS stands for <strong>L</strong>ong <strong>T</strong>erm <strong>S</strong>upport.
-    Ubuntu LTS releses get security updates for 5 years from the first release
+    Ubuntu LTS releases get security updates for 5 years from the first release
     date. <strong>Ubuntu 12.04 LTS</strong> will get security updates until
     April 2017 and <strong>Ubuntu 14.04 LTS </strong>until April 2019.<br>
     <br>

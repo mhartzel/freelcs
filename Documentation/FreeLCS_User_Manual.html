@@ -96,38 +96,46 @@
     <br>
     <h2> <a id="Features">Features</a></h2>
     <ul>
-      <li> Measures loudness according to EBU R128.</li>
-      <li>For each processed file the server creates a loudness history graphics
-        file which shows loudness variations inside the file.</li>
-      <li>Creates loudness corrected versions of each file dropped in the
-        servers HotFolder.</li>
-      <li>Natively supports <strong>wav</strong>, <strong>flac</strong> and <strong>ogg</strong>
-        formats.<br>
-      </li>
-      <li>If user installs libav-tools, then all formats supported by it can be
-        processed. libav-tools supports a large number of formats.<br>
-      </li>
-      <li> Supports files with several audio streams. Each stream is demuxed to
-        a separate file and loudness corrected.</li>
-      <li>Even video files can be dropped in for processing. Audio streams are
-        demuxed from the file and processed (requires libav-tools).<br>
-      </li>
-      <li> Supports channel counts from mono to 5.1.</li>
-      <li> Takes advantage of multiple processor cores to run calculations
+      <li>Automatically loudness corrects audio files to conform with EBU R128
+        loudness recommendation.</li>
+      <li>Very easy to use, just drop in your file and copy back the loudness
+        corrected version.</li>
+      <li>Creates loudness history graphics that allows the user to see how
+        loudness varies inside a file (example picture below).</li>
+      <li>Supports channel counts from mono to 5.1.</li>
+      <li>Supports EBU TruePeak measurement.</li>
+      <li>Uses a protective limiter to keep peaks in the allowed range where
+        needed.</li>
+      <li>Takes advantage of multiple processor cores to run calculations
         simultaneously.</li>
-      <li>Uses a protective limiter to prevent clipping in cases where file
-        loudness must be increased.<br>
-      </li>
-      <li> Automatic file deletion after a set time.</li>
-      <li>Possible error messages are emailed to the admin.</li>
-      <li>All software is free and Open Source.<br>
-      </li>
-      <li>Very easy to use, just drop in your file and copy back the corrected
-        version.</li>
+      <li>User is able to define how many audio files are processed at the same
+        time, limited only by available cpu processing power and hard disk
+        bandwidth.</li>
+      <li>Supports writing loudness measurement results to a machine readable
+        file.</li>
+      <li>Modest hardware requirements, runs fine with only 2 GB of ram.</li>
+      <li>Can be run inside a virtual machine, no need for physical hardware.</li>
+      <li>Fast processing. On typical hardware you can expect processing to be
+        10 - 20 faster than realtime.</li>
+      <li>Cleans up automatically by deleting all files after a set time delay.</li>
+      <li>Sends possible error messages to the admin by email.</li>
+      <li>If user installs <strong>libav-tools</strong> then additional
+        features becomes available:</li>
+      <ul>
+        <li>The wide range of libav-tools supported formats can be processed.</li>
+        <li>Support for multistream files, all audio streams are extracted and
+          processed individually.</li>
+        <li>Extract audio from wrappers containing both video and audio.</li>
+        <li>Remix audio from MXF files to required mixes before loudness
+          processing.</li>
+      </ul>
+      <li>All software is free and Open Source. Install in as many computers as
+        you like.</li>
+      <li>Runs on the free Linux operating system, no need to pay for
+        proprietary os installation.</li>
       <li>Easy to integrate in many workflows.</li>
-      <li>Modest hardware requirements.</li>
       <li>Written in Python 3.</li>
-      <li>More detailed information can be found in the <a href="FreeLCS_FAQ.html">FAQ</a>.</li>
+      <li>More specific information can be found in the <a href="FreeLCS_FAQ.html">FAQ</a>.</li>
     </ul>
     <br>
     <img title="Example: Loudness history graphics" src="Pictures/Beethoven-Coriolan_Overture_Op_62.wav-Loudness_Results_Graphics.jpg"><br>
@@ -336,6 +344,9 @@
         agreement.</li>
       <li>FreeLCS is published under a permissive license that lets you use,
         modify and distribute the program.</li>
+      <li>This license lets you use FreeLCS in your business or home free of any
+        charges. You are allowed to install FreeLCS in as many computers as you
+        want. FreeLCS is free software.</li>
     </ul>
     <p><br>
     </p>
@@ -485,18 +496,18 @@
     </p>
     <ul>
       <li>The next window will allow you to define how FreeLCS ouputs its
-        results. Most users will use the defaults meaning FreeLCS creates a
-        loudness corrected&nbsp; audio file, a history graphics file and deletes
-        multistream files immediately after all audiostreams have been extracted
-        to individual files (multistream extraction requires you to install
-        libav-tools). This is how FreeLCS versions up to 2.4 worked. If you are
-        one of these users, then just make sure "<strong>Use FreeLCS file output
-          defaults</strong>" is "<strong>Yes</strong>" and go to the next
-        screen.</li>
+        results. Most users will use the defaults meaning FreeLCS creates
+        loudness corrected audio files, history graphics files and deletes
+        multistream files immediately after audiostreams have been extracted
+        from it (multistream extraction requires you to install libav-tools).
+        This is how FreeLCS versions up to 2.4 worked by default. If you want
+        FreeLCS to work just like it did in versions up to 2.4, then make sure "<strong>Use
+          FreeLCS file output defaults</strong>" is "<strong>Yes</strong>" and
+        go to the next screen.</li>
       <li>If you however would like to integrate FreeLCS as a loudness
-        measurement step in your automated workflow, then you might want to
-        change the defaults. FreeLCS 2.5 is able to output loudness measurement
-        results in a machine readable file. <a href="Machine_readable_results_and_MXF_audio_remix_mapping.html">Read
+        measurement step in your automated file processing workflow, then you
+        might want to change the defaults. FreeLCS 2.5 is able to output
+        loudness measurement results in a machine readable file. <a href="Machine_readable_results_and_MXF_audio_remix_mapping.html">Read
           more about it here</a>.</li>
     </ul>
     <p><br>
@@ -506,16 +517,15 @@
     </p>
     <ul>
       <li>The following window allows you to define how you would like audio
-        inside a MXF wrapped file to be recombined before loudness processing. <a
-          href="Machine_readable_results_and_MXF_audio_remix_mapping.html#MXF_audio_remixing">Read
-          more about it here</a>. Most users will leave "<strong>Enable MXF Audio
-          Remixing</strong>" to "<strong>No</strong>".</li>
+        inside a MXF wrapped file to be recombined to new mixes before loudness
+        processing. <a href="Machine_readable_results_and_MXF_audio_remix_mapping.html#MXF_audio_remixing">Read
+          more about it here</a>. Most users will leave "<strong>Enable MXF
+          Audio Remixing</strong>" to "<strong>No</strong>".</li>
       <li>In FreeLCS 2.5 it is possible to restrict libav-tools to only process
-        a small set of formats or all allow it to process all formats it
-        supports. This feature is mainly designed to allow the user to restrict
-        processing only to patent free formats even when libav-tools is
-        installed. Format patentability varies from country to country, see more
-        about it in <a href="FreeLCS_FAQ.html#Libav-tools%20/%20FFmpeg%20and%20patents">FAQ</a>.</li>
+        a small set of formats or allow it to process all formats it supports.
+        This feature is mainly designed to allow the user to restrict processing
+        only to patent free formats even when libav-tools is installed. Format
+        patentability varies from country to country, see more about it in <a href="FreeLCS_FAQ.html#Libav-tools%20/%20FFmpeg%20and%20patents">FAQ</a>.</li>
       <li>Settings for allowed libav-tools formats are located at the bottom of
         this window. These settings will have no effect if you don't install
         libav-tools.</li>
@@ -527,8 +537,8 @@
     </p>
     <ul>
       <li>In the following picture libav-tools processing has been restricted to
-        wrapper formats: <strong>Wav, Flac, Ogg; Matroska, MXF, Webm&nbsp;</strong>
-        and&nbsp; codec formats: <strong>PCM, Flac, Vorbis</strong>.</li>
+        wrapper formats: <strong>Wav, Flac, Ogg, Matroska, MXF, Webm&nbsp;</strong>
+        and codec formats: <strong>PCM, Flac, Vorbis</strong>.</li>
     </ul>
     <p><br>
     </p>

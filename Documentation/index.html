@@ -11,8 +11,8 @@
   <body>
     <h1><big>FreeLCS</big> <small>Free Loudness Correction Server <br>
       </small></h1>
-    <hr> [<a href="FreeLCS_FAQ.html">FAQ</a>]&nbsp; [<a href="FreeLCS_User_Manual.html">User
-      Manual</a>]&nbsp; [<a href="https://sourceforge.net/projects/freelcs/files/">Downloads</a>]&nbsp;
+    <hr> [<a href="FreeLCS_FAQ.html">FAQ</a>]&nbsp; [<a href="#Features">Features</a>]&nbsp;[<a
+      href="FreeLCS_User_Manual.html">User Manual</a>]&nbsp; [<a href="https://sourceforge.net/projects/freelcs/files/">Downloads</a>]&nbsp;
     [<a href="Changelog.txt">Changelog</a>]&nbsp; <br>
     <br>
     <br>
@@ -32,13 +32,14 @@
     Sata disks in software RAID 0. <br>
     <br>
     FreeLCS uses other open source programs to get the job done (Linux,
-    libebur128, gnuplot, libav (optional), sox, mediainfo). All software is free
-    and Open Source.<br>
+    libebur128, gnuplot, libav-tools (optional), sox, mediainfo). All software
+    is free and Open Source.<br>
     <br>
-    More detailed information can be found in the <a href="FreeLCS_FAQ.html">FAQ</a>
-    and <a href="FreeLCS_User_Manual.html">User Manual</a>.<br>
+    More detailed information can be found in <a href="FreeLCS_FAQ.html">FAQ</a>,
+    <a href="#Features">Features</a> and <a href="FreeLCS_User_Manual.html">User
+      Manual</a>.<br>
     <h1><strong>Latest news:</strong></h1>
-    <h4>2014.05.20 FreeLCS 2.5 released.</h4>
+    <h4>2014.05.25 FreeLCS 2.5 released.</h4>
     <ul>
       <li>This is new release adds major new features. If you are happy with
         your current FreeLCS 2.3 or 2.4 installation then there is no reason to
@@ -50,9 +51,9 @@
       <li>FreeLCS is no longer tested with FFmpeg since FFmpeg is no longer
         easily available in Ubuntu 14.04 repositories. The only common tool
         easily avaible to Debian 7 and Ubuntu 12.04 and 14.04 users is avconv
-        from libav-tools. FreeLCS uses avconv if it is installed by the user. There
-        is a small known problem with avconv that ships with Ubuntu 14.04 , <a
-          href="known_problems.txt">read about it here</a>.</li>
+        from libav-tools. FreeLCS uses avconv if it is installed by the user.
+        There is a small known problem with avconv that ships with Ubuntu 14.04
+        , <a href="known_problems.txt">read about it here</a>.</li>
     </ul>
     <h4>2013.12.04 FreeLCS 2.4 released.</h4>
     <ul>
@@ -99,34 +100,44 @@
     <br>
     <h1> <a id="Features">Features</a></h1>
     <ul>
-      <li> Calculates loudness according to EBU R128 for files dropped into the
-        HotFolder.</li>
-      <li>For each file it creates a loudness history graphics file which gives
-        visual feedback of the loudness variations in the file.</li>
-      <li>Creates loudness corrected versions of each file dropped in the
-        servers HotFolder.</li>
-      <li>Uses libav to pre-process files and supports the huge number of file
-        formats libav supports.<br>
-      </li>
-      <li> Supports files with several audio streams. Each stream is demuxed to
-        a separate file and loudness corrected.</li>
-      <li>Even video files can be dropped in for processing. Audio streams are
-        demuxed from the file and processed.<br>
-      </li>
-      <li> Supports channel counts from mono to 5.1.</li>
-      <li> Takes advantage of multiple processor cores to run calculations
+      <li>Automatically loudness corrects audio files to conform with EBU R128
+        loudness recommendation.</li>
+      <li>Very easy to use, just drop in your file and copy back the loudness
+        corrected version.</li>
+      <li>Creates loudness history graphics that allows the user to see how
+        loudness varies inside a file (example picture below).</li>
+      <li>Supports channel counts from mono to 5.1.</li>
+      <li>Supports EBU TruePeak measurement.</li>
+      <li>Uses a protective limiter to keep peaks in the allowed range where
+        needed.</li>
+      <li>Takes advantage of multiple processor cores to run calculations
         simultaneously.</li>
-      <li>Uses a protective limiter to prevent clipping in cases where volume
-        must be increased.<br>
-      </li>
-      <li> Automatic file deletion after a set time.</li>
-      <li>Possible error messages are emailed to the admin.</li>
-      <li>All software is free and Open Source.<br>
-      </li>
-      <li>Very easy to use, just drop in your file and copy back the corrected
-        version.</li>
+      <li>User is able to define how many audio files are processed at the same
+        time, limited only by available cpu processing power and hard disk
+        bandwidth.</li>
+      <li>Supports writing loudness measurement results to a machine readable
+        file.</li>
+      <li>Modest hardware requirements, runs fine with only 2 GB of ram.</li>
+      <li>Can be run inside a virtual machine, no need for physical hardware.</li>
+      <li>Fast processing. On typical hardware you can expect processing to be
+        10 - 20 faster than realtime.</li>
+      <li>Cleans up automatically by deleting all files after a set time delay.</li>
+      <li>Sends possible error messages to the admin by email.</li>
+      <li>If user installs <strong>libav-tools</strong> then additional
+        features becomes available:</li>
+      <ul>
+        <li>The wide range of libav-tools supported formats can be processed.</li>
+        <li>Support for multistream files, all audio streams are extracted and
+          processed individually.</li>
+        <li>Extract audio from wrappers containing both video and audio.</li>
+        <li>Remix audio from MXF files to required mixes before loudness
+          processing.</li>
+      </ul>
+      <li>All software is free and Open Source. Install in as many computers as
+        you like.</li>
+      <li>Runs on the free Linux operating system, no need to pay for
+        proprietary os installation.</li>
       <li>Easy to integrate in many workflows.</li>
-      <li>Modest hardware requirements.</li>
       <li>Written in Python 3.</li>
       <li>More specific information can be found in the <a href="FreeLCS_FAQ.html">FAQ</a>.<br>
       </li>
