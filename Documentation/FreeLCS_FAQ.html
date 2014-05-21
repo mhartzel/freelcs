@@ -633,11 +633,11 @@
     <p><span style="font-family: monospace;"><br>
       </span></p>
     <span style="font-family: monospace;"> </span>
-    <p><span style="font-family: monospace;">2014.05.07_klo_15.31.23 &nbsp; <strong>Error
+    <p><span style="font-family: monospace;">2014.05.07_at_15.31.23 &nbsp; <strong>Error
           deleting files queued for deletion [Errno 16] Device or resource busy:
           '/data/LoudnessCorrection/.</strong></span><wbr><span style="font-family: monospace;"><strong>nfs00000001094fe93f00000007'</strong><br>
       </span> <span style="font-family: monospace;"><br>
-        2014.05.07_klo_15.31.28 &nbsp; <strong>Error deleting files queued for
+        2014.05.07_at_15.31.28 &nbsp; <strong>Error deleting files queued for
           deletion [Errno 16] Device or resource busy:
           '/data/LoudnessCorrection/.</strong></span><wbr><span style="font-family: monospace;"><strong>nfs00000001094fe93f00000007'</strong><br>
       </span> <span style="font-family: monospace;"></span></p>
@@ -670,7 +670,7 @@
     <span style="font-family: monospace;"> From: VirtualMachine_1@company.com<br>
       <br>
       <br>
-      2014.05.05_klo_16.56.14 &nbsp; <strong>ERROR !!! in libebur128 timeslice
+      2014.05.05_at_16.56.14 &nbsp; <strong>ERROR !!! in libebur128 timeslice
         calculation: File size has changed during processing from: 3168838 -&gt;
         65536:&nbsp; HALONEN 100.wav</strong><br>
     </span>
@@ -700,8 +700,8 @@
     <p><span style="font-family: monospace;">From: VirtualMachine_1@company.com<br>
       </span></p>
     <p><span style="font-family: monospace;"><br>
-        2014.05.14_klo_13.40.44&nbsp;&nbsp; <strong>Error reading HotFolder
-          file metadata [Errno 2] No such file or directory:
+        2014.05.14_at_13.40.44&nbsp;&nbsp; <strong>Error reading HotFolder file
+          metadata [Errno 2] No such file or directory:
           '/data/LoudnessCorrection/KUN_Putkiremonttipuffi GRAF.wav'</strong><br>
       </span> <span style="font-family: monospace;"></span></p>
     <p><span style="font-family: monospace;"><br>
@@ -718,34 +718,31 @@
     <h3>Many error messages for one audio file</h3>
     <p>This error message can mean one of two things. If you get these messages
       and they are all about the same audio file, then the user has deleted the
-      file while FreeLCS was processing it. Note the last message "<strong>No
-        such file or directory</strong>", this is the main cause for all these
-      messages.</p>
+      file just when FreeLCS was about to start processing it.</p>
     <p>If you get these messages and they mention several files, then this can
       mean that the hard disk might be failing. I have not tried to get rid of
       these error messages since they might indicate a hard disk failure.</p>
     <hr style="color: black;"><span style="font-family: monospace;">Subject:
       LoudnessCorrection Error Message</span><span style="font-family: monospace;">
     </span>
-    <p><span style="font-family: monospace;">From: VirtualMachine_1@company.com</span></p>
-    <p><span style="font-family: monospace;"><br>
+    <p><span style="font-family: monospace;">From: VirtualMachine_1@company.com<br>
+        <br>
       </span></p>
-    <span style="font-family: monospace;"> 2013.11.22_klo_12.02.18&nbsp;&nbsp; <strong>ERROR
-        !!! I could not parse sox channel count string: '' for file:&nbsp; UMK 0
-        FM A01 heikkarl.wav<br>
-      </strong>2013.11.22_klo_12.02.18&nbsp;&nbsp; <strong>VIRHE !!! ERROR !!!
-        I could not parse sox sample rate string: '' for file:&nbsp; UMK 0 FM
-        A01 heikkarl.wav<br>
-      </strong>2013.11.22_klo_12.02.18&nbsp;&nbsp; <strong>VIRHE !!! ERROR !!!
-        I could not parse sox bit depth string: '' for file:&nbsp; UMK 0 FM A01
-        heikkarl.wav<br>
-      </strong>2013.11.22_klo_12.02.18&nbsp;&nbsp; <strong>VIRHE !!! ERROR !!!
-        I could not parse sox sample count string: '' for file:&nbsp; UMK 0 FM
-        A01 heikkarl.wav<br>
-      </strong>2013.11.22_klo_12.02.18&nbsp;&nbsp; <strong>ERROR !!! in
+    <span style="font-family: monospace;"> 2013.11.22_at_12.02.18&nbsp;&nbsp; <strong>ERROR
+        !!! I could not parse sox channel count string: 'can't open input file
+        /mountpoint/raid-disk/LoudnessCorrection/Channels-2.0.flac<br>
+      </strong>2013.11.22_at_12.02.18&nbsp;&nbsp; <strong>ERROR !!! I could not
+        parse sox sample rate string: '' for file: Channels-2.0.flac<br>
+      </strong>2013.11.22_at_12.02.18&nbsp;&nbsp; <strong>ERROR !!! I could not
+        parse sox bit depth string: '' for file: Channels-2.0.flac<br>
+      </strong>2013.11.22_at_12.02.18&nbsp;&nbsp; <strong>ERROR !!! I could not
+        parse sox sample count string: '' for file: Channels-2.0.flac<br>
+      </strong>2013.11.22_at_12.02.18&nbsp;&nbsp; <strong>ERROR !!! in
         libebur128 timeslice calculation: Error accessing file: [Errno 2] No
-        such file or directory: '/mounttipiste/raid-levy/LoudnessCorrection/UMK
-        0 FM A01 heikkarl.wav': UMK 0 FM A01 heikkarl.wav</strong><br>
+        such file or directory:
+        '/mountpoint/raid-disk/LoudnessCorrection/Channels-2.0.flac'</strong><br>
+      2013.11.22_at_12.02.18&nbsp;&nbsp; <strong>ERROR !!!!!!! FILE
+        Channels-2.0.flac dissapeared from disk before processing started.</strong><br>
       <br>
     </span>
     <p> <span style="font-family: monospace;"><span class="il">LoudnessCorrection</span>
@@ -776,7 +773,7 @@
     <p><span style="font-family: monospace;"><br>
       </span></p>
     <span style="font-family: monospace;"> </span>
-    <p><span style="font-family: monospace;">2013.12.17_klo_16.15.59 &nbsp; <strong>Sox
+    <p><span style="font-family: monospace;">2013.12.17_at_16.15.59 &nbsp; <strong>Sox
           error: &nbsp;BUU_Radslor_syskonen_degeri.</strong></span><wbr><span style="font-family: monospace;"><strong>wav:
           sox WARN wav: Premature EOF on .wav input file</strong><br>
       </span> <span style="font-family: monospace;"></span></p>
