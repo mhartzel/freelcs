@@ -73,6 +73,12 @@
     <a href="#What%20Linux%20distributions%20are%20supported%20?">What Linux
       distributions are supported ?</a><br>
     <br>
+    <a href="#FreeLCS_error_messages">FreeLCS error messages</a><br>
+    <br>
+    <a href="#Critical_error_messages">Critical error messages</a><br>
+    <br>
+    <a href="#Non-critical_error_messages">Non-critical error messages</a><br>
+    <br>
     <br>
     <br>
     <br>
@@ -455,6 +461,342 @@
     <ul>
     </ul>
     <br>
+    <h2><a id="FreeLCS_error_messages" name="FreeLCS_error_messages"></a>FreeLCS
+      error messages</h2>
+    <p>If you enable FreeLCS to send error messages by email, then you probably
+      sometimes get some messages that at first might seem puzzling. Here are
+      the explanations :)</p>
+    <p><br>
+    </p>
+    <h2><a id="Critical_error_messages">Critical error messages</a></h2>
+    <h3><span class="il">LoudnessCorrection</span> has stopped updating
+      timestamps</h3>
+    <p>If you get the following error message, then it means that FreeLCS has
+      encountered an error that it can not recover from and has stopped. FreeLCS
+      starts jobs in threads that periodically writes timestamps to a file. The
+      script "HeartBeat_Checker.py" watches this file and sends you email if one
+      or more timestamps stop updating. This means that a thread has crashed and
+      you need to restart FreeLCS to restore normal operation. You can restart
+      FreeLCS either by rebooting the computer or giving this command as root on
+      the commandline:</p>
+    <p><strong>/etc/init.d/loudnesscorrection_init_script restart</strong></p>
+    Note that it takes about 2 minutes for the service to start. This delay has
+    been put in because it takes some time before all Linux services are
+    available when the computer starts up.<strong><br>
+      <br>
+    </strong><br>
+    I have worked very hard to make FreeLCS solid as a rock. My goal is to make
+    it 100% reliable, so that it can be used in business environments. So you
+    should never see this message :) but with computers anything is possible :)
+    For example a failing hard disk may corrupt FreeLCS installation.<br>
+    <br>
+    <hr style="color: black;">
+    <p><span style="font-family: monospace;">Subject: LoudnessCorrection Error
+        Message</span></p>
+    <span style="font-family: monospace;"> </span>
+    <p><span style="font-family: monospace;">From: VirtualMachine_1@company.com</span><span
+        style="font-family: monospace;"><br>
+      </span> <span style="font-family: monospace;"></span></p>
+    <span style="font-family: monospace;"> </span>
+    <p><span style="font-family: monospace;"><strong><span class="il"><br>
+          </span></strong></span></p>
+    <p><span style="font-family: monospace;"><strong><span class="il">LoudnessCorrection</span>
+          has stopped updating 'main_thread' timestamps, the thread has probably
+          crashed and a restart of the script is needed. Last thread timestamp
+          update happened at: 2013.11.30 at 16:34:05</strong><br>
+      </span> <span style="font-family: monospace;"></span></p>
+    <p><span style="font-family: monospace;"></span> <span style="font-family: monospace;"><span
+          class="il"><br>
+        </span></span></p>
+    <p><span style="font-family: monospace;"><span class="il">LoudnessCorrection</span>
+        info:<br>
+        ------------------------------</span><wbr><span style="font-family: monospace;">--------<br>
+        Commandline: /usr/bin/<span class="il">LoudnessCorrection</span>.py
+        -configfile /etc/Loudness_Correction_Settings.pickle<br>
+      </span></p>
+    <p><span style="font-family: monospace;"> IP-Addresses: 192.168.1.1<br>
+        PID: 1777<br>
+      </span> <span style="font-family: monospace;"><span class="il">LoudnessCorrection</span>
+        version: 229<br>
+      </span> <span style="font-family: monospace;"><br>
+        HeartBeat Checker info:<br>
+        ------------------------------</span><wbr><span style="font-family: monospace;">--------<br>
+        Commandline: /usr/bin/HeartBeat_Checker.py -configfile
+        /etc/Loudness_Correction_</span><wbr><span style="font-family: monospace;">Settings.pickle<br>
+        PID: 1802<br>
+        HeartBeat Checker version: 020</span></p>
+    <p><span style="font-family: monospace;"></span></p>
+    <hr style="color: black;">
+    <p><br>
+      <span style="font-family: monospace;"></span></p>
+    <p><span style="font-family: monospace;"><br>
+      </span></p>
+    <h3>All Heartbeat timestamps started updating again</h3>
+    <p>If you got the message above informing you that a FreeLCS thread has
+      stopped updating timestamps, then you might get the following message if
+      the problem was caused by some temporary glitch that just prevented
+      FreeLCS from updating the timestamps in time, but did not crash FreeLCS.
+      This message tells you that FreeLCS is working normally again.</p>
+    <hr style="color: black;">
+    <p><span style="font-family: monospace;">Subject: LoudnessCorrection Error
+        Message</span> </p>
+    <span style="font-family: monospace;"></span>
+    <p><span style="font-family: monospace;">From: VirtualMachine_1@company.com</span></p>
+    <p><span style="font-family: monospace;"><br>
+      </span></p>
+    <span style="font-family: monospace;"> </span>
+    <p> </p>
+    <span style="font-family: monospace;"> </span>
+    <p><span style="font-family: monospace;"><strong>All Heartbeat timestamps
+          started updating again at: 2014.05.10 at 23:33:49</strong><br>
+      </span> </p>
+    <span style="font-family: monospace;"> <br>
+    </span>
+    <div class="im"><span style="font-family: monospace;"> LoudnessCorrection
+        info:<br>
+        ------------------------------</span><wbr><span style="font-family: monospace;">--------<br>
+      </span> </div>
+    <span style="font-family: monospace;"> Commandline:
+      /usr/bin/LoudnessCorrection.py -configfile /etc/Loudness_Correction_</span><wbr><span
+      style="font-family: monospace;">Settings.pickle<br>
+      IP-Addresses: 192.168.1.1<br>
+      PID: 17573</span><span style="font-family: monospace;"></span>
+    <div class="HOEnZb adL"><span style="font-family: monospace;"> </span>
+      <div class="im"><span style="font-family: monospace;">LoudnessCorrection
+          version: 264<br>
+        </span> <span style="font-family: monospace;"><br>
+          HeartBeat Checker info:<br>
+          ------------------------------</span><wbr><span style="font-family: monospace;">--------<br>
+          Commandline: /usr/bin/HeartBeat_Checker.py -configfile
+          /etc/Loudness_Correction_</span><wbr><span style="font-family: monospace;">Settings.pickle<br>
+          PID: 2572<br>
+          HeartBeat Checker version: 022</span></div>
+    </div>
+    <hr style="color: black;">
+    <p><br>
+    </p>
+    <p><br>
+    </p>
+    <h2><a id="Non-critical_error_messages">Non-critical error messages</a></h2>
+    <p>These error messages are usually harmless and can be ignored.</p>
+    <p><br>
+    </p>
+    <h3>HeartBeat_Checker has started</h3>
+    <p>The HeartBeat_Checker.py script sends this message when FreeLCS starts up.
+      If you set up a weekly reboot for the machine, then this message greets
+      you when FreeLCS service is up and running.</p>
+    <hr style="color: black;">
+    <p><span style="font-family: monospace;">Subject: HeartBeat_Checker has
+        started.</span> </p>
+    <span style="font-family: monospace;"></span>
+    <p><span style="font-family: monospace;">From: VirtualMachine_1@company.com</span></p>
+    <p><span style="font-family: monospace;"><br>
+      </span></p>
+    <span style="font-family: monospace;"> </span>
+    <p><span style="font-family: monospace;"><strong>HeartBeat_Checker started:
+          2014.04.14 at 07:05:07</strong><br>
+      </span> <span style="font-family: monospace;"><br>
+      </span></p>
+    <p><span style="font-family: monospace;">LoudnessCorrection info:<br>
+        ------------------------------</span><wbr><span style="font-family: monospace;">--------<br>
+        Commandline: /usr/bin/LoudnessCorrection.py -configfile
+        /etc/Loudness_Correction_Settings.pickle</span></p>
+    <span style="font-family: monospace;"> </span>
+    <p><wbr><span style="font-family: monospace;"><br>
+        IP-Addresses: 192.168.1.1<br>
+        PID: 1683<br>
+        LoudnessCorrection version: 229<br>
+      </span> <span style="font-family: monospace;"><br>
+        HeartBeat Checker info:<br>
+        ------------------------------</span><wbr><span style="font-family: monospace;">--------<br>
+        Commandline: /usr/bin/HeartBeat_Checker.py -configfile
+        /etc/Loudness_Correction_</span><wbr><span style="font-family: monospace;">Settings.pickle<br>
+        PID: 1696<br>
+        HeartBeat Checker version: 020</span></p>
+    <hr style="color: black;"><br>
+    <br>
+    <h3>Error deleting files queued for deletion</h3>
+    <p>You may see this error message with if you mount FreeLCS HotFolder with
+      the NFS protocol. This error happens when a user uses a program that
+      creates a file on the FreeLCS disk and then unlinks it.</p>
+    <p>According to: <a href="http://serverfault.com/questions/201294/nfsxxxx-files-appearing-what-are-those">http://serverfault.com/questions/201294/nfsxxxx-files-appearing-what-are-those</a>&nbsp;
+      Linux keeps this file available to the user while hiding the file from
+      others. The file is renamed with a name that starts with a dot and Linux
+      filesystem hides these files from file listings by default.</p>
+    <p>The hidden file will disappear when the user closes the program that
+      keeps the file open.</p>
+    <hr style="color: black;">
+    <p><span style="font-family: monospace;">Subject: LoudnessCorrection Error
+        Message</span> </p>
+    <span style="font-family: monospace;"></span>
+    <p><span style="font-family: monospace;">From: VirtualMachine_1@company.com</span></p>
+    <p><span style="font-family: monospace;"><br>
+      </span></p>
+    <span style="font-family: monospace;"> </span>
+    <p><span style="font-family: monospace;">2014.05.07_klo_15.31.23 &nbsp; <strong>Error
+          deleting files queued for deletion [Errno 16] Device or resource busy:
+          '/data/LoudnessCorrection/.</strong></span><wbr><span style="font-family: monospace;"><strong>nfs00000001094fe93f00000007'</strong><br>
+      </span> <span style="font-family: monospace;"><br>
+        2014.05.07_klo_15.31.28 &nbsp; <strong>Error deleting files queued for
+          deletion [Errno 16] Device or resource busy:
+          '/data/LoudnessCorrection/.</strong></span><wbr><span style="font-family: monospace;"><strong>nfs00000001094fe93f00000007'</strong><br>
+      </span> <span style="font-family: monospace;"></span></p>
+    <p><span style="font-family: monospace;"><br>
+      </span></p>
+    <p><span style="font-family: monospace;"> LoudnessCorrection info:<br>
+        ------------------------------</span><wbr><span style="font-family: monospace;">--------<br>
+        Commandline: /usr/bin/LoudnessCorrection.py -configfile
+        /etc/Loudness_Correction_</span><wbr><span style="font-family: monospace;">Settings.pickle<br>
+        IP-Addresses: 192.168.1.1<br>
+        PID: 1616<br>
+        LoudnessCorrection version: 229</span></p>
+    <p><span style="font-family: monospace;"></span></p>
+    <hr style="color: black;">
+    <p><br>
+      <span style="font-family: monospace;"></span></p>
+    <p><span style="font-family: monospace;"><br>
+      </span></p>
+    <h3> File size has changed during processing</h3>
+    <h3> </h3>
+    <p>I haven't been able to find a way to stop users from deleting files from
+      the HotFolder without affecting other file processing. The following error
+      message is caused when a user copies a file to the server, and the server
+      starts processing it. Now the user deletes the file and replaces it with a
+      file with the same name but with different size. FreeLCS notices that file
+      size has changed during processing.</p>
+    <hr style="color: black;">
+    <p><span style="font-family: monospace;">Subject: LoudnessCorrection Error
+        Message</span></p>
+    <span style="font-family: monospace;"> From: VirtualMachine_1@company.com<br>
+      <br>
+      <br>
+      2014.05.05_klo_16.56.14 &nbsp; <strong>ERROR !!! in libebur128 timeslice
+        calculation: File size has changed during processing from: 3168838 -&gt;
+        65536:&nbsp; HALONEN 100.wav</strong><br>
+    </span>
+    <p> <span style="font-family: monospace;"><br>
+        LoudnessCorrection info:<br>
+        ------------------------------</span><wbr><span style="font-family: monospace;">--------<br>
+        Commandline: /usr/bin/LoudnessCorrection.py -configfile
+        /etc/Loudness_Correction_Settings.pickle</span></p>
+    <span style="font-family: monospace;"> </span>
+    <p><wbr><span style="font-family: monospace;"><br>
+        IP-Addresses: 192.168.1.1<br>
+        PID: 1616<br>
+        LoudnessCorrection version: 229</span></p>
+    <hr style="color: black;">
+    <p><br>
+    </p>
+    <p><br>
+    </p>
+    <h3>Error reading HotFolder file metadata<br>
+    </h3>
+    <p>This error happens when user deletes a file that FreeLCS is about to
+      start processing. FreeLCS makes a final check before processing and
+      notices that the file is no longer available.</p>
+    <hr style="color: black;"><span style="font-family: monospace;">Subject:
+      LoudnessCorrection Error Message</span><span style="font-family: monospace;">
+    </span>
+    <p><span style="font-family: monospace;">From: VirtualMachine_1@company.com<br>
+      </span></p>
+    <p><span style="font-family: monospace;"><br>
+        2014.05.14_klo_13.40.44&nbsp;&nbsp; <strong>Error reading HotFolder
+          file metadata [Errno 2] No such file or directory:
+          '/data/LoudnessCorrection/KUN_Putkiremonttipuffi GRAF.wav'</strong><br>
+      </span> <span style="font-family: monospace;"></span></p>
+    <p><span style="font-family: monospace;"><br>
+      </span></p>
+    <p><span style="font-family: monospace;"> LoudnessCorrection info:<br>
+        --------------------------------------<br>
+        Commandline: /usr/bin/LoudnessCorrection.py -configfile
+        /etc/Loudness_Correction_Settings.pickle<br>
+        IP-Addresses: 192.168.1.1<br>
+        PID: 1699<br>
+        LoudnessCorrection version: 229</span></p>
+    <hr style="color: black;"> <br>
+    <br>
+    <h3>Many error messages for one audio file</h3>
+    <p>This error message can mean one of two things. If you get these messages
+      and they are all about the same audio file, then the user has deleted the
+      file while FreeLCS was processing it. Note the last message "<strong>No
+        such file or directory</strong>", this is the main cause for all these
+      messages.</p>
+    <p>If you get these messages and they mention several files, then this can
+      mean that the hard disk might be failing. I have not tried to get rid of
+      these error messages since they might indicate a hard disk failure.</p>
+    <hr style="color: black;"><span style="font-family: monospace;">Subject:
+      LoudnessCorrection Error Message</span><span style="font-family: monospace;">
+    </span>
+    <p><span style="font-family: monospace;">From: VirtualMachine_1@company.com</span></p>
+    <p><span style="font-family: monospace;"><br>
+      </span></p>
+    <span style="font-family: monospace;"> 2013.11.22_klo_12.02.18&nbsp;&nbsp; <strong>ERROR
+        !!! I could not parse sox channel count string: '' for file:&nbsp; UMK 0
+        FM A01 heikkarl.wav<br>
+      </strong>2013.11.22_klo_12.02.18&nbsp;&nbsp; <strong>VIRHE !!! ERROR !!!
+        I could not parse sox sample rate string: '' for file:&nbsp; UMK 0 FM
+        A01 heikkarl.wav<br>
+      </strong>2013.11.22_klo_12.02.18&nbsp;&nbsp; <strong>VIRHE !!! ERROR !!!
+        I could not parse sox bit depth string: '' for file:&nbsp; UMK 0 FM A01
+        heikkarl.wav<br>
+      </strong>2013.11.22_klo_12.02.18&nbsp;&nbsp; <strong>VIRHE !!! ERROR !!!
+        I could not parse sox sample count string: '' for file:&nbsp; UMK 0 FM
+        A01 heikkarl.wav<br>
+      </strong>2013.11.22_klo_12.02.18&nbsp;&nbsp; <strong>ERROR !!! in
+        libebur128 timeslice calculation: Error accessing file: [Errno 2] No
+        such file or directory: '/mounttipiste/raid-levy/LoudnessCorrection/UMK
+        0 FM A01 heikkarl.wav': UMK 0 FM A01 heikkarl.wav</strong><br>
+      <br>
+    </span>
+    <p> <span style="font-family: monospace;"><span class="il">LoudnessCorrection</span>
+        info:<br>
+        ------------------------------</span><wbr><span style="font-family: monospace;">--------<br>
+        Commandline: /usr/bin/<span class="il">LoudnessCorrection</span>.py
+        -configfile /etc/Loudness_Correction_</span><wbr><span style="font-family: monospace;">Settings.pickle<br>
+        IP-Addresses: 192.168.1.1<br>
+        PID: 1773<br>
+      </span> <span style="font-family: monospace;"><span class="il">LoudnessCorrection</span>
+        version: 229</span></p>
+    <p><span style="font-family: monospace;"></span></p>
+    <hr style="color: black;">
+    <p><span style="font-family: monospace;"><br>
+      </span></p>
+    <br>
+    <h3>Premature EOF on .wav input file</h3>
+    <p>FreeLCS uses sox to do the actual loudness adjustment of files. This
+      error message comes directly from sox and happens when file size announced
+      in a files header does not match the actual file size. This in turn might
+      be caused for example by a dropped network connection ending file transfer
+      prematurely.</p>
+    <hr style="color: black;">
+    <p><span style="font-family: monospace;">Subject: LoudnessCorrection Error
+        Message</span></p>
+    <span style="font-family: monospace;"> </span>
+    <p><span style="font-family: monospace;">From: VirtualMachine_1@company.com</span></p>
+    <p><span style="font-family: monospace;"><br>
+      </span></p>
+    <span style="font-family: monospace;"> </span>
+    <p><span style="font-family: monospace;">2013.12.17_klo_16.15.59 &nbsp; <strong>Sox
+          error: &nbsp;BUU_Radslor_syskonen_degeri.</strong></span><wbr><span style="font-family: monospace;"><strong>wav:
+          sox WARN wav: Premature EOF on .wav input file</strong><br>
+      </span> <span style="font-family: monospace;"></span></p>
+    <p><br>
+      <span style="font-family: monospace;"></span></p>
+    <p><span style="font-family: monospace;"></span> <span style="font-family: monospace;"><span
+          class="il">LoudnessCorrection</span> info:<br>
+        --------------------------------------</span></p>
+    <span style="font-family: monospace;"> </span>
+    <p><span style="font-family: monospace;"> Commandline: /usr/bin/<span class="il">LoudnessCorrection</span>.py
+        -configfile /etc/Loudness_Correction_</span><wbr><span style="font-family: monospace;">Settings.pickle<br>
+        IP-Addresses: 192.168.1.1<br>
+        PID: 1847<br>
+      </span> <span style="font-family: monospace;"><span class="il">LoudnessCorrection</span>
+        version: 229</span></p>
+    <hr style="color: black;">
+    <p><br>
+    </p>
+    <p><br>
+    </p>
     <p><br>
     </p>
     <p><br>
