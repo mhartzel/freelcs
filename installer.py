@@ -26,7 +26,7 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 
-version = '091'
+version = '092'
 freelcs_version = '2.5'
 
 ###################################
@@ -5140,7 +5140,7 @@ installation_logfile_path = '/var/log'
 # Get the directory the os uses for storing temporary files.
 directory_for_os_temporary_files = tempfile.gettempdir()
 
-# Define global variables that later hold paths to external programs that LoudnessCorrection needs to operate.
+# Define global variables that later hold paths to external programs that FreeLCS needs to operate.
 python3_path = ''
 sox_path = ''
 gnuplot_path = ''
@@ -5172,7 +5172,7 @@ install_sox_from_os_repository = True
 if (os_name == 'ubuntu') and (os_version == '12.04'):
 	install_sox_from_os_repository = False
 
-# Find paths to all critical programs we need to run LoudnessCorrection
+# Find paths to all critical programs we need to run FreeLCS
 find_paths_to_all_external_programs_we_need()
 
 # Get installation commands to global installation variables.
@@ -5304,7 +5304,7 @@ use_freelcs_file_output_defaults.set(True)
 write_loudness_calculation_results_to_a_machine_readable_file = tkinter.BooleanVar()
 write_loudness_calculation_results_to_a_machine_readable_file.set(False)
 
-# If LoudnessCorrection is used as part of a automation system, then we might not want to create loudness corrected audio files or result graphics.
+# If FreeLCS is used as part of a automation system, then we might not want to create loudness corrected audio files or result graphics.
 create_loudness_corrected_files = tkinter.BooleanVar()
 create_loudness_corrected_files.set(True) 
 create_loudness_history_graphics_files = tkinter.BooleanVar()
@@ -5724,7 +5724,7 @@ showstopper_frame_child_frame_1.grid(column=0, row=0, columnspan=4, padx=20, pad
 
 # Define the text message to display on the first window.
 # This is the introcution window, with nothing but text on it.
-first_window_label_text.set('This program lets you configure LoudnessCorrection settings and install all needed Linux init scripts.\n\nAfter configuration LoudnessCorrection starts automatically every time the computer starts up. There will be a 1 - 2 minute delay after boot before LoudnessCorrection is started. This makes sure all needed Linux services are up when we start up.')
+first_window_label_text.set('This program installs FreeLCS and all helper programs FreeLCS needs to do its job.\n\nAfter configuration FreeLCS starts automatically every time the computer starts up. There will be a 1 - 2 minute delay after boot before FreeLCS is started. This makes sure all needed Linux services are up when we start up.\n\nThe installer fetches needed programs from the internet, so you need to have a working internet connection.')
 first_window_label = tkinter.ttk.Label(first_frame_child_frame_1, textvariable=first_window_label_text, wraplength=text_wrap_length_in_pixels)
 first_window_label.grid(column=0, row=0, columnspan=4, pady=10, padx=20, sticky=(tkinter.E, tkinter.N, tkinter.W))
 
@@ -5866,7 +5866,7 @@ second_window_next_button.grid(column=2, row=5, padx=30, pady=10, sticky=(tkinte
 # Email settings and send test email.
 
 # Define label and two buttons (enable / disable email settings)
-third_window_label_1 = tkinter.ttk.Label(third_frame_child_frame_1, text='Send LoudnessCorrection error messages through email:')
+third_window_label_1 = tkinter.ttk.Label(third_frame_child_frame_1, text='Send FreeLCS error messages through email:')
 third_window_label_1.grid(column=0, row=0, pady=10, padx=10, sticky=(tkinter.W, tkinter.N))
 send_error_messages_by_email_true_button = tkinter.ttk.Radiobutton(third_frame_child_frame_1, text='Yes', variable=send_error_messages_by_email, value=True, command=enable_email_settings)
 send_error_messages_by_email_false_button = tkinter.ttk.Radiobutton(third_frame_child_frame_1, text='No', variable=send_error_messages_by_email, value=False, command=enable_email_settings)
@@ -6125,8 +6125,8 @@ fourth_window_label_4.grid(column=0, row=6, columnspan=4, pady=10, padx=10, stic
 fourth_window_separator_1 = tkinter.ttk.Separator(fourth_frame_child_frame_1, orient=tkinter.HORIZONTAL)
 fourth_window_separator_1.grid(column=0, row=7, padx=10, pady=10, columnspan=5, sticky=(tkinter.W, tkinter.E))
 
-# Choose which username LoudnessCorrection will run under.
-fourth_window_label_5 = tkinter.ttk.Label(fourth_frame_child_frame_1, text='Which user account LoudnessCorrection will use to run:')
+# Choose which username FreeLCS will run under.
+fourth_window_label_5 = tkinter.ttk.Label(fourth_frame_child_frame_1, text='Which user account FreeLCS will use to run:')
 fourth_window_label_5.grid(column=0, row=8, columnspan=4, pady=10, padx=10, sticky=(tkinter.W, tkinter.N))
 username_combobox = tkinter.ttk.Combobox(fourth_frame_child_frame_1, justify=tkinter.CENTER, textvariable=user_account)
 # Get user account names from the os.
@@ -6144,7 +6144,7 @@ if len(list_of_normal_useraccounts) > 0:
 username_combobox.bind('<<ComboboxSelected>>', print_user_account)
 username_combobox.grid(column=3, row=8, columnspan=2, pady=10, padx=10, sticky=(tkinter.N))
 
-fourth_window_label_7 = tkinter.ttk.Label(fourth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='LoudnessCorrection will be run with non root privileges, you can choose here which user account to use.\n\nIf you choose the HotFolder to be shared to the network with Samba in the next screen, the HotFolder directory structure read and write permissions will be set so that only this user has write access to files in Hotfolder directories and all other users can only read.')
+fourth_window_label_7 = tkinter.ttk.Label(fourth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='FreeLCS will be run with non root privileges, you can choose here which user account to use.')
 fourth_window_label_7.grid(column=0, row=9, columnspan=4, pady=10, padx=10, sticky=(tkinter.W, tkinter.N))
 
 # Define a horizontal line to space out groups of rows.
@@ -6999,7 +6999,7 @@ sixth_window_next_button.grid(column=2, row=1, padx=30, pady=10, sticky=(tkinter
 ###########################################################################################################
 
 # Create the labels for the frame
-seventh_window_label_1 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='This window displays all external programs LoudnessCorrection needs to do its job.\nAll programs displayed as "Not Installed" must be installed in order to use LoudnessCorrection.')
+seventh_window_label_1 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='This window displays all external programs FreeLCS needs to do its job.\nAll programs displayed as "Not Installed" must be installed in order to use FreeLCS.')
 seventh_window_label_1.grid(column=0, row=0, columnspan=4, padx=10, pady=5, sticky=(tkinter.W, tkinter.N))
 
 # Define a horizontal line to space out groups of rows.

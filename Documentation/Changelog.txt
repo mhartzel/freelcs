@@ -1,3 +1,266 @@
+
+#####################################
+# Released FreeLCS 2.5 with:        #
+# ----------------------------      #
+# - LoudnessCorrection version 264  #
+# - HeartBeat_Checker version 020   #
+# - Installer version 091           #
+# - Latest Documentation            #
+#####################################
+
+Documentation
+--------------
+- Made some small corrections here and there.
+
+Installer 091
+--------------
+- Made some small changes in text displayed to the user.
+
+Documentation
+--------------
+- FAQ: A little correction to last commit :)
+
+Documentation
+--------------
+- Faq: added causes for the most common error messages you might get from FreeLCS.
+
+Documentation
+--------------
+- I read through what I had written in two previous commits and corrected language and made clarifications here and there.
+
+Documentation
+--------------
+- Added info about how to use the MXF Audio Remix - feature.
+
+Documentation
+--------------
+- Added info in the user manual about how to use the Machine Readable Results - feature.
+
+Documentation
+--------------
+- Started to update documentation to reflect the current status of FreeLCS. Added info about libav-tools vs. FFmpeg, how to use FFmpeg instead of avconv, added info in the FAQ about MXF remix mapping, how to partition disks bigger than 2 TB, what are sane defaults for a FreeLCS installation running on a virtual server.
+
+Regression Tester
+-----------------
+- Trying to find if regression tester runs on server or desktop version of a distro by searching for installed package: xserver-xorg-core  failed, because FreeLCS installation requires python3-tk which in turn installs xserver-xorg-core. Now we search for: pulseaudio. It is not present on server versions of Debian or Ubuntu distros.
+
+Installer 090
+--------------
+- Added a warning text that informs the user that before installation on Debian or Ubuntu Server some os configuration modifications must be made.
+
+LoudnessCorrection Version 264
+-------------------------------
+- The avconv version that ships with Ubuntu 14.04 uses 24 bit depth by default when saving in Flac format. This is wasteful when the input file bit depth is 16 or we are decompressing a lossy compression format. Forced bit depth of 16 in these cases.
+
+Installer 089
+--------------
+- Minor typo corrections in a print command.
+
+Regression Tester
+-----------------
+- Various fixes for bugs that I encountered while regression testing FreeLCS latest version on Ubuntu 14.04.
+
+Installer 088
+--------------
+- Remove during startup also all directories users might have created into HotFolder/00-Corrected_Files/
+
+LoudnessCorrection Version 263
+-------------------------------
+- Do not try to automatically delete files from HotFolder that start with .nfs  since these are not regular files, but created when the folder is mounted with nfs and a file is deleted through nfs. The file will automatically disapper when the nfs is unmounted.
+
+Installer 087
+--------------
+- FreeLCS now removes during startup all directories users might have created in the HotFolder.
+
+Documentation
+--------------
+- Changed all references from FFmpeg to libav. Added a section in the FAQ explaining the confusing situation of the FFmpeg / libav - fork.
+
+LoudnessCorrection Version 262
+-------------------------------
+- When debug_all - mode is on write settings that user defined during installation to a logfile in error logs directory. This helps debugging and making sure installation options are correctly picked up by LoudnessCorrection.py.
+
+Installer 084
+--------------
+- Made a small change to how installation options are written to a logfile.
+
+Installer 083
+--------------
+- Completed: write settings that user defined during installation to a installation logfile in /var/log
+
+Installer 082
+--------------
+- Installer did not read file output settings saved in previous installation. Fixed.
+- Work in progress: write settings that user defined during installation to a installation logfile in /var/log
+
+LoudnessCorrection Version 261
+-------------------------------
+- Made a small correction to how ffmpeg / avconv output is parsed to find the number of channels a audio stream has.
+
+Documentation
+--------------
+- Changed the style of the FreeLCS homepage on freelcs.sourceforge.net.
+
+LoudnessCorrection Version 260
+-------------------------------
+- Fixed some more typo bugs made in previous commits :)
+
+LoudnessCorrection Version 259
+-------------------------------
+- Fixed typo bugs made in previous commit.
+
+Installer 081
+--------------
+- Fixed typo bugs made in previous commit.
+
+LoudnessCorrection Version 258
+-------------------------------
+- FreeLCS should now work using anconv instead of FFmpeg. FFmpeg is no longer easily availble to Ubuntu 14.04 users, because of the Ubuntu / Debian maintainers egoistic decision. He is a avconv developer part of the group that forked FFmpeg to start the libav - project.
+
+Installer 080
+--------------
+- Changed the name of one variable to better describe what's the value stored in it.
+
+LoudnessCorrection Version 257
+-------------------------------
+- Ubuntu 14.04 ships with Libav that supports writing 24 bit flac files. Ubuntu 12.04 FFmpeg limits this to 16 bits. Enabled using 24 bit flac when extracting audio streams with avconv.
+
+Installer 079
+--------------
+- Installer now tells LoudnessCorrection the distro name and version.
+
+00-backup_freelcs_configuration
+--------------------------------
+- Added a warning telling that a backup must be restored to the same Linux distro and version it was originally installed on or it might not work.
+
+Installer 078
+--------------
+- In Ubuntu 14.04 and Debian 7 install sox from OS repository because it is version 14.4.0 or higher (14.4.0 required). Ubuntu 12.04 still has an older version and sox 14.4.0 needs to be build from source.
+
+Installer 077
+--------------
+- Default peak measurement method is now TruePeak for new installations.
+
+Installer 075
+--------------
+- The new Samba - version in Ubuntu 14.04 depricated config option: security=shared  and this caused samba shares to stop working. Corrected.
+
+LoudnessCorrection Version 256
+-------------------------------
+- Removed Mpeg Layer 1 and Layer 2 from free formats.
+
+Installer 074
+--------------
+- Added controls to define default MXF Remix Maps and to limit formats that FFmpeg is allowed to process.
+- Removed Mpeg Layer 1 and Layer 2 from free formats and added those as user selectable formats.
+
+LoudnessCorrection Version 255
+-------------------------------
+- Added mpeg1 and mpeg2 as permitted free audio codec formats. Wikipedia says Layer 1 and 2 audio patents have expired.
+
+Installer 073
+--------------
+- Added mpeg1 and mpeg2 as permitted free audio codec formats. Wikipedia says Layer 1 and 2 audio patents have expired.
+- Made some changes and bugfixes to the window that lets the user define settings for 'Machine Readable Result'.
+
+Installer 072
+--------------
+-  Work continues towards getting Machine Readable Results and Remix Maps ready. Now the user can define Machine Readable Result - file options in the installer.
+
+LoudnessCorrection Version 254, Installer 071
+----------------------------------------------
+- More work towards getting Machine Readable Results and Remix Maps ready :)
+
+LoudnessCorrection Version 253, Installer 070
+----------------------------------------------
+- Work continues towards getting Machine Readable Results and Remix Maps ready :)
+
+HeartBeat_Checker 022, LoudnessCorrection Version 252, Installer 069
+---------------------------------------------------------------------
+- Started work toward adding new functionality (Machine Readable Results, Remix maps) to the installer, so that users can configure these during installation.
+- The FreeLCS version number is now fed by the installer program to LoundessCorrection.py and HeartBeat_Checker.py
+
+Installer 068
+--------------
+- Changed text that is displayed on window that asks for password.
+
+Installer 067
+--------------
+- The user can now force installation on a unsupported os version by using a commandline option. Example: ./installer.py -force-distro ubuntu 14.04
+
+HeartBeat_Checker 021
+----------------------
+- Error messages emailed to admin displays FreeLCS version number instead of LoudnessCorrection.py version number.
+
+LoudnessCorrection Version 251
+------------------------------
+- Error messages emailed to admin and html - progress report now display FreeLCS version number instead of LoudnessCorrection.py version number.
+
+Installer 065
+--------------
+- FreeLCS now cleans up it's temp - directory when it starts up if there are some files left over from the last run.
+
+Installer 064
+--------------
+- I have noticed that the libebur128 program 'loudness' that is used to measure file loudness in FreeLCS sometimes hangs. This happens very rarely. I know that the progress bar the program prints has caused hangs in the past. The libebur128 author fixed the problem then, but I suspect the fix did not fix all hangs. I now did some testing with hundreds of files and did not get any hangs anymore when the progress bar was disbled. This version of the installer now patches libebur128 source code to disable the progress bar. The progress bar is not used for anything in FreeLCS, so it's safe to disable :)
+
+Installer 063
+--------------
+- The installer now finds operating system name and version number from '/etc/os-release', this can be later used to customize installation based on os version. The installer needs to do different things on different platforms.
+- Added the possibility to turn on debugging mode with the command line option -debug
+- Os name and version in now shown on the status line of the installer window.
+
+Documentation
+--------------
+- On Ubuntu 14.04 the installer can't be started by double clicking on it in the file manager. Added instructions on how to correct this.
+
+Installer 062
+--------------
+- Ubuntu 14.04 ships with a new version of libav that does not work with the current version of libebur128. This issue stops libebur128 from compiling. Libav provides limited FFmpeg functionality to libebur128 and since this functionality is never used with FreeLCS I disabled libav from libebur128. FreeLCS uses the full FFmpeg to convert all files to wav, flac, ogg before loudness measurement with libebur128 and the limited built in FFmpeg functionality in libebur128 is never used anyway.
+
+Documentation
+--------------
+- Refined installation instructions for Ubuntu Server and Debian without a GUI. Also made many small corrections and clarifications throughout documentation. Also tried to correct text with broken english :)
+
+Documentation
+--------------
+- Added info about what changes are needed to Ubuntu Server to run FreeLCS and also how to install FreeLCS on Ubuntu Server or Debian over a ssh - connection. Also added info about how to set up automatic security updates on Ubuntu Server and Debian. The Debian part is still untested.
+
+Documentation
+--------------
+- Added info about differences in configuring a Debian system compared to Ubuntu.
+
+Documentation
+--------------
+- Added info about changes needed to the Debian system before FreeLCS installation.
+
+Installer 061
+--------------
+Preliminary support for Debian 7. The user must do a couple of small config changes to the Debian system before FreeLCS can be installed. I will document these later.
+
+LoudnessCorrection Version 250
+------------------------------
+LoudnessCorrection always gathered processing data for last 100 processed files. Now info is only gathered when debug_file_processing == True. Warning these changes are still untested.
+
+Documentation
+--------------
+Made a small correction to the main page (index.html)
+
+Installer / Documentation / Backup
+-----------------------------------
+Merged changes made to the already released FreeLCS 2.4 to the main source tree.
+
+
+#####################################
+# Released FreeLCS 2.4 with:        #
+# ----------------------------      #
+# - LoudnessCorrection version 249  #
+# - HeartBeat_Checker version 020   #
+# - Installer version 060           #
+# - Latest Documentation            #
+#####################################
+
+
 Regression_tester
 -----------------
 - Fixed a bug created in the last change :)

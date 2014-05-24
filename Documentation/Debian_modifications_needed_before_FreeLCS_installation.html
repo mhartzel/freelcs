@@ -12,8 +12,8 @@
     <br>
     Canonical builds its Ubuntu releases using Debian software packages.
     Therefore both of these Linux distributions have much in common, but also
-    have some differing functionality. Some small config changes must be made to
-    Debian before FreeLCS can be installed and run.<br>
+    have some differences. Some small config changes must be made to Debian
+    before FreeLCS can be installed and run.<br>
     <br>
     <br>
     <h2>Remove cd / dvd installation media from sources.list</h2>
@@ -76,11 +76,11 @@
     <ul>
       <li>The user account that you use to run the FreeLCS installer must have
         permission to run the sudo - program. This permission is given by adding
-        the user to the group named 'sudo'. In the following example we assume
-        that the name of this user account is&nbsp; 'john'.&nbsp; Change this
-        name to your actual user account name.</li>
-      <li>Add the user account to the group 'sudo' with the following terminal
-        command:</li>
+        the user to the group named '<strong>sudo</strong>'. In the following
+        example we assume that the name of this user account is&nbsp;
+        'john'.&nbsp; Change this name to your actual user account name.</li>
+      <li>Add the user account to the group '<strong>sudo</strong>' with the
+        following terminal command:</li>
     </ul>
     <p style="margin-left: 40px;"><strong>adduser&nbsp;&nbsp; john&nbsp;&nbsp;
         sudo</strong></p>
@@ -116,7 +116,7 @@
     <br>
     <h2>Load kernel module brd</h2>
     <ul>
-      <li>This step assumes that you have the '<strong>sudo</strong>' - prorgram
+      <li>This step assumes that you have the '<strong>sudo</strong>' - program
         installed (installation steps described above).</li>
       <li>FreeLCS writes every 5 seconds a html file to the disk. This html -
         file stores information about what the server is currently doing. Users
@@ -140,13 +140,14 @@
     </ul>
     <p style="margin-left: 40px;"><strong>sudo nano -w /etc/modules</strong></p>
     <ul>
-      <li>Add the text:&nbsp;&nbsp; <strong>brd</strong>&nbsp;&nbsp; on its own
+      <li>Add text:&nbsp;&nbsp; <strong>brd</strong>&nbsp;&nbsp; on its own
         line at the end of the file.</li>
       <li>Save the modified file using the keyboard command: <strong>ctrl + o</strong></li>
       <li>Exit the nano - editor with keyboard command: <strong>ctrl + x</strong></li>
     </ul>
-    Now that the necessary modifications to the Debian system are done, you can
-    continue with the <a href="FreeLCS_User_Manual.html#Installation">normal
+    If you did not install a graphical desktop during Debian install, then you
+    need to do two more modifications described below. If you did install a
+    graphical desktop then you can go ahead with the <a href="FreeLCS_User_Manual.html#Installation">normal
       FreeLCS install procedure described in the user manual</a> :)<br>
     <br>
     <br>
@@ -184,6 +185,11 @@
     <br>
     <br>
     <h2>Fixing history graphics file fonts</h2>
+    If you did not install a graphical desktop during Debian install, then the
+    font used to create text on FreeLCS history graphics files is missing. When
+    the font is missing gnuplot uses an ugly default font which includes only
+    english characters and not any special characters used in other European
+    languages.<br>
     <br>
     Install liberation fonts:&nbsp; <strong>sudo apt-get install
       fonts-liberation</strong><br>

@@ -94,11 +94,14 @@
     <p><br>
     </p>
     <h2>Installing FreeLCS over ssh with X - forwarding</h2>
+    Note that FreeLCS installation always requires connection to the internet,
+    since the installer fetches needed packages from the net.<br>
+    <br>
     This method requires two computers: one Linux or OS X machine with the X
     windowing system installed (<strong>Desktop computer</strong>) and the
     target server (<strong>server computer</strong>). When using this method the
     installer runs on the "headless" <strong>server</strong>, but its windows
-    will appears on the <strong> Desktop</strong> computer. <br>
+    will appear on the <strong> Desktop</strong> computer. <br>
     <ul>
       <li>First make an ssh - connection from the <strong>Desktop</strong>
         computer to the <strong>server</strong> with the following command
@@ -127,6 +130,11 @@
         connection you should no longer see this message.</li>
       <li>The following commands are all executed on the <strong>server</strong>
         over the ssh - connection.</li>
+      <li>Update the package database. Installation may fail to fetch some
+        needed packages, if the package database is out of date.</li>
+    </ul>
+    <p style="margin-left: 40px;"><strong>sudo apt-get update</strong></p>
+    <ul>
       <li>Install programs needed during FreeLCS installation:</li>
     </ul>
     <div style="margin-left: 40px;"><strong>sudo&nbsp; apt-get -y&nbsp;
@@ -183,7 +191,7 @@
       <li>Then we need to change some settings, open the configfile</li>
     </ul>
     <div style="margin-left: 40px;"><strong>nano -w
-        /etc/apt/apt.conf.d/50unattended-upgrades</strong>&nbsp;&nbsp; </div>
+        /etc/apt/apt.conf.d/50unattended-upgrades</strong></div>
     <ul>
       <li><strong>On Ubuntu</strong>: Check that the following line is <strong>not</strong>
         commented out. The characters //&nbsp; are used for commenting.</li>
