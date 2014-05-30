@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '264'
+loudnesscorrection_version = '265'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -327,8 +327,16 @@ enable_mxf_audio_remixing = False
 remix_map_file_extension = '.remix_map'
 global_mxf_audio_remix_channel_map = [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2] # Example [2, 6, 2, 2]	 Create stereo, 5.1, stereo and stereo mixes (if there are enough source audio channels).
 
+
 ffmpeg_free_wrapper_formats = ['wav', 'flac', 'ogg', 'mkv', 'matroska', 'mka']
-ffmpeg_allowed_wrapper_formats = ['all']
+
+enable_nonfree_ffmpeg_wrapper_formats = True
+
+if enable_nonfree_ffmpeg_wrapper_formats == True:
+	ffmpeg_allowed_wrapper_formats = ['all']
+else:
+	ffmpeg_allowed_wrapper_formats = ffmpeg_free_wrapper_formats
+
 
 ffmpeg_free_codec_formats = []
 ffmpeg_free_codec_formats.extend(pcm_8_bit_formats)
@@ -2961,6 +2969,7 @@ def debug_lists_and_dictionaries_thread():
 	global record_separator
 	global enable_mxf_audio_remixing
 	global remix_map_file_extension
+	global enable_nonfree_ffmpeg_wrapper_formats
 	global enable_nonfree_ffmpeg_codec_formats
 	global global_mxf_audio_remix_channel_map
 	global ffmpeg_free_wrapper_formats
@@ -3055,6 +3064,7 @@ def debug_lists_and_dictionaries_thread():
 		values_read_from_configfile.append('global_mxf_audio_remix_channel_map = ' + str(global_mxf_audio_remix_channel_map))
 		values_read_from_configfile.append('ffmpeg_free_wrapper_formats = ' + str(ffmpeg_free_wrapper_formats))
 		values_read_from_configfile.append('ffmpeg_allowed_wrapper_formats = ' + str(ffmpeg_allowed_wrapper_formats))
+		values_read_from_configfile.append('enable_nonfree_ffmpeg_wrapper_formats = ' + str(enable_nonfree_ffmpeg_wrapper_formats))
 		values_read_from_configfile.append('ffmpeg_free_codec_formats = ' + str(ffmpeg_free_codec_formats))
 		values_read_from_configfile.append('ffmpeg_allowed_codec_formats = ' + str(ffmpeg_allowed_codec_formats))
 		values_read_from_configfile.append('enable_nonfree_ffmpeg_codec_formats = ' + str(enable_nonfree_ffmpeg_codec_formats))
@@ -3313,6 +3323,10 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		global ffmpeg_allowed_wrapper_formats
 		global ffmpeg_allowed_codec_formats
 		wrapper_format_is_in_allowed_formats_list = True
+
+		global enable_mxf_audio_remixing
+		wrapper_format = ''
+		mediainfo_error_message = ''
 		
 		try:
 			# Define filename for the temporary file that we are going to use as stdout for the external command.
@@ -3379,6 +3393,13 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				# Get the type of the file.
 				file_type = str(item).split('from')[0].split(',')[1].strip()
 
+				# avconv / FFmpeg can not tell if file wrapper format is webm or matroska, it announces these all as one formatwith keywords:   matroska,webm.
+				# Get true wrapper format with mediainfo.
+				if file_type == 'matroska':
+					wrapper_format, mediainfo_error_message = get_file_wrapper_format_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish)
+					if (mediainfo_error_message == '') and (wrapper_format != ''):
+						file_type = wrapper_format
+
 				# If allowed wrapper format is 'all' then process all formats that FFmpeg supports, otherwise limit processing to user defined wrapper formats.
 				if 'all' not in ffmpeg_allowed_wrapper_formats:
 					if file_type not in ffmpeg_allowed_wrapper_formats:
@@ -3396,7 +3417,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 
 					audio_remix_channel_map = read_audio_remix_map_file(hotfolder_path, filename, english, finnish)
 
-					if len(audio_remix_channel_map) > 0:
+					if (len(audio_remix_channel_map) > 0) and (enable_mxf_audio_remixing == True):
 						mxf_audio_remixing = True
 					else:
 						mxf_audio_remixing = False
@@ -3437,7 +3458,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				except ValueError:
 					pass
 			
-				# FFmpeg  avconv sometimes reports some channel counts differently. Test for these cases and convert the channel count to an simple number.
+				# FFmpeg / avconv sometimes reports some channel counts differently. Test for these cases and convert the channel count to an simple number.
 				# These values are from avconv source: libavutil/channel_layout.c
 				if 'mono' in number_of_audio_channels_as_text:
 					number_of_audio_channels = '1'
@@ -3504,7 +3525,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				input_audiostream_codec_format = item.split('Audio:')[1].split(',')[0].strip()
 				output_audiostream_codec_format = 'pcm_s16le' # Default audio extraction bit depth is 16 bits if input file bit depth is not known.
 				bit_depth = 16 # Default bit depth.
-				
+
 				# If allowed audio codec format is 'all' then process all formats that FFmpeg supports, otherwise limit processing to user defined codec formats.
 				if 'all' not in ffmpeg_allowed_codec_formats:
 
@@ -3513,7 +3534,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 						# Create error message to the results graphics file and skip the stream.
 						unsupported_stream_name = filename_and_extension[0] + '-AudioStream-' * english + '-Miksaus-' * finnish + str(audio_stream_number) + '-ChannelCount-' * english + '-AaniKanavia-' * finnish + number_of_audio_channels
 						error_message = 'Audio compression codec ' * english + 'Audion kompressioformaatti ' * finnish + str(input_audiostream_codec_format) + ' is not supported' * english + ' ei ole tuettu' * finnish
-						error_code = 8
+						error_code = 10
 						list_of_error_messages_for_unsupported_streams.append([unsupported_stream_name, error_message, error_code, audio_stream_number])
 						continue
 
@@ -3875,6 +3896,10 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			ffmpeg_error_message = 'Audio streams in file are unsupported, only channel counts from 1 to 6 are supported' * english + 'Tiedoston miksaukset eivät ole tuetussa formaatissa, vain kanavamäärät välillä 1 ja 6 ovat tuettuja' * finnish
 			send_ffmpeg_error_message_by_email = False
 
+		if (ffmpeg_supported_fileformat == False) and (len(list_of_error_messages_for_unsupported_streams) == 1):
+			ffmpeg_error_message = list_of_error_messages_for_unsupported_streams[0][1]
+			send_ffmpeg_error_message_by_email = False
+
 		# Don't send email if FFmpeg error message is caused by an unsupported file type, for example a text file dropped to the HotFolder.
 		if 'Invalid data found when processing input' in ffmpeg_error_message:
 			send_ffmpeg_error_message_by_email = False
@@ -3956,7 +3981,75 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 	
 	return(file_format_support_information, ffmpeg_error_message, send_ffmpeg_error_message_by_email)
+
+def get_file_wrapper_format_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish):
+
+	file_to_process = hotfolder_path + os.sep + filename
+
+	mediainfo_output = b''
+	mediainfo_output_decoded = ''
+	error_message = ''
+	wrapper_format = ''
+
+	#####################################################
+	# Find out what is the wrapper format of the file   #
+	#####################################################
 	
+	try:
+		# Define filename for the temporary file that we are going to use as stdout for the external command.
+		stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_mediainfo_find_file_wrapper_format_stdout.txt'
+		# Open the stdout temporary file in binary write mode.
+		with open(stdout_for_external_command, 'wb') as stdout_commandfile_handler:
+	
+			# Get the number of audio streams in the file
+			subprocess.Popen(['mediainfo', '--Inform=General;%Format%', file_to_process], stdout=stdout_commandfile_handler, stderr=stdout_commandfile_handler, stdin=None, close_fds=True).communicate()[0] # Run mediainfo.
+	
+			# Make sure all data written to temporary stdout - file is flushed from the os cache and written to disk.
+			stdout_commandfile_handler.flush() # Flushes written data to os cache
+			os.fsync(stdout_commandfile_handler.fileno()) # Flushes os cache to disk
+			
+	except IOError as reason_for_error:
+		error_message = 'Error writing to mediainfo (file wrapper format) stdout - file ' * english + 'Mediainfon (wräpperi- formaatin selvitys) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message, [])
+	except OSError as reason_for_error:
+		error_message = 'Error writing to mediainfo (file wrapper format) stdout - file ' * english + 'Mediainfon (wräpperi- formaatin selvitys) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message, [])
+		
+	# Open the file we used as stdout for the external program and read in what the external program wrote to it.
+	try:
+		with open(stdout_for_external_command, 'rb') as stdout_commandfile_handler:
+			mediainfo_output = stdout_commandfile_handler.read(None)
+	except IOError as reason_for_error:
+		error_message = 'Error reading from mediainfo (file wrapper format) stdout - file ' * english + 'Mediainfon (wräpperi- formaatin selvitys) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message, [])
+	except OSError as reason_for_error:
+		error_message = 'Error reading from mediainfo (file wrapper format) stdout - file ' * english + 'Mediainfon (wräpperi- formaatin selvitys) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message, [])
+	
+	# Convert mediainfo output from binary to UTF-8 text.
+	try:
+		mediainfo_output_decoded = mediainfo_output.decode('UTF-8') # Convert mediainfo output from binary to utf-8 text.
+	except UnicodeDecodeError:
+		# If UTF-8 conversion fails, try conversion with another character map.
+		mediainfo_output_decoded = mediainfo_output.decode('ISO-8859-15') # Convert mediainfo output from binary to text.	
+		
+	# Get the file wrapper format from mediainfo output.
+	if (mediainfo_output_decoded.strip() != '') and ('-' not in mediainfo_output_decoded):
+		if mediainfo_output_decoded.strip().isalpha() == True:
+			wrapper_format = str(mediainfo_output_decoded).strip().lower()
+		
+	# Delete the temporary stdout - file.
+	try:
+		os.remove(stdout_for_external_command)
+	except IOError as reason_for_error:
+		error_message = 'Error deleting mediainfo (file wrapper format) stdout - file ' * english + 'Mediainfon (wräpperi- formaatin selvitys) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message, [])
+	except OSError as reason_for_error:
+		error_message = 'Error deleting mediainfo (file wrapper format) stdout - file ' * english + 'Mediainfon (wräpperi- formaatin selvitys) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+		send_error_messages_to_screen_logfile_email(error_message, [])	
+
+	return(wrapper_format, error_message)
+
 def get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish, save_debug_information):
 
 	try:
@@ -5167,8 +5260,13 @@ def write_user_defined_configuration_settings_to_logfile():
 	user_defined_configuration_options.append('ffmpeg_free_codec_formats = ' + ', '.join(all_settings_dict['ffmpeg_free_codec_formats']))
 	user_defined_configuration_options.append('ffmpeg_allowed_wrapper_formats = ' + ', '.join(all_settings_dict['ffmpeg_allowed_wrapper_formats']))
 	user_defined_configuration_options.append('ffmpeg_allowed_codec_formats = ' + ', '.join(all_settings_dict['ffmpeg_allowed_codec_formats']))
+	user_defined_configuration_options.append('enable_nonfree_ffmpeg_wrapper_formats = ' + str(all_settings_dict['enable_nonfree_ffmpeg_wrapper_formats']))
 	user_defined_configuration_options.append('enable_nonfree_ffmpeg_codec_formats = ' + str(all_settings_dict['enable_nonfree_ffmpeg_codec_formats']))
 	user_defined_configuration_options.append('ffmpeg_output_wrapper_format = ' + all_settings_dict['ffmpeg_output_wrapper_format'])
+	user_defined_configuration_options.append('enable_mxf_wrapper = ' + str(all_settings_dict['enable_mxf_wrapper']))                                                                            
+	user_defined_configuration_options.append('enable_webm_wrapper = ' + str(all_settings_dict['enable_webm_wrapper']))                                                                          
+	user_defined_configuration_options.append('enable_mp1_codec = ' + str(all_settings_dict['enable_mp1_codec']))                                                                                
+	user_defined_configuration_options.append('enable_mp2_codec = ' + str(all_settings_dict['enable_mp2_codec'])) 
 	user_defined_configuration_options.append('----------------------------------------------------------------------------------------------------')
 	user_defined_configuration_options.append('')
 	user_defined_configuration_options.append('silent = ' + str(all_settings_dict['silent']))
@@ -5281,6 +5379,7 @@ def write_user_defined_configuration_settings_to_logfile():
 #	7 = No Audio Streams Found In File   (main)
 #	8 = Sox encountered an error   (create_sox_commands_for_loudness_adjusting_a_file)
 #	9 = There are unsupported audio streams in input MXF - file while remix function is on. This may create unwanted results
+#       10 = Audio Compression codec is unsupported
 #	100 = Unknown Error
 #
 # Dictionary 'final_loudness_results_for_automation'
@@ -5490,6 +5589,8 @@ try:
 			ffmpeg_free_codec_formats = all_settings_dict['ffmpeg_free_codec_formats']
 		if 'ffmpeg_allowed_codec_formats' in all_settings_dict:
 			ffmpeg_allowed_codec_formats = all_settings_dict['ffmpeg_allowed_codec_formats']
+		if 'enable_nonfree_ffmpeg_wrapper_formats' in all_settings_dict:
+			enable_nonfree_ffmpeg_wrapper_formats = all_settings_dict['enable_nonfree_ffmpeg_wrapper_formats']
 		if 'enable_nonfree_ffmpeg_codec_formats' in all_settings_dict:
 			enable_nonfree_ffmpeg_codec_formats = all_settings_dict['enable_nonfree_ffmpeg_codec_formats']
 
@@ -6071,9 +6172,9 @@ try:
 											error_code = 6
 
 										if 'Audio compression codec' in error_message:
-											error_code = 8
+											error_code = 10
 										if 'Audion kompressioformaatti' in error_message:
-											error_code = 8
+											error_code = 10
 
 										# Write results to the machine readable results file.
 										write_loudness_results_and_file_info_to_a_machine_readable_file(filename, [[0, 0, create_loudness_corrected_files, 0, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message, []]])

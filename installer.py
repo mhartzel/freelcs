@@ -25,6 +25,7 @@ import email.mime
 import email.mime.text
 import email.mime.multipart
 import tempfile
+import copy
 
 version = '092'
 freelcs_version = '2.5'
@@ -1265,7 +1266,12 @@ def install_init_scripts_and_config_files(*args):
 	'global_mxf_audio_remix_channel_map' : global_mxf_audio_remix_channel_map, 'ffmpeg_free_wrapper_formats' : ffmpeg_free_wrapper_formats, \
 	'ffmpeg_allowed_wrapper_formats' : ffmpeg_allowed_wrapper_formats, 'ffmpeg_free_codec_formats' : ffmpeg_free_codec_formats, \
 	'ffmpeg_allowed_codec_formats' : ffmpeg_allowed_codec_formats, \
+	'enable_nonfree_ffmpeg_wrapper_formats' : true_false_string[enable_nonfree_ffmpeg_wrapper_formats.get()], \
 	'enable_nonfree_ffmpeg_codec_formats' : true_false_string[enable_nonfree_ffmpeg_codec_formats.get()], \
+	'enable_mxf_wrapper' : true_false_string[enable_mxf_wrapper.get()], \
+	'enable_webm_wrapper' : true_false_string[enable_webm_wrapper.get()], \
+	'enable_mp1_codec' : true_false_string[enable_mp1_codec.get()], \
+	'enable_mp2_codec' : true_false_string[enable_mp2_codec.get()], \
 	'os_name' : os_name, \
 	'os_version' : os_version \
 	}
@@ -1361,8 +1367,13 @@ def install_init_scripts_and_config_files(*args):
 	user_defined_configuration_options.append('ffmpeg_free_codec_formats = ' + ', '.join(all_settings_dict['ffmpeg_free_codec_formats']))
 	user_defined_configuration_options.append('ffmpeg_allowed_wrapper_formats = ' + ', '.join(all_settings_dict['ffmpeg_allowed_wrapper_formats']))
 	user_defined_configuration_options.append('ffmpeg_allowed_codec_formats = ' + ', '.join(all_settings_dict['ffmpeg_allowed_codec_formats']))
+	user_defined_configuration_options.append('enable_nonfree_ffmpeg_wrapper_formats = ' + str(all_settings_dict['enable_nonfree_ffmpeg_wrapper_formats']))
 	user_defined_configuration_options.append('enable_nonfree_ffmpeg_codec_formats = ' + str(all_settings_dict['enable_nonfree_ffmpeg_codec_formats']))
 	user_defined_configuration_options.append('ffmpeg_output_wrapper_format = ' + all_settings_dict['ffmpeg_output_wrapper_format'])
+	user_defined_configuration_options.append('enable_mxf_wrapper = ' + str(all_settings_dict['enable_mxf_wrapper']))
+	user_defined_configuration_options.append('enable_webm_wrapper = ' + str(all_settings_dict['enable_webm_wrapper']))
+	user_defined_configuration_options.append('enable_mp1_codec = ' + str(all_settings_dict['enable_mp1_codec']))
+	user_defined_configuration_options.append('enable_mp2_codec = ' + str(all_settings_dict['enable_mp2_codec']))
 	user_defined_configuration_options.append('----------------------------------------------------------------------------------------------------')
 	user_defined_configuration_options.append('')
 	user_defined_configuration_options.append('silent = ' + str(all_settings_dict['silent']))
@@ -4504,7 +4515,7 @@ def print_ffmpeg_usage_options(*args):
 		eleventh_window_webm_enable.configure(state='disabled')
 	else:
 		# User wants to only enable a limited set of formats.
-		ffmpeg_allowed_wrapper_formats = ffmpeg_free_wrapper_formats
+		ffmpeg_allowed_wrapper_formats = copy.deepcopy(ffmpeg_free_wrapper_formats)
 		eleventh_window_mxf_enable.configure(state='normal')
 		eleventh_window_webm_enable.configure(state='normal')
 
@@ -4529,13 +4540,12 @@ def print_ffmpeg_usage_options(*args):
 	# Assign ffmpeg allowed codec formats to variables.
 	if enable_nonfree_ffmpeg_codec_formats.get() == True:
 		# User wants to enable all FFmpeg codec formats.
-		ffmpeg_allowed_wrapper_formats = ['all']
 		ffmpeg_allowed_codec_formats = ['all']
 		eleventh_window_mp1_enable.configure(state='disabled')
 		eleventh_window_mp2_enable.configure(state='disabled')
 	else:
 		# User wants to only enable a limited set of formats.
-		ffmpeg_allowed_codec_formats = ffmpeg_free_codec_formats
+		ffmpeg_allowed_codec_formats = copy.deepcopy(ffmpeg_free_codec_formats)
 		eleventh_window_mp1_enable.configure(state='normal')
 		eleventh_window_mp2_enable.configure(state='normal')
 
@@ -4778,6 +4788,8 @@ def print_ffmpeg_usage_options(*args):
 		print('ffmpeg_allowed_codec_formats =', ffmpeg_allowed_codec_formats)
 		print('enable_mxf_audio_remixing =', true_false_string[enable_mxf_audio_remixing.get()])
 		print('global_mxf_audio_remix_channel_map =', global_mxf_audio_remix_channel_map)
+		print('ffmpeg_free_wrapper_formats =', ffmpeg_free_wrapper_formats)
+		print('ffmpeg_free_codec_formats =', ffmpeg_free_codec_formats)
 		print()
 
 def assing_mxf_remix_values_for_display(*args):
@@ -5111,7 +5123,7 @@ loudness_correction_init_script_content = []
 ram_disk_mount_commands = []
 delay_between_directory_reads = 5
 natively_supported_file_formats = ['.wav', '.flac', '.ogg']
-ffmpeg_output_wrapper_format = ''
+ffmpeg_output_wrapper_format = 'wav'
 silent = True
 html_progress_report_write_interval = 5
 send_error_messages_to_logfile = True
@@ -5526,6 +5538,10 @@ if int(config_file_created_by_installer_version) >= 39:
 			ffmpeg_allowed_wrapper_formats = previously_saved_settings_dict['ffmpeg_allowed_wrapper_formats']
 			if debug == True:
 				print('ffmpeg_allowed_wrapper_formats =', previously_saved_settings_dict['ffmpeg_allowed_wrapper_formats'])
+	if 'enable_nonfree_ffmpeg_wrapper_formats' in previously_saved_settings_dict:
+			enable_nonfree_ffmpeg_wrapper_formats.set(previously_saved_settings_dict['enable_nonfree_ffmpeg_wrapper_formats'])
+			if debug == True:
+				print('enable_nonfree_ffmpeg_wrapper_formats =', previously_saved_settings_dict['enable_nonfree_ffmpeg_wrapper_formats'])
 	if 'ffmpeg_free_codec_formats' in previously_saved_settings_dict:
 			ffmpeg_free_codec_formats = previously_saved_settings_dict['ffmpeg_free_codec_formats']
 			if debug == True:
@@ -5538,6 +5554,22 @@ if int(config_file_created_by_installer_version) >= 39:
 			enable_nonfree_ffmpeg_codec_formats.set(previously_saved_settings_dict['enable_nonfree_ffmpeg_codec_formats'])
 			if debug == True:
 				print('enable_nonfree_ffmpeg_codec_formats =', previously_saved_settings_dict['enable_nonfree_ffmpeg_codec_formats'])
+	if 'enable_mxf_wrapper' in previously_saved_settings_dict:
+			enable_mxf_wrapper.set(previously_saved_settings_dict['enable_mxf_wrapper'])
+			if debug == True:
+				print('enable_mxf_wrapper =', previously_saved_settings_dict['enable_mxf_wrapper'])
+	if 'enable_webm_wrapper' in previously_saved_settings_dict:
+			enable_webm_wrapper.set(previously_saved_settings_dict['enable_webm_wrapper'])
+			if debug == True:
+				print('enable_webm_wrapper =', previously_saved_settings_dict['enable_webm_wrapper'])
+	if 'enable_mp1_codec' in previously_saved_settings_dict:
+			enable_mp1_codec.set(previously_saved_settings_dict['enable_mp1_codec'])
+			if debug == True:
+				print('enable_mp1_codec =', previously_saved_settings_dict['enable_mp1_codec'])
+	if 'enable_mp2_codec' in previously_saved_settings_dict:
+			enable_mp2_codec.set(previously_saved_settings_dict['enable_mp2_codec'])
+			if debug == True:
+				print('enable_mp2_codec =', previously_saved_settings_dict['enable_mp2_codec'])
 	if debug == True:
 		print('-' * 75)
 
