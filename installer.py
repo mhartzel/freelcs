@@ -27,7 +27,7 @@ import email.mime.multipart
 import tempfile
 import copy
 
-version = '092'
+version = '093'
 freelcs_version = '2.5'
 
 ###################################
@@ -4576,6 +4576,14 @@ def print_ffmpeg_usage_options(*args):
 				ffmpeg_allowed_codec_formats.remove('mp2float')
 
 	if enable_mxf_audio_remixing.get() == True:
+
+		# User wants to enable MXF decoding, if only free wrapper formats are enabled, then also enable MXF wrapper decoding.
+		if enable_nonfree_ffmpeg_wrapper_formats.get() == False:
+			enable_mxf_wrapper.set(True)
+			# User wants to enable MXF decoding add MXF to list of allowed formats.
+			if 'mxf' not in ffmpeg_allowed_wrapper_formats:
+				ffmpeg_allowed_wrapper_formats.append('mxf')
+
 		remix_combobox_1.state(['!disabled'])
 		remix_combobox_2.state(['!disabled'])
 		remix_combobox_3.state(['!disabled'])
@@ -5530,10 +5538,6 @@ if int(config_file_created_by_installer_version) >= 39:
 			global_mxf_audio_remix_channel_map = previously_saved_settings_dict['global_mxf_audio_remix_channel_map']
 			if debug == True:
 				print('global_mxf_audio_remix_channel_map =', previously_saved_settings_dict['global_mxf_audio_remix_channel_map'])
-	if 'ffmpeg_free_wrapper_formats' in previously_saved_settings_dict:
-			ffmpeg_free_wrapper_formats = previously_saved_settings_dict['ffmpeg_free_wrapper_formats']
-			if debug == True:
-				print('ffmpeg_free_wrapper_formats =', previously_saved_settings_dict['ffmpeg_free_wrapper_formats'])
 	if 'ffmpeg_allowed_wrapper_formats' in previously_saved_settings_dict:
 			ffmpeg_allowed_wrapper_formats = previously_saved_settings_dict['ffmpeg_allowed_wrapper_formats']
 			if debug == True:
@@ -5542,10 +5546,6 @@ if int(config_file_created_by_installer_version) >= 39:
 			enable_nonfree_ffmpeg_wrapper_formats.set(previously_saved_settings_dict['enable_nonfree_ffmpeg_wrapper_formats'])
 			if debug == True:
 				print('enable_nonfree_ffmpeg_wrapper_formats =', previously_saved_settings_dict['enable_nonfree_ffmpeg_wrapper_formats'])
-	if 'ffmpeg_free_codec_formats' in previously_saved_settings_dict:
-			ffmpeg_free_codec_formats = previously_saved_settings_dict['ffmpeg_free_codec_formats']
-			if debug == True:
-				print('ffmpeg_free_codec_formats =', previously_saved_settings_dict['ffmpeg_free_codec_formats'])
 	if 'ffmpeg_allowed_codec_formats' in previously_saved_settings_dict:
 			ffmpeg_allowed_codec_formats = previously_saved_settings_dict['ffmpeg_allowed_codec_formats']
 			if debug == True:

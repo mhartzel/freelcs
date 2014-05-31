@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '265'
+loudnesscorrection_version = '267'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -3534,7 +3534,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 						# Create error message to the results graphics file and skip the stream.
 						unsupported_stream_name = filename_and_extension[0] + '-AudioStream-' * english + '-Miksaus-' * finnish + str(audio_stream_number) + '-ChannelCount-' * english + '-AaniKanavia-' * finnish + number_of_audio_channels
 						error_message = 'Audio compression codec ' * english + 'Audion kompressioformaatti ' * finnish + str(input_audiostream_codec_format) + ' is not supported' * english + ' ei ole tuettu' * finnish
-						error_code = 10
+						error_code = 11
 						list_of_error_messages_for_unsupported_streams.append([unsupported_stream_name, error_message, error_code, audio_stream_number])
 						continue
 
@@ -3892,8 +3892,12 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		# Currently the only known unsupported streams in a file are streams with channel counts of zero and more than 6 channels.
 		send_ffmpeg_error_message_by_email = True
 
+		if wrapper_format_is_in_allowed_formats_list == False:
+			ffmpeg_error_message = 'File wrapper format ' * english + 'Tiedoston paketointiformaatti ' * finnish + str(file_type) + ' is not supported' * english + ' ei ole tuettu' * finnish
+			send_ffmpeg_error_message_by_email = False
+
 		if (ffmpeg_supported_fileformat == False) and (len(list_of_error_messages_for_unsupported_streams) > 0):
-			ffmpeg_error_message = 'Audio streams in file are unsupported, only channel counts from 1 to 6 are supported' * english + 'Tiedoston miksaukset eivät ole tuetussa formaatissa, vain kanavamäärät välillä 1 ja 6 ovat tuettuja' * finnish
+			ffmpeg_error_message = 'Audio streams in file are not supported, only channel counts from 1 to 6 are supported' * english + 'Tiedoston miksaukset eivät ole tuetussa formaatissa, vain kanavamäärät välillä 1 ja 6 ovat tuettuja' * finnish
 			send_ffmpeg_error_message_by_email = False
 
 		if (ffmpeg_supported_fileformat == False) and (len(list_of_error_messages_for_unsupported_streams) == 1):
@@ -5379,7 +5383,8 @@ def write_user_defined_configuration_settings_to_logfile():
 #	7 = No Audio Streams Found In File   (main)
 #	8 = Sox encountered an error   (create_sox_commands_for_loudness_adjusting_a_file)
 #	9 = There are unsupported audio streams in input MXF - file while remix function is on. This may create unwanted results
-#       10 = Audio Compression codec is unsupported
+#	10 = File wrapper format is not supported
+#       11 = Audio Compression codec is not supported
 #	100 = Unknown Error
 #
 # Dictionary 'final_loudness_results_for_automation'
@@ -6088,7 +6093,7 @@ try:
 										error_code = 3
 
 										# Write results to the machine readable results file.
-										write_loudness_results_and_file_info_to_a_machine_readable_file(filename, [[0, 0, create_loudness_corrected_files, 0, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message, []]])
+										write_loudness_results_and_file_info_to_a_machine_readable_file(filename, [[0, 0, 0, create_loudness_corrected_files, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message, []]])
 
 						if we_have_true_read_access_to_the_file == True:
 
@@ -6142,7 +6147,7 @@ try:
 										error_code = 7
 
 										# Write results to the machine readable results file.
-										write_loudness_results_and_file_info_to_a_machine_readable_file(filename, [[0, 0, create_loudness_corrected_files, 0, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message, []]])
+										write_loudness_results_and_file_info_to_a_machine_readable_file(filename, [[0, 0, 0, create_loudness_corrected_files, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message, []]])
 
 										# Delete information about the file we might have stored earlier.
 										if filename in final_loudness_results_for_automation:
@@ -6171,13 +6176,18 @@ try:
 										if 'vain kanavamäärät välillä 1 ja 6 ovat tuettuja' in error_message:
 											error_code = 6
 
-										if 'Audio compression codec' in error_message:
+										if 'File wrapper format' in error_message:
 											error_code = 10
-										if 'Audion kompressioformaatti' in error_message:
+										if 'Tiedoston paketointiformaatti' in error_message:
 											error_code = 10
 
+										if 'Audio compression codec' in error_message:
+											error_code = 11
+										if 'Audion kompressioformaatti' in error_message:
+											error_code = 11
+
 										# Write results to the machine readable results file.
-										write_loudness_results_and_file_info_to_a_machine_readable_file(filename, [[0, 0, create_loudness_corrected_files, 0, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message, []]])
+										write_loudness_results_and_file_info_to_a_machine_readable_file(filename, [[0, 0, 0, create_loudness_corrected_files, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message, []]])
 
 										# Delete information about the file we might have stored earlier.
 										if filename in final_loudness_results_for_automation:
@@ -6218,7 +6228,7 @@ try:
 									error_code = 4
 
 									# Write results to the machine readable results file.
-									write_loudness_results_and_file_info_to_a_machine_readable_file(filename, [[0, 0, create_loudness_corrected_files, 0, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message, []]])
+									write_loudness_results_and_file_info_to_a_machine_readable_file(filename, [[0, 0, 0, create_loudness_corrected_files, 0, 0, 0, 0, 0, 0, 0, 0, error_code, error_message, []]])
 
 									# Delete information about the file we might have stored earlier.
 									if filename in final_loudness_results_for_automation:
