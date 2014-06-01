@@ -27,7 +27,7 @@ import email.mime.multipart
 import tempfile
 import copy
 
-version = '093'
+version = '094'
 freelcs_version = '2.5'
 
 ###################################
@@ -1245,6 +1245,8 @@ def install_init_scripts_and_config_files(*args):
 	global peak_measurement_method
 	global os_name
 	global os_version
+	global mxf_formats
+	global mpeg_wrapper_formats
 	
 	put_email_details_in_a_dictionary()
 
@@ -1265,11 +1267,12 @@ def install_init_scripts_and_config_files(*args):
 	'enable_mxf_audio_remixing' : true_false_string[enable_mxf_audio_remixing.get()], 'remix_map_file_extension' : remix_map_file_extension.get(), \
 	'global_mxf_audio_remix_channel_map' : global_mxf_audio_remix_channel_map, 'ffmpeg_free_wrapper_formats' : ffmpeg_free_wrapper_formats, \
 	'ffmpeg_allowed_wrapper_formats' : ffmpeg_allowed_wrapper_formats, 'ffmpeg_free_codec_formats' : ffmpeg_free_codec_formats, \
-	'ffmpeg_allowed_codec_formats' : ffmpeg_allowed_codec_formats, \
-	'enable_nonfree_ffmpeg_wrapper_formats' : true_false_string[enable_nonfree_ffmpeg_wrapper_formats.get()], \
-	'enable_nonfree_ffmpeg_codec_formats' : true_false_string[enable_nonfree_ffmpeg_codec_formats.get()], \
+	'ffmpeg_allowed_codec_formats' : ffmpeg_allowed_codec_formats, 'mxf_formats' : mxf_formats, 'mpeg_wrapper_formats' : mpeg_wrapper_formats, \
+	'enable_all_nonfree_ffmpeg_wrapper_formats' : true_false_string[enable_all_nonfree_ffmpeg_wrapper_formats.get()], \
+	'enable_all_nonfree_ffmpeg_codec_formats' : true_false_string[enable_all_nonfree_ffmpeg_codec_formats.get()], \
 	'enable_mxf_wrapper' : true_false_string[enable_mxf_wrapper.get()], \
 	'enable_webm_wrapper' : true_false_string[enable_webm_wrapper.get()], \
+	'enable_mpeg_wrappers' : true_false_string[enable_mpeg_wrappers.get()], \
 	'enable_mp1_codec' : true_false_string[enable_mp1_codec.get()], \
 	'enable_mp2_codec' : true_false_string[enable_mp2_codec.get()], \
 	'os_name' : os_name, \
@@ -1364,14 +1367,17 @@ def install_init_scripts_and_config_files(*args):
 	temporary_string_list = []
 	user_defined_configuration_options.append('natively_supported_file_formats = ' + ', '.join(all_settings_dict['natively_supported_file_formats']))
 	user_defined_configuration_options.append('ffmpeg_free_wrapper_formats = ' + ', '.join(all_settings_dict['ffmpeg_free_wrapper_formats']))
+	user_defined_configuration_options.append('mxf_formats = ' + ', '.join(all_settings_dict['mxf_formats']))
+	user_defined_configuration_options.append('mpeg_wrapper_formats = ' + ', '.join(all_settings_dict['mpeg_wrapper_formats']))
 	user_defined_configuration_options.append('ffmpeg_free_codec_formats = ' + ', '.join(all_settings_dict['ffmpeg_free_codec_formats']))
 	user_defined_configuration_options.append('ffmpeg_allowed_wrapper_formats = ' + ', '.join(all_settings_dict['ffmpeg_allowed_wrapper_formats']))
 	user_defined_configuration_options.append('ffmpeg_allowed_codec_formats = ' + ', '.join(all_settings_dict['ffmpeg_allowed_codec_formats']))
-	user_defined_configuration_options.append('enable_nonfree_ffmpeg_wrapper_formats = ' + str(all_settings_dict['enable_nonfree_ffmpeg_wrapper_formats']))
-	user_defined_configuration_options.append('enable_nonfree_ffmpeg_codec_formats = ' + str(all_settings_dict['enable_nonfree_ffmpeg_codec_formats']))
+	user_defined_configuration_options.append('enable_all_nonfree_ffmpeg_wrapper_formats = ' + str(all_settings_dict['enable_all_nonfree_ffmpeg_wrapper_formats']))
+	user_defined_configuration_options.append('enable_all_nonfree_ffmpeg_codec_formats = ' + str(all_settings_dict['enable_all_nonfree_ffmpeg_codec_formats']))
 	user_defined_configuration_options.append('ffmpeg_output_wrapper_format = ' + all_settings_dict['ffmpeg_output_wrapper_format'])
 	user_defined_configuration_options.append('enable_mxf_wrapper = ' + str(all_settings_dict['enable_mxf_wrapper']))
 	user_defined_configuration_options.append('enable_webm_wrapper = ' + str(all_settings_dict['enable_webm_wrapper']))
+	user_defined_configuration_options.append('enable_mpeg_wrappers = ' + str(all_settings_dict['enable_mpeg_wrappers']))
 	user_defined_configuration_options.append('enable_mp1_codec = ' + str(all_settings_dict['enable_mp1_codec']))
 	user_defined_configuration_options.append('enable_mp2_codec = ' + str(all_settings_dict['enable_mp2_codec']))
 	user_defined_configuration_options.append('----------------------------------------------------------------------------------------------------')
@@ -4506,39 +4512,56 @@ def print_ffmpeg_usage_options(*args):
 	global ffmpeg_free_codec_formats
 	global ffmpeg_allowed_codec_formats
 	global global_mxf_audio_remix_channel_map
+	global mxf_formats
+	global mpeg_wrapper_formats
 
 	# Assign ffmpeg allowed wrapper formats to variables.
-	if enable_nonfree_ffmpeg_wrapper_formats.get() == True:
+	if enable_all_nonfree_ffmpeg_wrapper_formats.get() == True:
 		# User wants to enable all FFmpeg wrapper formats.
 		ffmpeg_allowed_wrapper_formats = ['all']
 		eleventh_window_mxf_enable.configure(state='disabled')
 		eleventh_window_webm_enable.configure(state='disabled')
+		eleventh_window_mpeg_enable.configure(state='disabled')
 	else:
 		# User wants to only enable a limited set of formats.
 		ffmpeg_allowed_wrapper_formats = copy.deepcopy(ffmpeg_free_wrapper_formats)
 		eleventh_window_mxf_enable.configure(state='normal')
 		eleventh_window_webm_enable.configure(state='normal')
+		eleventh_window_mpeg_enable.configure(state='normal')
 
 		if enable_mxf_wrapper.get() == True:
 			# User wants to enable MXF decoding add MXF to list of allowed formats.
-			if 'mxf' not in ffmpeg_allowed_wrapper_formats:
-				ffmpeg_allowed_wrapper_formats.append('mxf')
+			for format_name in mxf_formats:
+				if format_name not in ffmpeg_allowed_wrapper_formats:
+					ffmpeg_allowed_wrapper_formats.append(format_name)
 		else:
 			# User wants to disable MXF decoding remove MXF from list of allowed formats.
-			if 'mxf' in ffmpeg_allowed_wrapper_formats:
-				ffmpeg_allowed_wrapper_formats.remove('mxf')
+			for format_name in mxf_formats:
+				if format_name in ffmpeg_allowed_wrapper_formats:
+					ffmpeg_allowed_wrapper_formats.remove(format_name)
 
 		if enable_webm_wrapper.get() == True:
-			# User wants to enable Webm decoding add MXF to list of allowed formats.
+			# User wants to enable Webm decoding add Webm to list of allowed formats.
 			if 'webm' not in ffmpeg_allowed_wrapper_formats:
 				ffmpeg_allowed_wrapper_formats.append('webm')
 		else:
-			# User wants to disable Webm decoding remove MXF from list of allowed formats.
+			# User wants to disable Webm decoding remove Webm from list of allowed formats.
 			if 'webm' in ffmpeg_allowed_wrapper_formats:
 				ffmpeg_allowed_wrapper_formats.remove('webm')
 
+		if enable_mpeg_wrappers.get() == True:
+			# User wants to enable Mpeg decoding add Mpeg wrappers to list of allowed formats.
+			for format_name in mpeg_wrapper_formats:
+				if format_name not in ffmpeg_allowed_wrapper_formats:
+					ffmpeg_allowed_wrapper_formats.append(format_name)
+		else:
+			# User wants to disable Mpeg decoding remove Mpeg wrappers from list of allowed formats.
+			for format_name in mpeg_wrapper_formats:
+				if format_name in ffmpeg_allowed_wrapper_formats:
+					ffmpeg_allowed_wrapper_formats.remove(format_name)
+
 	# Assign ffmpeg allowed codec formats to variables.
-	if enable_nonfree_ffmpeg_codec_formats.get() == True:
+	if enable_all_nonfree_ffmpeg_codec_formats.get() == True:
 		# User wants to enable all FFmpeg codec formats.
 		ffmpeg_allowed_codec_formats = ['all']
 		eleventh_window_mp1_enable.configure(state='disabled')
@@ -4555,6 +4578,14 @@ def print_ffmpeg_usage_options(*args):
 				ffmpeg_allowed_codec_formats.append('mp1')
 			if 'mp1float' not in ffmpeg_allowed_codec_formats:
 				ffmpeg_allowed_codec_formats.append('mp1float')
+
+			# If user enables mpeg codecs, then also enable all mpeg wrappers.
+			if enable_all_nonfree_ffmpeg_wrapper_formats.get() == False:
+				enable_mpeg_wrappers.set(True)
+
+				for format_name in mpeg_wrapper_formats:
+					if format_name not in ffmpeg_allowed_wrapper_formats:
+						ffmpeg_allowed_wrapper_formats.append(format_name)
 		else:
 			# User wants to disable mpeg layer 1 decoding remove mp1 from list of allowed formats.
 			if 'mp1' in ffmpeg_allowed_codec_formats:
@@ -4568,6 +4599,14 @@ def print_ffmpeg_usage_options(*args):
 				ffmpeg_allowed_codec_formats.append('mp2')
 			if 'mp2float' not in ffmpeg_allowed_codec_formats:
 				ffmpeg_allowed_codec_formats.append('mp2float')
+
+			# If user enables mpeg codecs, then also enable all mpeg wrappers.
+			if enable_all_nonfree_ffmpeg_wrapper_formats.get() == False:
+				enable_mpeg_wrappers.set(True)
+
+				for format_name in mpeg_wrapper_formats:
+					if format_name not in ffmpeg_allowed_wrapper_formats:
+						ffmpeg_allowed_wrapper_formats.append(format_name)
 		else:
 			# User wants to disable mpeg layer 2 decoding remove mp2 from list of allowed formats.
 			if 'mp2' in ffmpeg_allowed_codec_formats:
@@ -4578,11 +4617,12 @@ def print_ffmpeg_usage_options(*args):
 	if enable_mxf_audio_remixing.get() == True:
 
 		# User wants to enable MXF decoding, if only free wrapper formats are enabled, then also enable MXF wrapper decoding.
-		if enable_nonfree_ffmpeg_wrapper_formats.get() == False:
+		if enable_all_nonfree_ffmpeg_wrapper_formats.get() == False:
 			enable_mxf_wrapper.set(True)
 			# User wants to enable MXF decoding add MXF to list of allowed formats.
-			if 'mxf' not in ffmpeg_allowed_wrapper_formats:
-				ffmpeg_allowed_wrapper_formats.append('mxf')
+			for format_name in mxf_formats:
+				if format_name not in ffmpeg_allowed_wrapper_formats:
+					ffmpeg_allowed_wrapper_formats.append(format_name)
 
 		remix_combobox_1.state(['!disabled'])
 		remix_combobox_2.state(['!disabled'])
@@ -4789,6 +4829,7 @@ def print_ffmpeg_usage_options(*args):
 		print()
 		print('enable_mxf_wrapper =', true_false_string[enable_mxf_wrapper.get()])
 		print('enable_webm_wrapper =', true_false_string[enable_webm_wrapper.get()])
+		print('enable_mpeg_wrappers =', true_false_string[enable_mpeg_wrappers.get()])
 		print('enable_mp1_codec =', true_false_string[enable_mp1_codec.get()])
 		print('enable_mp2_codec =', true_false_string[enable_mp2_codec.get()])
 		print()
@@ -4797,6 +4838,8 @@ def print_ffmpeg_usage_options(*args):
 		print('enable_mxf_audio_remixing =', true_false_string[enable_mxf_audio_remixing.get()])
 		print('global_mxf_audio_remix_channel_map =', global_mxf_audio_remix_channel_map)
 		print('ffmpeg_free_wrapper_formats =', ffmpeg_free_wrapper_formats)
+		print('mxf_formats =', mxf_formats)
+		print('mpeg_wrapper_formats =', mpeg_wrapper_formats)
 		print('ffmpeg_free_codec_formats =', ffmpeg_free_codec_formats)
 		print()
 
@@ -5226,13 +5269,15 @@ remix_map_file_extension.set('.remix_map')
 global_mxf_audio_remix_channel_map = [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2] # Example [2, 6, 2, 2]   Create stereo, 5.1, stereo and stereo mixes (if there are enough source audio channels).
 
 # Define what wrapper formats are allowed to be processed with FFmpeg.
-# This definition helps to limit processing to patent free formats (mxf, mkv (matroska), webm, ogg, wav, flac) if needed.
+# This definition helps to limit processing to patent free formats:  mkv (matroska), ogg, wav, flac  if needed.
 # The value of ['all'] means allow all ffmpeg supported formats to be processed.
 # Use only lower case characters for the format names.
+mxf_formats = ['mxf','mxf_d10']
+mpeg_wrapper_formats = ['mpeg','mp2','mp3','mp4','m4v','m4a','mpegts','mpegtsraw','mpegvideo','mpeg1video','mpeg2video','vcd','svcd','dvd','vob']
 ffmpeg_free_wrapper_formats = ['wav', 'flac', 'ogg', 'mkv', 'matroska', 'mka']
 ffmpeg_allowed_wrapper_formats = ['all']
-enable_nonfree_ffmpeg_wrapper_formats = tkinter.BooleanVar()
-enable_nonfree_ffmpeg_wrapper_formats.set(True)
+enable_all_nonfree_ffmpeg_wrapper_formats = tkinter.BooleanVar()
+enable_all_nonfree_ffmpeg_wrapper_formats.set(True)
 
 # Define what codec formats are allowed to be processed with FFmpeg.
 # The value of ['all'] means allow all ffmpeg supported formats to be processed.
@@ -5246,8 +5291,8 @@ ffmpeg_free_codec_formats.extend(pcm_64_bit_formats)
 ffmpeg_free_codec_formats.append('flac')
 ffmpeg_free_codec_formats.append('vorbis')
 
-enable_nonfree_ffmpeg_codec_formats = tkinter.BooleanVar()
-enable_nonfree_ffmpeg_codec_formats.set(True)
+enable_all_nonfree_ffmpeg_codec_formats = tkinter.BooleanVar()
+enable_all_nonfree_ffmpeg_codec_formats.set(True)
 
 ffmpeg_allowed_codec_formats = ['all']
 
@@ -5255,6 +5300,8 @@ enable_mxf_wrapper=tkinter.IntVar()
 enable_mxf_wrapper.set(0)
 enable_webm_wrapper=tkinter.IntVar()
 enable_webm_wrapper.set(0)
+enable_mpeg_wrappers=tkinter.IntVar()
+enable_mpeg_wrappers.set(0)
 enable_mp1_codec=tkinter.IntVar()
 enable_mp1_codec.set(0)
 enable_mp2_codec=tkinter.IntVar()
@@ -5538,22 +5585,14 @@ if int(config_file_created_by_installer_version) >= 39:
 			global_mxf_audio_remix_channel_map = previously_saved_settings_dict['global_mxf_audio_remix_channel_map']
 			if debug == True:
 				print('global_mxf_audio_remix_channel_map =', previously_saved_settings_dict['global_mxf_audio_remix_channel_map'])
-	if 'ffmpeg_allowed_wrapper_formats' in previously_saved_settings_dict:
-			ffmpeg_allowed_wrapper_formats = previously_saved_settings_dict['ffmpeg_allowed_wrapper_formats']
+	if 'enable_all_nonfree_ffmpeg_wrapper_formats' in previously_saved_settings_dict:
+			enable_all_nonfree_ffmpeg_wrapper_formats.set(previously_saved_settings_dict['enable_all_nonfree_ffmpeg_wrapper_formats'])
 			if debug == True:
-				print('ffmpeg_allowed_wrapper_formats =', previously_saved_settings_dict['ffmpeg_allowed_wrapper_formats'])
-	if 'enable_nonfree_ffmpeg_wrapper_formats' in previously_saved_settings_dict:
-			enable_nonfree_ffmpeg_wrapper_formats.set(previously_saved_settings_dict['enable_nonfree_ffmpeg_wrapper_formats'])
+				print('enable_all_nonfree_ffmpeg_wrapper_formats =', previously_saved_settings_dict['enable_all_nonfree_ffmpeg_wrapper_formats'])
+	if 'enable_all_nonfree_ffmpeg_codec_formats' in previously_saved_settings_dict:
+			enable_all_nonfree_ffmpeg_codec_formats.set(previously_saved_settings_dict['enable_all_nonfree_ffmpeg_codec_formats'])
 			if debug == True:
-				print('enable_nonfree_ffmpeg_wrapper_formats =', previously_saved_settings_dict['enable_nonfree_ffmpeg_wrapper_formats'])
-	if 'ffmpeg_allowed_codec_formats' in previously_saved_settings_dict:
-			ffmpeg_allowed_codec_formats = previously_saved_settings_dict['ffmpeg_allowed_codec_formats']
-			if debug == True:
-				print('ffmpeg_allowed_codec_formats =', previously_saved_settings_dict['ffmpeg_allowed_codec_formats'])
-	if 'enable_nonfree_ffmpeg_codec_formats' in previously_saved_settings_dict:
-			enable_nonfree_ffmpeg_codec_formats.set(previously_saved_settings_dict['enable_nonfree_ffmpeg_codec_formats'])
-			if debug == True:
-				print('enable_nonfree_ffmpeg_codec_formats =', previously_saved_settings_dict['enable_nonfree_ffmpeg_codec_formats'])
+				print('enable_all_nonfree_ffmpeg_codec_formats =', previously_saved_settings_dict['enable_all_nonfree_ffmpeg_codec_formats'])
 	if 'enable_mxf_wrapper' in previously_saved_settings_dict:
 			enable_mxf_wrapper.set(previously_saved_settings_dict['enable_mxf_wrapper'])
 			if debug == True:
@@ -5562,6 +5601,10 @@ if int(config_file_created_by_installer_version) >= 39:
 			enable_webm_wrapper.set(previously_saved_settings_dict['enable_webm_wrapper'])
 			if debug == True:
 				print('enable_webm_wrapper =', previously_saved_settings_dict['enable_webm_wrapper'])
+	if 'enable_mpeg_wrappers' in previously_saved_settings_dict:
+			enable_mpeg_wrappers.set(previously_saved_settings_dict['enable_mpeg_wrappers'])
+			if debug == True:
+				print('enable_mpeg_wrappers =', previously_saved_settings_dict['enable_mpeg_wrappers'])
 	if 'enable_mp1_codec' in previously_saved_settings_dict:
 			enable_mp1_codec.set(previously_saved_settings_dict['enable_mp1_codec'])
 			if debug == True:
@@ -6908,8 +6951,8 @@ eleventh_window_label_3.grid(column=0, row=row_counter, pady=10, padx=10, column
 row_counter = row_counter + 1
 eleventh_window_label_5 = tkinter.ttk.Label(eleventh_frame_child_frame_1, text='Libav-tools allowed wrapper formats')
 eleventh_window_label_5.grid(column=0, row=row_counter, columnspan=4, padx=10, sticky=(tkinter.W))
-ffmpeg_wrapper_formats_true_radiobutton = tkinter.ttk.Radiobutton(eleventh_frame_child_frame_1, text='All', variable=enable_nonfree_ffmpeg_wrapper_formats, value=True, command=print_ffmpeg_usage_options)
-ffmpeg_wrapper_formats_false_radiobutton = tkinter.ttk.Radiobutton(eleventh_frame_child_frame_1, text='Only Wav, Flac, Ogg, Matroska and wrappers:', variable=enable_nonfree_ffmpeg_wrapper_formats, value=False, command=print_ffmpeg_usage_options)
+ffmpeg_wrapper_formats_true_radiobutton = tkinter.ttk.Radiobutton(eleventh_frame_child_frame_1, text='All', variable=enable_all_nonfree_ffmpeg_wrapper_formats, value=True, command=print_ffmpeg_usage_options)
+ffmpeg_wrapper_formats_false_radiobutton = tkinter.ttk.Radiobutton(eleventh_frame_child_frame_1, text='Only Wav, Flac, Ogg, Matroska and wrappers:', variable=enable_all_nonfree_ffmpeg_wrapper_formats, value=False, command=print_ffmpeg_usage_options)
 ffmpeg_wrapper_formats_true_radiobutton.grid(column=4, row=row_counter, padx=15, columnspan=2, sticky=(tkinter.W))
 ffmpeg_wrapper_formats_false_radiobutton.grid(column=5, row=row_counter, padx=15, columnspan=8, sticky=(tkinter.W))
 
@@ -6921,11 +6964,15 @@ column_counter = column_counter + 1
 eleventh_window_webm_enable = tkinter.Checkbutton(eleventh_frame_child_frame_1, text="Webm", variable=enable_webm_wrapper, command=print_ffmpeg_usage_options)
 eleventh_window_webm_enable.grid(row=row_counter, column=column_counter, pady=5, padx=10, columnspan=2, sticky=(tkinter.W))
 
+column_counter = column_counter + 1
+eleventh_window_mpeg_enable = tkinter.Checkbutton(eleventh_frame_child_frame_1, text="All Mpeg", variable=enable_mpeg_wrappers, command=print_ffmpeg_usage_options)
+eleventh_window_mpeg_enable.grid(row=row_counter, column=column_counter, pady=5, padx=20, columnspan=2, sticky=(tkinter.W))
+
 row_counter = row_counter + 1
 eleventh_window_label_6 = tkinter.ttk.Label(eleventh_frame_child_frame_1, text='Libav-tools allowed codec formats')
 eleventh_window_label_6.grid(column=0, row=row_counter, columnspan=4, padx=10, sticky=(tkinter.W))
-ffmpeg_codec_formats_true_radiobutton = tkinter.ttk.Radiobutton(eleventh_frame_child_frame_1, text='All', variable=enable_nonfree_ffmpeg_codec_formats, value=True, command=print_ffmpeg_usage_options)
-ffmpeg_codec_formats_false_radiobutton = tkinter.ttk.Radiobutton(eleventh_frame_child_frame_1, text='Only PCM, Flac, Vorbis and codecs:', variable=enable_nonfree_ffmpeg_codec_formats, value=False, command=print_ffmpeg_usage_options)
+ffmpeg_codec_formats_true_radiobutton = tkinter.ttk.Radiobutton(eleventh_frame_child_frame_1, text='All', variable=enable_all_nonfree_ffmpeg_codec_formats, value=True, command=print_ffmpeg_usage_options)
+ffmpeg_codec_formats_false_radiobutton = tkinter.ttk.Radiobutton(eleventh_frame_child_frame_1, text='Only PCM, Flac, Vorbis and codecs:', variable=enable_all_nonfree_ffmpeg_codec_formats, value=False, command=print_ffmpeg_usage_options)
 ffmpeg_codec_formats_true_radiobutton.grid(column=4, row=row_counter, padx=15, columnspan=2, sticky=(tkinter.W))
 ffmpeg_codec_formats_false_radiobutton.grid(column=5, row=row_counter, padx=15, columnspan=7, sticky=(tkinter.W))
 

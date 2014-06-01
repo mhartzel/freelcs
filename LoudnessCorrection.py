@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '267'
+loudnesscorrection_version = '268'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -327,12 +327,13 @@ enable_mxf_audio_remixing = False
 remix_map_file_extension = '.remix_map'
 global_mxf_audio_remix_channel_map = [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2] # Example [2, 6, 2, 2]	 Create stereo, 5.1, stereo and stereo mixes (if there are enough source audio channels).
 
-
+mxf_formats = ['mxf','mxf_d10']
+mpeg_wrapper_formats = ['mpeg','mp2','mp3','mp4','m4v','m4a','mpegts','mpegtsraw','mpegvideo','mpeg1video','mpeg2video','vcd','svcd','dvd','vob']
 ffmpeg_free_wrapper_formats = ['wav', 'flac', 'ogg', 'mkv', 'matroska', 'mka']
 
-enable_nonfree_ffmpeg_wrapper_formats = True
+enable_all_nonfree_ffmpeg_wrapper_formats = True
 
-if enable_nonfree_ffmpeg_wrapper_formats == True:
+if enable_all_nonfree_ffmpeg_wrapper_formats == True:
 	ffmpeg_allowed_wrapper_formats = ['all']
 else:
 	ffmpeg_allowed_wrapper_formats = ffmpeg_free_wrapper_formats
@@ -347,9 +348,9 @@ ffmpeg_free_codec_formats.extend(pcm_64_bit_formats)
 ffmpeg_free_codec_formats.append('flac')
 ffmpeg_free_codec_formats.append('vorbis')
 
-enable_nonfree_ffmpeg_codec_formats = True
+enable_all_nonfree_ffmpeg_codec_formats = True
 
-if enable_nonfree_ffmpeg_codec_formats == True:
+if enable_all_nonfree_ffmpeg_codec_formats == True:
 	ffmpeg_allowed_codec_formats = ['all']
 else:
 	ffmpeg_allowed_codec_formats = ffmpeg_free_codec_formats
@@ -2969,10 +2970,12 @@ def debug_lists_and_dictionaries_thread():
 	global record_separator
 	global enable_mxf_audio_remixing
 	global remix_map_file_extension
-	global enable_nonfree_ffmpeg_wrapper_formats
-	global enable_nonfree_ffmpeg_codec_formats
+	global enable_all_nonfree_ffmpeg_wrapper_formats
+	global enable_all_nonfree_ffmpeg_codec_formats
 	global global_mxf_audio_remix_channel_map
 	global ffmpeg_free_wrapper_formats
+	global mxf_formats
+	global mpeg_wrapper_formats
 	global ffmpeg_allowed_wrapper_formats
 	global ffmpeg_free_codec_formats
 	global ffmpeg_allowed_codec_formats
@@ -3063,11 +3066,13 @@ def debug_lists_and_dictionaries_thread():
 		values_read_from_configfile.append('remix_map_file_extension = ' + str(remix_map_file_extension))
 		values_read_from_configfile.append('global_mxf_audio_remix_channel_map = ' + str(global_mxf_audio_remix_channel_map))
 		values_read_from_configfile.append('ffmpeg_free_wrapper_formats = ' + str(ffmpeg_free_wrapper_formats))
+		values_read_from_configfile.append('mxf_formats = ' + str(mxf_formats))
+		values_read_from_configfile.append('mpeg_wrapper_formats = ' + str(mpeg_wrapper_formats))
 		values_read_from_configfile.append('ffmpeg_allowed_wrapper_formats = ' + str(ffmpeg_allowed_wrapper_formats))
-		values_read_from_configfile.append('enable_nonfree_ffmpeg_wrapper_formats = ' + str(enable_nonfree_ffmpeg_wrapper_formats))
+		values_read_from_configfile.append('enable_all_nonfree_ffmpeg_wrapper_formats = ' + str(enable_all_nonfree_ffmpeg_wrapper_formats))
 		values_read_from_configfile.append('ffmpeg_free_codec_formats = ' + str(ffmpeg_free_codec_formats))
 		values_read_from_configfile.append('ffmpeg_allowed_codec_formats = ' + str(ffmpeg_allowed_codec_formats))
-		values_read_from_configfile.append('enable_nonfree_ffmpeg_codec_formats = ' + str(enable_nonfree_ffmpeg_codec_formats))
+		values_read_from_configfile.append('enable_all_nonfree_ffmpeg_codec_formats = ' + str(enable_all_nonfree_ffmpeg_codec_formats))
 
 		values_read_from_configfile.append(str((len(title_text) + 1) * '-'))
 
@@ -3325,6 +3330,8 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		wrapper_format_is_in_allowed_formats_list = True
 
 		global enable_mxf_audio_remixing
+		global mxf_formats
+		global mpeg_wrapper_formats
 		wrapper_format = ''
 		mediainfo_error_message = ''
 		
@@ -3408,7 +3415,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 
 				# File is a mxf - file. Check if user has written a text file on disk holding a file specific audio remix channel map.
 				# If not the subroutine returns the global audio mixing channel map.
-				if file_type == 'mxf':
+				if file_type in mxf_formats:
 
 					# Save some debug information.
 					if debug_file_processing == True:
@@ -3508,10 +3515,10 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				# Channel counts bigger than 6 channels are only supported for mxf - files and only if mxf audio remixing is enabled.
 				# For all other filetypes with channel counts more than 6, store the stream name and error message to a list and skip the stream.
 				if int(number_of_audio_channels) > 6:
-					if file_type != 'mxf':
+					if file_type not in mxf_formats:
 						skip_this_audio_stream = True
 
-					if (file_type == 'mxf') and (mxf_audio_remixing == False):
+					if (file_type in mxf_formats) and (mxf_audio_remixing == False):
 						skip_this_audio_stream = True
 				
 				if skip_this_audio_stream == True:
@@ -3743,7 +3750,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			# Compile the name of output files to a list.
 			# If we are going to remix audio from a mxf - file before processing it, then the output files are temporary and needs to have names that don't conflict with the final names.
 			# Also if mxf - audio needs to be remixed, then gather file names and channel counts to a list that is needed for doing the remixes.
-			if (file_type == 'mxf') and (mxf_audio_remixing == True):
+			if (file_type in mxf_formats) and (mxf_audio_remixing == True):
 				# Define names for temporary output files demuxed from a mxf - file.
 				supported_file_name = filename_and_extension[0] + '-TempOutputFile-' + audio_stream_number + '.' + ffmpeg_output_wrapper_format
 				target_filenames.append(supported_file_name)
@@ -5261,14 +5268,17 @@ def write_user_defined_configuration_settings_to_logfile():
 	temporary_string_list = []
 	user_defined_configuration_options.append('natively_supported_file_formats = ' + ', '.join(all_settings_dict['natively_supported_file_formats']))
 	user_defined_configuration_options.append('ffmpeg_free_wrapper_formats = ' + ', '.join(all_settings_dict['ffmpeg_free_wrapper_formats']))
+	user_defined_configuration_options.append('mxf_formats = ' + ', '.join(all_settings_dict['mxf_formats']))
+	user_defined_configuration_options.append('mpeg_wrapper_formats = ' + ', '.join(all_settings_dict['mpeg_wrapper_formats']))
 	user_defined_configuration_options.append('ffmpeg_free_codec_formats = ' + ', '.join(all_settings_dict['ffmpeg_free_codec_formats']))
 	user_defined_configuration_options.append('ffmpeg_allowed_wrapper_formats = ' + ', '.join(all_settings_dict['ffmpeg_allowed_wrapper_formats']))
 	user_defined_configuration_options.append('ffmpeg_allowed_codec_formats = ' + ', '.join(all_settings_dict['ffmpeg_allowed_codec_formats']))
-	user_defined_configuration_options.append('enable_nonfree_ffmpeg_wrapper_formats = ' + str(all_settings_dict['enable_nonfree_ffmpeg_wrapper_formats']))
-	user_defined_configuration_options.append('enable_nonfree_ffmpeg_codec_formats = ' + str(all_settings_dict['enable_nonfree_ffmpeg_codec_formats']))
+	user_defined_configuration_options.append('enable_all_nonfree_ffmpeg_wrapper_formats = ' + str(all_settings_dict['enable_all_nonfree_ffmpeg_wrapper_formats']))
+	user_defined_configuration_options.append('enable_all_nonfree_ffmpeg_codec_formats = ' + str(all_settings_dict['enable_all_nonfree_ffmpeg_codec_formats']))
 	user_defined_configuration_options.append('ffmpeg_output_wrapper_format = ' + all_settings_dict['ffmpeg_output_wrapper_format'])
 	user_defined_configuration_options.append('enable_mxf_wrapper = ' + str(all_settings_dict['enable_mxf_wrapper']))                                                                            
 	user_defined_configuration_options.append('enable_webm_wrapper = ' + str(all_settings_dict['enable_webm_wrapper']))                                                                          
+	user_defined_configuration_options.append('enable_mpeg_wrappers = ' + str(all_settings_dict['enable_mpeg_wrappers']))                                                                          
 	user_defined_configuration_options.append('enable_mp1_codec = ' + str(all_settings_dict['enable_mp1_codec']))                                                                                
 	user_defined_configuration_options.append('enable_mp2_codec = ' + str(all_settings_dict['enable_mp2_codec'])) 
 	user_defined_configuration_options.append('----------------------------------------------------------------------------------------------------')
@@ -5588,16 +5598,20 @@ try:
 			global_mxf_audio_remix_channel_map = all_settings_dict['global_mxf_audio_remix_channel_map']
 		if 'ffmpeg_free_wrapper_formats' in all_settings_dict:
 			ffmpeg_free_wrapper_formats = all_settings_dict['ffmpeg_free_wrapper_formats']
+		if 'mxf_formats' in all_settings_dict:
+			mxf_formats = all_settings_dict['mxf_formats']
+		if 'mpeg_wrapper_formats' in all_settings_dict:
+			mpeg_wrapper_formats = all_settings_dict['mpeg_wrapper_formats']
 		if 'ffmpeg_allowed_wrapper_formats' in all_settings_dict:
 			ffmpeg_allowed_wrapper_formats = all_settings_dict['ffmpeg_allowed_wrapper_formats']
 		if 'ffmpeg_free_codec_formats' in all_settings_dict:
 			ffmpeg_free_codec_formats = all_settings_dict['ffmpeg_free_codec_formats']
 		if 'ffmpeg_allowed_codec_formats' in all_settings_dict:
 			ffmpeg_allowed_codec_formats = all_settings_dict['ffmpeg_allowed_codec_formats']
-		if 'enable_nonfree_ffmpeg_wrapper_formats' in all_settings_dict:
-			enable_nonfree_ffmpeg_wrapper_formats = all_settings_dict['enable_nonfree_ffmpeg_wrapper_formats']
-		if 'enable_nonfree_ffmpeg_codec_formats' in all_settings_dict:
-			enable_nonfree_ffmpeg_codec_formats = all_settings_dict['enable_nonfree_ffmpeg_codec_formats']
+		if 'enable_all_nonfree_ffmpeg_wrapper_formats' in all_settings_dict:
+			enable_all_nonfree_ffmpeg_wrapper_formats = all_settings_dict['enable_all_nonfree_ffmpeg_wrapper_formats']
+		if 'enable_all_nonfree_ffmpeg_codec_formats' in all_settings_dict:
+			enable_all_nonfree_ffmpeg_codec_formats = all_settings_dict['enable_all_nonfree_ffmpeg_codec_formats']
 
 		if 'os_name' in all_settings_dict:
 			os_name = all_settings_dict['os_name']
