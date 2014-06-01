@@ -21,8 +21,11 @@
     <br>
     <a href="#Libav-tools_vs_FFmpeg">Libav-tools vs. FFmpeg</a><br>
     <br>
-    <a href="FreeLCS_FAQ.html#Libav-tools%20/%20FFmpeg%20and%20patents">Libav-tools
-      / FFmpeg and patents</a><br>
+    <a href="FreeLCS_FAQ.html#Libav-tools%20/%20FFmpeg%20and%20patents">Avconv /
+      FFmpeg and patents</a><br>
+    <br>
+    <a href="#Can_I_restrict_avconv_/_FFmpeg_to_use_only_patent_free_formats">Can
+      I restrict avconv / FFmpeg to use only patent free formats</a><br>
     <br>
     <a href="#How%20many%20audio%20streams%20in%20a%20file%20are%20supported%20?">How
       many audio streams in a file are supported ?</a><br>
@@ -187,6 +190,19 @@
         works fine without it with wav, flac and ogg formats.<br>
       </li>
     </ul>
+    <p><br>
+    </p>
+    <h2><a id="Can_I_restrict_avconv_/_FFmpeg_to_use_only_patent_free_formats">Can
+        I restrict avconv / FFmpeg to use only patent free formats</a></h2>
+    <ul>
+      <li>Yes, in FreeLCS 2.5 you can set avconv / FFmpeg allowed formats during
+        installation. In the following picture below allowed wrapper formats are
+        restricted to:&nbsp;&nbsp; <strong>wav</strong>, <strong>flac</strong>
+        <strong>ogg</strong>, <strong>matroska</strong> &nbsp; and allowed codec
+        formats are restricted to: &nbsp; <strong>pcm</strong>, <strong>flac</strong>,
+        <strong>vorbis</strong>.</li>
+    </ul>
+    <img alt="" src="Pictures/MXF_Remixing-05.jpg">
     <p><br>
     </p>
     <h2> <a id="How many audio streams in a file are supported ?">How many
@@ -402,7 +418,7 @@
         guarantee that FreeLCS can process every MXF - file you feed it. It
         might be a good idea to do a thorough test with a large set of different
         MXF files before you make this feature part of your workflow. More about
-        the MXF remix mapping feature can be found in the <a href="Machine_readable_results_and_MXF_audio_remix_mapping.html#MXF_audio_remixing">user
+        MXF Audio Remixing can be found in the <a href="Machine_readable_results_and_MXF_audio_remix_mapping.html#MXF_audio_remixing">user
           manual</a>.</li>
     </ul>
     <br>

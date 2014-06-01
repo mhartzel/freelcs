@@ -2,11 +2,27 @@
 #####################################
 # Released FreeLCS 2.5 with:        #
 # ----------------------------      #
-# - LoudnessCorrection version 264  #
+# - LoudnessCorrection version 268  #
 # - HeartBeat_Checker version 020   #
-# - Installer version 091           #
+# - Installer version 094           #
 # - Latest Documentation            #
 #####################################
+
+Documentation
+--------------
+- Added some minor clarifications to the documentation. 
+
+LoudnessCorrection Version 268, Installer 094, Documentation
+-------------------------------------------------------------
+- Squashed a couple of more bugs in the new functionality.
+
+LoudnessCorrection Version 267, Installer 093, Documentation
+-------------------------------------------------------------
+- Tested new features some more and fixed some more bugs I found :)
+
+LoudnessCorrection Version 265, Installer 092, Documentation
+-------------------------------------------------------------
+- Made some tests with the new features and found some bugs and fixed them :)
 
 Documentation
 --------------
