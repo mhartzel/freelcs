@@ -82,6 +82,9 @@
     <br>
     <a href="#Non-critical_error_messages">Non-critical error messages</a><br>
     <br>
+    <a href="#Is_there_a_way_to_find_out_FreeLCS_options_used_during_installation">Is
+      there a way to find out FreeLCS options used during installation ?</a><br>
+    <br>
     <br>
     <br>
     <br>
@@ -161,7 +164,7 @@
           href="http://blog.pkh.me/p/13-the-ffmpeg-libav-situation.html">here</a>.</li>
       <li>Ubuntu 14.04 no longer has FFmpeg available in the package repository,
         only libav is available for easy installation. Because of this FreeLCS
-        2.5 now only supports libav (for all supported operating systems Debian
+        3.0 now only supports libav (for all supported operating systems Debian
         7, Ubuntu 12.04 and 14.04).</li>
     </ul>
     <p><br>
@@ -195,11 +198,11 @@
     <h2><a id="Can_I_restrict_avconv_/_FFmpeg_to_use_only_patent_free_formats">Can
         I restrict avconv / FFmpeg to use only patent free formats</a></h2>
     <ul>
-      <li>Yes, in FreeLCS 2.5 you can set avconv / FFmpeg allowed formats during
+      <li>Yes, in FreeLCS 3.0 you can set avconv / FFmpeg allowed formats during
         installation. In the following picture below allowed wrapper formats are
         restricted to:&nbsp;&nbsp; <strong>wav</strong>, <strong>flac</strong>
-        <strong>ogg</strong>, <strong>matroska</strong> &nbsp; and allowed codec
-        formats are restricted to: &nbsp; <strong>pcm</strong>, <strong>flac</strong>,
+        <strong>ogg</strong>, <strong>matroska</strong> &nbsp; and allowed
+        codec formats are restricted to: &nbsp; <strong>pcm</strong>, <strong>flac</strong>,
         <strong>vorbis</strong>.</li>
     </ul>
     <img alt="" src="Pictures/MXF_Remixing-05.jpg">
@@ -409,7 +412,7 @@
     <h2><a id="Is MXF supported ?">Is MXF supported ?</a></h2>
     <ul>
       <li>Libav-tools supports MXF and I've been able to extract audio from MXF
-        - wrapped files with it. FreeLCS 2.5 allows the user to define MXF audio
+        - wrapped files with it. FreeLCS 3.0 allows the user to define MXF audio
         remix maps that define how audio is to be recombined to different mixes
         before loudness processing. However MXF is not one format, but a family
         of formats. Every hardware and software vendor seem to have their own
@@ -451,7 +454,7 @@
     <ul>
       <li>Ubuntu Desktop 12.04 LTS.</li>
     </ul>
-    FreeLCS 2.5 supports:<br>
+    FreeLCS 3.0 supports:<br>
     <ul>
       <li>Ubuntu 12.04 LTS Desktop</li>
       <li>Ubuntu 12.04 LTS Server</li>
@@ -806,7 +809,138 @@
     <hr style="color: black;">
     <p><br>
     </p>
+    <h2><a id="Is_there_a_way_to_find_out_FreeLCS_options_used_during_installation">Is
+        there a way to find out FreeLCS options used during installation ?</a></h2>
+    <p>Yes. FreeLCS 3.0 creates an installation log file in <strong>/var/log/.</strong>
+      The name of the logfile is something like:&nbsp; <strong>freelcs_installation_log_2014.06.02_at_14.15.04.txt</strong>.&nbsp;
+      The date and time in the file name corresponds to the time FreeLCS
+      installer was run.</p>
+    <p>The logfile is meant for the developer for debugging purposes and the log
+      lists values assigned during installation to FreeLCS internal variables.
+      Since the variable names are quite clear and easy to understand, the user
+      can deduce with little effort how options were set during installation.
+      The logfile also lists variables that are not user configurable, for
+      example: <strong>delay_between_directory_reads = 5</strong>&nbsp; means
+      FreeLCS checks in 5 second intervals for new files in the HotFolder.
+      Options are divided to sections roughly corresponding each page in the
+      installer program.</p>
+    <p>One example where the user might want to check the logfile is when there
+      is need to know what email addresses are FreeLCS error messages sent to.
+      The third section in the logfile lists email settings including email
+      addresses error messages are sent to.</p>
     <p><br>
+    </p>
+    <h3>Example: installation logfile<br>
+    </h3>
+    Here is an example from one of my test installations. I have added some
+    explanations in parentheses. You can list the logfile with a command like:<em><strong><br>
+      </strong></em>
+    <p><em><strong>cat &nbsp; /var/log/freelcs_installation_log_2014.06.02_at_14.15.04.txt
+          </strong></em><br> <br>
+      <br>
+      <span style="font-family: monospace;">Configuration variables written to
+        /etc/Loudness_Correction_Settings.pickle are:<br>
+----------------------------------------------------------------------------------<br>
+        freelcs_version = 3.0<br>
+        os_name = ubuntu<br>
+        os_version = 14.04<br>
+        libebur128_path = /usr/bin/loudness<br>
+----------------------------------------------------------------------------------------------------<br>
+        <br>
+        target_path = /mountpoint/raid-disk<br>
+        language = english<br>
+        english = 1<br>
+        finnish = 0<br>
+        hotfolder_path = /mountpoint/raid-disk/LoudnessCorrection<br>
+        directory_for_temporary_files =
+        /mountpoint/raid-disk/00-Loudness_Calculation_Temporary_Files<br>
+        directory_for_results =
+        /mountpoint/raid-disk/LoudnessCorrection/00-Corrected_Files<br>
+        directory_for_error_logs = /mountpoint/raid-disk/00-Error_Logs<br>
+        delay_between_directory_reads = 5&nbsp;&nbsp; <strong>(How often HotFolder
+          is scanned for new files, time in seconds)</strong><br>
+        number_of_processor_cores = 4&nbsp;&nbsp; <strong>(How many processor
+          cores to use for file processing. Each file is processed using 2
+          cores, so the value 4 here means 2 files can be processed at the same
+          time)</strong><br>
+        file_expiry_time = 28800&nbsp;&nbsp; <strong>(How long to wait before
+          deleting files, time in seconds)</strong><br>
+----------------------------------------------------------------------------------------------------<br>
+        <br>
+        send_error_messages_by_email = True<br>
+        email_sending_interval: 1800&nbsp;&nbsp;&nbsp; <strong>(How long to
+          wait between sending error reports to admin, time in minutes)</strong><br>
+        message_recipients:
+        ['admin1@mycompany.com','admin2.mycompany@gmail.com']<br>
+        message_title: FreeLCS Error Message<br>
+        send_error_messages_by_email: True<br>
+        smtp_password: ******************<br>
+        smtp_server_name: smtp.gmail.com<br>
+        smtp_server_port: 587<br>
+        smtp_server_requires_authentication: True<br>
+        smtp_username: freelcs_test_user@gmail.com<br>
+        use_tls: True<br>
+        where_to_send_error_messages = logfile, email<br>
+        send_error_messages_to_logfile = True<br>
+        heartbeat = True<br>
+        heartbeat_file_name = 00-HeartBeat.pickle<br>
+        heartbeat_write_interval = 30&nbsp;&nbsp; <strong>(How long to wait
+          between writing time stamps to the heartbeat file, time in seconds. If
+          time stamp updates stops, then HeartBeat_Checker sends an error
+          message to the admin)</strong><br>
+----------------------------------------------------------------------------------------------------<br>
+        <br>
+        write_html_progress_report = True<br>
+        html_progress_report_write_interval = 5&nbsp;&nbsp; <strong>(How long
+          to wait between updating the html progress report, time in seconds)</strong><br>
+        web_page_name = 00-Calculation_Queue_Information.html<br>
+        web_page_path =
+        /mountpoint/raid-disk/LoudnessCorrection/00-Calculation_Queue_Information<br>
+        peak_measurement_method = --peak=true&nbsp;&nbsp; <strong>(What peak
+          measurement method to use TruePeak or sample peak)</strong><br>
+----------------------------------------------------------------------------------------------------<br>
+        <br>
+        create_loudness_corrected_files = True<br>
+        create_loudness_history_graphics_files = True<br>
+        delete_original_file_immediately = True&nbsp;&nbsp; <strong>(When True,
+          then a multistream file is deleted immediately after all audio streams
+          have been extracted from the file)</strong><br>
+        write_loudness_calculation_results_to_a_machine_readable_file = False<br>
+        unit_separator (ascii numbers)&nbsp; = 31<br>
+        record_separator (ascii numbers)&nbsp; = 13, 10<br>
+----------------------------------------------------------------------------------------------------<br>
+        <br>
+        enable_mxf_audio_remixing = True<br>
+        remix_map_file_extension = .remix_map<br>
+        global_mxf_audio_remix_channel_map = 2, 6, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2<br>
+        natively_supported_file_formats = .wav, .flac, .ogg<br>
+        ffmpeg_free_wrapper_formats = wav, flac, ogg, mkv, matroska, mka<br>
+        mxf_formats = mxf, mxf_d10<br>
+        mpeg_wrapper_formats = mpeg, mp2, mp3, mp4, m4v, m4a, mpegts, mpegtsraw,
+        mpegvideo, mpeg1video, mpeg2video, vcd, svcd, dvd, vob<br>
+        ffmpeg_free_codec_formats = pcm_s8, pcm_s8_planar, pcm_u8, pcm_s16be,
+        pcm_s16le, pcm_s16le_planar, pcm_u16be, pcm_u16le, pcm_dvd, pcm_lxf,
+        pcm_s24be, pcm_s24daud, pcm_s24le, pcm_u24be, pcm_u24le, pcm_f32be,
+        pcm_f32le, pcm_s32be, pcm_s32le, pcm_u32be, pcm_u32le, pcm_f64be,
+        pcm_f64le, flac, vorbis<br>
+        ffmpeg_allowed_wrapper_formats = all<br>
+        ffmpeg_allowed_codec_formats = all<br>
+        enable_all_nonfree_ffmpeg_wrapper_formats = True<br>
+        enable_all_nonfree_ffmpeg_codec_formats = True<br>
+        ffmpeg_output_wrapper_format = wav<br>
+        enable_mxf_wrapper = False<br>
+        enable_webm_wrapper = False<br>
+        enable_mpeg_wrappers = False<br>
+        enable_mp1_codec = False<br>
+        enable_mp2_codec = False<br>
+----------------------------------------------------------------------------------------------------<br>
+        <br>
+        silent = True<br>
+        number_of_all_items_in_dictionary = 54<br>
+        config_file_created_by_installer_version = 094<br>
+----------------------------------------------------------------------------------------------------</span><br>
     </p>
     <p><br>
     </p>

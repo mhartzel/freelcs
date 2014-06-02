@@ -1,12 +1,17 @@
 
 #####################################
-# Released FreeLCS 2.5 with:        #
+# Released FreeLCS 3.0 with:        #
 # ----------------------------      #
 # - LoudnessCorrection version 268  #
 # - HeartBeat_Checker version 020   #
-# - Installer version 094           #
+# - Installer version 095           #
 # - Latest Documentation            #
 #####################################
+
+Installer 095, Documentation
+-----------------------------
+- Changed FreeLCS version from 2.5 to 3.0 since this release includes major new features.
+- Added info in the FAQ about FreeLCS 3.0 installation log.
 
 Documentation
 --------------
