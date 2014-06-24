@@ -943,17 +943,22 @@ for line in list_of_command_output:
 
 			list_of_command_output, error_happened, list_of_errors = run_external_program(['/bin/kill', pid_of_program_to_stop])
 
-# This variable can hold one of two values: desktop, server
-# This script tries to find if package: xserver-xorg-core  is installed, and if it is then the we are running on a 'Desktop' - version of the os.
-os_is_server_or_desktop_version = 'unknown'
+#  We need to know if we running on the desktop or server version of the os, so that we can create the foldername for results dir accordingly
+# Here we try to find if package  'pulseaudio'  is installed, if it is then the we are running on a 'Desktop' - version of the os.
+os_is_server_or_desktop_version = 'desktop'
 commands_to_run = ['dpkg', '-l', 'pulseaudio']
 list_of_command_output, error_happened, list_of_errors = run_external_program(commands_to_run)
 
 if error_happened == False:
 	if 'no packages found matching' in list_of_command_output:
 		os_is_server_or_desktop_version = 'server'
-	else:
-		os_is_server_or_desktop_version = 'desktop'
+
+	if len(list_of_command_output) > 5:
+		item_six_of_command_output = list_of_command_output[5]
+		pulseaudio_version = item_six_of_command_output.split()[2]
+
+		if pulseaudio_version == '<none>':
+			os_is_server_or_desktop_version = 'server'
 
 # Read in settings from LoudnessCorrection settings file.
 hotfolder_path, directory_for_results, directory_for_error_logs, email_sending_details, os_name, os_version = read_loudnesscorrection_config_file()
