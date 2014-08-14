@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '269'
+loudnesscorrection_version = '270'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -376,6 +376,7 @@ record_separator = chr(13) + chr(10) # This string is used to separate info for 
 # Also define in seconds the interval between ip address checks (default 5 mins = 300 secs).
 ip_address_refresh_interval = 300 
 ip_address_refresh_counter = ip_address_refresh_interval  # Force ip address check immediately when the program is run by setting the counter to the same value as the check interval.
+ip_address_acquirement_error_has_already_been_reported = False
 
 ###############################################################################################################################################################################
 # Default value definitions end here :)																	      #
@@ -2585,7 +2586,6 @@ def send_error_messages_by_email_thread(email_sending_details, english, finnish)
 	global freelcs_version
 	global critical_python_error_has_happened
 	global quit_all_threads_now
-	global all_ip_addresses_of_the_machine
 	unix_time_in_ticks =float(0)
 	realtime = ''
 	
@@ -3191,6 +3191,12 @@ def get_ip_addresses_of_the_host_machine():
 		global all_ip_addresses_of_the_machine
 		global ip_address_refresh_counter
 		global directory_for_temporary_files
+		global ip_address_acquirement_error_has_already_been_reported
+
+		previous_ip_addresses_of_the_machine = []
+		previous_ip_addresses_of_the_machine = copy.deepcopy(all_ip_addresses_of_the_machine)
+		new_ip_addresses_of_the_machine = []
+
 
 		# Create the commandline we need to run.
 		commands_to_run = ['hostname', '-I']
@@ -3256,30 +3262,42 @@ def get_ip_addresses_of_the_host_machine():
 	
 		if error_message == '':
 
-			temp_list_of_ip_addresses = []
-			temp_list_of_ip_addresses = stdout.split()
+			new_ip_addresses_of_the_machine = stdout.split()
 
-			if temp_list_of_ip_addresses != []:
-				all_ip_addresses_of_the_machine = copy.deepcopy(temp_list_of_ip_addresses)
-				ip_address_refresh_counter = 0 # Start ip address refresh counter again from zero, if we got the ip address successfully
+			if new_ip_addresses_of_the_machine != []:
+				
+				# We got the ip address of the server successfully, if previous try failed then it set the error flag,
+				# so that we don't repoprt this error more than once. Reset the error flag now.
+				ip_address_acquirement_error_has_already_been_reported = False
+
+				# Return the new ip addresses to the main program
+				return(new_ip_addresses_of_the_machine)
+
 		else:
 			# The default interval to check if our ip address has changed is 5 minutes (300 seconds).
 			# If the check succeeds, then the counter that counts seconds since last check is reset to zero.
 			# If the ip address check fails, then the counter is not reset and we check again for the ip address every 5 seconds and the counter continues to grow above 300.
-			# If the ip address check fails continuously for 120 seconds (300 + 120), then send an error message.
-			# The ip address check may sometimes fail, but it only means we don't know what the ip address is, the machine propably still has a valid address, just the check fails.
+			# If the ip address check fails continuously for another 120 seconds (300 + 120), then send an error message.
+			# Also set a flag so that we don't report this error more than once.
+			# Note !!!!!!! The ip address check may sometimes fail, but it only means we don't know what the ip address is, the machine propably still has a valid address, just the check fails.
 			if ip_address_refresh_counter >= 420:
-				send_error_messages_to_screen_logfile_email(error_message, [])
+
 				ip_address_refresh_counter = 0 # Start ip address refresh counter again from zero.
 
+				# Error happened, send error message but only once.
+				if ip_address_acquirement_error_has_already_been_reported == False:
+
+					send_error_messages_to_screen_logfile_email(error_message, [])
+					ip_address_acquirement_error_has_already_been_reported = True
+
+			return(previous_ip_addresses_of_the_machine)
+	
 	except Exception:
 		exc_type, exc_value, exc_traceback = sys.exc_info()
 		error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
 		subroutine_name = 'get_ip_addresses_of_the_host_machine'
 		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
-	
-	return(all_ip_addresses_of_the_machine)
-	
+
 		
 def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(filename, hotfolder_path, directory_for_temporary_files, ffmpeg_output_wrapper_format, english, finnish):
 	
@@ -5840,7 +5858,7 @@ try:
 		loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'] = [sys.argv, loudness_correction_pid, all_ip_addresses_of_the_machine, freelcs_version, loudnesscorrection_version]
 
 		# Get IP-Addresses of the machine, if update time has passed (default 5 minutes).
-		ip_address_refresh_counter = ip_address_refresh_counter + 5
+		ip_address_refresh_counter = ip_address_refresh_counter + delay_between_directory_reads
 
 		if ip_address_refresh_counter >= ip_address_refresh_interval:
 			all_ip_addresses_of_the_machine = get_ip_addresses_of_the_host_machine()
