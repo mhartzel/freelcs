@@ -27,8 +27,8 @@ import email.mime.multipart
 import tempfile
 import copy
 
-version = '095'
-freelcs_version = '3.0'
+version = '097'
+freelcs_version = '3.1'
 
 ###################################
 # Function definitions start here #
