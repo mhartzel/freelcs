@@ -8,6 +8,10 @@
 # - Latest Documentation            #
 #####################################
 
+Documentation
+--------------
+- Updated index.html to tell about FreeLCS 3.1 release :)
+
 Installer 097
 --------------
 - Bumped FreeLCS version number to 3.1. No other changes :)
