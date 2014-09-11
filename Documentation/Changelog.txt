@@ -1,9 +1,34 @@
 
 #####################################
+# Released FreeLCS 3.1 with:        #
+# ----------------------------      #
+# - LoudnessCorrection version 270  #
+# - HeartBeat_Checker version 022   #
+# - Installer version 097           #
+# - Latest Documentation            #
+#####################################
+
+Installer 097
+--------------
+- Bumped FreeLCS version number to 3.1. No other changes :)
+
+LoudnessCorrection Version 270
+-------------------------------
+- Made some more refinements to the code in the last commit, so that it functions sanely in all situations.
+
+LoudnessCorrection Version 269
+-------------------------------
+- I sometimes get error messages by email, that tells me that checking the ip address of the server failed. I checked the code and ip address checking is done in too many places, some may happen simultaneously in separate threads causing the problem. Now LoudnessCorrections checks the ip address only in one thread and only once every 5 minutes. Also if checking fails, it is retried for 120 seconds before sending an error message to admin.
+
+Regression Tester
+-----------------
+- Trying to find if regression tester runs on server or desktop version of a distro by searching for installed package:   pulseaudio   did not work. Fixed :)
+
+#####################################
 # Released FreeLCS 3.0 with:        #
 # ----------------------------      #
 # - LoudnessCorrection version 268  #
-# - HeartBeat_Checker version 020   #
+# - HeartBeat_Checker version 022   #
 # - Installer version 095           #
 # - Latest Documentation            #
 #####################################
@@ -271,7 +296,6 @@ Installer / Documentation / Backup
 -----------------------------------
 Merged changes made to the already released FreeLCS 2.4 to the main source tree.
 
-
 #####################################
 # Released FreeLCS 2.4 with:        #
 # ----------------------------      #
@@ -280,7 +304,6 @@ Merged changes made to the already released FreeLCS 2.4 to the main source tree.
 # - Installer version 060           #
 # - Latest Documentation            #
 #####################################
-
 
 Regression_tester
 -----------------
@@ -507,7 +530,6 @@ LoudnessCorrection Version 221
 - Bugfix: Fixed a regression in handling outputfiles bigger than 4 GB that appeared in version 220. Splitting output to separate mono files did not work correctly.
 - Bugfix: In case running sox was not successful, the error message printed on the result graphics was empty.
 
-
 #####################################
 # Released FreeLCS 2.2 with:        #
 # ----------------------------      #
@@ -516,7 +538,6 @@ LoudnessCorrection Version 221
 # - Installer version 058           #
 # - Latest Documentation            #
 #####################################
-
 
 LoudnessCorrection Version 220
 ------------------------------
@@ -695,7 +716,6 @@ LoudnessCorrection Version 193
 - 64 bit audio files are now converted to 32 bits before processing. This is done because sox does not support bit depth over 32 bits.
 - Added some more text output when debug mode is on.
 - Bugfix: if FFmpeg stream map number can not be found when parsing FFmpeg text output then the audio stream is skipped.
-
 
 #####################################
 # Released FreeLCS 2.00 with:       #
