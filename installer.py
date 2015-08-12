@@ -27,7 +27,7 @@ import email.mime.multipart
 import tempfile
 import copy
 
-version = '098'
+version = '099'
 freelcs_version = '3.2'
 
 ###################################
@@ -404,6 +404,7 @@ def set_directory_names_according_to_language():
 	global finnish
 	global os_name
 	global os_version
+	global os_version_float
 	
 	path = target_path.get()
 	
@@ -440,31 +441,45 @@ def set_directory_names_according_to_language():
 	directory_for_temporary_files_truncated_for_display.set('Target Directory ' + os.sep + ' 00-Loudness_Calculation_Temporary_Files')
 	directory_for_error_logs.set(path + os.sep + '00-Error_Logs')
 	directory_for_error_logs_truncated_for_display.set('Target Directory ' + os.sep + ' 00-Error_Logs')
-	
-	# Samba configuration needs to be updated also, since the path to HotFolder has changed.
-	samba_configuration_file_content = ['# Samba Configuration File', \
-	'', \
-	'[global]', \
-	'workgroup = WORKGROUP', \
-	'server string = %h server (Samba, ' + hotfolder_name_to_use + ')', \
-	'force create mode = 0777', \
-	'unix extensions = no', \
-	'log file = /var/log/samba/log.%m', \
-	'max log size = 1000', \
-	'syslog = 0', \
-	'panic action = /usr/share/samba/panic-action %d', \
-	'security = share', \
-	'socket options = TCP_NODELAY', \
-	'', \
-	'[' + hotfolder_name_to_use + ']', \
-	'comment = ' + hotfolder_name_to_use, \
-	'read only = no', \
-	'locking = no', \
-	'path = ' + hotfolder_path.get(), \
-	'guest ok = yes', \
-	'browseable = yes']
 
-	if (os_name == 'ubuntu') and (os_version == '14.04'):
+	# Samba configuration needs to be updated also, since the path to HotFolder has changed.
+	# Assign the correct version of options in /etc/smb.conf for the samba version used in the distro.
+	smb_conf_version = 1
+
+	# Samba server version number is 3.x.x
+	if (os_name == 'ubuntu') and (os_version_float >= 14.04):
+		smb_conf_version = 2
+
+	# Samba server version number is 4.x.x
+	if (os_name == 'debian') and (os_version_float >= 8):
+		smb_conf_version = 2
+
+	# Define samba version 3.x.x configuration
+	if smb_conf_version == 1:
+		samba_configuration_file_content = ['# Samba Configuration File', \
+		'', \
+		'[global]', \
+		'workgroup = WORKGROUP', \
+		'server string = %h server (Samba, ' + hotfolder_name_to_use + ')', \
+		'force create mode = 0777', \
+		'unix extensions = no', \
+		'log file = /var/log/samba/log.%m', \
+		'max log size = 1000', \
+		'syslog = 0', \
+		'panic action = /usr/share/samba/panic-action %d', \
+		'security = share', \
+		'socket options = TCP_NODELAY', \
+		'', \
+		'[' + hotfolder_name_to_use + ']', \
+		'comment = ' + hotfolder_name_to_use, \
+		'read only = no', \
+		'locking = no', \
+		'path = ' + hotfolder_path.get(), \
+		'guest ok = yes', \
+		'browseable = yes']
+
+	# Define samba version 4.1.x configuration
+	if smb_conf_version == 2:
 		samba_configuration_file_content = ['# Samba Configuration File', \
 		'', \
 		'[global]', \
@@ -5060,10 +5075,14 @@ if (os_name == '') or (os_version == ''):
 		os_version = temporary_list[1]
 	temporary_list = []
 
+# Convert os version number to float, so that we can easily compare version numbers
+os_version_float = float(os_version)
+
 if debug == True:
 	print()
 	print('os_name =', os_name)
 	print('os_version =', os_version)
+	print('os_version_float =', os_version_float)
 	print()
 
 
@@ -5396,30 +5415,43 @@ delete_original_file_immediately.set(True)
 unit_separator = chr(31) # This non printable ascii character is used to separate individual values for a mix.
 record_separator = chr(13) + chr(10) # This string is used to separate info for different mixes. This is by default the carriage return character followed by the line feed character. This sequence is used in windows to separate lines of text.
 
-# Define initial samba configuration
-samba_configuration_file_content = ['# Samba Configuration File', \
-'', \
-'[global]', \
-'workgroup = WORKGROUP', \
-'server string = %h server (Samba, LoudnessCorrection)', \
-'force create mode = 0777', \
-'unix extensions = no', \
-'log file = /var/log/samba/log.%m', \
-'max log size = 1000', \
-'syslog = 0', \
-'panic action = /usr/share/samba/panic-action %d', \
-'security = share', \
-'socket options = TCP_NODELAY', \
-'', \
-'[LoudnessCorrection]', \
-'comment = LoudnessCorrection', \
-'read only = no', \
-'locking = no', \
-'path = /LoudnessCorrection', \
-'guest ok = yes', \
-'browseable = yes']
+# Assign the correct version of options in /etc/smb.conf for the samba version used in the distro.
+smb_conf_version = 1
 
-if (os_name == 'ubuntu') and (os_version == '14.04'):
+# Samba server version number is 3.x.x
+if (os_name == 'ubuntu') and (os_version_float >= 14.04):
+	smb_conf_version = 2
+
+# Samba server version number is 4.x.x
+if (os_name == 'debian') and (os_version_float >= 8):
+	smb_conf_version = 2
+
+# Define samba version 3.x.x configuration
+if smb_conf_version == 1:
+	samba_configuration_file_content = ['# Samba Configuration File', \
+	'', \
+	'[global]', \
+	'workgroup = WORKGROUP', \
+	'server string = %h server (Samba, LoudnessCorrection)', \
+	'force create mode = 0777', \
+	'unix extensions = no', \
+	'log file = /var/log/samba/log.%m', \
+	'max log size = 1000', \
+	'syslog = 0', \
+	'panic action = /usr/share/samba/panic-action %d', \
+	'security = share', \
+	'socket options = TCP_NODELAY', \
+	'', \
+	'[LoudnessCorrection]', \
+	'comment = LoudnessCorrection', \
+	'read only = no', \
+	'locking = no', \
+	'path = /LoudnessCorrection', \
+	'guest ok = yes', \
+	'browseable = yes']
+
+# Define samba version 4.1.x configuration
+if smb_conf_version == 2:
 	samba_configuration_file_content = ['# Samba Configuration File', \
 	'', \
 	'[global]', \
