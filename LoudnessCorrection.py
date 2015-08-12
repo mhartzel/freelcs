@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '270'
+loudnesscorrection_version = '271'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -2739,6 +2739,11 @@ def write_html_progress_report_thread(english, finnish):
 			realtime = get_realtime(english, finnish)[1] # Get the current date and time of day.
 			
 			# Create the start of the html page by putting the first static part of the html - code in to a list variable.
+			server_string = 'Server ip-address: '
+
+			if len(all_ip_addresses_of_the_machine) > 1:
+				server_string = 'Server ip-addresses: '
+
 			html_code_part_1 = ['<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">', \
 			'<html><head>', \
 			'<meta content="text/html; charset=ISO-8859-15" http-equiv="content-type">', \
@@ -2746,7 +2751,7 @@ def write_html_progress_report_thread(english, finnish):
 			'<META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">', \
 			'<title>' + 'LoudnessCorrection_Process_Queue' * english + 'AanekkyysKorjauksen laskentajono' * finnish + '</title>', \
 			'<h1>' + 'FreeLCS ' + freelcs_version + '</h1>', \
-			'<h3>' + 'Server ip-addresses: ' + ', '.join(all_ip_addresses_of_the_machine) + '</h3>', \
+			'<h3>' + server_string + ', '.join(all_ip_addresses_of_the_machine) + '</h3>', \
 			'</head><body style="background-color: rgb(255, 255, 255);">', \
 			'<h2><font color="#000000">' + str(len(files_queued_to_loudness_calculation)) + ' &nbsp ' + ' Files Waiting In The Queue' * english + 'Tiedostoa jonossa' * finnish + ' &nbsp ' + realtime.replace('_', ' ')  + '</font></h2>', \
 			'<hr style="width: 100%; height: 2px;"><font color="#000000"><br>']
@@ -3182,21 +3187,17 @@ def debug_lists_and_dictionaries_thread():
 		# Sleep between writing output
 		time.sleep(30)
 
-def get_ip_addresses_of_the_host_machine():
+def get_ip_addresses_of_the_host_machine(previous_ip_addresses_of_the_machine):
 
 	try:
 		stdout = b''
 		stderr = b''
 
-		global all_ip_addresses_of_the_machine
 		global ip_address_refresh_counter
 		global directory_for_temporary_files
 		global ip_address_acquirement_error_has_already_been_reported
 
-		previous_ip_addresses_of_the_machine = []
-		previous_ip_addresses_of_the_machine = copy.deepcopy(all_ip_addresses_of_the_machine)
 		new_ip_addresses_of_the_machine = []
-
 
 		# Create the commandline we need to run.
 		commands_to_run = ['hostname', '-I']
@@ -3290,7 +3291,7 @@ def get_ip_addresses_of_the_host_machine():
 					send_error_messages_to_screen_logfile_email(error_message, [])
 					ip_address_acquirement_error_has_already_been_reported = True
 
-			return(previous_ip_addresses_of_the_machine)
+		return(previous_ip_addresses_of_the_machine)
 	
 	except Exception:
 		exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -5515,7 +5516,7 @@ try:
 	unsupported_ignored_files_dict = {} # This dictionary holds the names of files that have no audiostreams we can read with ffmpeg, or has audiostreams, but the duration is less than 1 second. Files in this list will be ignored and not processed. The time the file was first seen in the HotFolder is also recorded with the filename.
 	html_progress_report_counter = 0 # This variable is used to count the seconds between writing loudness calculation queue information to a html - page on disk
 	loudness_correction_pid = os.getpid() # Get the PID of this program.
-	all_ip_addresses_of_the_machine = [] # This variable stores in a list all IP-Addresses this machine has. This info is inserted into error emails.
+	all_ip_addresses_of_the_machine = ['Not known'] # This variable stores in a list all IP-Addresses this machine has. This info is inserted into error emails.
 	temp_loudness_results_for_automation = {}
 	final_loudness_results_for_automation = {}  # Loudness results and file info is gathered to this dictionary if this option is turned on. This dictionary stores all results under the original source file name, even for separate mixes that were extracted from the original file.
 
@@ -5861,7 +5862,7 @@ try:
 		ip_address_refresh_counter = ip_address_refresh_counter + delay_between_directory_reads
 
 		if ip_address_refresh_counter >= ip_address_refresh_interval:
-			all_ip_addresses_of_the_machine = get_ip_addresses_of_the_host_machine()
+			all_ip_addresses_of_the_machine = get_ip_addresses_of_the_host_machine(all_ip_addresses_of_the_machine)
 	
 
 		try:
