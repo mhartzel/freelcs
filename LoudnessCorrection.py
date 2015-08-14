@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '271'
+loudnesscorrection_version = '272'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -5751,7 +5751,7 @@ try:
 		send_error_messages_to_screen_logfile_email(error_message, [])
 		sys.exit(1)
 	if sox_executable_found == False:
-		error_message = '\n!!!!!!! sox - can not be found or it does not have \'executable\' permissions on !!!!!!!' * english + '\n!!!!!!! gnuplot - ohjelmaa ei löydy tai sillä ei ole käynnistyksen mahdollistava \'executable\' oikeudet päällä !!!!!!!' * finnish
+		error_message = '\n!!!!!!! sox - can not be found or it does not have \'executable\' permissions on !!!!!!!' * english + '\n!!!!!!! sox - ohjelmaa ei löydy tai sillä ei ole käynnistyksen mahdollistava \'executable\' oikeudet päällä !!!!!!!' * finnish
 		send_error_messages_to_screen_logfile_email(error_message, [])
 		sys.exit(1)
 	if mediainfo_executable_found == False:
