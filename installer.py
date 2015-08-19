@@ -27,7 +27,7 @@ import email.mime.multipart
 import tempfile
 import copy
 
-version = '100'
+version = '101'
 freelcs_version = '3.2'
 
 ###################################
@@ -1023,7 +1023,8 @@ def print_use_samba_variable_and_toggle_text_widget(*args):
 		
 def install_init_scripts_and_config_files(*args):
 	
-	# Create init scripts and gather all varible values that the LoudnessCorrection scripts need and save config data to file '/etc/Loudness_Correction_Settings.pickle'.
+	# Create init scripts.
+	# Also gather all varible values that the LoudnessCorrection scripts need and save them as a config data file: '/etc/Loudness_Correction_Settings.pickle'.
 	# Copy LoudessCorrection.py and HeartBeat_Checker.py to /usr/bin
 	# Write possible samba configuration file to /etc/samba/smb.conf
 	# Write an init script that:
@@ -1038,13 +1039,21 @@ def install_init_scripts_and_config_files(*args):
 	global python3_path
 	global samba_configuration_file_content
 	global configfile_path
+	global directory_for_os_temporary_files
+	global sh_path
+	global os_init_system_name
 	
 	#############################################################################################
 	# Create the init script that is going to start LoudnessCorrection when the computer starts #
 	#############################################################################################
 	
 	# Gather init script commands in a list.
-	loudness_correction_init_script_content_part_1 = ['#!/bin/sh', \
+	loudness_correction_start_delay_line = '.      .       sleep 90'
+
+	if os_init_system_name == 'systemd':
+		loudness_correction_start_delay_line = '.      .       # sleep 90  # This delay is not needed since the os is started up by the new init system called systemd'
+
+	loudness_correction_init_script_content_part_1 = ['#!' + sh_path, \
 	'', \
 	'### BEGIN INIT INFO', \
 	'# Provides:          LoudnessCorrection', \
@@ -1103,7 +1112,7 @@ def install_init_scripts_and_config_files(*args):
 	'		# Wait for the os startup process to finish, so that all services are available', \
 	'		#############################################################################################', \
 	'', \
-	'		sleep 90', \
+	loudness_correction_start_delay_line, \
 	'', \
 	'		#############################################################################################', \
 	'		# Create directories needed by the LoudnessCorrection.py - script.', \
@@ -1533,7 +1542,6 @@ def install_init_scripts_and_config_files(*args):
 	# Write all configuration variables in the config dictionary to the config file in '/tmp/Loudness_Correction_Settings.pickle' #
 	###############################################################################################################################
 
-	global directory_for_os_temporary_files
 	path_for_configfile_in_temp_directory = directory_for_os_temporary_files + os.sep + os.path.basename(configfile_path)
 
 	try:
@@ -1760,9 +1768,9 @@ def install_init_scripts_and_config_files(*args):
 		# Password was accepted and our command was successfully run as root.
 		root_password_was_not_accepted_message.set('') # Remove possible error message from the screen.
 		
-	##############################################################
-	# Write init script to '/tmp/LoudnessCorrection-init_script' #
-	##############################################################
+	########################################
+	# Write init script to its target path #
+	########################################
 	
 	global loudnesscorrection_init_script_name
 	global loudnesscorrection_init_script_path
@@ -1840,28 +1848,129 @@ def install_init_scripts_and_config_files(*args):
 	# Create a link for init script in /etc/rc2.d that starts up all LoudnessCorrection scripts when the computer starts #
 	######################################################################################################################
 
-	# The link to the init script must be done differently on Ubuntu and Debian.
-	# On Ubuntu we manually link the init script to /etc/rc2.d/S99loudnesscorrection_init_script
-	# On Debian  we must run: insserv -d /etc/init.d/loudnesscorrection_init_script
-	# insserv links the init script to   /etc/rc2.d/  and it automatically adds a number to the link name (example:  S21loudnesscorrection_init_script)
+	# Ubuntu 12.04, 14.04 and Debian 7 use a traditional init system. On Debian 8 and Ubuntu 16.04 and newer the init system is systemd.
+	# On systemd we don't create a link for the init script anymore.
+	if os_init_system_name != 'systemd':
 
-	if os_name == 'ubuntu':
-		commands_to_run = ['sudo', '-k', '-p', '', '-S', 'ln', '-s', '-f', loudnesscorrection_init_script_path, loudnesscorrection_init_script_link_path] # Create the commandline we need to run as root.
-	if os_name == 'debian':
-		commands_to_run = ['sudo', '-k', '-p', '', '-S', 'insserv', '-d', loudnesscorrection_init_script_path] # Create the commandline we need to run as root.
+		# The link to the init script must be done differently on Ubuntu (12.04 and 14.04) and Debian 7.
+		# On Ubuntu we manually link the init script to /etc/rc2.d/S99loudnesscorrection_init_script
+		# On Debian  we must run: insserv -d /etc/init.d/loudnesscorrection_init_script
+		# insserv links the init script to   /etc/rc2.d/  and it automatically adds a number to the link name (example:  S21loudnesscorrection_init_script)
 
-	# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
-	sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+		if os_name == 'ubuntu':
+			commands_to_run = ['sudo', '-k', '-p', '', '-S', 'ln', '-s', '-f', loudnesscorrection_init_script_path, loudnesscorrection_init_script_link_path] # Create the commandline we need to run as root.
+		if os_name == 'debian':
+			commands_to_run = ['sudo', '-k', '-p', '', '-S', 'insserv', '-d', loudnesscorrection_init_script_path] # Create the commandline we need to run as root.
+
+		# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
+		sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
+		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+		
+		# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
+		if len(sudo_stderr_string) != 0:
+			show_error_message_on_seventh_window(sudo_stderr_string)
+			return(True) # There was an error, exit this subprogram.
+		
+		# Password was accepted and our command was successfully run as root.
+		root_password_was_not_accepted_message.set('') # Remove possible error message from the screen.
+
+	#############################################################################
+	# Debian 8 and Ubuntu 16.04 and newer use systemd as their init system      #
+	# Write systemd service file for starting up freelcs and enable the service #
+	#############################################################################
+
+	global systemd_service_file_name
+	global systemd_service_file_path
+	global systemd_service_file_content
+
+	if os_init_system_name == 'systemd':
+
+		try:
+			with open(directory_for_os_temporary_files + os.sep + systemd_service_file_name, 'wt') as init_script_file_handler:
+				init_script_file_handler.write('\n'.join(systemd_service_file_content))
+				init_script_file_handler.flush() # Flushes written data to os cache
+				os.fsync(init_script_file_handler.fileno()) # Flushes os cache to disk
+		except IOError as reason_for_error:
+			error_in_string_format = 'Error opening init script file for writing ' + str(reason_for_error)
+			show_error_message_on_seventh_window(error_in_string_format)
+			return(True) # There was an error, exit this subprogram.
+		except OSError as reason_for_error:
+			error_in_string_format = 'Error opening init script file for writing ' + str(reason_for_error)
+			show_error_message_on_seventh_window(error_in_string_format)
+			return(True) # There was an error, exit this subprogram.
+		
+		##################################################################
+		# Move service file from temporary directory to target directory #
+		##################################################################
+
+		commands_to_run = ['sudo', '-k', '-p', '', '-S', 'mv', '-f', directory_for_os_temporary_files + os.sep + systemd_service_file_name, systemd_service_file_path] # Create the commandline we need to run as root.
+
+		# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
+		sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
+		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+		
+		# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
+		if len(sudo_stderr_string) != 0:
+			show_error_message_on_seventh_window(sudo_stderr_string)
+			return(True) # There was an error, exit this subprogram.
+		
+		# Password was accepted and our command was successfully run as root.
+		root_password_was_not_accepted_message.set('') # Remove possible error message from the screen.
+		
+		###################################
+		# Change service file permissions #
+		###################################
+		
+		commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chmod', '644', systemd_service_file_path] # Create the commandline we need to run as root.
+
+		# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
+		sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
+		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+		
+		# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
+		if len(sudo_stderr_string) != 0:
+			show_error_message_on_seventh_window(sudo_stderr_string)
+			return(True) # There was an error, exit this subprogram.
+		
+		# Password was accepted and our command was successfully run as root.
+		root_password_was_not_accepted_message.set('') # Remove possible error message from the screen.
+		
+		#############################
+		# Change service file owner #
+		#############################
+		
+		commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chown', 'root:root', systemd_service_file_path] # Create the commandline we need to run as root.
+
+		# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
+		sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
+		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+		
+		# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
+		if len(sudo_stderr_string) != 0:
+			show_error_message_on_seventh_window(sudo_stderr_string)
+			return(True) # There was an error, exit this subprogram.
+		
+		# Password was accepted and our command was successfully run as root.
+		root_password_was_not_accepted_message.set('') # Remove possible error message from the screen.
 	
-	# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
-	if len(sudo_stderr_string) != 0:
-		show_error_message_on_seventh_window(sudo_stderr_string)
-		return(True) # There was an error, exit this subprogram.
-	
-	# Password was accepted and our command was successfully run as root.
-	root_password_was_not_accepted_message.set('') # Remove possible error message from the screen.
-	
+		##################################
+		# Enable FreeLCS systemd service #
+		##################################
+		
+		commands_to_run = ['sudo', '-k', '-p', '', '-S', 'systemctl', '-q', 'enable', systemd_service_file_name] # Create the commandline we need to run as root.
+
+		# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
+		sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
+		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+		
+		# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
+		if len(sudo_stderr_string) != 0:
+			show_error_message_on_seventh_window(sudo_stderr_string)
+			return(True) # There was an error, exit this subprogram.
+		
+		# Password was accepted and our command was successfully run as root.
+		root_password_was_not_accepted_message.set('') # Remove possible error message from the screen.
+
 	# Our scripts were installed successfully, update the label to tell it to the user.
 	loudnesscorrection_scripts_are_installed.set('Installed')
 	seventh_window_loudnesscorrection_label['foreground'] = 'dark green'
@@ -5216,11 +5325,13 @@ sh_path = find_program_in_os_path('sh')
 os_init_system_name = ''
 os_init_system_name = find_os_init_system_name()
 
-# Define systemd init files
-systemd_install_path = '/etc/systemd/system'
+if os_init_system_name == '':
+	os_init_system_name = 'init'
+
+# Define systemd service file name and contents
 systemd_service_file_name = 'freelcs.service'
 
-systemd_service_file = ['[Unit]', \
+systemd_service_file_content = ['[Unit]', \
 'Description=FreeLCS (Free Loudness Correction Server)', \
 'After=graphical.target', \
 '', \
@@ -5257,7 +5368,14 @@ heartbeat_write_interval = 30
 where_to_send_error_messages = ['logfile'] # Tells where to print / send the error messages. The list can have any or all of these values: screen, logfile, email.
 configfile_path = '/etc/Loudness_Correction_Settings.pickle'
 loudnesscorrection_init_script_name = 'loudnesscorrection_init_script'
+
+systemd_service_file_path = ''
 loudnesscorrection_init_script_path = '/etc/init.d/' + loudnesscorrection_init_script_name
+
+if os_init_system_name == 'systemd':
+	systemd_service_file_path = '/etc/systemd/system/' + systemd_service_file_name
+	loudnesscorrection_init_script_path = '/etc/systemd/system/' + loudnesscorrection_init_script_name
+
 loudnesscorrection_init_script_link_name = 'S99' + loudnesscorrection_init_script_name
 loudnesscorrection_init_script_link_path = '/etc/rc2.d/' + loudnesscorrection_init_script_link_name
 all_needed_external_programs_are_installed = True
@@ -7301,6 +7419,9 @@ ninth_window_label_1 = tkinter.ttk.Label(ninth_frame_child_frame_1, wraplength=t
 ninth_window_label_1.grid(column=0, row=0, columnspan=4, pady=10, padx=10, sticky=(tkinter.N))
 
 loudness_correction_manual_startup_commands = "sudo   -b   /etc/init.d/loudnesscorrection_init_script   restart"
+
+if os_init_system_name == 'systemd':
+	loudness_correction_manual_startup_commands = 'sudo   -b   systemctl   start   freelcs'
 
 # Create a text widget to display text that can be copy pasted.
 startup_commands_text_widget = tkinter.Text(ninth_frame_child_frame_1, width=70, height=1, wrap='none', undo=False)
