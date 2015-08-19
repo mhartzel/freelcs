@@ -27,7 +27,7 @@ import email.mime.multipart
 import tempfile
 import copy
 
-version = '099'
+version = '100'
 freelcs_version = '3.2'
 
 ###################################
@@ -2083,7 +2083,7 @@ def find_program_in_os_path(program_name_to_find):
 
 	for os_path in os_environment_list:
 		true_or_false = os.path.exists(os_path + os.sep + program_name_to_find) and os.access(os_path + os.sep + program_name_to_find, os.X_OK) # True if program can be found in the path and it has executable permissions on.
-		if true_or_false == True:
+		if true_or_false == True: # Program was found and is executable
 			program_path = os_path + os.sep + program_name_to_find
 	return(program_path)
 
@@ -2328,6 +2328,7 @@ def install_missing_programs(*args):
 	global directory_for_os_temporary_files
 	global force_reinstallation_of_all_programs
 	global installation_is_running
+	global bash_path
 	
 	force_reinstallation_of_all_programs = False
 	an_error_has_happened = False
@@ -2393,8 +2394,8 @@ def install_missing_programs(*args):
 		
 		if debug == True:
 			print()
-			print('sudo_stdout:', sudo_stdout)
-			print('sudo_stderr:', sudo_stderr)
+			print('sudo_stdout: ', sudo_stdout)
+			print('sudo_stderr: ', sudo_stderr)
 		
 		# Check if some error keywords can be found in apt-get output.
 		for apt_error_string in possible_apt_get_error_messages:
@@ -2448,8 +2449,8 @@ def install_missing_programs(*args):
 			
 			if debug == True:
 				print()
-				print('sudo_stdout:', sudo_stdout)
-				print('sudo_stderr:', sudo_stderr)
+				print('sudo_stdout: ', sudo_stdout)
+				print('sudo_stderr: ', sudo_stderr)
 			
 			# Check if some error keywords can be found in apt-get output.
 			for apt_error_string in possible_apt_get_error_messages:
@@ -2491,8 +2492,8 @@ def install_missing_programs(*args):
 				
 				if debug == True:
 					print()
-					print('sudo_stdout:', sudo_stdout)
-					print('sudo_stderr:', sudo_stderr)
+					print('sudo_stdout: ', sudo_stdout)
+					print('sudo_stderr: ', sudo_stderr)
 				
 				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
 				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
@@ -2518,8 +2519,8 @@ def install_missing_programs(*args):
 				
 				if debug == True:
 					print()
-					print('sudo_stdout:', sudo_stdout)
-					print('sudo_stderr:', sudo_stderr)
+					print('sudo_stdout: ', sudo_stdout)
+					print('sudo_stderr: ', sudo_stderr)
 				
 				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
 				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
@@ -2529,7 +2530,7 @@ def install_missing_programs(*args):
 			# Write libebur128 source code download commands to '/tmp/libebur128_download_commands.sh'
 			try:
 				with open(directory_for_os_temporary_files + os.sep + libebur128_source_downloadfile, 'wt') as libebur128_source_downloadfile_handler:
-					libebur128_source_downloadfile_handler.write('#!/bin/bash\n' + '\n'.join(libebur128_git_commands))
+					libebur128_source_downloadfile_handler.write('#!' + bash_path  + '\n' + '\n'.join(libebur128_git_commands))
 					libebur128_source_downloadfile_handler.flush() # Flushes written data to os cache
 					os.fsync(libebur128_source_downloadfile_handler.fileno()) # Flushes os cache to disk
 			except IOError as reason_for_error:
@@ -2572,8 +2573,8 @@ def install_missing_programs(*args):
 				
 				if debug == True:
 					print()
-					print('sudo_stdout:', sudo_stdout)
-					print('sudo_stderr:', sudo_stderr)
+					print('sudo_stdout: ', sudo_stdout)
+					print('sudo_stderr: ', sudo_stderr)
 				
 				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
 				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
@@ -2601,8 +2602,8 @@ def install_missing_programs(*args):
 				
 				if debug == True:
 					print()
-					print('sudo_stdout:', sudo_stdout)
-					print('sudo_stderr:', sudo_stderr)
+					print('sudo_stdout: ', sudo_stdout)
+					print('sudo_stderr: ', sudo_stderr)
 				
 				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
 				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
@@ -2647,8 +2648,8 @@ def install_missing_programs(*args):
 				
 				if debug == True:
 					print()
-					print('sudo_stdout:', sudo_stdout)
-					print('sudo_stderr:', sudo_stderr)
+					print('sudo_stdout: ', sudo_stdout)
+					print('sudo_stderr: ', sudo_stderr)
 				
 				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
 				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower() or ('cannot' in sudo_stderr_string.lower()) or ('fatal') in sudo_stderr_string.lower()):
@@ -2687,8 +2688,8 @@ def install_missing_programs(*args):
 					
 					if debug == True:
 						print()
-						print('sudo_stdout:', sudo_stdout)
-						print('sudo_stderr:', sudo_stderr)
+						print('sudo_stdout: ', sudo_stdout)
+						print('sudo_stderr: ', sudo_stderr)
 					
 					# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
 					if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
@@ -2698,7 +2699,7 @@ def install_missing_programs(*args):
 				# Write cmake commands to '/tmp/libebur128_cmake_commands.sh'
 				try:
 					with open(directory_for_os_temporary_files + os.sep + cmake_commandfile, 'wt') as cmake_commandfile_handler:
-						cmake_commandfile_handler.write('#!/bin/bash\n' + '\n'.join(libebur128_cmake_commands))
+						cmake_commandfile_handler.write('#!' + bash_path + '\n' + '\n'.join(libebur128_cmake_commands))
 						cmake_commandfile_handler.flush() # Flushes written data to os cache
 						os.fsync(cmake_commandfile_handler.fileno()) # Flushes os cache to disk
 				except IOError as reason_for_error:
@@ -2741,8 +2742,8 @@ def install_missing_programs(*args):
 				
 				if debug == True:
 					print()
-					print('sudo_stdout:', sudo_stdout)
-					print('sudo_stderr:', sudo_stderr)
+					print('sudo_stdout: ', sudo_stdout)
+					print('sudo_stderr: ', sudo_stderr)
 				
 				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
 				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
@@ -2770,8 +2771,8 @@ def install_missing_programs(*args):
 				
 				if debug == True:
 					print()
-					print('sudo_stdout:', sudo_stdout)
-					print('sudo_stderr:', sudo_stderr)
+					print('sudo_stdout: ', sudo_stdout)
+					print('sudo_stderr: ', sudo_stderr)
 				
 				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
 				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
@@ -2816,8 +2817,8 @@ def install_missing_programs(*args):
 				
 				if debug == True:
 					print()
-					print('sudo_stdout:', sudo_stdout)
-					print('sudo_stderr:', sudo_stderr)
+					print('sudo_stdout: ', sudo_stdout)
+					print('sudo_stderr: ', sudo_stderr)
 				
 				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
 				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
@@ -2856,8 +2857,8 @@ def install_missing_programs(*args):
 					
 					if debug == True:
 						print()
-						print('sudo_stdout:', sudo_stdout)
-						print('sudo_stderr:', sudo_stderr)
+						print('sudo_stdout: ', sudo_stdout)
+						print('sudo_stderr: ', sudo_stderr)
 					
 					# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
 					if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
@@ -2867,7 +2868,7 @@ def install_missing_programs(*args):
 				# Write make commands to '/tmp/make_and_build_commands.sh'
 				try:
 					with open(directory_for_os_temporary_files + os.sep + make_and_build_commandfile, 'wt') as make_and_build_commandfile_handler:
-						make_and_build_commandfile_handler.write('#!/bin/bash\n' + '\n'.join(libebur128_make_build_and_install_commands))
+						make_and_build_commandfile_handler.write('#!' + bash_path + '\n' + '\n'.join(libebur128_make_build_and_install_commands))
 						make_and_build_commandfile_handler.flush() # Flushes written data to os cache
 						os.fsync(make_and_build_commandfile_handler.fileno()) # Flushes os cache to disk
 				except IOError as reason_for_error:
@@ -2910,8 +2911,8 @@ def install_missing_programs(*args):
 				
 				if debug == True:
 					print()
-					print('sudo_stdout:', sudo_stdout)
-					print('sudo_stderr:', sudo_stderr)
+					print('sudo_stdout: ', sudo_stdout)
+					print('sudo_stderr: ', sudo_stderr)
 				
 				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
 				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
@@ -2939,8 +2940,8 @@ def install_missing_programs(*args):
 				
 				if debug == True:
 					print()
-					print('sudo_stdout:', sudo_stdout)
-					print('sudo_stderr:', sudo_stderr)
+					print('sudo_stdout: ', sudo_stdout)
+					print('sudo_stderr: ', sudo_stderr)
 				
 				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
 				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
@@ -2985,8 +2986,8 @@ def install_missing_programs(*args):
 				
 				if debug == True:
 					print()
-					print('sudo_stdout:', sudo_stdout)
-					print('sudo_stderr:', sudo_stderr)
+					print('sudo_stdout: ', sudo_stdout)
+					print('sudo_stderr: ', sudo_stderr)
 				
 				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
 				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
@@ -3026,8 +3027,8 @@ def install_missing_programs(*args):
 				
 				if debug == True:
 					print()
-					print('sudo_stdout:', sudo_stdout)
-					print('sudo_stderr:', sudo_stderr)
+					print('sudo_stdout: ', sudo_stdout)
+					print('sudo_stderr: ', sudo_stderr)
 				
 				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
 				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
@@ -3053,8 +3054,8 @@ def install_missing_programs(*args):
 				
 				if debug == True:
 					print()
-					print('sudo_stdout:', sudo_stdout)
-					print('sudo_stderr:', sudo_stderr)
+					print('sudo_stdout: ', sudo_stdout)
+					print('sudo_stderr: ', sudo_stderr)
 				
 				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
 				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
@@ -3064,7 +3065,7 @@ def install_missing_programs(*args):
 			# Write sox source code download commands to '/tmp/sox_download_commands.sh'
 			try:
 				with open(directory_for_os_temporary_files + os.sep + sox_source_downloadfile, 'wt') as sox_source_downloadfile_handler:
-					sox_source_downloadfile_handler.write('#!/bin/bash\n' + '\n'.join(sox_download_make_build_and_install_commands))
+					sox_source_downloadfile_handler.write('#!' + bash_path + '\n' + '\n'.join(sox_download_make_build_and_install_commands))
 					sox_source_downloadfile_handler.flush() # Flushes written data to os cache
 					os.fsync(sox_source_downloadfile_handler.fileno()) # Flushes os cache to disk
 			except IOError as reason_for_error:
@@ -3107,8 +3108,8 @@ def install_missing_programs(*args):
 				
 				if debug == True:
 					print()
-					print('sudo_stdout:', sudo_stdout)
-					print('sudo_stderr:', sudo_stderr)
+					print('sudo_stdout: ', sudo_stdout)
+					print('sudo_stderr: ', sudo_stderr)
 				
 				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
 				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
@@ -3136,8 +3137,8 @@ def install_missing_programs(*args):
 				
 				if debug == True:
 					print()
-					print('sudo_stdout:', sudo_stdout)
-					print('sudo_stderr:', sudo_stderr)
+					print('sudo_stdout: ', sudo_stdout)
+					print('sudo_stderr: ', sudo_stderr)
 				
 				# If 'error' or 'fail' exist in std_err output then an error happened, check for the cause for the error.
 				if ('error' in sudo_stderr_string.lower()) or ('fail' in sudo_stderr_string.lower()) or ('try again' in sudo_stderr_string.lower()):
@@ -3182,8 +3183,8 @@ def install_missing_programs(*args):
 				
 				if debug == True:
 					print()
-					print('sudo_stdout:', sudo_stdout)
-					print('sudo_stderr:', sudo_stderr)
+					print('sudo_stdout: ', sudo_stdout)
+					print('sudo_stderr: ', sudo_stderr)
 				
 				# Sox outputs various warnings when compiled and supressing these warnings with commandline options does not seem to work.
 				# Unfortunately even though these warnings are not fatal, there are certain keywords in the warnings (like 'error') that makes it
@@ -3292,7 +3293,7 @@ def get_ip_addresses_of_the_host_machine():
 	
 	global all_ip_addresses_of_the_machine
 	
-	# Create the commandline we need to run as root.
+	# Create the commandline we need to run
 	commands_to_run = ['hostname', '-I']
 
 	if debug == True:
@@ -3301,8 +3302,8 @@ def get_ip_addresses_of_the_host_machine():
 
 	# Run our command.
 	stdout, stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
-	stdout = str(stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
-	stderr = str(stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+	stdout = str(stdout.decode('UTF-8')) # Convert possible error output from binary to UTF-8 text.
+	stderr = str(stderr.decode('UTF-8')) # Convert possible error output from binary to UTF-8 text.
 	
 	all_ip_addresses_of_the_machine = stdout.split()
 	
@@ -3310,8 +3311,8 @@ def get_ip_addresses_of_the_host_machine():
 	
 	if debug == True:
 		print()
-		print('stdout:', stdout)
-		print('stderr:', stderr)
+		print('stdout: ', stdout)
+		print('stderr: ', stderr)
 		print('all_ip_addresses_of_the_machine =', all_ip_addresses_of_the_machine)
 
 def set_sample_peak_measurement_method(*args):
@@ -5004,6 +5005,31 @@ def reset_mxf_map_to_all_stereo(*args):
 
 	assing_mxf_remix_values_for_display()
 
+def find_os_init_system_name():
+	
+	# Create the commandline we need to run
+	commands_to_run = ['ps', '--pid', '1', '--no-headers', '-c', '-o', 'cmd']
+
+	if debug == True:
+		print()
+		print('Running commands:', commands_to_run)
+
+	# Run our command.
+	stdout, stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+	stdout = str(stdout.decode('UTF-8')) # Convert possible error output from binary to UTF-8 text.
+	stderr = str(stderr.decode('UTF-8')) # Convert possible error output from binary to UTF-8 text.
+
+	init_system_name = ''
+	init_system_name = stdout.strip()
+	
+	return(init_system_name)
+	
+	if debug == True:
+		print()
+		print('stdout: ', stdout)
+		print('stderr: ', stderr)
+		print('init_system_name: ', init_system_name)
+
 
 ###############################
 # Main program starts here :) #
@@ -5179,6 +5205,35 @@ showstopper_error_message = tkinter.StringVar()
 smtp_server_name.trace('w', define_smtp_server_name)
 smtp_server_port.trace('w', define_smtp_server_port)
 
+# Find the path to bash and sh shells
+bash_path = ''
+bash_path = find_program_in_os_path('bash')
+
+sh_path = ''
+sh_path = find_program_in_os_path('sh')
+
+# Find out the name of the init system of the os (upstart, systemd)
+os_init_system_name = ''
+os_init_system_name = find_os_init_system_name()
+
+# Define systemd init files
+systemd_install_path = '/etc/systemd/system'
+systemd_service_file_name = 'freelcs.service'
+
+systemd_service_file = ['[Unit]', \
+'Description=FreeLCS (Free Loudness Correction Server)', \
+'After=graphical.target', \
+'', \
+'[Service]', \
+'Type=forking', \
+'ExecStart=' + sh_path + ' /etc/systemd/system/loudnesscorrection_init_script start', \
+'ExecStop=' + sh_path +  ' /etc/systemd/system/loudnesscorrection_init_script stop', \
+'TimeoutStartSec=300', \
+'RemainAfterExit=yes', \
+'', \
+'[Install]', \
+'WantedBy=graphical.target', \
+]
 
 # Define some normal python variables
 gnu_gpl_3 = ''
@@ -7401,12 +7456,20 @@ x_position = (root_window.winfo_screenwidth() / 2) - (root_window.winfo_width() 
 y_position = (root_window.winfo_screenheight() / 2) - (root_window.winfo_height() / 2) - 20
 root_window.geometry(str(root_window.winfo_width()) + 'x' +str(root_window.winfo_height()) + '+' + str(int(x_position)) + '+' + str(int(y_position)))
 
-# If LoudessCorrection.py or HeartBeat_Checker.py can not be found, stop and inform the user.
+# If LoudessCorrection.py or HeartBeat_Checker.py or paths to bash and sh can not be found, stop and inform the user.
 if path_to_loudnesscorrection == '':
 	showstopper_error_message.set('Error, can not find LoudnessCorrection.py.\n\nLoudnessCorrection.py and HeartBeat_Checker.py must be in the same directory as the installer. Can not continue.')
 	call_showstopper_frame_on_top()
 if path_to_heartbeat_checker == '':
 	showstopper_error_message.set('Error, can not find HeartBeat_Checker.py.\n\nLoudnessCorrection.py and HeartBeat_Checker.py must be in the same directory as the installer. Can not continue.')
+	call_showstopper_frame_on_top()
+
+if bash_path.strip() == '':
+	showstopper_error_message.set('Error, can not find path to Bash - shell.\n\nCan not continue.')
+	call_showstopper_frame_on_top()
+
+if sh_path.strip() == '':
+	showstopper_error_message.set('Error, can not find path to Sh - shell.\n\nCan not continue.')
 	call_showstopper_frame_on_top()
 
 # If we are running on a not supported operating system, then stop and inform user.
