@@ -27,7 +27,7 @@ import email.mime.multipart
 import tempfile
 import copy
 
-version = '102'
+version = '103'
 freelcs_version = '3.2'
 
 ###################################
@@ -5215,13 +5215,6 @@ if (os_name == '') or (os_version == ''):
 # Convert os version number to float, so that we can easily compare version numbers
 os_version_float = float(os_version)
 
-if debug == True:
-	print()
-	print('os_name =', os_name)
-	print('os_version =', os_version)
-	print('os_version_float =', os_version_float)
-	print()
-
 
 # Create the root GUI window.
 root_window = tkinter.Tk()
@@ -5347,6 +5340,24 @@ systemd_service_file_content = ['[Unit]', \
 '[Install]', \
 'WantedBy=graphical.target', \
 ]
+
+if debug == True:
+	print()
+	print('os_name =', os_name)
+	print('os_version =', os_version)
+	print('os_version_float =', os_version_float)
+	print('os_init_system_name =', os_init_system_name)
+	print()
+
+	if os_init_system_name == 'systemd':
+
+		print('systemd_service_file_name =', systemd_service_file_name)
+		print()
+		print('systemd_service_file_content:')
+		print('------------------------------')
+		for item in systemd_service_file_content:
+			print(item)
+		print()
 
 # Define some normal python variables
 gnu_gpl_3 = ''
