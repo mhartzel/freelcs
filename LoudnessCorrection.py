@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '272'
+loudnesscorrection_version = '273'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -3008,6 +3008,7 @@ def debug_lists_and_dictionaries_thread():
 		values_read_from_configfile.append('')
 		values_read_from_configfile.append('os_name = ' + os_name)
 		values_read_from_configfile.append('os_version = ' + os_version)
+		values_read_from_configfile.append('os_init_system_name = ' + all_settings_dict['os_init_system_name'])
 		values_read_from_configfile.append('')
 		values_read_from_configfile.append('language = ' + language)
 		values_read_from_configfile.append('english = ' + str(english))
@@ -5240,6 +5241,7 @@ def write_user_defined_configuration_settings_to_logfile():
 	user_defined_configuration_options.append('freelcs_version = ' + all_settings_dict['freelcs_version'])
 	user_defined_configuration_options.append('os_name = ' + all_settings_dict['os_name'])
 	user_defined_configuration_options.append('os_version = ' + all_settings_dict['os_version'])
+	user_defined_configuration_options.append('os_init_system_name = ' + all_settings_dict['os_init_system_name'])
 	user_defined_configuration_options.append('libebur128_path = ' + all_settings_dict['libebur128_path'])
 	user_defined_configuration_options.append('----------------------------------------------------------------------------------------------------')
 	user_defined_configuration_options.append('')

@@ -27,7 +27,7 @@ import email.mime.multipart
 import tempfile
 import copy
 
-version = '101'
+version = '102'
 freelcs_version = '3.2'
 
 ###################################
@@ -1300,7 +1300,8 @@ def install_init_scripts_and_config_files(*args):
 	'enable_mp1_codec' : true_false_string[enable_mp1_codec.get()], \
 	'enable_mp2_codec' : true_false_string[enable_mp2_codec.get()], \
 	'os_name' : os_name, \
-	'os_version' : os_version \
+	'os_version' : os_version, \
+	'os_init_system_name' : os_init_system_name \
 	}
 
 	# Get the total number of items in settings dictionary and save the number in the dictionary. The number can be used for debugging settings.
@@ -1316,6 +1317,7 @@ def install_init_scripts_and_config_files(*args):
 	user_defined_configuration_options.append('freelcs_version = ' + all_settings_dict['freelcs_version'])
 	user_defined_configuration_options.append('os_name = ' + all_settings_dict['os_name'])
 	user_defined_configuration_options.append('os_version = ' + all_settings_dict['os_version'])
+	user_defined_configuration_options.append('os_init_system_name = ' + all_settings_dict['os_init_system_name'])
 	user_defined_configuration_options.append('libebur128_path = ' + all_settings_dict['libebur128_path'])
 	user_defined_configuration_options.append('----------------------------------------------------------------------------------------------------')
 	user_defined_configuration_options.append('')
