@@ -27,7 +27,7 @@ import email.mime.multipart
 import tempfile
 import copy
 
-version = '103'
+version = '104'
 freelcs_version = '3.2'
 
 ###################################
@@ -1048,10 +1048,10 @@ def install_init_scripts_and_config_files(*args):
 	#############################################################################################
 	
 	# Gather init script commands in a list.
-	loudness_correction_start_delay_line = '.      .       sleep 90'
+	loudness_correction_start_delay_line = '		sleep 90'
 
 	if os_init_system_name == 'systemd':
-		loudness_correction_start_delay_line = '.      .       # sleep 90  # This delay is not needed since the os is started up by the new init system called systemd'
+		loudness_correction_start_delay_line = '		# sleep 90  # This delay is not needed since the os is started up by the new init system called systemd'
 
 	loudness_correction_init_script_content_part_1 = ['#!' + sh_path, \
 	'', \
@@ -6017,7 +6017,14 @@ showstopper_frame_child_frame_1.grid(column=0, row=0, columnspan=4, padx=20, pad
 
 # Define the text message to display on the first window.
 # This is the introcution window, with nothing but text on it.
-first_window_label_text.set('This program installs FreeLCS and all helper programs FreeLCS needs to do its job.\n\nAfter configuration FreeLCS starts automatically every time the computer starts up. There will be a 1 - 2 minute delay after boot before FreeLCS is started. This makes sure all needed Linux services are up when we start up.\n\nThe installer fetches needed programs from the internet, so you need to have a working internet connection.')
+text_to_display = 'This program installs FreeLCS and all helper programs FreeLCS needs to do its job.\n\nAfter configuration FreeLCS starts automatically every time the computer starts up.'
+
+if os_init_system_name != 'systemd':
+	text_to_display = text_to_display +' There will be a 1 - 2 minute delay after boot before FreeLCS is started. This makes sure all needed Linux services are up when we start up.'
+
+text_to_display = text_to_display + '\n\nThe installer fetches needed programs from the internet, so you need to have a working internet connection.'
+first_window_label_text.set(text_to_display)
+
 first_window_label = tkinter.ttk.Label(first_frame_child_frame_1, textvariable=first_window_label_text, wraplength=text_wrap_length_in_pixels)
 first_window_label.grid(column=0, row=0, columnspan=4, pady=10, padx=20, sticky=(tkinter.E, tkinter.N, tkinter.W))
 
@@ -7449,7 +7456,13 @@ startup_commands_text_widget.focus()
 
 startup_commands_text_widget.grid(column=0, row=1, columnspan=4, sticky=(tkinter.N, tkinter.S))
 
-ninth_window_label_2 = tkinter.ttk.Label(ninth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text="\nCopy the command in a terminal window and press enter to run.\n\nNote that there will be 90 seconds delay before LoudnessCorrection starts, HearBeat_Checker will start 60 seconds after LoudnessCorrection.")
+text_to_display = "\nCopy the command in a terminal window and press enter to run."
+
+if os_init_system_name != 'systemd':
+	text_to_display = text_to_display + "\n\nNote that there will be 90 seconds delay before LoudnessCorrection starts, HearBeat_Checker will start 60 seconds after LoudnessCorrection."
+
+ninth_window_label_2 = tkinter.ttk.Label(ninth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text=text_to_display)
+
 ninth_window_label_2.grid(column=0, row=2, columnspan=4, pady=10, padx=10, sticky=(tkinter.N, tkinter.W))
 
 # Create the buttons for the frame
