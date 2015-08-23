@@ -649,56 +649,136 @@
     <br>
     <br>
     <h2><a id="Files that FreeLCS creates in your system">Files that FreeLCS
-        creates in your system</a></h2>
-    FreeLCS is made up of these files:<br>
+        creates on your system</a></h2>
+    FreeLCS writes some files onto your disk. In addition to installing some
+    programs FreeLCS needs to do it's job, it also writes files that start up
+    FreeLCS every time the computer starts.<br>
+    <h3>Installed programs:</h3>
+    <ul>
+      <li>Mediainfo</li>
+      <li>Sox</li>
+      <li>Gnuplot</li>
+      <li>samba</li>
+      <li>Libebur128</li>
+    </ul>
+    If you want to uninstall FreeLCS you can remove these programs with the
+    following terminal command:<br>
     <br>
+    <strong>sudo apt-get remove mediainfo sox gnuplot samba<br>
+    </strong><br>
+    FreeLCS needs sox 14.4.0 and if you are running an older os version (Ubuntu
+    12.04), then the sox version available in os package repositories is older
+    that 14.4.0. In this case FreeLCS installer compiles sox 14.4.0 from source
+    code. libebur128 is always compiled from source.<br>
+    <br>
+    You can find out where the compiled programs are installed with the
+    following terminal commands:<br>
+    <br>
+    <strong>which loudness<br>
+      which sox</strong><br>
+    <br>
+    You can remove these programs with these commands (replace the
+    "path_to_command" with the output from the "which" command above):<br>
+    <br>
+    <strong>sudo rm path_to_command</strong><br>
+    <br>
+    <br>
+    FreeLCS needs to start every time the computer starts up, so some start up
+    scripts are created on your system. There are two different init systems
+    used on the current supported operating systems. "<strong>Init</strong>" is
+    the traditional operating system start up system and "<strong>systemd</strong>"
+    is a new one that got introduced in Debian 8. Ubuntu will also move to using
+    systemd as their startup system. <br>
+    <br>
+    <h2>Files created on a init based os (Ubuntu 12.04, 14.04, Debian 7):</h2>
+    <strong>/usr/bin/LoudnessCorrection.py</strong><br>
+    <strong>/usr/bin/HeartBeat_Checker.py</strong><br>
+    <strong>/etc/LoudnessCorrection_Settings.pickle</strong><br>
+    <strong>/etc/samba/smb.conf</strong><br>
     <strong>/etc/init.d/loudnesscorrection_init_script</strong><br>
+    <strong>/etc/rc2.d/S99loudnesscorrection_init_script&nbsp;&nbsp; </strong>(Only
+    on Ubuntu 12.04 and 14.04)<strong><br>
+      <strong>/etc/rc2.d/</strong>S21loudnesscorrection_init_script&nbsp;&nbsp;
+    </strong>(Only on Debian 7. The number at the start of the file name
+    (S21loudnesscorrection_init_script) varies).<br>
     <br>
-    This script starts all FreeLCS programs when the server boots up. This
-    program is not run directly, but by a link in the <strong>/etc/rc2.d</strong>
-    - folder. <br>
+    If you want to remove FreeLCS then stop FreeLCS and delete the startup files
+    with these terminal commands:<br>
     <br>
-    When this program starts if first creates a ram disk, then it creates
-    directories in the HotFolder and sets their permissions. Then it starts up
-    LoudnessCorrection.py and HeartBeat_Checker.py - programs.<br>
+    <strong>sudo /etc/init.d/loudnesscorrection_init_script stop</strong><br>
+    <strong>sudo rm path_to_file</strong>&nbsp;&nbsp; <br>
     <br>
+    <h2>Files created on a systemd based os (Debian 8 Ubuntu 16.04 and newer):</h2>
+    <strong>/usr/bin/LoudnessCorrection.py</strong><br>
+    <strong>/usr/bin/HeartBeat_Checker.py</strong><br>
+    <strong>/etc/LoudnessCorrection_Settings.pickle</strong><br>
+    <strong>/etc/samba/smb.conf</strong><br>
+    <strong>/etc/systemd/system/loudnesscorrection_init_script</strong><br>
+    <strong>/etc/systemd/system/freelcs.service</strong><br>
+    <br>
+    If you want to remove FreeLCS then stop FreeLCS and delete the startup files
+    with these terminal commands:<br>
+    <br>
+    <strong>systemctl stop freelcs.service<br>
+      systemctl disable freelsc.service<br>
+      rm path_to_file</strong><br>
+    <br>
+    <h2>Explanation of FreeLCS startup files:</h2>
+    <strong>/usr/bin/LoudnessCorrection.py</strong><br>
+    <ul>
+      <li> This is the main program of FreeLCS. It responsible for processing
+        all audio files.</li>
+    </ul>
+    <strong> <a id="HeartBeat_Checker_Explained" name="HeartBeat_Checker_Explained"></a>/usr/bin/HeartBeat_Checker.py</strong><br>
+    <ul>
+      <li> HeartBeat Checker monitors the health of the LoudnessCorrection.py -
+        program and sends email to the admin if LoudnessCorrection.py crashes.
+        This program is started only if you enabled it in the installer. </li>
+    </ul>
+    <strong>/etc/LoudnessCorrection_Settings.pickle<br>
+    </strong>
+    <ul>
+      <li>The settings that you defined when running the FreeLCS installer are
+        stored in this file. LoudnessCorrection.py and HeartBeat_Checker.py both
+        read their settings from this file when they start up.</li>
+    </ul>
+    <strong>/etc/init.d/loudnesscorrection_init_script</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    (on systemd based oses the path is: <strong>/etc/systemd/system/loudnesscorrection_init_script</strong>)<br>
+    <ul>
+      <li> This script is resposible for first setting up things FreeLCS needs
+        and then starting up FreeLCS. When this program starts it first creates
+        a ram disk, then creates directories in the HotFolder and sets their
+        permissions correctly. Then it starts up LoudnessCorrection.py and
+        HeartBeat_Checker.py - programs.</li>
+    </ul>
     <br>
     <strong>/etc/rc2.d/S99loudnesscorrection_init_script</strong><br>
-    <br>
-    This file is a link that points to "<strong>/etc/init.d/loudnesscorrection_init_script</strong>".
-    When the computer starts up it runs all programs that are linked to <strong>/etc/rc2.d</strong><br>
-    <br>
-    ( <strong>Debian</strong>: The operating system assigns automatically the
-    number in the beginning of the link name, so the name can be different, for
-    example <strong>S21loudnesscorrection_init_script )<br>
-      <br>
-    </strong> <br>
-    <strong>/usr/bin/LoudnessCorrection.py</strong><br>
-    <br>
-    This is the main program of FreeLCS. It processes all files dropped into
-    HotFolder.<br>
-    <br>
-    <strong><br>
-      /usr/bin/HeartBeat_Checker.py</strong><br>
-    &nbsp;<br>
-    This program is started only if you selected it in the installer. HeartBeat
-    Checker monitors the health of the LoudnessCorrection.py - program and sends
-    email to the admin if LoudnessCorrection crashes.<br>
-    <br>
-    <br>
-    <strong>/etc/LoudnessCorrection_Settings.pickle<br>
-      <br>
-    </strong>The settings that you defined when running the installer are stored
-    in this file. LoudnessCorrection.py and HeartBeat_Checker.py both read their
-    settings from this file when they start up.<br>
-    <br>
+    <ul>
+      <li> Only on init based oses (Ubuntu 12.04, 14.04 and Debian 7). This file
+        is a link that points to "<strong>/etc/init.d/loudnesscorrection_init_script</strong>".
+        When the computer starts up it runs all programs that are linked to <strong>/etc/rc2.d&nbsp;&nbsp;
+          </strong>(<strong>Debian</strong>: The operating system assigns
+        automatically the number in the beginning of the link name, so the name
+        can be different, for example S21loudnesscorrection_init_script ). This
+        link starts up <strong>/etc/init.d/loudnesscorrection_init_script</strong>
+      </li>
+    </ul>
+    <strong> </strong><br>
+    <strong>/etc/systemd/system/freelcs.service</strong><br>
+    <ul>
+      <li>Only on systemd based oses (Debian 8, and Ubuntu 16.04 and newer).
+        This file describes what systemd needs to do to start up FreeLCS and
+        what services needs to be up before starting it. Based on this
+        information systemd starts: <strong>/etc/systemd/system/loudnesscorrection_init_script</strong></li>
+    </ul>
     <br>
     <strong>/etc/samba/smb.conf</strong><br>
-    <br>
-    This is the configuration file for the samba server that shares the
-    HotFolder to the network. Hotfolder is shared to the network only if you
-    selected "<strong>Share HotFolder to the network with samba</strong>"&nbsp;
-    =&nbsp; "<strong>yes</strong>" in the installer.<br>
+    <ul>
+      <li> This is the configuration file for the samba server that shares the
+        HotFolder to the network. Hotfolder is shared to the network only if you
+        selected "<strong>Share HotFolder to the network with samba</strong>"&nbsp;
+        =&nbsp; "<strong>yes</strong>" in the installer.</li>
+    </ul>
     <br>
     <br>
     <br>

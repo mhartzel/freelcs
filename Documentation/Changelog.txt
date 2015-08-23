@@ -1,3 +1,47 @@
+#####################################
+# Released FreeLCS 3.2 with:        #
+# ----------------------------      #
+# - LoudnessCorrection version 273  #
+# - HeartBeat_Checker version 022   #
+# - Installer version 104           #
+# - Latest Documentation            #
+#####################################
+
+Installer version 104
+----------------------
+- Corrected a small bug in modifications I made and changed some text that is displayd to the user. On systemd based os's there will no more be a delay before LoudnessCorrection starts up, so I removed text explaining the delay.
+
+Installer version 103
+----------------------
+- Print systemd information when debug mode is on.
+
+LoudnessCorrection Version 273 installer 102
+----------------------------------------------
+- Write os init system name (init / systemd) to configfile that is passed to LoudnessCorrection and written to various logs.
+
+Installer version 101
+----------------------
+- FreeLCS should now start correctly on systemd based os versions. This feature is still untested.
+
+Installer version 100
+----------------------
+- Started work on supporting systemd init system introduced in Debian 8.
+
+LoudnessCorrection Version 272
+-------------------------------
+- Corrected a small typo in an error message
+
+LoudnessCorrection Version 271
+-------------------------------
+- Heartbeat_Checker crashed if the machine had no ip-address. Fixed.
+
+Installer version 99
+---------------------
+- Test os version number as a float so that version numbers can be compared easily.
+
+Installer version 98
+---------------------
+- Strted testing if running on Debian 8 needs anymodifications to the functionality. This version accepts Debian 8 as install target os :)
 
 #####################################
 # Released FreeLCS 3.1 with:        #
