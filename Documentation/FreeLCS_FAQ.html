@@ -1,950 +1,35 @@
-<!DOCTYPE html>
-<html dir="ltr" lang="en">
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="content-type">
-    <title>FreeLCS FAQ</title>
-    <meta content="Mikael Hartzell" name="author">
-    <meta content="FreeLCS FAQ" name="description">
-    <meta content="FreeLCS FAQ" name="keywords">
-  </head>
-  <body>
-    <h1>FreeLCS FAQ</h1>
-    <br>
-    <br>
-    <a href="#What%20is%20FreeLCS%20%20?">What is FreeLCS&nbsp; ?</a><br>
-    <br>
-    <a href="#What%20programs%20are%20used%20to%20process%20audio%20files%20?">What
-      programs are used to process audio files ?</a><br>
-    <br>
-    <a href="#What%20filetypes%20are%20supported%20?"></a><a href="#What%20formats%20are%20supported%20?">What
-      formats are supported ?</a><br>
-    <br>
-    <a href="#Libav-tools_vs_FFmpeg">Libav-tools vs. FFmpeg</a><br>
-    <br>
-    <a href="FreeLCS_FAQ.html#Libav-tools%20/%20FFmpeg%20and%20patents">Avconv /
-      FFmpeg and patents</a><br>
-    <br>
-    <a href="#Can_I_restrict_avconv_/_FFmpeg_to_use_only_patent_free_formats">Can
-      I restrict avconv / FFmpeg to use only patent free formats</a><br>
-    <br>
-    <a href="#How%20many%20audio%20streams%20in%20a%20file%20are%20supported%20?">How
-      many audio streams in a file are supported ?</a><br>
-    <br>
-    <a href="#What%20is%20the%20maximum%20/%20minimum%20file%20duration%20supported%20?">What
-      is the maximum / minimum file duration supported ?</a><br>
-    <br>
-    <a href="#What%20is%20the%20output%20format%20of%20FreeLCS%20?">What is the
-      output format of FreeLCS ?</a><br>
-    <br>
-    <a href="#What%20happens%20to%20the%20files%20when%20they%20are%20processed%20?">What
-      happens to the files when they are processed ?</a><br>
-    <br>
-    <a href="#Is%20TruePeak%20measurement%20supported%20?">Is TruePeak
-      measurement supported ?</a><br>
-    <br>
-    <a href="#Is%20peak%20limiting%20used%20when%20adjusting%20volume%20up%20?"></a><a
-      href="#Is%20peak%20limiting%20used%20when%20loudness%20correction%20adjusts%20volume%20up%20?">Is
-      peak limiting used when loudness correction adjusts volume up ?</a><br>
-    <br>
-    <a href="#What%20happens%20to%20the%20internal%20dynamics%20of%20a%20processed%20file%20?">What
-      happens to the internal dynamics of a processed file ?</a><br>
-    <br>
-    <a href="#What%20channel%20orders%20are%20supported%20?">What channel orders
-      are supported ?</a><br>
-    <br>
-    <a href="#What%20is%20the%20calculation%20precision%20?">What is the
-      calculation precision ?</a><br>
-    <br>
-    <a href="#Is%20bit%20depth%20and%20sample%20rate%20preserved%20?">Is bit
-      depth and sample rate preserved ?</a><br>
-    <br>
-    <a href="#What%20happens%20if%20output%20file%20size%20exceeds%20wav%20format%204%20GB%20size%20limit%20?">What
-      happens if output file size exceeds wav format 4 GB size limit ?</a><br>
-    <br>
-    <a href="#Will%20FreeLCS%20remux%20loudness%20corrected%20audio%20back%20to%20the%20video%20it%20was%20extracted%20from%20?">Will
-      FreeLCS remux loudness corrected audio back to the video it was extracted
-      from ?</a><br>
-    <a href="#Is%20MXF%20supported%20?"></a><br>
-    <a href="#Is%20MXF%20supported%20?">Is MXF supported ?</a><br>
-    <br>
-    <a href="#Any%20suggestion%20for%20free%20tools%20to%20manipulate%20the%20Flac%20format%20?">Any
-      suggestion for free tools to manipulate the Flac format ?</a><br>
-    <br>
-    <a href="#How%20can%20I%20test%20multichannel%20behaviour%20of%20my%20loudness%20meter%20?">How
-      can I test multichannel behaviour of my loudness meter ?</a><br>
-    <br>
-    <a href="#What%20Linux%20distributions%20are%20supported%20?">What Linux
-      distributions are supported ?</a><br>
-    <br>
-    <a href="#FreeLCS_error_messages">FreeLCS error messages</a><br>
-    <br>
-    <a href="#Critical_error_messages">Critical error messages</a><br>
-    <br>
-    <a href="#Non-critical_error_messages">Non-critical error messages</a><br>
-    <br>
-    <a href="#Is_there_a_way_to_find_out_FreeLCS_options_used_during_installation">Is
-      there a way to find out FreeLCS options used during installation ?</a><br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <h2><a id="What is FreeLCS  ?">What is FreeLCS&nbsp; ?</a></h2>
-    <ul>
-    </ul>
-    <ul>
-      <li>FreeLCS is a tool to automatically adjust loudness of audio files
-        according to the EBU R128 recommendation.<br>
-      </li>
-      <li>EBU R128 is designed for professional broadcasters to help eliminate
-        loudness jumps between broadcasted programs. Files adjusted according to
-        R128 will at the same loudness level.</li>
-      <li>FreeLCS is a Linux server that shares one of it's folders to the
-        network.</li>
-      <li>Users of your network can then drop audio files to the server for
-        automatic loudness correction.</li>
-      <li>For each processed file the server also creates a loudness history
-        graphics file which shows loudness variations inside the file.</li>
-      <li>FreeLCS is open source and free software. You don't have to pay
-        anything to use it :)<br>
-      </li>
-      <li>FreeLCS site is here: <a href="http://freelcs.sourceforge.net/">http://freelcs.sourceforge.net/</a></li>
-    </ul>
-    <br>
-    <h2> <a id="What programs are used to process audio files ?">What programs
-        are used to process audio files ?</a></h2>
-    <ul>
-      <li>Natively supported formats are <strong>wav</strong>, <strong>flac</strong>
-        and <strong>ogg</strong>. If <strong>libav-tools</strong> is installed
-        then it's used to extract and convert audio from unsupported formats to
-        wav and flac.<br>
-      </li>
-      <li><strong>Mediainfo</strong> gets duration info from mpeg transport
-        stream files.<br>
-      </li>
-      <li><strong>libebur128</strong> measures integrated and momentary loudness
-        and maximum true peak value.</li>
-      <li><strong>Sox</strong> adjusts file loudness to target level and also
-        provides protective limiting in cases where it is needed.</li>
-      <li><strong>Gnuplot</strong> creates loudness results graphics from
-        momentary loudness calculations provided by libebur128.<br>
-      </li>
-    </ul>
-    <br>
-    <h2><a id="What formats are supported ?">What formats are supported ?</a></h2>
-    <ul>
-      <li><strong>Wav</strong>, <strong>flac</strong> and <strong>ogg</strong>
-        are natively supported.</li>
-      <li>If libav-tools is installed then it is used to convert other formats
-        to supported formats before processing. Libav-tools supports a large
-        number of formats: <strong>mp4</strong>, <strong>mp3</strong>, <strong>mp2</strong>,
-        <strong>avi</strong>, <strong>mov</strong>, <strong>aac</strong>, <strong>h264</strong>,
-        <strong>vob</strong>, <strong>mkv</strong> to name a few. Libav-tools
-        is able to extract all audio streams from supported file types including
-        video files. <br>
-      </li>
-      <li>Note that all channels of one mix must be in the same file. If your
-        5.1 mix consists of 6 files, then you must combine them before dropping
-        the mix into loudness correction.</li>
-    </ul>
-    <p><br>
-    </p>
-    <h2><a id="Libav-tools_vs_FFmpeg">Libav-tools vs. FFmpeg</a></h2>
-    <ul>
-      <li>In 2011 a group of FFmpeg developers decided to take FFmpeg's source
-        code and start a new project with it. The reason for this "fork" was the
-        group was unhappy with the way the main FFmpeg developer managed the
-        project. The group named the new project Libav and renamed the video
-        and&nbsp; audio conversion program from <strong>ffmpeg</strong> to <strong>avconv</strong>.
-        This "fork" created a new project that continued development of the
-        FFmpeg source code parallel to the FFmpeg - project. Both projects have
-        slowly evolved their own way creating a puzzling situation for the
-        users. Tools that both projects develop (FFmpeg and avconv) are quite
-        similar by features, but there are differences in capabilites and usage
-        here and there. More about the FFmpeg vs. libav situation can be read <a
-          href="http://blog.pkh.me/p/13-the-ffmpeg-libav-situation.html">here</a>.</li>
-      <li>Ubuntu 14.04 no longer has FFmpeg available in the package repository,
-        only libav is available for easy installation. Because of this FreeLCS
-        3.0 now only supports libav (for all supported operating systems Debian
-        7, Ubuntu 12.04 and 14.04).</li>
-    </ul>
-    <p><br>
-    </p>
-    <h2><a id="Libav-tools / FFmpeg and patents">Avconv / FFmpeg and patents</a><br>
-    </h2>
-    <ul>
-      <li>Most audio post production is done in <strong>Wav</strong> format
-        because it is very widely supported and can be used without paying
-        license fees for the use of the format (source: <a href="http://www.digitalpreservation.gov/formats/fdd/fdd000025.shtml">http://www.digitalpreservation.gov/formats/fdd/fdd000025.shtml</a>,&nbsp;
+<!DOCTYPE html><html dir="ltr" lang="en">  <head>    <meta content="text/html; charset=UTF-8" http-equiv="content-type">    <title>FreeLCS FAQ</title>    <meta content="Mikael Hartzell" name="author">    <meta content="FreeLCS FAQ" name="description">    <meta content="FreeLCS FAQ" name="keywords">  </head>  <body>    <h1>FreeLCS FAQ</h1>    <br>    <br>    <a href="#What%20is%20FreeLCS%20%20?">What is FreeLCS&nbsp; ?</a><br>    <br>    <a href="#What%20programs%20are%20used%20to%20process%20audio%20files%20?">What
+      programs are used to process audio files ?</a><br>    <br>    <a href="#What%20filetypes%20are%20supported%20?"></a><a href="#What%20formats%20are%20supported%20?">What
+      formats are supported ?</a><br>    <br>    <a href="#Libav-tools_vs_FFmpeg">Libav-tools vs. FFmpeg</a><br>    <br>    <a href="FreeLCS_FAQ.html#Libav-tools%20/%20FFmpeg%20and%20patents">Avconv /      FFmpeg and patents</a><br>    <br>    <a href="#Can_I_restrict_avconv_/_FFmpeg_to_use_only_patent_free_formats">Can
+      I restrict avconv / FFmpeg to use only patent free formats</a><br>    <br>    <a href="#How%20many%20audio%20streams%20in%20a%20file%20are%20supported%20?">How
+      many audio streams in a file are supported ?</a><br>    <br>    <a href="#What%20is%20the%20maximum%20/%20minimum%20file%20duration%20supported%20?">What
+      is the maximum / minimum file duration supported ?</a><br>    <br>    <a href="#What%20is%20the%20output%20format%20of%20FreeLCS%20?">What is the      output format of FreeLCS ?</a><br>    <br>    <a href="#What%20happens%20to%20the%20files%20when%20they%20are%20processed%20?">What
+      happens to the files when they are processed ?</a><br>    <br>    <a href="#Is%20TruePeak%20measurement%20supported%20?">Is TruePeak      measurement supported ?</a><br>    <br>    <a href="#Is%20peak%20limiting%20used%20when%20adjusting%20volume%20up%20?"></a><a      href="#Is%20peak%20limiting%20used%20when%20loudness%20correction%20adjusts%20volume%20up%20?">Is
+      peak limiting used when loudness correction adjusts volume up ?</a><br>    <br>    <a href="#What%20happens%20to%20the%20internal%20dynamics%20of%20a%20processed%20file%20?">What
+      happens to the internal dynamics of a processed file ?</a><br>    <br>    <a href="#What%20channel%20orders%20are%20supported%20?">What channel orders      are supported ?</a><br>    <br>    <a href="#What%20is%20the%20calculation%20precision%20?">What is the      calculation precision ?</a><br>    <br>    <a href="#Is%20bit%20depth%20and%20sample%20rate%20preserved%20?">Is bit      depth and sample rate preserved ?</a><br>    <br>    <a href="#What%20happens%20if%20output%20file%20size%20exceeds%20wav%20format%204%20GB%20size%20limit%20?">What
+      happens if output file size exceeds wav format 4 GB size limit ?</a><br>    <br>    <a href="#Will%20FreeLCS%20remux%20loudness%20corrected%20audio%20back%20to%20the%20video%20it%20was%20extracted%20from%20?">Will
+      FreeLCS remux loudness corrected audio back to the video it was extracted      from ?</a><br>    <a href="#Is%20MXF%20supported%20?"></a><br>    <a href="#Is%20MXF%20supported%20?">Is MXF supported ?</a><br>    <br>    <a href="#Any%20suggestion%20for%20free%20tools%20to%20manipulate%20the%20Flac%20format%20?">Any
+      suggestion for free tools to manipulate the Flac format ?</a><br>    <br>    <a href="#How%20can%20I%20test%20multichannel%20behaviour%20of%20my%20loudness%20meter%20?">How
+      can I test multichannel behaviour of my loudness meter ?</a><br>    <br>    <a href="#What%20Linux%20distributions%20are%20supported%20?">What Linux      distributions are supported ?</a><br>    <br>    <a href="#FreeLCS_error_messages">FreeLCS error messages</a><br>    <br>    <a href="#Critical_error_messages">Critical error messages</a><br>    <br>    <a href="#Non-critical_error_messages">Non-critical error messages</a><br>    <br>    <a href="#Errors_copying_files_from_OS_X_10.7-10.10_to_FreeLCS-Server">Errors      copying files from OS X 10.7 - 10.10 to FreeLCS - Server</a><br>    <br>    <a href="#Is_there_a_way_to_find_out_FreeLCS_options_used_during_installation">Is
+      there a way to find out FreeLCS options used during installation ?</a><br>    <br>    <br>    <br>    <br>    <h2><a id="What is FreeLCS  ?">What is FreeLCS&nbsp; ?</a></h2>    <ul>    </ul>    <ul>      <li>FreeLCS is a tool to automatically adjust loudness of audio files        according to the EBU R128 recommendation.<br>      </li>      <li>EBU R128 is designed for professional broadcasters to help eliminate        loudness jumps between broadcasted programs. Files adjusted according to        R128 will at the same loudness level.</li>      <li>FreeLCS is a Linux server that shares one of it's folders to the        network.</li>      <li>Users of your network can then drop audio files to the server for        automatic loudness correction.</li>      <li>For each processed file the server also creates a loudness history        graphics file which shows loudness variations inside the file.</li>      <li>FreeLCS is open source and free software. You don't have to pay        anything to use it :)<br>      </li>      <li>FreeLCS site is here: <a href="http://freelcs.sourceforge.net/">http://freelcs.sourceforge.net/</a></li>    </ul>    <br>    <h2> <a id="What programs are used to process audio files ?">What programs        are used to process audio files ?</a></h2>    <ul>      <li>Natively supported formats are <strong>wav</strong>, <strong>flac</strong>        and <strong>ogg</strong>. If <strong>libav-tools</strong> is installed        then it's used to extract and convert audio from unsupported formats to        wav and flac.<br>      </li>      <li><strong>Mediainfo</strong> gets duration info from mpeg transport        stream files.<br>      </li>      <li><strong>libebur128</strong> measures integrated and momentary loudness        and maximum true peak value.</li>      <li><strong>Sox</strong> adjusts file loudness to target level and also        provides protective limiting in cases where it is needed.</li>      <li><strong>Gnuplot</strong> creates loudness results graphics from        momentary loudness calculations provided by libebur128.<br>      </li>    </ul>    <br>    <h2><a id="What formats are supported ?">What formats are supported ?</a></h2>    <ul>      <li><strong>Wav</strong>, <strong>flac</strong> and <strong>ogg</strong>        are natively supported.</li>      <li>If libav-tools is installed then it is used to convert other formats        to supported formats before processing. Libav-tools supports a large        number of formats: <strong>mp4</strong>, <strong>mp3</strong>, <strong>mp2</strong>,        <strong>avi</strong>, <strong>mov</strong>, <strong>aac</strong>, <strong>h264</strong>,        <strong>vob</strong>, <strong>mkv</strong> to name a few. Libav-tools        is able to extract all audio streams from supported file types including        video files. <br>      </li>      <li>Note that all channels of one mix must be in the same file. If your        5.1 mix consists of 6 files, then you must combine them before dropping        the mix into loudness correction.</li>    </ul>    <p><br>    </p>    <h2><a id="Libav-tools_vs_FFmpeg">Libav-tools vs. FFmpeg</a></h2>    <ul>      <li>In 2011 a group of FFmpeg developers decided to take FFmpeg's source        code and start a new project with it. The reason for this "fork" was the        group was unhappy with the way the main FFmpeg developer managed the        project. The group named the new project Libav and renamed the video        and&nbsp; audio conversion program from <strong>ffmpeg</strong> to <strong>avconv</strong>.        This "fork" created a new project that continued development of the        FFmpeg source code parallel to the FFmpeg - project. Both projects have        slowly evolved their own way creating a puzzling situation for the        users. Tools that both projects develop (FFmpeg and avconv) are quite        similar by features, but there are differences in capabilites and usage        here and there. More about the FFmpeg vs. libav situation can be read <a          href="http://blog.pkh.me/p/13-the-ffmpeg-libav-situation.html">here</a>.</li>      <li>Starting from Ubuntu version 14.04 FFmpeg is no more available in the        package repository, only libav is available for easy installation.        Because of this FreeLCS starting from version 3.0 only supports libav        (for all supported operating systems Debian        8, Debian 7, Ubuntu 14.04 and 12.04).</li>    </ul>    <p><br>    </p>    <h2><a id="Libav-tools / FFmpeg and patents">Avconv / FFmpeg and patents</a><br>    </h2>    <ul>      <li>Most audio post production is done in <strong>Wav</strong> format        because it is very widely supported and can be used without paying        license fees for the use of the format (source: <a href="http://www.digitalpreservation.gov/formats/fdd/fdd000025.shtml">http://www.digitalpreservation.gov/formats/fdd/fdd000025.shtml</a>,&nbsp;
         <a href="http://www.digitalpreservation.gov/formats/fdd/fdd000001.shtml">http://www.digitalpreservation.gov/formats/fdd/fdd000001.shtml</a>).
-        FreeLCS supports wav and two royalty / patent free formats <strong>flac</strong>
-        and <strong>ogg </strong>(license: <a href="http://flac.sourceforge.net/license.html">http://flac.sourceforge.net/license.html</a>).
-        If your production is done in wav then you don't ever need to install
-        libav-tools.</li>
-      <li>Avconv is a video and audio conversion tool that can be used to
-        convert media to many different formats. Using avconv to decompress
-        audio from patented formats may require a license from the rights
-        holders. However avconv may also be used to process free formats (MXF,
-        MKV, WebM and others) or formats with possibly expired patents (Mpeg1
-        Layer1, Mpeg 1 Layer2) without acquiring licenses (source: <a href="http://en.wikipedia.org/wiki/MPEG-1#Patents">https://en.wikipedia.org/wiki/MPEG-1#Patents</a>).
-        To more complicate things some patented formats may be patented in some
-        countries but not in others. Also the expiration dates for these patents
-        may vary between countries.</li>
-      <li>FreeLCS uses avconv from the libav-tools package if it's installed but
-        works fine without it with wav, flac and ogg formats.<br>
-      </li>
-    </ul>
-    <p><br>
-    </p>
-    <h2><a id="Can_I_restrict_avconv_/_FFmpeg_to_use_only_patent_free_formats">Can
-        I restrict avconv / FFmpeg to use only patent free formats</a></h2>
-    <ul>
-      <li>Yes, in FreeLCS 3.0 you can set avconv / FFmpeg allowed formats during
-        installation. In the following picture below allowed wrapper formats are
-        restricted to:&nbsp;&nbsp; <strong>wav</strong>, <strong>flac</strong>
-        <strong>ogg</strong>, <strong>matroska</strong> &nbsp; and allowed
-        codec formats are restricted to: &nbsp; <strong>pcm</strong>, <strong>flac</strong>,
-        <strong>vorbis</strong>.</li>
-    </ul>
-    <img alt="" src="Pictures/MXF_Remixing-05.jpg">
-    <p><br>
-    </p>
-    <h2> <a id="How many audio streams in a file are supported ?">How many
-        audio streams in a file are supported ?</a></h2>
-    <ul>
-      <li>When libav-tools is not installed: 1 audio stream.<br>
-      </li>
-      <li>When libav-tools is installed: the limit for the number of audio
-        streams in a single file has not been tested. I personally have tested
-        files with 16 streams with no problems. Upper limit is propably set by a
-        possible limit in libav-tools or file format in question.<br>
-      </li>
-    </ul>
-    <br>
-    <h2> <a id="What is the maximum / minimum file duration supported ?">What
-        is the maximum / minimum file duration supported ?</a></h2>
-    <ul>
-      <li>The shortest supported file duration is exactly 1 second.</li>
-      <li>The longest supported file duration should in theory be unlimited, but
-        no tests have been made to find out the limit.</li>
-      <li>The longest real world file I have tested was 18 hours of 16 bit
-        Stereo Mpeg 1 Layer 2 compressed audio from television
-        transmission.&nbsp; The longest test files (with only 1 kHz sine wave)
-        were 33 hours of Flac compressed 24 bit stereo audio and 388 hours of
-        ogg vorbis compresses stereo audio. The last one is 16 days of
-        continuous audio and the loudness corrected version was a 51 GB flac -
-        compressed file :)<br>
-      </li>
-    </ul>
-    <br>
-    <h2><a id="What is the output format of FreeLCS ?">What is the output format
-        of FreeLCS ?</a></h2>
-    <ul>
-      <li>FreeLCS output format is wav if output file size does not exceed wav
-        format max size 4 GB. In case of very large files the output format is
-        flac. See also question: <a href="#What%20happens%20if%20output%20file%20size%20exceeds%20wav%20format%204%20GB%20size%20limit%20?">What
-          happens if output file size exceeds wav format 4 GB size limit ?</a><br>
-      </li>
-    </ul>
-    <br>
-    <h2><a id="What happens to the files when they are processed ?">What happens
-        to the files when they are processed ?</a></h2>
-    <ul>
-      <li>First incoming files are searched for supported audio streams.</li>
-      <li>FreeLCS natively supports wav, flac and ogg formats and one audio
-        stream per file. If there are more streams or the audio format is
-        unsupported then libav-tools is used (only if libav-tools is installed)
-        to convert streams to a supported format.<br>
-      </li>
-      <li>Libav-tools places extracted streams back to FreeLCS HotFolder so that
-        they are seen as new files coming into processing. When all streams have
-        been extracted then the original file is deleted as it is no longer
-        needed.<br>
-      </li>
-      <li>Then two simultaneous loudness calculation processes are started for
-        the file. One measures integrated loudness and the other momentary
-        loudness. Momentary loudness is calculated in 3 second slices for files
-        longer than 12 seconds and in 0.5 seconds slices for files shorter than
-        that. </li>
-      <li>After loudness measurement Gnuplot creates a loudness result graphics
-        file from momentary loudness measurements provided by libebur128.<br>
-      </li>
-      <li>Then a new loudness adjusted file is created with sox. Loudness of
-        this file is at EBU R128 target level <strong>-23.0 LUFS</strong>.</li>
-      <li>All files will be automatically deleted after a delay defined during
-        FreeLCS installation, default is 8 hours.</li>
-    </ul>
-    <p><br>
-    </p>
-    <h2><a id="Is TruePeak measurement supported ?">Is TruePeak measurement
-        supported ?</a></h2>
-    <p>Yes :) When you install the software you can choose which method of peak
-      measurement is used: sample peak or TruePeak.</p>
-    <p><br>
-    </p>
-    <h2><a id="Is peak limiting used when loudness correction adjusts volume up ?">Is
-        peak limiting used when loudness correction adjusts volume up ?</a></h2>
-    <ul>
-      <li>If file gain is adjusted down then no peak limiting is needed as the
-        peaks also go down.</li>
-      <li>If file gain must be adjusted up then a protective limiter is used but
-        only if peaks would go over a set limit after gain correction.<br>
-      </li>
-      <li>The max peaks after gain adjustment will be at -3 dBFS when using
-        sample peaks and -1 dBTP when using TruePeak.</li>
-    </ul>
-    <p><br>
-    </p>
-    <h2><a id="What happens to the internal dynamics of a processed file ?">What
-        happens to the internal dynamics of a processed file ?</a></h2>
-    <ul>
-      <li>The dynamics inside an audio file are not changed in any way, only the
-        gain of the whole file is adjusted up or down so that the average
-        loudness of file hits -23.0 LUFS. For example if measured file loudness
-        is at -20.0 LUFS, then all samples of the file will be adjusted down by
-        3 dBs when loudness corrected file is created.<br>
-      </li>
-    </ul>
-    <br>
-    <h2><a id="What channel orders are supported ?">What channel orders are
-        supported ?</a></h2>
-    The following channel orders are supported:<br>
-    <ul>
-      <li>1.0 = Mono</li>
-      <li>2.0 = L, R.<br>
-      </li>
-      <li>3.0 = Any channel order for front channels L, R, C.</li>
-      <li>4.0 = L, R, LS, RS.</li>
-      <li>5.0 = L, R, C, LS, RS.</li>
-      <li>5.1 = L, R, C, LFE, LS, RS.</li>
-    </ul>
-    Ebu R128 recommendation (or to be more precise ITU 1770 that R128 refers to)
-    does not support any specific channel order, it only defines how loudness
-    measurement of: <strong>Front</strong>, <strong>Surround</strong> and <strong>LFE</strong>
-    channels differs from each other. Surround channels are weighted differently
-    from front channels and LFE channel is always discarded from loudness
-    calculation. This means that for example in the case of 3.0 any channel
-    order is supported since all of the channels L, R, C are front channels and
-    weighted equally in loudness calculation.<br>
-    <p><strong>Important notes:</strong></p>
-    <ul>
-      <li>Channel counts of more than six channels are not supported and not
-        processed !!!!!!!</li>
-      <li>All channels of one mix must be in the same file. If your 5.1 mix
-        consists of 6 files, then you must combine them before dropping the mix
-        into loudness correction.</li>
-    </ul>
-    <br>
-    <h2><a id="What is the calculation precision ?">What is the calculation
-        precision ?</a></h2>
-    <ul>
-      <li>Audio gain adjustment is done with sox and it uses 32 bits by default
-        for all calculations.<br>
-      </li>
-      <li>If output file bit depth is not 32 bits, then sox uses dithering by
-        default. The output file has the same bit depth as the input file in
-        most cases.</li>
-    </ul>
-    <br>
-    <h2><a id="Is bit depth and sample rate preserved ?">Is bit depth and sample
-        rate preserved ?</a></h2>
-    Sample rate should be preserved in all cases. <br>
-    <br>
-    The following rules for bit depth conversion comes from internal limitations
-    in sox and libav-tools.<br>
-    <br>
-    <u><strong>When </strong></u><u><strong>libav-tools is not installed:</strong></u><br>
-    <ul>
-      <li>64 bit audio is not supported.</li>
-      <li>If audio is in uncompressed PCM - format, then bit depth is preserved.<br>
-      </li>
-      <li>If audio has been compressed with ogg then the audio has no real bit
-        depth anymore and audio will be extracted using bit depth of 16 bits.<br>
-      </li>
-      <li>If audio is in flac format then bit depth is preserved except that 8
-        bit audio is converted to 16 bits. Flac supports bit depths up to 24
-        bits.<br>
-      </li>
-    </ul>
-    <u><strong>When </strong></u><u><strong>libav-tools is installed:</strong></u><br>
-    <ul>
-      <li>If audio is in uncompressed PCM - format, then bit depth is preserved
-        except that 64 bit audio will be converted to 32 bits because sox
-        supports bit depths only up to 32 bits.</li>
-      <li>If audio has been compressed using a lossy codec then the audio has no
-        real bit depth anymore and audio will be extracted using 16 bits.</li>
-      <li>If output file size exceeds 4 GBs then FreeLCS must store the audio in
-        flac format when processing it. Bit depths bigger than 16 will be
-        converted to 16 bits on <strong>Ubuntu 12.04</strong> and <strong>Debian
-          7</strong>. This is caused by an internal limitation in libav-tools
-        version distributed with Ubuntu 12.04 and Debian 7, it always uses 16
-        bits when storing in flac format. Ubuntu 14.04 ships with a new version
-        of libav-tools that is able to store 24 bit flac files. Bit depths
-        bigger than 24 will be converted to 24 bits. 8 bit audio will be
-        converted to 16 bits on all supported platforms if output file size
-        exceeds 4 GB.</li>
-    </ul>
-    <u><strong></strong></u><br>
-    <h2><a id="What happens if output file size exceeds wav format 4 GB size limit ?">What
-        happens if output file size exceeds wav format 4 GB size limit ?</a></h2>
-    <ul>
-      <li>Audio production is usually done in wav format since wav is so widely
-        supported. The wav format has a max supported file size of 4 GB.</li>
-      <li>If the output file size would exceed this hard limit then FreeLCS
-        splits audio channels in the file to separate wav - files. If the size
-        of a separate channel would also go over the 4 GB limit then FreeLCS
-        saves all channels of the file in a single flac file. Flac - format
-        supports very large files.</li>
-      <li>There are new revisions of the wav format (RF64, W64) that can store
-        files larger than 4 GB, but I have not tested these formats.&nbsp; RF64
-        and W64 are not yet very widely supported.<br>
-      </li>
-    </ul>
-    <br>
-    <h2><a id="Will FreeLCS remux loudness corrected audio back to the video it was extracted from ?">Will
-        FreeLCS remux loudness corrected audio back to the video it was
-        extracted from ?</a></h2>
-    <ul>
-      <li>No. FreeLCS tries to extract and process all audio streams from the
-        video file, but it won't remux video and audio back together.</li>
-    </ul>
-    <br>
-    <br>
-    <h2><a id="Is MXF supported ?">Is MXF supported ?</a></h2>
-    <ul>
-      <li>Libav-tools supports MXF and I've been able to extract audio from MXF
-        - wrapped files with it. FreeLCS 3.0 allows the user to define MXF audio
-        remix maps that define how audio is to be recombined to different mixes
-        before loudness processing. However MXF is not one format, but a family
-        of formats. Every hardware and software vendor seem to have their own
-        version of it. MXF files created with one device might not be compatible
-        with a device created by another vendor. Because of this there is no
-        guarantee that FreeLCS can process every MXF - file you feed it. It
-        might be a good idea to do a thorough test with a large set of different
-        MXF files before you make this feature part of your workflow. More about
-        MXF Audio Remixing can be found in the <a href="Machine_readable_results_and_MXF_audio_remix_mapping.html#MXF_audio_remixing">user
-          manual</a>.</li>
-    </ul>
-    <br>
-    <h2><a id="Any suggestion for free tools to manipulate the Flac format ?">Any
-        suggestion for free tools to manipulate the Flac format ?</a></h2>
-    <ul>
-      <li>If your audio tools don't support flac then you can use Audacity to
-        manipulate files in this format. Audacity is a free simple multitrack
-        audio tool and it supports Mac, Linux and windows.</li>
-      <li>Audacity site is here: <a href="http://audacity.sourceforge.net/?lang=en">http://audacity.sourceforge.net/?lang=en</a></li>
-    </ul>
-    <p><br>
-    </p>
-    <h2><a id="How can I test multichannel behaviour of my loudness meter ?">How
-        can I test multichannel behavior of my loudness meter ?</a></h2>
-    <ul>
-      <li>You can download multichannel test files here: <a href="http://sourceforge.net/projects/freelcs/files/">http://sourceforge.net/projects/freelcs/files/</a></li>
-      <li>The zip file comes with a text document with expected integrated
-        loudness results for all files.<br>
-      </li>
-      <li>Zip name is '<strong>EBU_R128_Test_Files_For_Channels_Counts_From_1_to_6.zip</strong>'<br>
-      </li>
-    </ul>
-    <br>
-    <h2><a id="What Linux distributions are supported ?">What Linux
-        distributions are supported ?</a></h2>
-    <ul>
-    </ul>
-    FreeLCS 2.4 supports:<br>
-    <ul>
-      <li>Ubuntu Desktop 12.04 LTS.</li>
-    </ul>
-    FreeLCS 3.0 supports:<br>
-    <ul>
-      <li>Ubuntu 12.04 LTS Desktop</li>
-      <li>Ubuntu 12.04 LTS Server</li>
-      <li>Ubuntu 14.04 LTS Desktop</li>
-      <li>Ubuntu 14.04 LTS Server</li>
-      <li>Debian 7</li>
-    </ul>
-    The plan is to support all stable <strong>Debian </strong>releases
-    starting from version <strong>7 </strong>and<strong> </strong>all future
-    <strong>Ubuntu</strong> <strong>LTS</strong> releases.<br>
-    <br>
-    LTS stands for <strong>L</strong>ong <strong>T</strong>erm <strong>S</strong>upport.
-    Ubuntu LTS releases get security updates for 5 years from the first release
-    date. <strong>Ubuntu 12.04 LTS</strong> will get security updates until
-    April 2017 and <strong>Ubuntu 14.04 LTS </strong>until April 2019.<br>
-    <br>
-    Canonical releases a new Ubuntu LTS version every 2 years. If you install
-    FreeLCS on Ubuntu 12.04 then you will need to upgrade the software not
-    sooner than 2017. The supported version of Ubuntu at that time will be
-    Ubuntu 16.04 LTS.
-    <ul>
-    </ul>
-    <br>
-    <h2><a id="FreeLCS_error_messages" name="FreeLCS_error_messages"></a>FreeLCS
-      error messages</h2>
-    <p>If you enable FreeLCS to send error messages by email, then you probably
-      sometimes get some messages that at first might seem puzzling. Here are
-      the explanations :)</p>
-    <p><br>
-    </p>
-    <h2><a id="Critical_error_messages">Critical error messages</a></h2>
-    <h3><span class="il">LoudnessCorrection</span> has stopped updating
-      timestamps</h3>
-    <p>If you get the following error message, then it means that FreeLCS has
-      encountered an error that it can not recover from and has stopped. FreeLCS
-      starts jobs in threads that periodically writes timestamps to a file. The
-      script "HeartBeat_Checker.py" watches this file and sends you email if one
-      or more timestamps stop updating. This means that a thread has crashed and
-      you need to restart FreeLCS to restore normal operation. You can restart
-      FreeLCS either by rebooting the computer or giving this command as root on
-      the commandline:</p>
-    <p><strong>/etc/init.d/loudnesscorrection_init_script restart</strong></p>
-    Note that it takes about 2 minutes for the service to start. This delay has
-    been put in because it takes some time before all Linux services are
-    available when the computer starts up.<strong><br>
-      <br>
-    </strong><br>
-    I have worked very hard to make FreeLCS solid as a rock. My goal is to keep
-    it 100% reliable, so that it can be used in business environments. So you
-    should never see this message :) but with computers anything is possible :)
-    For example a failing hard disk may corrupt FreeLCS installation.<br>
-    <br>
-    <hr style="color: black;">
-    <p><span style="font-family: monospace;">Subject: LoudnessCorrection Error
-        Message</span></p>
-    <span style="font-family: monospace;"> </span>
-    <p><span style="font-family: monospace;">From: VirtualMachine_1@company.com</span><span
-        style="font-family: monospace;"><br>
-      </span> <span style="font-family: monospace;"></span></p>
-    <span style="font-family: monospace;"> </span>
-    <p><span style="font-family: monospace;"><strong><span class="il"><br>
-          </span></strong></span></p>
-    <p><span style="font-family: monospace;"><strong><span class="il">LoudnessCorrection</span>
-          has stopped updating 'main_thread' timestamps, the thread has probably
-          crashed and a restart of the script is needed. Last thread timestamp
-          update happened at: 2013.11.30 at 16:34:05</strong><br>
-      </span> <span style="font-family: monospace;"></span></p>
-    <p><span style="font-family: monospace;"></span> <span style="font-family: monospace;"><span
-          class="il"><br>
-        </span></span></p>
-    <p><span style="font-family: monospace;"><span class="il">LoudnessCorrection</span>
-        info:<br>
-        ------------------------------</span><wbr><span style="font-family: monospace;">--------<br>
-        Commandline: /usr/bin/<span class="il">LoudnessCorrection</span>.py
-        -configfile /etc/Loudness_Correction_Settings.pickle<br>
-      </span></p>
-    <p><span style="font-family: monospace;"> IP-Addresses: 192.168.1.1<br>
-        PID: 1777<br>
-      </span> <span style="font-family: monospace;"><span class="il">LoudnessCorrection</span>
-        version: 229<br>
-      </span> <span style="font-family: monospace;"><br>
-        HeartBeat Checker info:<br>
-        ------------------------------</span><wbr><span style="font-family: monospace;">--------<br>
-        Commandline: /usr/bin/HeartBeat_Checker.py -configfile
-        /etc/Loudness_Correction_</span><wbr><span style="font-family: monospace;">Settings.pickle<br>
-        PID: 1802<br>
-        HeartBeat Checker version: 020</span></p>
-    <p><span style="font-family: monospace;"></span></p>
-    <hr style="color: black;">
-    <p><br>
-      <span style="font-family: monospace;"></span></p>
-    <p><span style="font-family: monospace;"><br>
-      </span></p>
-    <h3>All Heartbeat timestamps started updating again</h3>
-    <p>If you got the message above informing you that a FreeLCS thread has
-      stopped updating timestamps, then you might get the following message if
-      the problem was caused by some temporary glitch that just prevented
-      FreeLCS from updating the timestamps in time, but did not crash FreeLCS.
-      This message tells you that FreeLCS is working normally again.</p>
-    <hr style="color: black;">
-    <p><span style="font-family: monospace;">Subject: LoudnessCorrection Error
-        Message</span> </p>
-    <span style="font-family: monospace;"></span>
-    <p><span style="font-family: monospace;">From: VirtualMachine_1@company.com</span></p>
-    <p><span style="font-family: monospace;"><br>
-      </span></p>
-    <span style="font-family: monospace;"> </span>
-    <p> </p>
-    <span style="font-family: monospace;"> </span>
-    <p><span style="font-family: monospace;"><strong>All Heartbeat timestamps
-          started updating again at: 2014.05.10 at 23:33:49</strong><br>
-      </span> </p>
-    <span style="font-family: monospace;"> <br>
-    </span>
-    <div class="im"><span style="font-family: monospace;"> LoudnessCorrection
-        info:<br>
-        ------------------------------</span><wbr><span style="font-family: monospace;">--------<br>
-      </span> </div>
-    <span style="font-family: monospace;"> Commandline:
-      /usr/bin/LoudnessCorrection.py -configfile /etc/Loudness_Correction_</span><wbr><span
-      style="font-family: monospace;">Settings.pickle<br>
-      IP-Addresses: 192.168.1.1<br>
-      PID: 17573</span><span style="font-family: monospace;"></span>
-    <div class="HOEnZb adL"><span style="font-family: monospace;"> </span>
-      <div class="im"><span style="font-family: monospace;">LoudnessCorrection
-          version: 264<br>
-        </span> <span style="font-family: monospace;"><br>
-          HeartBeat Checker info:<br>
-          ------------------------------</span><wbr><span style="font-family: monospace;">--------<br>
-          Commandline: /usr/bin/HeartBeat_Checker.py -configfile
-          /etc/Loudness_Correction_</span><wbr><span style="font-family: monospace;">Settings.pickle<br>
-          PID: 2572<br>
-          HeartBeat Checker version: 022</span></div>
-    </div>
-    <hr style="color: black;">
-    <p><br>
-    </p>
-    <p><br>
-    </p>
-    <h2><a id="Non-critical_error_messages">Non-critical error messages</a></h2>
-    <p>These error messages are usually harmless and can be ignored.</p>
-    <p><br>
-    </p>
-    <h3>HeartBeat_Checker has started</h3>
-    <p>The HeartBeat_Checker.py script sends this message when FreeLCS starts
-      up. If you set up a weekly reboot for the machine, then this message
-      greets you when FreeLCS service is up and running.</p>
-    <hr style="color: black;">
-    <p><span style="font-family: monospace;">Subject: HeartBeat_Checker has
-        started.</span> </p>
-    <span style="font-family: monospace;"></span>
-    <p><span style="font-family: monospace;">From: VirtualMachine_1@company.com</span></p>
-    <p><span style="font-family: monospace;"><br>
-      </span></p>
-    <span style="font-family: monospace;"> </span>
-    <p><span style="font-family: monospace;"><strong>HeartBeat_Checker started:
-          2014.04.14 at 07:05:07</strong><br>
-      </span> <span style="font-family: monospace;"><br>
-      </span></p>
-    <p><span style="font-family: monospace;">LoudnessCorrection info:<br>
-        ------------------------------</span><wbr><span style="font-family: monospace;">--------<br>
-        Commandline: /usr/bin/LoudnessCorrection.py -configfile
-        /etc/Loudness_Correction_Settings.pickle</span></p>
-    <span style="font-family: monospace;"> </span>
-    <p><wbr><span style="font-family: monospace;"><br>
-        IP-Addresses: 192.168.1.1<br>
-        PID: 1683<br>
-        LoudnessCorrection version: 229<br>
-      </span> <span style="font-family: monospace;"><br>
-        HeartBeat Checker info:<br>
-        ------------------------------</span><wbr><span style="font-family: monospace;">--------<br>
-        Commandline: /usr/bin/HeartBeat_Checker.py -configfile
-        /etc/Loudness_Correction_</span><wbr><span style="font-family: monospace;">Settings.pickle<br>
-        PID: 1696<br>
-        HeartBeat Checker version: 020</span></p>
-    <hr style="color: black;"><br>
-    <br>
-    <h3>Error deleting files queued for deletion</h3>
-    <p>You may see this error message with if you mount FreeLCS HotFolder with
-      the NFS protocol. This error happens when a user uses a program that
-      creates a file on the FreeLCS disk and then unlinks it.</p>
-    <p>According to: <a href="http://serverfault.com/questions/201294/nfsxxxx-files-appearing-what-are-those">http://serverfault.com/questions/201294/nfsxxxx-files-appearing-what-are-those</a>&nbsp;
-      Linux keeps this file available to the user while hiding the file from
-      others. The file is renamed with a name that starts with a dot and Linux
-      filesystem hides these files from file listings by default.</p>
-    <p>The hidden file will disappear when the user closes the program that
-      keeps the file open.</p>
-    <hr style="color: black;">
-    <p><span style="font-family: monospace;">Subject: LoudnessCorrection Error
-        Message</span> </p>
-    <span style="font-family: monospace;"></span>
-    <p><span style="font-family: monospace;">From: VirtualMachine_1@company.com</span></p>
-    <p><span style="font-family: monospace;"><br>
-      </span></p>
-    <span style="font-family: monospace;"> </span>
-    <p><span style="font-family: monospace;">2014.05.07_at_15.31.23 &nbsp; <strong>Error
-          deleting files queued for deletion [Errno 16] Device or resource busy:
-          '/data/LoudnessCorrection/.</strong></span><wbr><span style="font-family: monospace;"><strong>nfs00000001094fe93f00000007'</strong><br>
-      </span> <span style="font-family: monospace;"><br>
-        2014.05.07_at_15.31.28 &nbsp; <strong>Error deleting files queued for
-          deletion [Errno 16] Device or resource busy:
-          '/data/LoudnessCorrection/.</strong></span><wbr><span style="font-family: monospace;"><strong>nfs00000001094fe93f00000007'</strong><br>
-      </span> <span style="font-family: monospace;"></span></p>
-    <p><span style="font-family: monospace;"><br>
-      </span></p>
-    <p><span style="font-family: monospace;"> LoudnessCorrection info:<br>
-        ------------------------------</span><wbr><span style="font-family: monospace;">--------<br>
-        Commandline: /usr/bin/LoudnessCorrection.py -configfile
-        /etc/Loudness_Correction_</span><wbr><span style="font-family: monospace;">Settings.pickle<br>
-        IP-Addresses: 192.168.1.1<br>
-        PID: 1616<br>
-        LoudnessCorrection version: 229</span></p>
-    <p><span style="font-family: monospace;"></span></p>
-    <hr style="color: black;">
-    <p><br>
-      <span style="font-family: monospace;"></span></p>
-    <p><span style="font-family: monospace;"><br>
-      </span></p>
-    <h3> File size has changed during processing</h3>
-    <h3> </h3>
-    <p>I haven't been able to find a way to stop users from deleting files from
-      the HotFolder without affecting other file processing. The following error
-      message is caused when a user copies a file to the server, and the server
-      starts processing it. Now the user deletes the file and replaces it with a
-      file with the same name but with different size. FreeLCS notices that file
-      size has changed during processing.</p>
-    <hr style="color: black;">
-    <p><span style="font-family: monospace;">Subject: LoudnessCorrection Error
-        Message</span></p>
-    <span style="font-family: monospace;"> From: VirtualMachine_1@company.com<br>
-      <br>
-      <br>
-      2014.05.05_at_16.56.14 &nbsp; <strong>ERROR !!! in libebur128 timeslice
-        calculation: File size has changed during processing from: 3168838 -&gt;
-        65536:&nbsp; HALONEN 100.wav</strong><br>
-    </span>
-    <p> <span style="font-family: monospace;"><br>
-        LoudnessCorrection info:<br>
-        ------------------------------</span><wbr><span style="font-family: monospace;">--------<br>
-        Commandline: /usr/bin/LoudnessCorrection.py -configfile
-        /etc/Loudness_Correction_Settings.pickle</span></p>
-    <span style="font-family: monospace;"> </span>
-    <p><wbr><span style="font-family: monospace;"><br>
-        IP-Addresses: 192.168.1.1<br>
-        PID: 1616<br>
-        LoudnessCorrection version: 229</span></p>
-    <hr style="color: black;">
-    <p><br>
-    </p>
-    <p><br>
-    </p>
-    <h3>Error reading HotFolder file metadata<br>
-    </h3>
-    <p>This error happens when user deletes a file that FreeLCS is about to
-      start processing. FreeLCS makes a final check before processing and
-      notices that the file is no longer available.</p>
-    <hr style="color: black;"><span style="font-family: monospace;">Subject:
-      LoudnessCorrection Error Message</span><span style="font-family: monospace;">
-    </span>
-    <p><span style="font-family: monospace;">From: VirtualMachine_1@company.com<br>
-      </span></p>
-    <p><span style="font-family: monospace;"><br>
-        2014.05.14_at_13.40.44&nbsp;&nbsp; <strong>Error reading HotFolder file
-          metadata [Errno 2] No such file or directory:
-          '/data/LoudnessCorrection/KUN_Putkiremonttipuffi GRAF.wav'</strong><br>
-      </span> <span style="font-family: monospace;"></span></p>
-    <p><span style="font-family: monospace;"><br>
-      </span></p>
-    <p><span style="font-family: monospace;"> LoudnessCorrection info:<br>
-        --------------------------------------<br>
-        Commandline: /usr/bin/LoudnessCorrection.py -configfile
-        /etc/Loudness_Correction_Settings.pickle<br>
-        IP-Addresses: 192.168.1.1<br>
-        PID: 1699<br>
-        LoudnessCorrection version: 229</span></p>
-    <hr style="color: black;"> <br>
-    <br>
-    <h3>Many error messages for one audio file</h3>
-    <p>This error message can mean one of two things. If you get these messages
-      and they are all about the same audio file, then the user has deleted the
-      file just when FreeLCS was about to start processing it.</p>
-    <p>If you get these messages and they mention several files, then this can
-      mean that the hard disk might be failing. I have not tried to get rid of
-      these error messages since they might indicate a hard disk failure.</p>
-    <hr style="color: black;"><span style="font-family: monospace;">Subject:
-      LoudnessCorrection Error Message</span><span style="font-family: monospace;">
-    </span>
-    <p><span style="font-family: monospace;">From: VirtualMachine_1@company.com<br>
-        <br>
-      </span></p>
-    <span style="font-family: monospace;"> 2013.11.22_at_12.02.18&nbsp;&nbsp; <strong>ERROR
-        !!! I could not parse sox channel count string: 'can't open input file
-        /mountpoint/raid-disk/LoudnessCorrection/Channels-2.0.flac<br>
-      </strong>2013.11.22_at_12.02.18&nbsp;&nbsp; <strong>ERROR !!! I could not
-        parse sox sample rate string: '' for file: Channels-2.0.flac<br>
-      </strong>2013.11.22_at_12.02.18&nbsp;&nbsp; <strong>ERROR !!! I could not
-        parse sox bit depth string: '' for file: Channels-2.0.flac<br>
-      </strong>2013.11.22_at_12.02.18&nbsp;&nbsp; <strong>ERROR !!! I could not
-        parse sox sample count string: '' for file: Channels-2.0.flac<br>
-      </strong>2013.11.22_at_12.02.18&nbsp;&nbsp; <strong>ERROR !!! in
-        libebur128 timeslice calculation: Error accessing file: [Errno 2] No
-        such file or directory:
-        '/mountpoint/raid-disk/LoudnessCorrection/Channels-2.0.flac'</strong><br>
-      2013.11.22_at_12.02.18&nbsp;&nbsp; <strong>ERROR !!!!!!! FILE
-        Channels-2.0.flac dissapeared from disk before processing started.</strong><br>
-      <br>
-    </span>
-    <p> <span style="font-family: monospace;"><span class="il">LoudnessCorrection</span>
-        info:<br>
-        ------------------------------</span><wbr><span style="font-family: monospace;">--------<br>
-        Commandline: /usr/bin/<span class="il">LoudnessCorrection</span>.py
-        -configfile /etc/Loudness_Correction_</span><wbr><span style="font-family: monospace;">Settings.pickle<br>
-        IP-Addresses: 192.168.1.1<br>
-        PID: 1773<br>
-      </span> <span style="font-family: monospace;"><span class="il">LoudnessCorrection</span>
-        version: 229</span></p>
-    <p><span style="font-family: monospace;"></span></p>
-    <hr style="color: black;">
-    <p><span style="font-family: monospace;"><br>
-      </span></p>
-    <br>
-    <h3>Premature EOF on .wav input file</h3>
-    <p>FreeLCS uses sox to do the actual loudness adjustment of files. This
-      error message comes directly from sox and happens when file size announced
-      in a files header does not match the actual file size. This in turn might
-      be caused for example by a dropped network connection ending file transfer
-      prematurely.</p>
-    <hr style="color: black;">
-    <p><span style="font-family: monospace;">Subject: LoudnessCorrection Error
-        Message</span></p>
-    <span style="font-family: monospace;"> </span>
-    <p><span style="font-family: monospace;">From: VirtualMachine_1@company.com</span></p>
-    <p><span style="font-family: monospace;"><br>
-      </span></p>
-    <span style="font-family: monospace;"> </span>
-    <p><span style="font-family: monospace;">2013.12.17_at_16.15.59 &nbsp; <strong>Sox
+        FreeLCS supports wav and two royalty / patent free formats <strong>flac</strong>        and <strong>ogg </strong>(license: <a href="http://flac.sourceforge.net/license.html">http://flac.sourceforge.net/license.html</a>).
+        If your production is done in wav then you don't ever need to install        libav-tools.</li>      <li>Avconv is a video and audio conversion tool that can be used to        convert media to many different formats. Using avconv to decompress        audio from patented formats may require a license from the rights        holders. However avconv may also be used to process free formats (MXF,        MKV, WebM and others) or formats with possibly expired patents (Mpeg1        Layer1, Mpeg 1 Layer2) without acquiring licenses (source: <a href="http://en.wikipedia.org/wiki/MPEG-1#Patents">https://en.wikipedia.org/wiki/MPEG-1#Patents</a>).
+        To more complicate things some patented formats may be patented in some        countries but not in others. Also the expiration dates for these patents        may vary between countries.</li>      <li>FreeLCS uses avconv from the libav-tools package if it's installed but        works fine without it with wav, flac and ogg formats.<br>      </li>    </ul>    <p><br>    </p>    <h2><a id="Can_I_restrict_avconv_/_FFmpeg_to_use_only_patent_free_formats">Can
+        I restrict avconv / FFmpeg to use only patent free formats</a></h2>    <ul>      <li>Yes, in FreeLCS 3.0 you can set avconv / FFmpeg allowed formats during        installation. In the following picture below allowed wrapper formats are        restricted to:&nbsp;&nbsp; <strong>wav</strong>, <strong>flac</strong>        <strong>ogg</strong>, <strong>matroska</strong> &nbsp; and allowed        codec formats are restricted to: &nbsp; <strong>pcm</strong>, <strong>flac</strong>,        <strong>vorbis</strong>.</li>    </ul>    <img alt="" src="Pictures/MXF_Remixing-05.jpg">    <p><br>    </p>    <h2> <a id="How many audio streams in a file are supported ?">How many        audio streams in a file are supported ?</a></h2>    <ul>      <li>When libav-tools is not installed: 1 audio stream.<br>      </li>      <li>When libav-tools is installed: the limit for the number of audio        streams in a single file has not been tested. I personally have tested        files with 16 streams with no problems. Upper limit is propably set by a        possible limit in libav-tools or file format in question.<br>      </li>    </ul>    <br>    <h2> <a id="What is the maximum / minimum file duration supported ?">What        is the maximum / minimum file duration supported ?</a></h2>    <ul>      <li>The shortest supported file duration is exactly 1 second.</li>      <li>The longest supported file duration should in theory be unlimited, but        no tests have been made to find out the limit.</li>      <li>The longest real world file I have tested was 18 hours of 16 bit        Stereo Mpeg 1 Layer 2 compressed audio from television        transmission.&nbsp; The longest test files (with only 1 kHz sine wave)        were 33 hours of Flac compressed 24 bit stereo audio and 388 hours of        ogg vorbis compresses stereo audio. The last one is 16 days of        continuous audio and the loudness corrected version was a 51 GB flac -        compressed file :)<br>      </li>    </ul>    <br>    <h2><a id="What is the output format of FreeLCS ?">What is the output format        of FreeLCS ?</a></h2>    <ul>      <li>FreeLCS output format is wav if output file size does not exceed wav        format max size 4 GB. In case of very large files the output format is        flac. See also question: <a href="#What%20happens%20if%20output%20file%20size%20exceeds%20wav%20format%204%20GB%20size%20limit%20?">What
+          happens if output file size exceeds wav format 4 GB size limit ?</a><br>      </li>    </ul>    <br>    <h2><a id="What happens to the files when they are processed ?">What happens        to the files when they are processed ?</a></h2>    <ul>      <li>First incoming files are searched for supported audio streams.</li>      <li>FreeLCS natively supports wav, flac and ogg formats and one audio        stream per file. If there are more streams or the audio format is        unsupported then libav-tools is used (only if libav-tools is installed)        to convert streams to a supported format.<br>      </li>      <li>Libav-tools places extracted streams back to FreeLCS HotFolder so that        they are seen as new files coming into processing. When all streams have        been extracted then the original file is deleted as it is no longer        needed.<br>      </li>      <li>Then two simultaneous loudness calculation processes are started for        the file. One measures integrated loudness and the other momentary        loudness. Momentary loudness is calculated in 3 second slices for files        longer than 12 seconds and in 0.5 seconds slices for files shorter than        that. </li>      <li>After loudness measurement Gnuplot creates a loudness result graphics        file from momentary loudness measurements provided by libebur128.<br>      </li>      <li>Then a new loudness adjusted file is created with sox. Loudness of        this file is at EBU R128 target level <strong>-23.0 LUFS</strong>.</li>      <li>All files will be automatically deleted after a delay defined during        FreeLCS installation, default is 8 hours.</li>    </ul>    <p><br>    </p>    <h2><a id="Is TruePeak measurement supported ?">Is TruePeak measurement        supported ?</a></h2>    <p>Yes :) When you install the software you can choose which method of peak      measurement is used: sample peak or TruePeak.</p>    <p><br>    </p>    <h2><a id="Is peak limiting used when loudness correction adjusts volume up ?">Is
+        peak limiting used when loudness correction adjusts volume up ?</a></h2>    <ul>      <li>If file gain is adjusted down then no peak limiting is needed as the        peaks also go down.</li>      <li>If file gain must be adjusted up then a protective limiter is used but        only if peaks would go over a set limit after gain correction.<br>      </li>      <li>The max peaks after gain adjustment will be at -3 dBFS when using        sample peaks and -1 dBTP when using TruePeak.</li>    </ul>    <p><br>    </p>    <h2><a id="What happens to the internal dynamics of a processed file ?">What        happens to the internal dynamics of a processed file ?</a></h2>    <ul>      <li>The dynamics inside an audio file are not changed in any way, only the        gain of the whole file is adjusted up or down so that the average        loudness of file hits -23.0 LUFS. For example if measured file loudness        is at -20.0 LUFS, then all samples of the file will be adjusted down by        3 dBs when loudness corrected file is created.<br>      </li>    </ul>    <br>    <h2><a id="What channel orders are supported ?">What channel orders are        supported ?</a></h2>    The following channel orders are supported:<br>    <ul>      <li>1.0 = Mono</li>      <li>2.0 = L, R.<br>      </li>      <li>3.0 = Any channel order for front channels L, R, C.</li>      <li>4.0 = L, R, LS, RS.</li>      <li>5.0 = L, R, C, LS, RS.</li>      <li>5.1 = L, R, C, LFE, LS, RS.</li>    </ul>    Ebu R128 recommendation (or to be more precise ITU 1770 that R128 refers to)    does not support any specific channel order, it only defines how loudness    measurement of: <strong>Front</strong>, <strong>Surround</strong> and <strong>LFE</strong>    channels differs from each other. Surround channels are weighted differently    from front channels and LFE channel is always discarded from loudness    calculation. This means that for example in the case of 3.0 any channel    order is supported since all of the channels L, R, C are front channels and    weighted equally in loudness calculation.<br>    <p><strong>Important notes:</strong></p>    <ul>      <li>Channel counts of more than six channels are not supported and not        processed !!!!!!!</li>      <li>All channels of one mix must be in the same file. If your 5.1 mix        consists of 6 files, then you must combine them before dropping the mix        into loudness correction.</li>    </ul>    <br>    <h2><a id="What is the calculation precision ?">What is the calculation        precision ?</a></h2>    <ul>      <li>Audio gain adjustment is done with sox and it uses 32 bits by default        for all calculations.<br>      </li>      <li>If output file bit depth is not 32 bits, then sox uses dithering by        default. The output file has the same bit depth as the input file in        most cases.</li>    </ul>    <br>    <h2><a id="Is bit depth and sample rate preserved ?">Is bit depth and sample        rate preserved ?</a></h2>    Sample rate should be preserved in all cases. <br>    <br>    The following rules for bit depth conversion comes from internal limitations    in sox and libav-tools.<br>    <br>    <u><strong>When </strong></u><u><strong>libav-tools is not installed:</strong></u><br>    <ul>      <li>64 bit audio is not supported.</li>      <li>If audio is in uncompressed PCM - format, then bit depth is preserved.<br>      </li>      <li>If audio has been compressed with ogg then the audio has no real bit        depth anymore and audio will be extracted using bit depth of 16 bits.<br>      </li>      <li>If audio is in flac format then bit depth is preserved except that 8        bit audio is converted to 16 bits. Flac supports bit depths up to 24        bits.<br>      </li>    </ul>    <u><strong>When </strong></u><u><strong>libav-tools is installed:</strong></u><br>    <ul>      <li>If audio is in uncompressed PCM - format, then bit depth is preserved        except that 64 bit audio will be converted to 32 bits because sox        supports bit depths only up to 32 bits.</li>      <li>If audio has been compressed using a lossy codec then the audio has no        real bit depth anymore and audio will be extracted using 16 bits.</li>      <li>If output file size exceeds 4 GBs then FreeLCS must store the audio in        flac format when processing it. Bit depths bigger than 16 will be        converted to 16 bits on <strong>Ubuntu 12.04</strong> and <strong>Debian
+          7</strong>. This is caused by an internal limitation in libav-tools        version distributed with Ubuntu 12.04 and Debian 7, it always uses 16        bits when storing in flac format. Ubuntu 14.04 and Debian 8 both ship        with a new version of libav-tools that is able to store 24 bit flac        files. Bit depths bigger than 24 will be converted to 24 bits. 8 bit        audio will be converted to 16 bits on all supported platforms if output        file size exceeds 4 GB.</li>    </ul>    <u><strong></strong></u><br>    <h2><a id="What happens if output file size exceeds wav format 4 GB size limit ?">What
+        happens if output file size exceeds wav format 4 GB size limit ?</a></h2>    <ul>      <li>Audio production is usually done in wav format since wav is so widely        supported. The wav format has a max supported file size of 4 GB.</li>      <li>If the output file size would exceed this hard limit then FreeLCS        splits audio channels in the file to separate wav - files. If the size        of a separate channel would also go over the 4 GB limit then FreeLCS        saves all channels of the file in a single flac file. Flac - format        supports very large files.</li>      <li>There are new revisions of the wav format (RF64, W64) that can store        files larger than 4 GB, but I have not tested these formats.&nbsp; RF64        and W64 are not yet very widely supported.<br>      </li>    </ul>    <br>    <h2><a id="Will FreeLCS remux loudness corrected audio back to the video it was extracted from ?">Will
+        FreeLCS remux loudness corrected audio back to the video it was        extracted from ?</a></h2>    <ul>      <li>No. FreeLCS tries to extract and process all audio streams from the        video file, but it won't remux video and audio back together.</li>    </ul>    <br>    <br>    <h2><a id="Is MXF supported ?">Is MXF supported ?</a></h2>    <ul>      <li>Libav-tools supports MXF and I've been able to extract audio from MXF        - wrapped files with it. FreeLCS 3.0 allows the user to define MXF audio        remix maps that define how audio is to be recombined to different mixes        before loudness processing. However MXF is not one format, but a family        of formats. Every hardware and software vendor seem to have their own        version of it. MXF files created with one device might not be compatible        with a device created by another vendor. Because of this there is no        guarantee that FreeLCS can process every MXF - file you feed it. It        might be a good idea to do a thorough test with a large set of different        MXF files before you make this feature part of your workflow. More about        MXF Audio Remixing can be found in the <a href="Machine_readable_results_and_MXF_audio_remix_mapping.html#MXF_audio_remixing">user
+          manual</a>.</li>    </ul>    <br>    <h2><a id="Any suggestion for free tools to manipulate the Flac format ?">Any
+        suggestion for free tools to manipulate the Flac format ?</a></h2>    <ul>      <li>If your audio tools don't support flac then you can use Audacity to        manipulate files in this format. Audacity is a free simple multitrack        audio tool and it supports Mac, Linux and windows.</li>      <li>Audacity site is here: <a href="http://audacity.sourceforge.net/?lang=en">http://audacity.sourceforge.net/?lang=en</a></li>    </ul>    <p><br>    </p>    <h2><a id="How can I test multichannel behaviour of my loudness meter ?">How        can I test multichannel behavior of my loudness meter ?</a></h2>    <ul>      <li>You can download multichannel test files here: <a href="http://sourceforge.net/projects/freelcs/files/">http://sourceforge.net/projects/freelcs/files/</a></li>      <li>The zip file comes with a text document with expected integrated        loudness results for all files.<br>      </li>      <li>Zip name is '<strong>EBU_R128_Test_Files_For_Channels_Counts_From_1_to_6.zip</strong>'<br>      </li>    </ul>    <br>    <h2><a id="What Linux distributions are supported ?">What Linux        distributions are supported ?</a></h2>    <ul>    </ul>    <p><strong>FreeLCS 3.2 supports:</strong></p>    <ul>      <li>Debian 8 with and without a GUI</li>      <li>Debian 7 with and without a GUI</li>      <li>Ubuntu 14.04 LTS Desktop and Server</li>      <li>Ubuntu 12.04 LTS Desktop and Server</li>    </ul>    <p><strong>FreeLCS 3.0 supports:</strong><br>    </p>    <ul>      <li>Debian 7 with and without a GUI<br>      </li>      <li>Ubuntu 14.04 LTS Desktop and Server<br>      </li>      <li>Ubuntu 12.04 LTS Desktop and Server</li>    </ul>    <p><strong>FreeLCS 2.4 supports:</strong><br>    </p>    <ul>      <li>Ubuntu Desktop 12.04 LTS Desktop.</li>    </ul>    <ul>    </ul>    The plan is to support all stable <strong>Debian </strong>releases    starting from version <strong>7 </strong>and<strong> </strong>all future    <strong>Ubuntu</strong> <strong>LTS</strong> releases.<br>    <br>    LTS stands for <strong>L</strong>ong <strong>T</strong>erm <strong>S</strong>upport.
+    Ubuntu LTS releases get security updates for 5 years from the first release    date. <strong>Ubuntu 12.04 LTS</strong> will get security updates until    April 2017 and <strong>Ubuntu 14.04 LTS </strong>until April 2019.<br>    <br>    Canonical releases a new Ubuntu LTS version every 2 years. If you install    FreeLCS on Ubuntu 14.04 then you will need to upgrade the software not    sooner than 2019.<br>    <ul>    </ul>    <br>    <h2><a id="FreeLCS_error_messages" name="FreeLCS_error_messages"></a>FreeLCS      error messages</h2>    <p>If you enable FreeLCS to send error messages by email, then you probably      sometimes get some messages that at first might seem puzzling. Here are      the explanations :)</p>    <p><br>    </p>    <h2><a id="Critical_error_messages">Critical error messages</a></h2>    <h3><span class="il">LoudnessCorrection</span> has stopped updating      timestamps</h3>    <p>If you get the following error message, then it means that FreeLCS has      encountered an error that it can not recover from and has stopped. FreeLCS      starts jobs in threads that periodically writes timestamps to a file. The      script "HeartBeat_Checker.py" watches this file and sends you email if one      or more timestamps stop updating. This means that a thread has crashed and      you need to restart FreeLCS to restore normal operation. You can restart      FreeLCS either by rebooting the computer or giving this command as root on      the commandline:</p>    <p><strong>/etc/init.d/loudnesscorrection_init_script restart</strong></p>    Note that it takes about 2 minutes for the service to start on init based    systems (Ubuntu 12.04, 14.04, Debian 7). This delay has been put in because    it takes some time before all Linux services are available when the computer    starts up.<strong><br>      <br>    </strong><br>    I have worked very hard to make FreeLCS solid as a rock. My goal is to keep    it 100% reliable, so that it can be used in business environments. So you    should never see this message :) but with computers anything is possible :)    For example a failing hard disk may corrupt FreeLCS installation.<br>    <br>    <hr style="color: black;">    <p><span style="font-family: monospace;">Subject: LoudnessCorrection Error        Message</span></p>    <span style="font-family: monospace;"> </span>    <p><span style="font-family: monospace;">From: VirtualMachine_1@company.com</span><span        style="font-family: monospace;"><br>      </span> <span style="font-family: monospace;"></span></p>    <span style="font-family: monospace;"> </span>    <p><span style="font-family: monospace;"><strong><span class="il"><br>          </span></strong></span></p>    <p><span style="font-family: monospace;"><strong><span class="il">LoudnessCorrection</span>          has stopped updating 'main_thread' timestamps, the thread has probably          crashed and a restart of the script is needed. Last thread timestamp          update happened at: 2013.11.30 at 16:34:05</strong><br>      </span> <span style="font-family: monospace;"></span></p>    <p><span style="font-family: monospace;"></span> <span style="font-family: monospace;"><span          class="il"><br>        </span></span></p>    <p><span style="font-family: monospace;"><span class="il">LoudnessCorrection</span>        info:<br>        ------------------------------</span><wbr><span style="font-family: monospace;">--------<br>        Commandline: /usr/bin/<span class="il">LoudnessCorrection</span>.py        -configfile /etc/Loudness_Correction_Settings.pickle<br>      </span></p>    <p><span style="font-family: monospace;"> IP-Addresses: 192.168.1.1<br>        PID: 1777<br>      </span> <span style="font-family: monospace;"><span class="il">LoudnessCorrection</span>        version: 229<br>      </span> <span style="font-family: monospace;"><br>        HeartBeat Checker info:<br>        ------------------------------</span><wbr><span style="font-family: monospace;">--------<br>        Commandline: /usr/bin/HeartBeat_Checker.py -configfile        /etc/Loudness_Correction_</span><wbr><span style="font-family: monospace;">Settings.pickle<br>        PID: 1802<br>        HeartBeat Checker version: 020</span></p>    <p><span style="font-family: monospace;"></span></p>    <hr style="color: black;">    <p><br>      <span style="font-family: monospace;"></span></p>    <p><span style="font-family: monospace;"><br>      </span></p>    <h3>All Heartbeat timestamps started updating again</h3>    <p>If you got the message above informing you that a FreeLCS thread has      stopped updating timestamps, then you might get the following message if      the problem was caused by some temporary glitch that just prevented      FreeLCS from updating the timestamps in time, but did not crash FreeLCS.      This message tells you that FreeLCS is working normally again.</p>    <hr style="color: black;">    <p><span style="font-family: monospace;">Subject: LoudnessCorrection Error        Message</span> </p>    <span style="font-family: monospace;"></span>    <p><span style="font-family: monospace;">From: VirtualMachine_1@company.com</span></p>    <p><span style="font-family: monospace;"><br>      </span></p>    <span style="font-family: monospace;"> </span>    <p> </p>    <span style="font-family: monospace;"> </span>    <p><span style="font-family: monospace;"><strong>All Heartbeat timestamps          started updating again at: 2014.05.10 at 23:33:49</strong><br>      </span> </p>    <span style="font-family: monospace;"> <br>    </span>    <div class="im"><span style="font-family: monospace;"> LoudnessCorrection        info:<br>        ------------------------------</span><wbr><span style="font-family: monospace;">--------<br>      </span> </div>    <span style="font-family: monospace;"> Commandline:      /usr/bin/LoudnessCorrection.py -configfile /etc/Loudness_Correction_</span><wbr><span      style="font-family: monospace;">Settings.pickle<br>      IP-Addresses: 192.168.1.1<br>      PID: 17573</span><span style="font-family: monospace;"></span>    <div class="HOEnZb adL"><span style="font-family: monospace;"> </span>      <div class="im"><span style="font-family: monospace;">LoudnessCorrection          version: 264<br>        </span> <span style="font-family: monospace;"><br>          HeartBeat Checker info:<br>          ------------------------------</span><wbr><span style="font-family: monospace;">--------<br>          Commandline: /usr/bin/HeartBeat_Checker.py -configfile          /etc/Loudness_Correction_</span><wbr><span style="font-family: monospace;">Settings.pickle<br>          PID: 2572<br>          HeartBeat Checker version: 022</span></div>    </div>    <hr style="color: black;">    <p><br>    </p>    <p><br>    </p>    <h2><a id="Non-critical_error_messages">Non-critical error messages</a></h2>    <p>These error messages are usually harmless and can be ignored.</p>    <p><br>    </p>    <h3>HeartBeat_Checker has started</h3>    <p>The HeartBeat_Checker.py script sends this message when FreeLCS starts      up. If you set up a weekly reboot for the machine, then this message      greets you when FreeLCS service is up and running.</p>    <hr style="color: black;">    <p><span style="font-family: monospace;">Subject: HeartBeat_Checker has        started.</span> </p>    <span style="font-family: monospace;"></span>    <p><span style="font-family: monospace;">From: VirtualMachine_1@company.com</span></p>    <p><span style="font-family: monospace;"><br>      </span></p>    <span style="font-family: monospace;"> </span>    <p><span style="font-family: monospace;"><strong>HeartBeat_Checker started:          2014.04.14 at 07:05:07</strong><br>      </span> <span style="font-family: monospace;"><br>      </span></p>    <p><span style="font-family: monospace;">LoudnessCorrection info:<br>        ------------------------------</span><wbr><span style="font-family: monospace;">--------<br>        Commandline: /usr/bin/LoudnessCorrection.py -configfile        /etc/Loudness_Correction_Settings.pickle</span></p>    <span style="font-family: monospace;"> </span>    <p><wbr><span style="font-family: monospace;"><br>        IP-Addresses: 192.168.1.1<br>        PID: 1683<br>        LoudnessCorrection version: 229<br>      </span> <span style="font-family: monospace;"><br>        HeartBeat Checker info:<br>        ------------------------------</span><wbr><span style="font-family: monospace;">--------<br>        Commandline: /usr/bin/HeartBeat_Checker.py -configfile        /etc/Loudness_Correction_</span><wbr><span style="font-family: monospace;">Settings.pickle<br>        PID: 1696<br>        HeartBeat Checker version: 020</span></p>    <hr style="color: black;"><br>    <br>    <h3>Error deleting files queued for deletion</h3>    <p>You may see this error message with if you mount FreeLCS HotFolder with      the NFS protocol. This error happens when a user uses a program that      creates a file on the FreeLCS disk and then unlinks it.</p>    <p>According to: <a href="http://serverfault.com/questions/201294/nfsxxxx-files-appearing-what-are-those">http://serverfault.com/questions/201294/nfsxxxx-files-appearing-what-are-those</a>&nbsp;
+      Linux keeps this file available to the user while hiding the file from      others. The file is renamed with a name that starts with a dot and Linux      filesystem hides these files from file listings by default.</p>    <p>The hidden file will disappear when the user closes the program that      keeps the file open.</p>    <hr style="color: black;">    <p><span style="font-family: monospace;">Subject: LoudnessCorrection Error        Message</span> </p>    <span style="font-family: monospace;"></span>    <p><span style="font-family: monospace;">From: VirtualMachine_1@company.com</span></p>    <p><span style="font-family: monospace;"><br>      </span></p>    <span style="font-family: monospace;"> </span>    <p><span style="font-family: monospace;">2014.05.07_at_15.31.23 &nbsp; <strong>Error
+          deleting files queued for deletion [Errno 16] Device or resource busy:          '/data/LoudnessCorrection/.</strong></span><wbr><span style="font-family: monospace;"><strong>nfs00000001094fe93f00000007'</strong><br>      </span> <span style="font-family: monospace;"><br>        2014.05.07_at_15.31.28 &nbsp; <strong>Error deleting files queued for          deletion [Errno 16] Device or resource busy:          '/data/LoudnessCorrection/.</strong></span><wbr><span style="font-family: monospace;"><strong>nfs00000001094fe93f00000007'</strong><br>      </span> <span style="font-family: monospace;"></span></p>    <p><span style="font-family: monospace;"><br>      </span></p>    <p><span style="font-family: monospace;"> LoudnessCorrection info:<br>        ------------------------------</span><wbr><span style="font-family: monospace;">--------<br>        Commandline: /usr/bin/LoudnessCorrection.py -configfile        /etc/Loudness_Correction_</span><wbr><span style="font-family: monospace;">Settings.pickle<br>        IP-Addresses: 192.168.1.1<br>        PID: 1616<br>        LoudnessCorrection version: 229</span></p>    <p><span style="font-family: monospace;"></span></p>    <hr style="color: black;">    <p><br>      <span style="font-family: monospace;"></span></p>    <p><span style="font-family: monospace;"><br>      </span></p>    <h3> File size has changed during processing</h3>    <h3> </h3>    <p>I haven't been able to find a way to stop users from deleting files from      the HotFolder without affecting other file processing. The following error      message is caused when a user copies a file to the server, and the server      starts processing it. Now the user deletes the file and replaces it with a      file with the same name but with different size. FreeLCS notices that file      size has changed during processing.</p>    <hr style="color: black;">    <p><span style="font-family: monospace;">Subject: LoudnessCorrection Error        Message</span></p>    <span style="font-family: monospace;"> From: VirtualMachine_1@company.com<br>      <br>      <br>      2014.05.05_at_16.56.14 &nbsp; <strong>ERROR !!! in libebur128 timeslice        calculation: File size has changed during processing from: 3168838 -&gt;        65536:&nbsp; HALONEN 100.wav</strong><br>    </span>    <p> <span style="font-family: monospace;"><br>        LoudnessCorrection info:<br>        ------------------------------</span><wbr><span style="font-family: monospace;">--------<br>        Commandline: /usr/bin/LoudnessCorrection.py -configfile        /etc/Loudness_Correction_Settings.pickle</span></p>    <span style="font-family: monospace;"> </span>    <p><wbr><span style="font-family: monospace;"><br>        IP-Addresses: 192.168.1.1<br>        PID: 1616<br>        LoudnessCorrection version: 229</span></p>    <hr style="color: black;">    <p><br>    </p>    <p><br>    </p>    <h3>Error reading HotFolder file metadata<br>    </h3>    <p>This error happens when user deletes a file that FreeLCS is about to      start processing. FreeLCS makes a final check before processing and      notices that the file is no longer available.</p>    <hr style="color: black;"><span style="font-family: monospace;">Subject:      LoudnessCorrection Error Message</span><span style="font-family: monospace;">    </span>    <p><span style="font-family: monospace;">From: VirtualMachine_1@company.com<br>      </span></p>    <p><span style="font-family: monospace;"><br>        2014.05.14_at_13.40.44&nbsp;&nbsp; <strong>Error reading HotFolder file          metadata [Errno 2] No such file or directory:          '/data/LoudnessCorrection/KUN_Putkiremonttipuffi GRAF.wav'</strong><br>      </span> <span style="font-family: monospace;"></span></p>    <p><span style="font-family: monospace;"><br>      </span></p>    <p><span style="font-family: monospace;"> LoudnessCorrection info:<br>        --------------------------------------<br>        Commandline: /usr/bin/LoudnessCorrection.py -configfile        /etc/Loudness_Correction_Settings.pickle<br>        IP-Addresses: 192.168.1.1<br>        PID: 1699<br>        LoudnessCorrection version: 229</span></p>    <hr style="color: black;"> <br>    <br>    <h3>Many error messages for one audio file</h3>    <p>This error message can mean one of two things. If you get these messages      and they are all about the same audio file, then the user has deleted the      file just when FreeLCS was about to start processing it.</p>    <p>If you get these messages and they mention several files, then this can      mean that the hard disk might be failing. I have not tried to get rid of      these error messages since they might indicate a hard disk failure.</p>    <hr style="color: black;"><span style="font-family: monospace;">Subject:      LoudnessCorrection Error Message</span><span style="font-family: monospace;">    </span>    <p><span style="font-family: monospace;">From: VirtualMachine_1@company.com<br>        <br>      </span></p>    <span style="font-family: monospace;"> 2013.11.22_at_12.02.18&nbsp;&nbsp; <strong>ERROR
+        !!! I could not parse sox channel count string: 'can't open input file        /mountpoint/raid-disk/LoudnessCorrection/Channels-2.0.flac<br>      </strong>2013.11.22_at_12.02.18&nbsp;&nbsp; <strong>ERROR !!! I could not        parse sox sample rate string: '' for file: Channels-2.0.flac<br>      </strong>2013.11.22_at_12.02.18&nbsp;&nbsp; <strong>ERROR !!! I could not        parse sox bit depth string: '' for file: Channels-2.0.flac<br>      </strong>2013.11.22_at_12.02.18&nbsp;&nbsp; <strong>ERROR !!! I could not        parse sox sample count string: '' for file: Channels-2.0.flac<br>      </strong>2013.11.22_at_12.02.18&nbsp;&nbsp; <strong>ERROR !!! in        libebur128 timeslice calculation: Error accessing file: [Errno 2] No        such file or directory:        '/mountpoint/raid-disk/LoudnessCorrection/Channels-2.0.flac'</strong><br>      2013.11.22_at_12.02.18&nbsp;&nbsp; <strong>ERROR !!!!!!! FILE        Channels-2.0.flac dissapeared from disk before processing started.</strong><br>      <br>    </span>    <p> <span style="font-family: monospace;"><span class="il">LoudnessCorrection</span>        info:<br>        ------------------------------</span><wbr><span style="font-family: monospace;">--------<br>        Commandline: /usr/bin/<span class="il">LoudnessCorrection</span>.py        -configfile /etc/Loudness_Correction_</span><wbr><span style="font-family: monospace;">Settings.pickle<br>        IP-Addresses: 192.168.1.1<br>        PID: 1773<br>      </span> <span style="font-family: monospace;"><span class="il">LoudnessCorrection</span>        version: 229</span></p>    <p><span style="font-family: monospace;"></span></p>    <hr style="color: black;">    <p><span style="font-family: monospace;"><br>      </span></p>    <br>    <h3>Premature EOF on .wav input file</h3>    <p>FreeLCS uses sox to do the actual loudness adjustment of files. This      error message comes directly from sox and happens when file size announced      in a files header does not match the actual file size. This in turn might      be caused for example by a dropped network connection ending file transfer      prematurely.</p>    <hr style="color: black;">    <p><span style="font-family: monospace;">Subject: LoudnessCorrection Error        Message</span></p>    <span style="font-family: monospace;"> </span>    <p><span style="font-family: monospace;">From: VirtualMachine_1@company.com</span></p>    <p><span style="font-family: monospace;"><br>      </span></p>    <span style="font-family: monospace;"> </span>    <p><span style="font-family: monospace;">2013.12.17_at_16.15.59 &nbsp; <strong>Sox
           error: &nbsp;BUU_Radslor_syskonen_degeri.</strong></span><wbr><span style="font-family: monospace;"><strong>wav:
-          sox WARN wav: Premature EOF on .wav input file</strong><br>
-      </span> <span style="font-family: monospace;"></span></p>
-    <p><br>
-      <span style="font-family: monospace;"></span></p>
-    <p><span style="font-family: monospace;"></span> <span style="font-family: monospace;"><span
-          class="il">LoudnessCorrection</span> info:<br>
-        --------------------------------------</span></p>
-    <span style="font-family: monospace;"> </span>
-    <p><span style="font-family: monospace;"> Commandline: /usr/bin/<span class="il">LoudnessCorrection</span>.py
-        -configfile /etc/Loudness_Correction_</span><wbr><span style="font-family: monospace;">Settings.pickle<br>
-        IP-Addresses: 192.168.1.1<br>
-        PID: 1847<br>
-      </span> <span style="font-family: monospace;"><span class="il">LoudnessCorrection</span>
-        version: 229</span></p>
-    <hr style="color: black;">
-    <p><br>
-    </p>
-    <h2><a id="Is_there_a_way_to_find_out_FreeLCS_options_used_during_installation">Is
-        there a way to find out FreeLCS options used during installation ?</a></h2>
-    <p>Yes. FreeLCS 3.0 creates an installation log file in <strong>/var/log/.</strong>
-      The name of the logfile is something like:&nbsp; <strong>freelcs_installation_log_2014.06.02_at_14.15.04.txt</strong>.&nbsp;
-      The date and time in the file name corresponds to the time FreeLCS
-      installer was run.</p>
-    <p>The logfile is meant for the developer for debugging purposes and the log
-      lists values assigned during installation to FreeLCS internal variables.
-      Since the variable names are quite clear and easy to understand, the user
-      can deduce with little effort how options were set during installation.
-      The logfile also lists variables that are not user configurable, for
-      example: <strong>delay_between_directory_reads = 5</strong>&nbsp; means
-      FreeLCS checks in 5 second intervals for new files in the HotFolder.
-      Options are divided to sections roughly corresponding each page in the
-      installer program.</p>
-    <p>One example where the user might want to check the logfile is when there
-      is need to know what email addresses are FreeLCS error messages sent to.
-      The third section in the logfile lists email settings including email
-      addresses error messages are sent to.</p>
-    <p><br>
-    </p>
-    <h3>Example: installation logfile<br>
-    </h3>
-    Here is an example from one of my test installations. I have added some
-    explanations in parentheses. You can list the logfile with a command like:<em><strong><br>
-      </strong></em>
-    <p><em><strong>cat &nbsp; /var/log/freelcs_installation_log_2014.06.02_at_14.15.04.txt
-          </strong></em><br> <br>
-      <br>
-      <span style="font-family: monospace;">Configuration variables written to
-        /etc/Loudness_Correction_Settings.pickle are:<br>
-----------------------------------------------------------------------------------<br>
-        freelcs_version = 3.0<br>
-        os_name = ubuntu<br>
-        os_version = 14.04<br>
-        libebur128_path = /usr/bin/loudness<br>
-----------------------------------------------------------------------------------------------------<br>
-        <br>
-        target_path = /mountpoint/raid-disk<br>
-        language = english<br>
-        english = 1<br>
-        finnish = 0<br>
-        hotfolder_path = /mountpoint/raid-disk/LoudnessCorrection<br>
-        directory_for_temporary_files =
-        /mountpoint/raid-disk/00-Loudness_Calculation_Temporary_Files<br>
-        directory_for_results =
-        /mountpoint/raid-disk/LoudnessCorrection/00-Corrected_Files<br>
-        directory_for_error_logs = /mountpoint/raid-disk/00-Error_Logs<br>
-        delay_between_directory_reads = 5&nbsp;&nbsp; <strong>(How often HotFolder
-          is scanned for new files, time in seconds)</strong><br>
-        number_of_processor_cores = 4&nbsp;&nbsp; <strong>(How many processor
-          cores to use for file processing. Each file is processed using 2
-          cores, so the value 4 here means 2 files can be processed at the same
-          time)</strong><br>
-        file_expiry_time = 28800&nbsp;&nbsp; <strong>(How long to wait before
-          deleting files, time in seconds)</strong><br>
-----------------------------------------------------------------------------------------------------<br>
-        <br>
-        send_error_messages_by_email = True<br>
-        email_sending_interval: 1800&nbsp;&nbsp;&nbsp; <strong>(How long to
-          wait between sending error reports to admin, time in minutes)</strong><br>
-        message_recipients:
-        ['admin1@mycompany.com','admin2.mycompany@gmail.com']<br>
-        message_title: FreeLCS Error Message<br>
-        send_error_messages_by_email: True<br>
-        smtp_password: ******************<br>
-        smtp_server_name: smtp.gmail.com<br>
-        smtp_server_port: 587<br>
-        smtp_server_requires_authentication: True<br>
-        smtp_username: freelcs_test_user@gmail.com<br>
-        use_tls: True<br>
-        where_to_send_error_messages = logfile, email<br>
-        send_error_messages_to_logfile = True<br>
-        heartbeat = True<br>
-        heartbeat_file_name = 00-HeartBeat.pickle<br>
-        heartbeat_write_interval = 30&nbsp;&nbsp; <strong>(How long to wait
-          between writing time stamps to the heartbeat file, time in seconds. If
-          time stamp updates stops, then HeartBeat_Checker sends an error
-          message to the admin)</strong><br>
-----------------------------------------------------------------------------------------------------<br>
-        <br>
-        write_html_progress_report = True<br>
-        html_progress_report_write_interval = 5&nbsp;&nbsp; <strong>(How long
-          to wait between updating the html progress report, time in seconds)</strong><br>
-        web_page_name = 00-Calculation_Queue_Information.html<br>
-        web_page_path =
-        /mountpoint/raid-disk/LoudnessCorrection/00-Calculation_Queue_Information<br>
-        peak_measurement_method = --peak=true&nbsp;&nbsp; <strong>(What peak
-          measurement method to use TruePeak or sample peak)</strong><br>
-----------------------------------------------------------------------------------------------------<br>
-        <br>
-        create_loudness_corrected_files = True<br>
-        create_loudness_history_graphics_files = True<br>
-        delete_original_file_immediately = True&nbsp;&nbsp; <strong>(When True,
-          then a multistream file is deleted immediately after all audio streams
-          have been extracted from the file)</strong><br>
-        write_loudness_calculation_results_to_a_machine_readable_file = False<br>
-        unit_separator (ascii numbers)&nbsp; = 31<br>
-        record_separator (ascii numbers)&nbsp; = 13, 10<br>
-----------------------------------------------------------------------------------------------------<br>
-        <br>
-        enable_mxf_audio_remixing = True<br>
-        remix_map_file_extension = .remix_map<br>
-        global_mxf_audio_remix_channel_map = 2, 6, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2<br>
-        natively_supported_file_formats = .wav, .flac, .ogg<br>
-        ffmpeg_free_wrapper_formats = wav, flac, ogg, mkv, matroska, mka<br>
-        mxf_formats = mxf, mxf_d10<br>
-        mpeg_wrapper_formats = mpeg, mp2, mp3, mp4, m4v, m4a, mpegts, mpegtsraw,
-        mpegvideo, mpeg1video, mpeg2video, vcd, svcd, dvd, vob<br>
-        ffmpeg_free_codec_formats = pcm_s8, pcm_s8_planar, pcm_u8, pcm_s16be,
-        pcm_s16le, pcm_s16le_planar, pcm_u16be, pcm_u16le, pcm_dvd, pcm_lxf,
-        pcm_s24be, pcm_s24daud, pcm_s24le, pcm_u24be, pcm_u24le, pcm_f32be,
-        pcm_f32le, pcm_s32be, pcm_s32le, pcm_u32be, pcm_u32le, pcm_f64be,
-        pcm_f64le, flac, vorbis<br>
-        ffmpeg_allowed_wrapper_formats = all<br>
-        ffmpeg_allowed_codec_formats = all<br>
-        enable_all_nonfree_ffmpeg_wrapper_formats = True<br>
-        enable_all_nonfree_ffmpeg_codec_formats = True<br>
-        ffmpeg_output_wrapper_format = wav<br>
-        enable_mxf_wrapper = False<br>
-        enable_webm_wrapper = False<br>
-        enable_mpeg_wrappers = False<br>
-        enable_mp1_codec = False<br>
-        enable_mp2_codec = False<br>
-----------------------------------------------------------------------------------------------------<br>
-        <br>
-        silent = True<br>
-        number_of_all_items_in_dictionary = 54<br>
-        config_file_created_by_installer_version = 094<br>
-----------------------------------------------------------------------------------------------------</span><br>
-    </p>
-    <p><br>
-    </p>
-    <p><br>
-    </p>
-  </body>
-</html>
+          sox WARN wav: Premature EOF on .wav input file</strong><br>      </span> <span style="font-family: monospace;"></span></p>    <p><br>      <span style="font-family: monospace;"></span></p>    <p><span style="font-family: monospace;"></span> <span style="font-family: monospace;"><span          class="il">LoudnessCorrection</span>        info:<br>        --------------------------------------</span></p>    <span style="font-family: monospace;"> </span>    <p><span style="font-family: monospace;"> Commandline: /usr/bin/<span class="il">LoudnessCorrection</span>.py
+        -configfile /etc/Loudness_Correction_</span><wbr><span style="font-family: monospace;">Settings.pickle<br>        IP-Addresses: 192.168.1.1<br>        PID: 1847<br>      </span> <span style="font-family: monospace;"><span class="il">LoudnessCorrection</span>        version: 229</span></p>    <hr style="color: black;">    <p><br>    </p>    <h2><a id="Errors_copying_files_from_OS_X_10.7-10.10_to_FreeLCS-Server" name="Errors_copying_files_from_OS_X_10.7-10.10_to_FreeLCS-Server"></a>Errors      copying files from OS X 10.7 - 10.10 to FreeLCS - Server</h2>    <p>FreeLCS uses the smb - protocol to share its Hotfolder to the network.      Samba is the open source implementation of the smb - protocol that FreeLCS      uses. Apple used Samba as its smb - implementation until OS X version      10.6. At this point Samba changed its license in a way that Apple didn't      like and Apple decided to write their own smb implementation (smbx) from      scratch. This is a huge task and from the beginning there has been serious      problems with OS X's interaction with other smb - implementations. OS X      versions 10.7 - 10.10 all suffer from these problems.</p>    <p>OS X incompatibility with the smb standard causes file transfers to      FreeLCS - server randomly stop with one of the following error messages      (these are from OS X 10.10.4):</p>    <img alt="" src="Pictures/Smbx-01.jpg"><br>    <img alt="" src="Pictures/Smbx-02.jpg"><br>    <img alt="" src="Pictures/Smbx-03.jpg"><br>    After digging around the internet I found two workarounds for the problem.    The solution is to force OS X to use an older version of the smb - protocol    called <strong>cifs</strong>. These solutions are from this page: <a href="http://www.zdnet.com/article/mavericks-smb2-problem-and-fixes">http://www.zdnet.com/article/mavericks-smb2-problem-and-fixes</a><br>    <h3>Workaround 1:</h3>    <p>When you make the connection to FreeLCS replace "<strong>smb://</strong>"      with "<strong>cifs://</strong>" at the beginning of the mount command.      Save the command to the mount command list for later use.</p>    <img alt="" src="Pictures/Smbx-04.jpg">    <h3>Workaround 2:</h3>    <p>Force all smb - connections to use the older <strong>cifs</strong> -      protocol by giving this command in the Terminal. This applies only to the      current user.</p>    <p><strong>echo "[default]" &nbsp;&nbsp; &gt;&gt; &nbsp;        ~/Library/Preferences/nsmb.conf&nbsp;&nbsp;&nbsp; ;&nbsp;&nbsp; echo        "smb_neg=smb1_only" &nbsp;&nbsp; &gt;&gt;&nbsp;&nbsp;&nbsp;        ~/Library/Preferences/nsmb.conf</strong></p>    <p><br>    </p>    <h2><a id="Is_there_a_way_to_find_out_FreeLCS_options_used_during_installation">Is
+        there a way to find out FreeLCS options used during installation ?</a></h2>    <p>Yes. FreeLCS 3.0 creates an installation log file in <strong>/var/log/.</strong>      The name of the logfile is something like:&nbsp; <strong>freelcs_installation_log_2014.06.02_at_14.15.04.txt</strong>.&nbsp;
+      The date and time in the file name corresponds to the time FreeLCS      installer was run.</p>    <p>The logfile is meant for the developer for debugging purposes and the log      lists values assigned during installation to FreeLCS internal variables.      Since the variable names are quite clear and easy to understand, the user      can deduce with little effort how options were set during installation.      The logfile also lists variables that are not user configurable, for      example: <strong>delay_between_directory_reads = 5</strong>&nbsp; means      FreeLCS checks in 5 second intervals for new files in the HotFolder.      Options are divided to sections roughly corresponding each page in the      installer program.</p>    <p>One example where the user might want to check the logfile is when there      is need to know what email addresses are FreeLCS error messages sent to.      The third section in the logfile lists email settings including email      addresses error messages are sent to.</p>    <p><br>    </p>    <h3>Example: installation logfile<br>    </h3>    Here is an example from one of my test installations. I have added some    explanations in parentheses. You can list the logfile with a command like:<em><strong><br>      </strong></em>    <p><em><strong>cat &nbsp;          /var/log/freelcs_installation_log_2014.06.02_at_14.15.04.txt </strong></em><br>      <br>      <br>      <span style="font-family: monospace;">Configuration variables written to        /etc/Loudness_Correction_Settings.pickle are:<br>----------------------------------------------------------------------------------<br>        freelcs_version = 3.0<br>        os_name = ubuntu<br>        os_version = 14.04<br>        libebur128_path = /usr/bin/loudness<br>----------------------------------------------------------------------------------------------------<br>        <br>        target_path = /mountpoint/raid-disk<br>        language = english<br>        english = 1<br>        finnish = 0<br>        hotfolder_path = /mountpoint/raid-disk/LoudnessCorrection<br>        directory_for_temporary_files =        /mountpoint/raid-disk/00-Loudness_Calculation_Temporary_Files<br>        directory_for_results =        /mountpoint/raid-disk/LoudnessCorrection/00-Corrected_Files<br>        directory_for_error_logs = /mountpoint/raid-disk/00-Error_Logs<br>        delay_between_directory_reads = 5&nbsp;&nbsp; <strong>(How often          HotFolder is scanned for new files, time in seconds)</strong><br>        number_of_processor_cores = 4&nbsp;&nbsp; <strong>(How many processor          cores to use for file processing. Each file is processed using 2          cores, so the value 4 here means 2 files can be processed at the same          time)</strong><br>        file_expiry_time = 28800&nbsp;&nbsp; <strong>(How long to wait before          deleting files, time in seconds)</strong><br>----------------------------------------------------------------------------------------------------<br>        <br>        send_error_messages_by_email = True<br>        email_sending_interval: 1800&nbsp;&nbsp;&nbsp; <strong>(How long to          wait between sending error reports to admin, time in minutes)</strong><br>        message_recipients:        ['admin1@mycompany.com','admin2.mycompany@gmail.com']<br>        message_title: FreeLCS Error Message<br>        send_error_messages_by_email: True<br>        smtp_password: ******************<br>        smtp_server_name: smtp.gmail.com<br>        smtp_server_port: 587<br>        smtp_server_requires_authentication: True<br>        smtp_username: freelcs_test_user@gmail.com<br>        use_tls: True<br>        where_to_send_error_messages = logfile, email<br>        send_error_messages_to_logfile = True<br>        heartbeat = True<br>        heartbeat_file_name = 00-HeartBeat.pickle<br>        heartbeat_write_interval = 30&nbsp;&nbsp; <strong>(How long to wait          between writing time stamps to the heartbeat file, time in seconds. If          time stamp updates stops, then HeartBeat_Checker sends an error          message to the admin)</strong><br>----------------------------------------------------------------------------------------------------<br>        <br>        write_html_progress_report = True<br>        html_progress_report_write_interval = 5&nbsp;&nbsp; <strong>(How long          to wait between updating the html progress report, time in seconds)</strong><br>        web_page_name = 00-Calculation_Queue_Information.html<br>        web_page_path =        /mountpoint/raid-disk/LoudnessCorrection/00-Calculation_Queue_Information<br>        peak_measurement_method = --peak=true&nbsp;&nbsp; <strong>(What peak          measurement method to use TruePeak or sample peak)</strong><br>----------------------------------------------------------------------------------------------------<br>        <br>        create_loudness_corrected_files = True<br>        create_loudness_history_graphics_files = True<br>        delete_original_file_immediately = True&nbsp;&nbsp; <strong>(When True,          then a multistream file is deleted immediately after all audio streams          have been extracted from the file)</strong><br>        write_loudness_calculation_results_to_a_machine_readable_file = False<br>        unit_separator (ascii numbers)&nbsp; = 31<br>        record_separator (ascii numbers)&nbsp; = 13, 10<br>----------------------------------------------------------------------------------------------------<br>        <br>        enable_mxf_audio_remixing = True<br>        remix_map_file_extension = .remix_map<br>        global_mxf_audio_remix_channel_map = 2, 6, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2<br>        natively_supported_file_formats = .wav, .flac, .ogg<br>        ffmpeg_free_wrapper_formats = wav, flac, ogg, mkv, matroska, mka<br>        mxf_formats = mxf, mxf_d10<br>        mpeg_wrapper_formats = mpeg, mp2, mp3, mp4, m4v, m4a, mpegts, mpegtsraw,        mpegvideo, mpeg1video, mpeg2video, vcd, svcd, dvd, vob<br>        ffmpeg_free_codec_formats = pcm_s8, pcm_s8_planar, pcm_u8, pcm_s16be,        pcm_s16le, pcm_s16le_planar, pcm_u16be, pcm_u16le, pcm_dvd, pcm_lxf,        pcm_s24be, pcm_s24daud, pcm_s24le, pcm_u24be, pcm_u24le, pcm_f32be,        pcm_f32le, pcm_s32be, pcm_s32le, pcm_u32be, pcm_u32le, pcm_f64be,        pcm_f64le, flac, vorbis<br>        ffmpeg_allowed_wrapper_formats = all<br>        ffmpeg_allowed_codec_formats = all<br>        enable_all_nonfree_ffmpeg_wrapper_formats = True<br>        enable_all_nonfree_ffmpeg_codec_formats = True<br>        ffmpeg_output_wrapper_format = wav<br>        enable_mxf_wrapper = False<br>        enable_webm_wrapper = False<br>        enable_mpeg_wrappers = False<br>        enable_mp1_codec = False<br>        enable_mp2_codec = False<br>----------------------------------------------------------------------------------------------------<br>        <br>        silent = True<br>        number_of_all_items_in_dictionary = 54<br>        config_file_created_by_installer_version = 094<br>----------------------------------------------------------------------------------------------------</span><br>    </p>    <p><br>    </p>    <p><br>    </p>  </body></html>
