@@ -51,7 +51,7 @@ echo
 INIT_SYSTEM_NAME=""
 INIT_SYSTEM_NAME=`ps --pid 1 --no-headers -c -o cmd`
 
-if [ "$INIT_SYSTEM_NAME" -ne "systemd" ] && [  "$INIT_SYSTEM_NAME" -ne "init" ] ; then
+if [ "$INIT_SYSTEM_NAME" != "systemd" ] && [  "$INIT_SYSTEM_NAME" != "init" ] ; then
 
 	echo
 	echo "ERROR, Can not find out if your os init system is systemd or init"
@@ -263,7 +263,7 @@ cat >> "00-restore_freelcs_configuration.sh" << 'END_OF_FILE'
 INIT_SYSTEM_NAME=""
 INIT_SYSTEM_NAME=`ps --pid 1 --no-headers -c -o cmd`
 
-if [ "$INIT_SYSTEM_NAME" -ne "systemd" ] && [  "$INIT_SYSTEM_NAME" -ne "init" ] ; then
+if [ "$INIT_SYSTEM_NAME" != "systemd" ] && [  "$INIT_SYSTEM_NAME" != "init" ] ; then
 
 	echo
 	echo "ERROR, Can not find out if your os init system is systemd or init"
