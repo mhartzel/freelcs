@@ -272,7 +272,7 @@ if [ "$INIT_SYSTEM_NAME" != "systemd" ] && [  "$INIT_SYSTEM_NAME" != "init" ] ; 
 	exit
 fi
 
-if [ "$INIT_SYSTEM_NAME" -ne "$ORIGINAL_INIT_SYSTEM_NAME" ] ; then
+if [ "$INIT_SYSTEM_NAME" != "$ORIGINAL_INIT_SYSTEM_NAME" ] ; then
 
 	echo
 	echo "FreeLCS was backed up on a "$ORIGINAL_INIT_SYSTEM_NAME" based os"
