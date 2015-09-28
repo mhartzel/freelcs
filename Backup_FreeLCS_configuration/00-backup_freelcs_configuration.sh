@@ -51,23 +51,14 @@ echo
 INIT_SYSTEM_NAME=""
 INIT_SYSTEM_NAME=`ps --pid 1 --no-headers -c -o cmd`
 
+if [ "$INIT_SYSTEM_NAME" -ne "systemd" ] && [  "$INIT_SYSTEM_NAME" -ne "init" ] ; then
 
-
-
-
-
-echo
-echo "INIT_SYSTEM_NAME = "$INIT_SYSTEM_NAME
-echo
-
-exit
-
-
-
-
-
-
-
+	echo
+	echo "ERROR, Can not find out if your os init system is systemd or init"
+	echo "Can not continue."
+	echo
+	exit
+fi
 
 # Create dir for backup files.
 BACKUP_DIR_NAME="freelcs_backup"
@@ -90,6 +81,7 @@ if [ "$INIT_SYSTEM_NAME" == "init" ] ; then
 	SETTINGS_FILE_PATH="/etc/Loudness_Correction_Settings.pickle"
 	SAMBA_CONF_PATH="/etc/samba/smb.conf"
 	INIT_SCRIPT_PATH="/etc/init.d/loudnesscorrection_init_script"
+	SYSTEMD_SERVICE_FILE_PATH=""
 fi
 
 if [ "$INIT_SYSTEM_NAME" == "systemd" ] ; then
@@ -119,12 +111,15 @@ if [ ! -e "$LOUDNESSCORRECTION_PATH" ] ; then
         exit
 fi
 
-if [ ! -e "$HEARTBEAT_CHECKER_PATH" ] ; then
-        echo
-        echo "ERROR: Can not find FreeLCS file: "$HEARTBEAT_CHECKER_PATH", can not continue."
-        echo
-        exit
-fi
+# HeartBeat_Checker may not be installed because the user did not enable it in the installer
+# So don't require it's while making a backup of the FreeLCS configuration
+#
+# if [ ! -e "$HEARTBEAT_CHECKER_PATH" ] ; then
+#         echo
+#         echo "ERROR: Can not find FreeLCS file: "$HEARTBEAT_CHECKER_PATH", can not continue."
+#         echo
+#         exit
+# fi
 
 if [ ! -e "$SETTINGS_FILE_PATH" ] ; then
         echo
@@ -144,8 +139,18 @@ if [ "$SAMBA_PATH" != "" ] ; then
 	fi
 fi
 
-# Copy FreeLCS files to backup dir.
+# Check if systemd service file is installed
+if [ "$INIT_SYSTEM_NAME" == "systemd" ] ; then
 
+	if [ ! -e "$SYSTEMD_SERVICE_FILE_PATH" ] ; then
+		echo
+		echo "ERROR: Can not find FreeLCS file: "$SYSTEMD_SERVICE_FILE_PATH", can not continue."
+		echo
+		exit
+	fi
+fi
+
+# Copy FreeLCS files to backup dir.
 echo
 echo "Copying installed FreeLCS files to backup dir ..."
 echo "--------------------------------------------------"
@@ -200,9 +205,24 @@ if [ "$SAMBA_PATH" != "" ] ; then
 	fi
 fi
 
+# Only copy systemd service file if os init system is systemd
+if [ "$INIT_SYSTEM_NAME" == "systemd" ] ; then
+
+	cp $SYSTEMD_SERVICE_FILE_PATH .
+
+	if [ "$?" -ne "0"  ] ; then
+		echo
+		echo "Error, could not copy: "$SYSTEMD_SERVICE_FILE_PATH
+		echo
+		exit
+	fi
+fi
+
 echo "Writing restoration script to backup dir ..."
 echo "---------------------------------------------"
 echo
+
+if [ "$INIT_SYSTEM_NAME" == "systemd" ] ; then
 
 cat > "00-restore_freelcs_configuration.sh" << 'END_OF_FILE'
 #!/bin/bash
@@ -214,12 +234,65 @@ if [ "$UID" != "0" ] ; then
 	exit
 fi
 
+ORIGINAL_INIT_SYSTEM_NAME="systemd"
+
+END_OF_FILE
+
+fi
+
+
+if [ "$INIT_SYSTEM_NAME" == "init" ] ; then
+
+cat > "00-restore_freelcs_configuration.sh" << 'END_OF_FILE'
+#!/bin/bash
+
+if [ "$UID" != "0" ] ; then
+	echo
+	echo "This script must be run as root"
+	echo
+	exit
+fi
+
+ORIGINAL_INIT_SYSTEM_NAME="init"
+
+END_OF_FILE
+
+fi
+
+
+cat >> "00-restore_freelcs_configuration.sh" << 'END_OF_FILE'
+
+# Check which init system the operating system uses init or systemd
+INIT_SYSTEM_NAME=""
+INIT_SYSTEM_NAME=`ps --pid 1 --no-headers -c -o cmd`
+
+if [ "$INIT_SYSTEM_NAME" -ne "systemd" ] && [  "$INIT_SYSTEM_NAME" -ne "init" ] ; then
+
+	echo
+	echo "ERROR, Can not find out if your os init system is systemd or init"
+	echo "Can not continue."
+	echo
+	exit
+fi
+
+if [ "$INIT_SYSTEM_NAME" -ne "$ORIGINAL_INIT_SYSTEM_NAME" ] ; then
+
+	echo
+	echo "FreeLCS was backed up on a "$ORIGINAL_INIT_SYSTEM_NAME" based os"
+	echo "This operating system is based on "$INIT_SYSTEM_NAME
+	echo "FreeLCS can not be restored to a different system it was backupped from."
+	echo "Can not continue."
+	echo
+	exit
+fi
+
 # Define names for files we are about to copy back to system.
 INIT_SCRIPT_NAME="loudnesscorrection_init_script"
 LOUDNESSCORRECTION_NAME="LoudnessCorrection.py"
 HEARTBEAT_CHECKER_NAME="HeartBeat_Checker.py"
 SETTINGS_FILE_NAME="Loudness_Correction_Settings.pickle"
 SAMBA_CONF_NAME="smb.conf"
+SYSTEMD_SERVICE_FILE_NAME="freelcs.service"
 
 # Define paths for copy targets.
 INIT_SCRIPT_PATH="/etc/init.d/loudnesscorrection_init_script"
@@ -228,6 +301,7 @@ LOUDNESSCORRECTION_PATH="/usr/bin/LoudnessCorrection.py"
 HEARTBEAT_CHECKER_PATH="/usr/bin/HeartBeat_Checker.py"
 SETTINGS_FILE_PATH="/etc/Loudness_Correction_Settings.pickle"
 SAMBA_CONF_PATH="/etc/samba/smb.conf"
+SYSTEMD_SERVICE_FILE_PATH="/etc/systemd/system/freelcs.service"
 
 # Check that all files we want to copy exist.
 if [ ! -e "$INIT_SCRIPT_NAME" ] ; then
