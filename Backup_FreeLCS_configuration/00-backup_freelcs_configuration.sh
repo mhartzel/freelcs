@@ -111,15 +111,12 @@ if [ ! -e "$LOUDNESSCORRECTION_PATH" ] ; then
         exit
 fi
 
-# HeartBeat_Checker may not be installed because the user did not enable it in the installer
-# So don't require it's while making a backup of the FreeLCS configuration
-#
-# if [ ! -e "$HEARTBEAT_CHECKER_PATH" ] ; then
-#         echo
-#         echo "ERROR: Can not find FreeLCS file: "$HEARTBEAT_CHECKER_PATH", can not continue."
-#         echo
-#         exit
-# fi
+if [ ! -e "$HEARTBEAT_CHECKER_PATH" ] ; then
+        echo
+        echo "ERROR: Can not find FreeLCS file: "$HEARTBEAT_CHECKER_PATH", can not continue."
+        echo
+        exit
+fi
 
 if [ ! -e "$SETTINGS_FILE_PATH" ] ; then
         echo
@@ -286,22 +283,43 @@ if [ "$INIT_SYSTEM_NAME" -ne "$ORIGINAL_INIT_SYSTEM_NAME" ] ; then
 	exit
 fi
 
-# Define names for files we are about to copy back to system.
-INIT_SCRIPT_NAME="loudnesscorrection_init_script"
-LOUDNESSCORRECTION_NAME="LoudnessCorrection.py"
-HEARTBEAT_CHECKER_NAME="HeartBeat_Checker.py"
-SETTINGS_FILE_NAME="Loudness_Correction_Settings.pickle"
-SAMBA_CONF_NAME="smb.conf"
-SYSTEMD_SERVICE_FILE_NAME="freelcs.service"
 
-# Define paths for copy targets.
-INIT_SCRIPT_PATH="/etc/init.d/loudnesscorrection_init_script"
-INIT_SCRIPT_LINK_PATH="/etc/rc2.d/S99loudnesscorrection_init_script"
-LOUDNESSCORRECTION_PATH="/usr/bin/LoudnessCorrection.py"
-HEARTBEAT_CHECKER_PATH="/usr/bin/HeartBeat_Checker.py"
-SETTINGS_FILE_PATH="/etc/Loudness_Correction_Settings.pickle"
-SAMBA_CONF_PATH="/etc/samba/smb.conf"
-SYSTEMD_SERVICE_FILE_PATH="/etc/systemd/system/freelcs.service"
+# Define names for files we are about to copy back to system.
+
+if [ "$INIT_SYSTEM_NAME" == "init" ] ; then
+	LOUDNESSCORRECTION_NAME="LoudnessCorrection.py"
+	HEARTBEAT_CHECKER_NAME="HeartBeat_Checker.py"
+	SETTINGS_FILE_NAME="Loudness_Correction_Settings.pickle"
+	SAMBA_CONF_NAME="smb.conf"
+	INIT_SCRIPT_NAME="loudnesscorrection_init_script"
+	SYSTEMD_SERVICE_FILE_NAME=""
+
+	# Define paths for copy targets.
+	LOUDNESSCORRECTION_PATH="/usr/bin/LoudnessCorrection.py"
+	HEARTBEAT_CHECKER_PATH="/usr/bin/HeartBeat_Checker.py"
+	SETTINGS_FILE_PATH="/etc/Loudness_Correction_Settings.pickle"
+	SAMBA_CONF_PATH="/etc/samba/smb.conf"
+	INIT_SCRIPT_PATH="/etc/init.d/loudnesscorrection_init_script"
+	INIT_SCRIPT_LINK_PATH="/etc/rc2.d/S99loudnesscorrection_init_script"
+	SYSTEMD_SERVICE_FILE_PATH=""
+fi
+
+if [ "$INIT_SYSTEM_NAME" == "systemd" ] ; then
+	LOUDNESSCORRECTION_NAME="LoudnessCorrection.py"
+	HEARTBEAT_CHECKER_NAME="HeartBeat_Checker.py"
+	SETTINGS_FILE_NAME="Loudness_Correction_Settings.pickle"
+	SAMBA_CONF_NAME="smb.conf"
+	INIT_SCRIPT_NAME="loudnesscorrection_init_script"
+	SYSTEMD_SERVICE_FILE_NAME="freelcs.service"
+
+	# Define paths for copy targets.
+	LOUDNESSCORRECTION_PATH="/usr/bin/LoudnessCorrection.py"
+	HEARTBEAT_CHECKER_PATH="/usr/bin/HeartBeat_Checker.py"
+	SETTINGS_FILE_PATH="/etc/Loudness_Correction_Settings.pickle"
+	SAMBA_CONF_PATH="/etc/samba/smb.conf"
+	INIT_SCRIPT_PATH="/etc/systemd/system/loudnesscorrection_init_script"
+	SYSTEMD_SERVICE_FILE_PATH="/etc/systemd/system/freelcs.service"
+fi
 
 # Check that all files we want to copy exist.
 if [ ! -e "$INIT_SCRIPT_NAME" ] ; then
@@ -330,6 +348,16 @@ if [ ! -e "$SETTINGS_FILE_NAME" ] ; then
         echo "ERROR: Can not find FreeLCS file: "$SETTINGS_FILE_NAME", can not continue."
         echo
         exit
+fi
+
+if [ "$INIT_SYSTEM_NAME" == "systemd" ] ; then
+
+	if [ ! -e "$SYSTEMD_SERVICE_FILE_NAME" ] ; then
+		echo
+		echo "ERROR: Can not find FreeLCS file: "$SYSTEMD_SERVICE_FILE_NAME", can not continue."
+		echo
+		exit
+	fi
 fi
 
 SAMBA_INSTALLATION_COMMAND=""
@@ -453,14 +481,42 @@ if [ -e "$SAMBA_CONF_NAME" ] ; then
 	chmod  644 "$SAMBA_CONF_PATH"
 fi
 
-ln -s -f "$INIT_SCRIPT_PATH" "$INIT_SCRIPT_LINK_PATH"
+if [ "$INIT_SYSTEM_NAME" == "init" ] ; then
 
-if [ "$?" -ne "0"  ] ; then
-	echo
-	echo "Error, could not create: "$INIT_SCRIPT_LINK_PATH
-	echo
-	exit
+	ln -s -f "$INIT_SCRIPT_PATH" "$INIT_SCRIPT_LINK_PATH"
+
+	if [ "$?" -ne "0"  ] ; then
+		echo
+		echo "Error, could not create: "$INIT_SCRIPT_LINK_PATH
+		echo
+		exit
+	fi
 fi
+
+if [ "$INIT_SYSTEM_NAME" == "systemd" ] ; then
+
+	cp -f "$SYSTEMD_SERVICE_FILE_NAME" "$SYSTEMD_SERVICE_FILE_PATH"
+
+	if [ "$?" -ne "0"  ] ; then
+		echo
+		echo "Error, could not create: "$SYSTEMD_SERVICE_FILE_PATH
+		echo
+		exit
+	fi
+
+	chown root:root "$SYSTEMD_SERVICE_FILE_PATH"
+	chmod  644 "$SYSTEMD_SERVICE_FILE_PATH"
+
+	systemctl -q enable $SYSTEMD_SERVICE_FILE_NAME
+
+	if [ "$?" -ne "0"  ] ; then
+		echo
+		echo "Error, could not enable FreeLCS systemd service: "$SYSTEMD_SERVICE_FILE_PATH
+		echo
+		exit
+	fi
+fi
+
 
 # Add here all additional packages that you want apt-get to install. Separate names with a space. Example:   ADDITIONAL_PACKAGE_INSTALLATION_COMMANDS="avconv audacity vlc".
 # ADDITIONAL_PACKAGE_INSTALLATION_COMMANDS="avconv" 
@@ -683,6 +739,13 @@ autoreconf -i
 make -s -j 4
 make install
 
+END_OF_FILE
+
+
+if [ "$INIT_SYSTEM_NAME" == "init" ] ; then
+
+cat >> "00-restore_freelcs_configuration.sh" << 'END_OF_FILE'
+
 echo
 echo "############"
 echo "# Ready :) #"
@@ -690,7 +753,7 @@ echo "############"
 echo
 echo "Reboot the computer to start FreeLCS or give the following command:"
 echo
-echo "sudo -b /etc/init.d/loudnesscorrection_init_script restart"
+echo "sudo  -b  /etc/init.d/loudnesscorrection_init_script restart"
 echo
 echo "If you need libav format support, then please install it now with the command:"
 echo "sudo apt-get -y install libav-tools"
@@ -698,6 +761,29 @@ echo
 
 END_OF_FILE
 
+fi
+
+
+if [ "$INIT_SYSTEM_NAME" == "systemd" ] ; then
+
+cat >> "00-restore_freelcs_configuration.sh" << 'END_OF_FILE'
+
+echo
+echo "############"
+echo "# Ready :) #"
+echo "############"
+echo
+echo "Reboot the computer to start FreeLCS or give the following command:"
+echo
+echo "sudo  -b  systemctl  start  freelcs"
+echo
+echo "If you need libav format support, then please install it now with the command:"
+echo "sudo apt-get -y install libav-tools"
+echo
+
+END_OF_FILE
+
+fi
 
 chmod 755 "00-restore_freelcs_configuration.sh"
 
@@ -722,6 +808,8 @@ echo "FreeLCS configuration has been saved to directory 'freelcs_backup'."
 echo
 echo "Please note that the restoration script '00-restore_freelcs_configuration.sh'"
 echo "will not ask for confirmation but starts restoration right away when you start the script."
+echo
+echo "Internet connection is required for the restoration."
 echo
 echo "NOTE !!!!!!! It is very important that you restore FreeLCS onto the same Linux distro"
 echo "and version that it was originally installed on. There are some differences between"
