@@ -33,7 +33,7 @@ fi
 echo
 #### "123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 "
 echo "This program will make a backup of your current FreeLCS installation,"
-echo "that can be restored to any computer running Ubuntu."
+echo "that can be restored to any computer running the same version of the os."
 echo "The restoration program is a shell script that doesn't require a graphical"
 echo "GUI so restoration can be automated or done through a ssh - connection."
 echo
@@ -46,6 +46,28 @@ echo "Press ctrl + c now to cancel ...."
 echo
 read -p "or the [Enter] key to start making the backup ..."
 echo
+
+# Check which init system the operating system uses init or systemd
+INIT_SYSTEM_NAME=""
+INIT_SYSTEM_NAME=`ps --pid 1 --no-headers -c -o cmd`
+
+
+
+
+
+
+echo
+echo "INIT_SYSTEM_NAME = "$INIT_SYSTEM_NAME
+echo
+
+exit
+
+
+
+
+
+
+
 
 # Create dir for backup files.
 BACKUP_DIR_NAME="freelcs_backup"
@@ -62,11 +84,22 @@ fi
 cd "$BACKUP_DIR_NAME"
 
 # Define paths to files to back up.
-INIT_SCRIPT_PATH="/etc/init.d/loudnesscorrection_init_script"
-LOUDNESSCORRECTION_PATH="/usr/bin/LoudnessCorrection.py"
-HEARTBEAT_CHECKER_PATH="/usr/bin/HeartBeat_Checker.py"
-SETTINGS_FILE_PATH="/etc/Loudness_Correction_Settings.pickle"
-SAMBA_CONF_PATH="/etc/samba/smb.conf"
+if [ "$INIT_SYSTEM_NAME" == "init" ] ; then
+	LOUDNESSCORRECTION_PATH="/usr/bin/LoudnessCorrection.py"
+	HEARTBEAT_CHECKER_PATH="/usr/bin/HeartBeat_Checker.py"
+	SETTINGS_FILE_PATH="/etc/Loudness_Correction_Settings.pickle"
+	SAMBA_CONF_PATH="/etc/samba/smb.conf"
+	INIT_SCRIPT_PATH="/etc/init.d/loudnesscorrection_init_script"
+fi
+
+if [ "$INIT_SYSTEM_NAME" == "systemd" ] ; then
+	LOUDNESSCORRECTION_PATH="/usr/bin/LoudnessCorrection.py"
+	HEARTBEAT_CHECKER_PATH="/usr/bin/HeartBeat_Checker.py"
+	SETTINGS_FILE_PATH="/etc/Loudness_Correction_Settings.pickle"
+	SAMBA_CONF_PATH="/etc/samba/smb.conf"
+	INIT_SCRIPT_PATH="/etc/systemd/system/loudnesscorrection_init_script"
+	SYSTEMD_SERVICE_FILE_PATH="/etc/systemd/system/freelcs.service"
+fi
 
 # Check if user has Samba installed
 SAMBA_PATH=`which smbd`
@@ -196,7 +229,7 @@ HEARTBEAT_CHECKER_PATH="/usr/bin/HeartBeat_Checker.py"
 SETTINGS_FILE_PATH="/etc/Loudness_Correction_Settings.pickle"
 SAMBA_CONF_PATH="/etc/samba/smb.conf"
 
-# Check that all files we wan't to copy exist.
+# Check that all files we want to copy exist.
 if [ ! -e "$INIT_SCRIPT_NAME" ] ; then
         echo
         echo "ERROR: Can not find FreeLCS file: "$INIT_SCRIPT_NAME", can not continue."
@@ -355,8 +388,8 @@ if [ "$?" -ne "0"  ] ; then
 	exit
 fi
 
-# Add here all additional packages that you want apt-get to install. Separate names with a space. Example:   ADDITIONAL_PACKAGE_INSTALLATION_COMMANDS="ffmpeg audacity vlc".
-# ADDITIONAL_PACKAGE_INSTALLATION_COMMANDS="ffmpeg" 
+# Add here all additional packages that you want apt-get to install. Separate names with a space. Example:   ADDITIONAL_PACKAGE_INSTALLATION_COMMANDS="avconv audacity vlc".
+# ADDITIONAL_PACKAGE_INSTALLATION_COMMANDS="avconv" 
 
 echo
 echo "#############################################"
@@ -584,6 +617,9 @@ echo
 echo "Reboot the computer to start FreeLCS or give the following command:"
 echo
 echo "sudo -b /etc/init.d/loudnesscorrection_init_script restart"
+echo
+echo "If you need libav format support, then please install it now with the command:"
+echo "sudo apt-get -y install libav-tools"
 echo
 
 END_OF_FILE
