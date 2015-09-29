@@ -30,6 +30,57 @@ if [ "$REAL_USER_NAME" == ""  ] ; then
         exit
 fi
 
+# Find out the name and version number of the operating sustem
+if [ ! -e "/etc/os-release" ] ; then
+	echo 
+	echo "Cannot read /etc/os-release to determine that we are on a supported os."
+	echo "Can't continue."
+	echo 
+	exit
+fi
+
+# Find the os name and lowercase it
+OS_NAME=`cat /etc/os-release | grep "^ID=" | sed 's/^ID=//' | sed 's/"//g' | sed 's/./\L&/g' `
+OS_VERSION=`cat /etc/os-release | grep "^VERSION_ID=" | sed 's/^VERSION_ID=//' | sed 's/"//g'`
+OS_VERSION_MAJOR_NUMBER=`echo $OS_VERSION | sed 's/\..*$//'`
+OS_VERSION_MINOR_NUMBER=`echo $OS_VERSION | sed 's/^.*\.//'`
+
+if [ "$OS_NAME" != "ubuntu" ] && [ "$OS_NAME" != "debian" ] ; then
+	echo
+	echo "The os "$OS_NAME" is not supported."
+	echo "Can't continue."
+	echo
+	exit
+fi
+
+# if [ "$OS_NAME" =="ubuntu" ] ; then
+# 	if [ "$OS_VERSION_MAJOR_NUMBER" -lt "12" ] ; then
+# 		echo
+# 		echo "Ubuntu version "$OS_VERSION" is not supported."
+# 		echo "Can't continue."
+# 		echo
+# 		exit
+# 	fi
+# 
+# 	if [ "$OS_VERSION_MINOR_NUMBER" != "04" ] ; then
+# 		echo
+# 		echo "Ubuntu version "$OS_VERSION" is not supported."
+# 		echo "Can't continue."
+# 		echo
+# 		exit
+# 	fi
+# fi
+# 
+# if [ "$OS_NAME" =="debian" ] ; then
+# 	if [ "$OS_VERSION_MAJOR_NUMBER" -lt "7" ] ; then
+# 		echo
+# 		echo "Debian version "$OS_VERSION" is not supported."
+# 		echo "Can't continue."
+# 		echo
+# 		exit
+# 	fi
+# fi
+
 echo
 #### "123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 "
 echo "This program will make a backup of your current FreeLCS installation,"
@@ -517,6 +568,15 @@ if [ "$INIT_SYSTEM_NAME" == "systemd" ] ; then
 	fi
 fi
 
+# Only install sox from source on oses that don't have at least versio 14.4.0 available on repository
+SOX_INSTALLATION_COMMAND="sox"
+INSTALL_SOX_FROM_OS_REPOSITORY=true
+
+if [ "$OS_NAME" == "ubuntu" ] && [ "$OS_VERSION" == "12.04" ] ; then 
+	INSTALL_SOX_FROM_OS_REPOSITORY=false
+	SOX_INSTALLATION_COMMAND=""
+fi
+
 
 # Add here all additional packages that you want apt-get to install. Separate names with a space. Example:   ADDITIONAL_PACKAGE_INSTALLATION_COMMANDS="avconv audacity vlc".
 # ADDITIONAL_PACKAGE_INSTALLATION_COMMANDS="avconv" 
@@ -530,7 +590,7 @@ echo
 # If sox is installed as a apt - package, then remove it, because we are going to install it from source.
 apt-get remove -y sox
 
-apt-get -q=2 -y --reinstall install python3 idle3 automake autoconf libtool gnuplot mediainfo build-essential git cmake libsndfile-dev libmpg123-dev libmpcdec-dev libglib2.0-dev libfreetype6-dev librsvg2-dev libspeexdsp-dev libavcodec-dev libavformat-dev libtag1-dev libxml2-dev libgstreamer0.10-dev libgstreamer-plugins-base0.10-dev libqt4-dev $SAMBA_INSTALLATION_COMMAND $ADDITIONAL_PACKAGE_INSTALLATION_COMMANDS 
+apt-get -q=2 -y --reinstall install python3 idle3 automake autoconf libtool gnuplot mediainfo build-essential git cmake libsndfile-dev libmpg123-dev libmpcdec-dev libglib2.0-dev libfreetype6-dev librsvg2-dev libspeexdsp-dev libavcodec-dev libavformat-dev libtag1-dev libxml2-dev libgstreamer0.10-dev libgstreamer-plugins-base0.10-dev libqt4-dev $SAMBA_INSTALLATION_COMMAND $SOX_INSTALLATION_COMMAND $ADDITIONAL_PACKAGE_INSTALLATION_COMMANDS 
 
 if [ "$?" -ne "0"  ] ; then
 	echo
@@ -547,6 +607,14 @@ echo
 
 cd /tmp
 git clone http://github.com/mhartzel/libebur128_fork_for_freelcs_2.4.git
+
+if [ "$?" -ne "0"  ] ; then
+	echo
+	echo "Error downloading libebur128 source code, can not continue."
+	echo
+	exit
+fi
+
 mv libebur128_fork_for_freelcs_2.4 libebur128
 cd libebur128
 
@@ -688,7 +756,7 @@ echo
 cd /tmp/libebur128
 mkdir build
 cd build
-cmake -Wno-dev -DCMAKE_INSTALL_PREFIX:PATH=/usr ..
+cmake -DUSE_AVFORMAT=False -Wno-dev -DCMAKE_INSTALL_PREFIX:PATH=/usr ..
 
 echo
 echo "#######################################"
@@ -698,46 +766,74 @@ echo
 
 cd /tmp/libebur128/build
 make -s -j 4
-make install
 
-echo
-echo "#############################################"
-echo "# Downloading, compiling and installing sox #"
-echo "#############################################"
-echo
-
-# Download sox source
-cd /tmp
-
-git clone http://github.com/mhartzel/sox_personal_fork.git
-
-cd sox_personal_fork
-
-echo
-echo "Checking out required version of sox from git project"
-echo
-
-SOX_REQUIRED_GIT_COMMIT_VERSION="6dff9411961cc8686aa75337a78b7df334606820"
-git checkout --force $SOX_REQUIRED_GIT_COMMIT_VERSION
-
-# Check that we have the correct version after checkout
-SOX_CURRENT_COMMIT=`git rev-parse HEAD`
-
-if [ "$SOX_CURRENT_COMMIT" == "$SOX_REQUIRED_GIT_COMMIT_VERSION" ] ; then
+if [ "$?" -ne "0"  ] ; then
 	echo
-        echo "Checkout was successful"
-        echo
-else
-        echo "There was an error when trying to check out the correct sox version from the local git repository !!!!!!!"
-        echo
-        exit
+	echo "Error compiling libebur128, can not continue."
+	echo
+	exit
 fi
 
-# Build and install sox from source
-autoreconf -i
-./configure --prefix=/usr
-make -s -j 4
 make install
+
+
+# Install sox from source
+if [ "$INSTALL_SOX_FROM_OS_REPOSITORY" == false  ] ; then
+	echo
+	echo "#############################################"
+	echo "# Downloading, compiling and installing sox #"
+	echo "#############################################"
+	echo
+
+	# Download sox source
+	cd /tmp
+
+	git clone http://github.com/mhartzel/sox_personal_fork.git
+
+	if [ "$?" -ne "0"  ] ; then
+		echo
+		echo "Error downloading sox source code, can not continue."
+		echo
+		exit
+	fi
+
+
+	cd sox_personal_fork
+
+	echo
+	echo "Checking out required version of sox from git project"
+	echo
+
+	SOX_REQUIRED_GIT_COMMIT_VERSION="6dff9411961cc8686aa75337a78b7df334606820"
+	git checkout --force $SOX_REQUIRED_GIT_COMMIT_VERSION
+
+	# Check that we have the correct version after checkout
+	SOX_CURRENT_COMMIT=`git rev-parse HEAD`
+
+	if [ "$SOX_CURRENT_COMMIT" == "$SOX_REQUIRED_GIT_COMMIT_VERSION" ] ; then
+		echo
+		echo "Checkout was successful"
+		echo
+	else
+		echo "There was an error when trying to check out the correct sox version from the local git repository !!!!!!!"
+		echo
+		exit
+	fi
+
+	# Build and install sox from source
+	autoreconf -i
+	./configure --prefix=/usr
+	make -s -j 4
+
+	if [ "$?" -ne "0"  ] ; then
+		echo
+		echo "Error compiling sox source code, can not continue."
+		echo
+		exit
+	fi
+
+	make install
+fi
 
 END_OF_FILE
 
