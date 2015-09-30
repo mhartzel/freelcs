@@ -644,9 +644,9 @@ else
 fi
 
 echo
-echo "########################################################################################################"
-echo "# Writing libebur128 4.0 and 5.0 - channel patch to a separate file for patching the libebur128 source #"
-echo "########################################################################################################"
+echo "#######################################################################################################################"
+echo "# Writing libebur128 4.0 and 5.0 and progress bar disable patch to a separate file for patching the libebur128 source #"
+echo "#######################################################################################################################"
 echo
 
 FULL_PATH_TO_SELF="/tmp/libebur128_download_commands.sh"
@@ -693,7 +693,7 @@ index 6f28822..9f3663e 100644
 +++ b/scanner/inputaudio/gstreamer/input_gstreamer.c
 @@ -256,6 +256,7 @@ static int gstreamer_open_file(struct input_handle* ih, const char* filename) {
  }
-
+ 
  static int gstreamer_set_channel_map(struct input_handle* ih, int* st) {
 +  return 0;
    gint j;
@@ -705,22 +705,54 @@ index aee098b..79e0f04 100644
 +++ b/scanner/inputaudio/sndfile/input_sndfile.c
 @@ -60,6 +60,7 @@ static int sndfile_open_file(struct input_handle* ih, const char* filename) {
  }
-
+ 
  static int sndfile_set_channel_map(struct input_handle* ih, int* st) {
 +  return 1;
    int result;
    int* channel_map = (int*) calloc((size_t) ih->file_info.channels, sizeof(int));
    if (!channel_map) return 1;
+diff --git a/scanner/scanner-common/scanner-common.c b/scanner/scanner-common/scanner-common.c
+index 3a65db0..417dfad 100644
+--- a/scanner/scanner-common/scanner-common.c
++++ b/scanner/scanner-common/scanner-common.c
+@@ -331,16 +331,19 @@ void process_files(GSList *files, struct scan_opts *opts) {
+ 
+     // Start the progress bar thread. It misuses progress_mutex and
+     // progress_cond to signal when it is ready.
+-    g_mutex_lock(progress_mutex);
+-    progress_bar_thread = g_thread_create(print_progress_bar,
+-                                          &started, TRUE, NULL);
+-    while (!started)
+-        g_cond_wait(progress_cond, progress_mutex);
+-    g_mutex_unlock(progress_mutex);
++    //
++    // Note progress bar causes hangs sometimes and this is why progress bar is disabled when using libebur128 with FreeLCS
++    //
++    // g_mutex_lock(progress_mutex);
++    // progress_bar_thread = g_thread_create(print_progress_bar,
++    //                                       &started, TRUE, NULL);
++    // while (!started)
++    //     g_cond_wait(progress_cond, progress_mutex);
++    // g_mutex_unlock(progress_mutex);
+ 
+     pool = g_thread_pool_new((GFunc) init_state_and_scan_work_item,
+                              opts, nproc(), FALSE, NULL);
+     g_slist_foreach(files, (GFunc) init_state_and_scan, pool);
+     g_thread_pool_free(pool, FALSE, TRUE);
+-    g_thread_join(progress_bar_thread);
++    // g_thread_join(progress_bar_thread);
+ }
 diff --git a/scanner/scanner.c b/scanner/scanner.c
-index d952f80..fdceff0 100644
+index d952f80..05fcd7e 100644
 --- a/scanner/scanner.c
 +++ b/scanner/scanner.c
-@@ -90,6 +90,9 @@ static void print_help(void) {
+@@ -90,6 +90,10 @@ static void print_help(void) {
      printf("  -m, --momentary=INTERVAL   print momentary loudness every INTERVAL seconds\n");
      printf("  -s, --shortterm=INTERVAL   print shortterm loudness every INTERVAL seconds\n");
      printf("  -i, --integrated=INTERVAL  print integrated loudness every INTERVAL seconds\n");
 +    printf("\n");
 +    printf("  Patched to support 4.0 (L, R, LS, RS) and 5.0 (L, R, C, LS, RS) files.\n");
++    printf("  Patched to disable progress bar.\n");
 +    printf("\n");
  }
  
