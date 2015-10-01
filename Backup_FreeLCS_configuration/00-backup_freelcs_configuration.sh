@@ -532,16 +532,31 @@ if [ -e "$SAMBA_CONF_NAME" ] ; then
 	chmod  644 "$SAMBA_CONF_PATH"
 fi
 
-if [ "$INIT_SYSTEM_NAME" == "init" ] ; then
 
-	ln -s -f "$INIT_SCRIPT_PATH" "$INIT_SCRIPT_LINK_PATH"
+if [ "$INIT_SYSTEM_NAME" != "systemd" ] ; then
 
-	if [ "$?" -ne "0"  ] ; then
-		echo
-		echo "Error, could not create: "$INIT_SCRIPT_LINK_PATH
-		echo
-		exit
+	if [ "$OS_NAME" == "ubuntu" ] ; then
+
+		ln -s -f "$INIT_SCRIPT_PATH" "$INIT_SCRIPT_LINK_PATH"
+
+		if [ "$?" -ne "0"  ] ; then
+			echo
+			echo "Error, could not create: "$INIT_SCRIPT_LINK_PATH
+			echo
+			exit
+		fi
 	fi
+
+	if [ "$OS_NAME" == "debian" ] ; then
+
+		insserv -d $INIT_SCRIPT_PATH
+
+		if [ "$?" -ne "0"  ] ; then
+			echo
+			echo "Error, running: insserv -d "$INIT_SCRIPT_PATH
+			echo
+			exit
+		fi
 fi
 
 if [ "$INIT_SYSTEM_NAME" == "systemd" ] ; then
