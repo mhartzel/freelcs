@@ -1,10 +1,166 @@
-<!DOCTYPE html><html dir="ltr" lang="en">  <head>    <meta content="text/html; charset=UTF-8" http-equiv="content-type">    <title>FreeLCS</title>    <meta content="Mikael Hartzell" name="author">    <meta content="Free EBU R128 Loudness Correction Server" name="description">    <meta content="Free EBU R128 automatic loudness correction" name="keywords">    <link href="Stylesheets/freelcs_stylesheet.css" rel="stylesheet" type="text/css">  </head>  <body>    <h1><big>FreeLCS</big> <small>Free Loudness Correction Server <br>      </small></h1>    <hr> [<a href="FreeLCS_FAQ.html">FAQ</a>]&nbsp; [<a href="#Features">Features</a>]&nbsp;[<a      href="FreeLCS_User_Manual.html">User      Manual</a>]&nbsp; [<a href="https://sourceforge.net/projects/freelcs/files/">Downloads</a>]&nbsp;
-    [<a href="Changelog.txt">Changelog</a>]&nbsp; <br>    <br>    <br>    FreeLCS stands for <strong>Free Loudness Correction Server</strong>.    FreeLCS lets you automatically correct audio files to EBU R128 target    loudness level.<br>    <br>    The software lets you easily set up a server that shares one of it's folders    to the network. Users of your network can then drop audio files to the    server for automatic loudness correction. For each processed file the server    also creates a loudness history graphics file which shows loudness    variations inside the file.<br>    <br>    The software is very fast even on modest hardware giving 15 times faster    than realtime processing (16 bit stereo files, TruePeak measurement turned    on) on a server with one Intel Core 2 Duo processor, 2 GB Ram, 3 internal    Sata disks in software RAID 0.<br>    <br>    FreeLCS uses other open source programs to get the job done (Linux,    libebur128, gnuplot, libav-tools (optional), sox, mediainfo). All software    is free and Open Source.<br>    <br>    More detailed information can be found in <a href="FreeLCS_FAQ.html">FAQ</a>,    <a href="#Features">Features</a> and <a href="FreeLCS_User_Manual.html">User
-      Manual</a>.<br>    <h1><strong>Latest news:</strong></h1>    <h4>2015.08.28 FreeLCS 3.2 released.</h4>    <ul>      <li>This release adds support for Debian 8 that introduces a new init        system called systemd. The init is responsible for starting up the        operating system and since the init also starts up FreeLCS some changes        were needed.</li>      <li>FreeLCS 3.2 supports Ubuntu 12.04, Ubuntu 14.04, Debian 7 and Debian        8.</li>      <li>Fixed a small bug: the HeartBeat_Checker program crashed if the        computer started up and could not get an ip - address. What        HeartBeat_Checker does is <a href="FreeLCS_User_Manual.html#HeartBeat_Checker_Explained">explained
-          here</a>.</li>      <li>I stumbled upon a&nbsp; problem with OS X versions 10.7 - 10.10 and        their smb - protocol implementation. This causes problems when files are        copied over from these OS X versions to FreeLCS - server. I also found        two workarounds, <a href="FreeLCS_FAQ.html#Errors_copying_files_from_OS_X_10.7-10.10_to_FreeLCS-Server">read          more about it here</a>.</li>      <li>No changes to the processing of audio files.</li>    </ul>    <h4>2014.09.11 FreeLCS 3.1 released.</h4>    <ul>      <li>This minor update only fixes one bug that caused 3 - 4 unnecessary        error messages per week complaining that the FreeLCS server could not        find out what it's IP - address was. FreeLCS prints the IP - address of        the server on the "<a href="FreeLCS_User_Manual.html#Html%20Progress%20report">Html
-          progress report</a>" and the server needs to check periodically if the        IP - address has changed. No other changes to FreeLCS functionality in        this release :)</li>    </ul>    <h4>2014.06.05 FreeLCS 3.0 released.</h4>    <ul>      <li>This new release adds major new features. If you are happy with your        current FreeLCS 2.3 or 2.4 installation then there is no reason to        upgrade :)</li>      <li>Support for Debian 7, Ubuntu 12.04 Server, Ubuntu 14.04 Desktop and        Server added. Note that installation on <a href="Debian_modifications_needed_before_FreeLCS_installation.html">Debian
+<!DOCTYPE html>
+<html dir="ltr" lang="en">
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+    <title>FreeLCS</title>
+    <meta content="Mikael Hartzell" name="author">
+    <meta content="Free EBU R128 Loudness Correction Server" name="description">
+    <meta content="Free EBU R128 automatic loudness correction" name="keywords">
+    <link href="Stylesheets/freelcs_stylesheet.css" rel="stylesheet" type="text/css">
+  </head>
+  <body>
+    <h1><big>FreeLCS</big> <small>Free Loudness Correction Server <br>
+      </small></h1>
+    <hr> [<a href="FreeLCS_FAQ.html">FAQ</a>]&nbsp; [<a href="#Features">Features</a>]&nbsp;[<a
+      href="FreeLCS_User_Manual.html">User Manual</a>]&nbsp; [<a href="https://sourceforge.net/projects/freelcs/files/">Downloads</a>]&nbsp;
+    [<a href="Changelog.txt">Changelog</a>]&nbsp; <br>
+    <br>
+    <br>
+    FreeLCS stands for <strong>Free Loudness Correction Server</strong>.
+    FreeLCS lets you automatically correct audio files to EBU R128 target
+    loudness level.<br>
+    <br>
+    The software lets you easily set up a server that shares one of it's folders
+    to the network. Users of your network can then drop audio files to the
+    server for automatic loudness correction. For each processed file the server
+    also creates a loudness history graphics file which shows loudness
+    variations inside the file.<br>
+    <br>
+    The software is very fast even on modest hardware giving 15 times faster
+    than realtime processing (16 bit stereo files, TruePeak measurement turned
+    on) on a server with one Intel Core 2 Duo processor, 2 GB Ram, 3 internal
+    Sata disks in software RAID 0.<br>
+    <br>
+    FreeLCS uses other open source programs to get the job done (Linux,
+    libebur128, gnuplot, libav-tools (optional), sox, mediainfo). All software
+    is free and Open Source.<br>
+    <br>
+    More detailed information can be found in <a href="FreeLCS_FAQ.html">FAQ</a>,
+    <a href="#Features">Features</a> and <a href="FreeLCS_User_Manual.html">User
+      Manual</a>.<br>
+    <h1><strong>Latest news:</strong></h1>
+    <h4>2015.10.05 FreeLCS 3.2 released.</h4>
+    <ul>
+      <li>This release adds support for Debian 8 that introduces a new os
+        startup system called systemd. Systemd introduces some changes to how
+        the operating system is started up, so FreeLCS needed to adjust to these
+        changes.</li>
+      <li>FreeLCS 3.2 supports Ubuntu 12.04, Ubuntu 14.04, Debian 7 and Debian
+        8. IMPORTANT !!!!!!! Ubuntu 12.04 updates brings in a broken version of
+        python3. <a href="FreeLCS_FAQ.html#Ubuntu_12.04_updates_breaks_python3">Here
+          are two possible solutions to the problem</a>.</li>
+      <li>Fixed a small bug: the HeartBeat_Checker program crashed if the
+        computer started up and could not get an ip - address. What
+        HeartBeat_Checker does is <a href="FreeLCS_User_Manual.html#HeartBeat_Checker_Explained">explained
+          here</a>.</li>
+      <li>I stumbled upon a&nbsp; problem with OS X versions 10.7 - 10.10 and
+        their smb - protocol implementation. This causes problems when files are
+        copied over from these OS X versions to the FreeLCS - server. I also
+        found two workarounds, <a href="FreeLCS_FAQ.html#Errors_copying_files_from_OS_X_10.7-10.10_to_FreeLCS-Server">read
+          more about it here</a>.</li>
+      <li>Ubuntu 12.04 updates brings in a broken version of python3. <a href="FreeLCS_FAQ.html#Ubuntu_12.04_updates_breaks_python3">Here
+          are two possible solutions to the problem</a>.</li>
+      <li>No changes to the processing of audio files.</li>
+    </ul>
+    <h4>2014.09.11 FreeLCS 3.1 released.</h4>
+    <ul>
+      <li>This minor update only fixes one bug that caused 3 - 4 unnecessary
+        error messages per week complaining that the FreeLCS server could not
+        find out what it's IP - address was. FreeLCS prints the IP - address of
+        the server on the "<a href="FreeLCS_User_Manual.html#Html%20Progress%20report">Html
+          progress report</a>" and the server needs to check periodically if the
+        IP - address has changed. No other changes to FreeLCS functionality in
+        this release :)</li>
+    </ul>
+    <h4>2014.06.05 FreeLCS 3.0 released.</h4>
+    <ul>
+      <li>This new release adds major new features. If you are happy with your
+        current FreeLCS 2.3 or 2.4 installation then there is no reason to
+        upgrade :)</li>
+      <li>Support for Debian 7, Ubuntu 12.04 Server, Ubuntu 14.04 Desktop and
+        Server added. Note that installation on <a href="Debian_modifications_needed_before_FreeLCS_installation.html">Debian
           7</a> and <a href="Ubuntu_Server_modifications_needed_before_FreeLCS_installation.html">Ubuntu
-          Server</a> requires some modifications to the operating system        configuration before installation.</li>      <li>FreeLCS 3.0 is able to <a href="Machine_readable_results_and_MXF_audio_remix_mapping.html#Machine_readable_results">write
-          loudness results to a machine readable file</a>. With this feature you        can make FreeLCS the loudness measurement step in your automated file        processing workflow. You can also configure FreeLCS not to produce any        output files (loudness corrected audio files, history graphics) since        these might not be needed in an automated workflow.</li>      <li>With FreeLCS 3.0 you can define how audio channels inside an MXF file        will be combined to new mixes before loudness processing. The feature is        called <a href="Machine_readable_results_and_MXF_audio_remix_mapping.html#MXF_audio_remixing">MXF
-          audio remixing</a>.</li>      <li>FreeLCS is no longer tested with FFmpeg since FFmpeg is no longer        easily available in Ubuntu 14.04 repositories. The only common tool        easily avaible to Debian 7 and Ubuntu 12.04 and 14.04 users is avconv        from libav-tools. FreeLCS 3.0 uses avconv if it is installed by the        user. There is a small known problem with the avconv version that ships        with Ubuntu 14.04 , <a href="known_problems.txt">read about it here</a>.</li>    </ul>    <h4>2013.03.11 <span style="font-weight: normal;">Released introductory        material about EBU R128 recommendation and FreeLCS. This version is in        Finnish language only. The material tries to explain R128 concepts and        FreeLCS usage in the point of view of a common user.&nbsp; Read it here:        <a href="Introduction_To_Loudness_Correction/html/Aanekkyyden%20Hallinta.html">Äänekkyyden
-          Hallinta</a>.</span></h4>    Older news can be found <a href="FreeLCS-Old_News.html">here</a>.<br>    <br>    <h1> <a id="Features">Features</a></h1>    <ul>      <li>Automatically loudness corrects audio files to conform with EBU R128        loudness recommendation.</li>      <li>Very easy to use, just drop in your file and copy back the loudness        corrected version.</li>      <li>Creates loudness history graphics that allows the user to see how        loudness varies inside a file (example picture below).</li>      <li>Supports channel counts from mono to 5.1.</li>      <li>Supports EBU TruePeak measurement.</li>      <li>Uses a protective limiter to keep peaks in the allowed range where        needed.</li>      <li>Takes advantage of multiple processor cores to run calculations        simultaneously.</li>      <li>User is able to define how many audio files are processed at the same        time, limited only by available cpu processing power and hard disk        bandwidth.</li>      <li>Supports writing loudness measurement results to a machine readable        file.</li>      <li>Modest hardware requirements, runs fine with only 2 GB of ram.</li>      <li>Can be run inside a virtual machine, no need for physical hardware.</li>      <li>Fast processing. On typical hardware you can expect processing to be        10 - 20 faster than realtime.</li>      <li>Cleans up automatically by deleting all files after a set time delay.</li>      <li>Sends possible error messages to the admin by email.</li>      <li>If user installs <strong>libav-tools</strong> then additional        features becomes available:</li>      <ul>        <li>The wide range of libav-tools supported formats can be processed.</li>        <li>Support for multistream files, all audio streams are extracted and          processed individually.</li>        <li>Extract audio from wrappers containing both video and audio.</li>        <li>Remix audio from MXF files to required mixes before loudness          processing.</li>      </ul>      <li>All software is free and Open Source. Install in as many computers as        you like.</li>      <li>Runs on the free Linux operating system, no need to pay for        proprietary os installation.</li>      <li>Easy to integrate in many workflows.</li>      <li>Written in Python 3.</li>      <li>More specific information can be found in the <a href="FreeLCS_FAQ.html">FAQ</a>.<br>      </li>    </ul>    <br>    <img alt="" src="Pictures/Beethoven-Coriolan_Overture_Op_62.wav-Loudness_Results_Graphics-small.png"><br>    <br>    <br>    <a href="https://sourceforge.net/projects/freelcs/files/">Click here to go      to the download page (User manual is included in the download)</a><br>    <br>    <a href="FreeLCS_User_Manual.html">Click here to go to the User manual.</a><br>    <br>    <a href="FreeLCS_User_Manual.html#How%20to%20report%20a%20bug">Report a bug</a><br>    <br>  </body></html>
+          Server</a> requires some modifications to the operating system
+        configuration before installation.</li>
+      <li>FreeLCS 3.0 is able to <a href="Machine_readable_results_and_MXF_audio_remix_mapping.html#Machine_readable_results">write
+          loudness results to a machine readable file</a>. With this feature you
+        can make FreeLCS the loudness measurement step in your automated file
+        processing workflow. You can also configure FreeLCS not to produce any
+        output files (loudness corrected audio files, history graphics) since
+        these might not be needed in an automated workflow.</li>
+      <li>With FreeLCS 3.0 you can define how audio channels inside an MXF file
+        will be combined to new mixes before loudness processing. The feature is
+        called <a href="Machine_readable_results_and_MXF_audio_remix_mapping.html#MXF_audio_remixing">MXF
+          audio remixing</a>.</li>
+      <li>FreeLCS is no longer tested with FFmpeg since FFmpeg is no longer
+        easily available in Ubuntu 14.04 repositories. The only common tool
+        easily avaible to Debian 7 and Ubuntu 12.04 and 14.04 users is avconv
+        from libav-tools. FreeLCS 3.0 uses avconv if it is installed by the
+        user. There is a small known problem with the avconv version that ships
+        with Ubuntu 14.04 , <a href="known_problems.txt">read about it here</a>.</li>
+    </ul>
+    <h4>2013.03.11 <span style="font-weight: normal;">Released introductory
+        material about EBU R128 recommendation and FreeLCS. This version is in
+        Finnish language only. The material tries to explain R128 concepts and
+        FreeLCS usage in the point of view of a common user.&nbsp; Read it here:
+        <a href="Introduction_To_Loudness_Correction/html/Aanekkyyden%20Hallinta.html">Äänekkyyden
+          Hallinta</a>.</span></h4>
+    Older news can be found <a href="FreeLCS-Old_News.html">here</a>.<br>
+    <br>
+    <h1> <a id="Features">Features</a></h1>
+    <ul>
+      <li>Automatically loudness corrects audio files to conform with EBU R128
+        loudness recommendation.</li>
+      <li>Very easy to use, just drop in your file and copy back the loudness
+        corrected version.</li>
+      <li>Creates loudness history graphics that allows the user to see how
+        loudness varies inside a file (example picture below).</li>
+      <li>Supports channel counts from mono to 5.1.</li>
+      <li>Supports EBU TruePeak measurement.</li>
+      <li>Uses a protective limiter to keep peaks in the allowed range where
+        needed.</li>
+      <li>Takes advantage of multiple processor cores to run calculations
+        simultaneously.</li>
+      <li>User is able to define how many audio files are processed at the same
+        time, limited only by available cpu processing power and hard disk
+        bandwidth.</li>
+      <li>Supports writing loudness measurement results to a machine readable
+        file.</li>
+      <li>Modest hardware requirements, runs fine with only 2 GB of ram.</li>
+      <li>Can be run inside a virtual machine, no need for physical hardware.</li>
+      <li>Fast processing. On typical hardware you can expect processing to be
+        10 - 20 faster than realtime.</li>
+      <li>Cleans up automatically by deleting all files after a set time delay.</li>
+      <li>Sends possible error messages to the admin by email.</li>
+      <li>If user installs <strong>libav-tools</strong> then additional
+        features becomes available:</li>
+      <ul>
+        <li>The wide range of libav-tools supported formats can be processed.</li>
+        <li>Support for multistream files, all audio streams are extracted and
+          processed individually.</li>
+        <li>Extract audio from wrappers containing both video and audio.</li>
+        <li>Remix audio from MXF files to required mixes before loudness
+          processing.</li>
+      </ul>
+      <li>All software is free and Open Source. Install in as many computers as
+        you like.</li>
+      <li>Runs on the free Linux operating system, no need to pay for
+        proprietary os installation.</li>
+      <li>Easy to integrate in many workflows.</li>
+      <li>Written in Python 3.</li>
+      <li>More specific information can be found in the <a href="FreeLCS_FAQ.html">FAQ</a>.<br>
+      </li>
+    </ul>
+    <br>
+    <img alt="" src="Pictures/Beethoven-Coriolan_Overture_Op_62.wav-Loudness_Results_Graphics-small.png"><br>
+    <br>
+    <br>
+    <a href="https://sourceforge.net/projects/freelcs/files/">Click here to go
+      to the download page (User manual is included in the download)</a><br>
+    <br>
+    <a href="FreeLCS_User_Manual.html">Click here to go to the User manual.</a><br>
+    <br>
+    <a href="FreeLCS_User_Manual.html#How%20to%20report%20a%20bug">Report a bug</a><br>
+    <br>
+  </body>
+</html>

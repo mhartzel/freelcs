@@ -7,6 +7,22 @@
 # - Latest Documentation            #
 #####################################
 
+Backup / Restore script
+------------------------
+- Added Debian 7 support to restore script
+
+Backup / Restore script
+-----------------------
+- Noticed I had not updated restore script to disable loudness - program progress bar when I did it for LoudnessCorrection.py. The progress bar caused loudness - program to hang sometimes. Fixed.
+
+Backup / Restore script
+------------------------
+- Found out while testing restore that changes in newer oses made it fail. Fixed.
+
+Backup / Restore script
+------------------------
+- Started work to get the backup / restore script also to work on systemd based oses.
+
 Installer version 104
 ----------------------
 - Corrected a small bug in modifications I made and changed some text that is displayd to the user. On systemd based os's there will no more be a delay before LoudnessCorrection starts up, so I removed text explaining the delay.
