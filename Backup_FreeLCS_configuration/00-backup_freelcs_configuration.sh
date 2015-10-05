@@ -308,6 +308,12 @@ END_OF_FILE
 fi
 
 
+echo 'OS_NAME="'$OS_NAME'"' >> "00-restore_freelcs_configuration.sh"
+echo 'OS_VERSION="'$OS_VERSION'"' >> "00-restore_freelcs_configuration.sh"
+echo 'OS_VERSION_MAJOR_NUMBER="'$OS_VERSION_MAJOR_NUMBER'"' >> "00-restore_freelcs_configuration.sh"
+echo 'OS_VERSION_MINOR_NUMBER="'$OS_VERSION_MINOR_NUMBER'"' >> "00-restore_freelcs_configuration.sh"
+
+
 cat >> "00-restore_freelcs_configuration.sh" << 'END_OF_FILE'
 
 # Check which init system the operating system uses init or systemd
@@ -557,6 +563,7 @@ if [ "$INIT_SYSTEM_NAME" != "systemd" ] ; then
 			echo
 			exit
 		fi
+	fi
 fi
 
 if [ "$INIT_SYSTEM_NAME" == "systemd" ] ; then
