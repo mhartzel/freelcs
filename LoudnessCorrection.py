@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '273'
+loudnesscorrection_version = '274'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -3630,8 +3630,8 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 						if bit_depth_info_field[end_character].isnumeric() == False:
 							break
 					
-					bit_depth_as_text = bit_depth_info_field[start_character:end_character + 1]		
-					
+					bit_depth_as_text = bit_depth_info_field[start_character:end_character + 1].strip()
+
 					if bit_depth_as_text.isnumeric() == True:
 						bit_depth = int(bit_depth_as_text)
 					else:
@@ -3650,10 +3650,10 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 						bit_depth = 24
 
 				# Find out what is FFmpegs map number for the audio stream.
-				# There usually is some unwanted cruft right behing the map numer, so we need to find the cut point by advancing characrer by character.
-				# Example for a line that we are tring to parse here (ffmpeg 0.8 / avconv 0.9 and later):   Stream #0.1(eng): Audio: ac3, 48000 Hz, 5.1, s16, 448 kb/s
-				# Example for a line that we are tring to parse here (ffmpeg 2.x):   Stream #0:1: Audio: ac3, 48000 Hz, 5.1, s16, 448 kb/s
-				# The first number (0) in the map means input stream number (there can be many input file. The second (1) number means the stream in the file.
+				# There usually is some unwanted cruft right behind the map number, so we need to find the cut point by advancing character by character.
+				# Example for a line that we are trying to parse here (ffmpeg 0.8 / avconv 0.9 and later):   Stream #0.1(eng): Audio: ac3, 48000 Hz, 5.1, s16, 448 kb/s
+				# Example for a line that we are trying to parse here (ffmpeg 2.x):   Stream #0:1: Audio: ac3, 48000 Hz, 5.1, s16, 448 kb/s
+				# The first number (0) in the map means input stream number (there can be many in a input file). The second (1) number means the stream in the file.
 				map_number = ''
 				separator_character_found = False
 
@@ -3719,7 +3719,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				
 				number_of_ffmpeg_supported_audiostreams = number_of_ffmpeg_supported_audiostreams + 1
 				details_of_ffmpeg_supported_audiostreams.append([str(item.strip()), str(audio_stream_number), number_of_audio_channels, input_audiostream_codec_format, output_audiostream_codec_format, sample_rate, bit_depth, map_number])
-				
+
 			if 'Duration:' in item:
 				audio_duration_string = str(item).split(',')[0].strip() # The first item on the line is the duration, get it.
 				audio_duration_string = audio_duration_string.split(' ')[1].strip() # Remove the string 'Duration:' that is in front of the time string we want.

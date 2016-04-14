@@ -5154,7 +5154,7 @@ os_name = ''
 os_version = ''
 
 # Define supported operating systems and versions
-supported_platforms = {'debian': ['7', '8'], 'ubuntu': ['12.04', '14.04', '16.04']}
+supported_platforms = {'debian': ['7', '8'], 'ubuntu': ['14.04', '16.04']}
 
 # Parse commandline arguments.
 for item in sys.argv[1:]:
