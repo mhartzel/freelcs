@@ -27,7 +27,7 @@ import email.mime.multipart
 import tempfile
 import copy
 
-version = '105'
+version = '107'
 freelcs_version = '3.3'
 
 ###################################

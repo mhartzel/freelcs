@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '274'
+loudnesscorrection_version = '275'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -3892,6 +3892,11 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				
 			ffmpeg_commandline.append('-f')
 			ffmpeg_commandline.append(ffmpeg_output_wrapper_format)
+
+			# Force FFmpeg to use less threads. On Ubuntu 16.04 with a 48 stream audiofile, FFmpeg created 327 threads resulting in stack space running out and FFmpeg failing.
+			ffmpeg_commandline.append('-threads')
+			ffmpeg_commandline.append('1')
+
 			ffmpeg_commandline.append(directory_for_temporary_files + os.sep + target_filenames[counter])
 		
 		if number_of_ffmpeg_supported_audiostreams >= 1:
