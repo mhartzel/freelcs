@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '275'
+loudnesscorrection_version = '277'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -840,6 +840,8 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 		global create_loudness_corrected_files
 		global write_loudness_calculation_results_to_a_machine_readable_file
 		global temp_loudness_results_for_automation
+		global os_name
+		global os_version 
 
 		error_message = ''
 		gnuplot_commands = []
@@ -1153,9 +1155,22 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 					peak_measurement_unit = 'dBTP'
 
 				# Generate gnuplot commands for plotting the graphics. Put all gnuplot commands in a list.
+				# Gnuplot 5 in Ubuntu 16.04 reverses y axis. Detect os version and adjust y axis cordinates accordingly
+
+				gnuplot_y_axis_commands = 'set yrange [ 0 : -60 ] noreverse nowriteback'
+
+				if os_name == 'ubuntu':
+					temp = os_version.split('.')[0]
+
+					if temp.isnumeric():
+						os_version_major_number = int(temp)
+
+					if os_version_major_number >= 16:
+						gnuplot_y_axis_commands = 'set yrange [ -60 : 0 ] nowriteback'
+
 				gnuplot_commands=['set terminal jpeg size 1280,960 medium font \'arial\'', \
 				'set output ' + '\"' + gnuplot_temporary_output_graphicsfile.replace('"','\\"') + '\"', \
-				'set yrange [ 0 : -60 ] noreverse nowriteback', \
+				gnuplot_y_axis_commands, \
 				'set grid', \
 				'set title ' + '\"\'' + filename.replace('_', ' ').replace('"','\\"') + '\'\\n' + 'Integrated Loudness ' * english + 'Keskimääräinen Äänekkyystaso ' * finnish + str(integrated_loudness) + ' LUFS\\n ' + difference_from_target_loudness_string + ' LU from target loudness (-23 LUFS)\\nLoudness Range (LRA) ' * english + ' LU:ta tavoitetasosta (-23 LUFS)\\nÄänekkyyden vaihteluväli (LRA) '  * finnish + str(loudness_range) + ' LU' + peak_measurement_string_english * english + peak_measurement_string_finnish * finnish + highest_peak_db_string + ' ' + peak_measurement_unit + warning_message + '\"', \
 				'set ylabel ' + '\"Loudness (LUFS)\"' * english + '\"Äänekkyystaso (LUFS)\"' *finnish, \
