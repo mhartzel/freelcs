@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '277'
+loudnesscorrection_version = '278'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -3593,6 +3593,11 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				
 				# Find audio stream format information
 				input_audiostream_codec_format = item.split('Audio:')[1].split(',')[0].strip()
+
+				# In Ubuntu 16.04 ffmpeg text output changed slightly. Test if text needs to be splitted further
+				if ' ' in input_audiostream_codec_format:
+					input_audiostream_codec_format = input_audiostream_codec_format.split(' ')[0].strip()
+
 				output_audiostream_codec_format = 'pcm_s16le' # Default audio extraction bit depth is 16 bits if input file bit depth is not known.
 				bit_depth = 16 # Default bit depth.
 
@@ -3989,7 +3994,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 		if number_of_ffmpeg_supported_audiostreams > 0: # If ffmpeg found audio streams check if the file extension is one that sox supports (wav, flac, ogg).
 			if str(os.path.splitext(filename)[1]).lower() in natively_supported_file_formats:
 				natively_supported_file_format = True
-				
+
 		if (number_of_ffmpeg_supported_audiostreams == 1) and (str(os.path.splitext(filename)[1]).lower() == '.ogg'): # Test if ogg - file has more than two channels, since sox only supports mono and stereo ogg - files. If there are more channels, audio must be converted before processing.
 			if  (number_of_audio_channels != '1') and (number_of_audio_channels != '2'):
 				natively_supported_file_format = False
@@ -4030,7 +4035,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 
 		# Store information we gathered about the file so that we can return it to the calling function.
 		file_format_support_information = [natively_supported_file_format, ffmpeg_supported_fileformat, number_of_ffmpeg_supported_audiostreams, details_of_ffmpeg_supported_audiostreams, time_slice_duration_string, audio_duration_rounded_to_seconds, ffmpeg_commandline, target_filenames, mxf_audio_remixing, filenames_and_channel_counts_for_mxf_audio_remixing, audio_remix_channel_map, number_of_unsupported_streams_in_file]
-		
+
 		# Save some debug information.
 		if debug_file_processing == True:
 			debug_information_list.append('Support information for main file')
