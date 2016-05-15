@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '278'
+loudnesscorrection_version = '279'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -3498,7 +3498,10 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 						debug_information_list.append('Returned from subroutine: read_audio_remix_map_file')
 
 			if 'Audio:' in item: # There is the string 'Audio' for each audio stream that ffmpeg finds. Count how many 'Audio' strings is found and put the strings in a list. The string holds detailed information about the stream and we print it later.
-			
+		
+				if 'Could not find codec parameters for stream' in item: # FFmpeg 2.8.6 prints info about 0 channel stream two times. First it complains that it can't find codec parameters, then it prints stream info. Prevent the first error message from incrementing the audio stream counter, since the 0 channel 'error' will be detected later in FFmpeg output when specifically checking for 0 channel streams.
+					continue
+
 				number_of_audio_channels = '0'
 				audio_stream_number = audio_stream_number + 1
 				
