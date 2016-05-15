@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '279'
+loudnesscorrection_version = '280'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -377,6 +377,10 @@ record_separator = chr(13) + chr(10) # This string is used to separate info for 
 ip_address_refresh_interval = 300 
 ip_address_refresh_counter = ip_address_refresh_interval  # Force ip address check immediately when the program is run by setting the counter to the same value as the check interval.
 ip_address_acquirement_error_has_already_been_reported = False
+
+# Define formats that we don't want to support meaning files FFmpeg tries to convert with bad results.
+# FFmpeg 2.8.6 on Ubuntu 16.04 tries to use Timidity with FFmpeg to create a wav from midi files, but the result is total garbage, prevent this.
+unsupported_formats_list = ['mid','mod']
 
 ###############################################################################################################################################################################
 # Default value definitions end here :)																	      #
@@ -3461,14 +3465,22 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 
 			if 'Input #0' in item:
 				# Get the type of the file.
-				file_type = str(item).split('from')[0].split(',')[1].strip()
+				file_type = str(item).split('from')[0].split(',')[1].strip().lower()
 
-				# avconv / FFmpeg can not tell if file wrapper format is webm or matroska, it announces these all as one formatwith keywords:   matroska,webm.
+				# avconv / FFmpeg can not tell if file wrapper format is webm or matroska, it announces these all as one format with keywords:   matroska,webm.
 				# Get true wrapper format with mediainfo.
 				if file_type == 'matroska':
 					wrapper_format, mediainfo_error_message = get_file_wrapper_format_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish)
 					if (mediainfo_error_message == '') and (wrapper_format != ''):
 						file_type = wrapper_format
+
+
+				# Check if file is a format that FFmpeg is not able to process correctly and prevent processing it.
+				if file_type in unsupported_formats_list:
+					wrapper_format_is_in_allowed_formats_list = False
+					break
+
+				
 
 				# If allowed wrapper format is 'all' then process all formats that FFmpeg supports, otherwise limit processing to user defined wrapper formats.
 				if 'all' not in ffmpeg_allowed_wrapper_formats:
@@ -3567,6 +3579,8 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 					number_of_audio_channels = '8'
 				if 'octagonal' in number_of_audio_channels_as_text:
 					number_of_audio_channels = '8'
+				if 'hexadecagonal' in number_of_audio_channels_as_text:
+					number_of_audio_channels = '16'
 
 				if number_of_audio_channels == '0':
 					error_message = 'ERROR !!! I could not parse FFmpeg channel count string: ' * english + 'VIRHE !!! En osannut tulkita ffmpeg:in antamaa tietoa kanavien lukumäärästä: ' * finnish + '\'' + str(number_of_audio_channels_as_text_split_to_a_list[0]) + '\'' + ' for file:' * english + ' tiedostolle ' * finnish + ' ' + filename
@@ -3586,7 +3600,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 
 					if (file_type in mxf_formats) and (mxf_audio_remixing == False):
 						skip_this_audio_stream = True
-				
+
 				if skip_this_audio_stream == True:
 					unsupported_stream_name = filename_and_extension[0] + '-AudioStream-' * english + '-Miksaus-' * finnish + str(audio_stream_number) + '-ChannelCount-' * english + '-AaniKanavia-' * finnish  + number_of_audio_channels
 					error_message = 'There are ' * english + 'Miksauksessa ' * finnish  + str(audio_stream_number) * finnish + ' on ' * finnish + str(number_of_audio_channels) + ' channels in stream ' * english + str(audio_stream_number) * english + ', only channel counts from one to six are supported' * english + ' äänikanavaa, vain kanavamäärät yhdestä kuuteen ovat tuettuja' * finnish
@@ -3977,6 +3991,10 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 
 		if wrapper_format_is_in_allowed_formats_list == False:
 			ffmpeg_error_message = 'File wrapper format ' * english + 'Tiedoston paketointiformaatti ' * finnish + str(file_type) + ' is not supported' * english + ' ei ole tuettu' * finnish
+			send_ffmpeg_error_message_by_email = False
+
+		if (wrapper_format_is_in_allowed_formats_list == False) and (file_type in unsupported_formats_list):
+			ffmpeg_error_message = 'File format ' * english + 'Tiedostoformaatti ' * finnish + str(file_type) + ' is not supported' * english + ' ei ole tuettu' * finnish
 			send_ffmpeg_error_message_by_email = False
 
 		if (ffmpeg_supported_fileformat == False) and (len(list_of_error_messages_for_unsupported_streams) > 0):
