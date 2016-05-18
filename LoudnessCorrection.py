@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '280'
+loudnesscorrection_version = '281'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -379,8 +379,8 @@ ip_address_refresh_counter = ip_address_refresh_interval  # Force ip address che
 ip_address_acquirement_error_has_already_been_reported = False
 
 # Define formats that we don't want to support meaning files FFmpeg tries to convert with bad results.
-# FFmpeg 2.8.6 on Ubuntu 16.04 tries to use Timidity with FFmpeg to create a wav from midi files, but the result is total garbage, prevent this.
-unsupported_formats_list = ['mid','mod']
+# FFmpeg 2.8.6 on Ubuntu 16.04 tries to use libmodplug with FFmpeg to create a wav from midi files, but the result is total garbage, prevent this.
+unsupported_formats_list = ['libmodplug']
 
 ###############################################################################################################################################################################
 # Default value definitions end here :)																	      #
@@ -3478,9 +3478,10 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				# Check if file is a format that FFmpeg is not able to process correctly and prevent processing it.
 				if file_type in unsupported_formats_list:
 					wrapper_format_is_in_allowed_formats_list = False
+					wrapper_format, mediainfo_error_message = get_file_wrapper_format_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish)
+					if (mediainfo_error_message == '') and (wrapper_format != ''):
+						file_type = wrapper_format
 					break
-
-				
 
 				# If allowed wrapper format is 'all' then process all formats that FFmpeg supports, otherwise limit processing to user defined wrapper formats.
 				if 'all' not in ffmpeg_allowed_wrapper_formats:
@@ -3991,10 +3992,6 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 
 		if wrapper_format_is_in_allowed_formats_list == False:
 			ffmpeg_error_message = 'File wrapper format ' * english + 'Tiedoston paketointiformaatti ' * finnish + str(file_type) + ' is not supported' * english + ' ei ole tuettu' * finnish
-			send_ffmpeg_error_message_by_email = False
-
-		if (wrapper_format_is_in_allowed_formats_list == False) and (file_type in unsupported_formats_list):
-			ffmpeg_error_message = 'File format ' * english + 'Tiedostoformaatti ' * finnish + str(file_type) + ' is not supported' * english + ' ei ole tuettu' * finnish
 			send_ffmpeg_error_message_by_email = False
 
 		if (ffmpeg_supported_fileformat == False) and (len(list_of_error_messages_for_unsupported_streams) > 0):
