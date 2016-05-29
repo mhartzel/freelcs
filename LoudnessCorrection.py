@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '282'
+loudnesscorrection_version = '283'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -3833,9 +3833,9 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			if len(ffmpeg_commandline) == 0:
 
 				if file_type == 'mpegts':
-					ffmpeg_commandline = [ffmpeg_executable_name, '-y', '-fflags', 'discardcorrupt', '-i', file_to_process, '-vn']
+					ffmpeg_commandline = [ffmpeg_executable_name, '-y', '-fflags', '+nofillin', '+discardcorrupt', '-i', file_to_process, '-vn']
 				else:
-					ffmpeg_commandline = [ffmpeg_executable_name, '-y', '-i', file_to_process, '-vn']
+					ffmpeg_commandline = [ffmpeg_executable_name, '-y', '-fflags', '+nofillin', '-i', file_to_process, '-vn']
 			
 			# Compile the name of output files to a list.
 			# If we are going to remix audio from a mxf - file before processing it, then the output files are temporary and needs to have names that don't conflict with the final names.
