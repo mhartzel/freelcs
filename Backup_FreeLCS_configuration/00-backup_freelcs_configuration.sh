@@ -53,32 +53,34 @@ if [ "$OS_NAME" != "ubuntu" ] && [ "$OS_NAME" != "debian" ] ; then
 	exit
 fi
 
-# if [ "$OS_NAME" =="ubuntu" ] ; then
-# 	if [ "$OS_VERSION_MAJOR_NUMBER" -lt "12" ] ; then
-# 		echo
-# 		echo "Ubuntu version "$OS_VERSION" is not supported."
-# 		echo "Can't continue."
-# 		echo
-# 		exit
-# 	fi
+# Maybe it's better not to activate these os version tests. The warning that the script prints at the end of backup should be enough.
+#
+# if [ "$OS_NAME" == "ubuntu" ] ; then
+#         if [ "$OS_VERSION_MAJOR_NUMBER" -lt "14" ] ; then
+#                 echo
+#                 echo "Ubuntu version "$OS_VERSION" is not supported."
+#                 echo "Can't continue."
+#                 echo
+#                 exit
+#         fi
 # 
-# 	if [ "$OS_VERSION_MINOR_NUMBER" != "04" ] ; then
-# 		echo
-# 		echo "Ubuntu version "$OS_VERSION" is not supported."
-# 		echo "Can't continue."
-# 		echo
-# 		exit
-# 	fi
+#         if [ "$OS_VERSION_MINOR_NUMBER" != "04" ] ; then
+#                 echo
+#                 echo "Ubuntu version "$OS_VERSION" is not supported."
+#                 echo "Can't continue."
+#                 echo
+#                 exit
+#         fi
 # fi
 # 
-# if [ "$OS_NAME" =="debian" ] ; then
-# 	if [ "$OS_VERSION_MAJOR_NUMBER" -lt "7" ] ; then
-# 		echo
-# 		echo "Debian version "$OS_VERSION" is not supported."
-# 		echo "Can't continue."
-# 		echo
-# 		exit
-# 	fi
+# if [ "$OS_NAME" == "debian" ] ; then
+#         if [ "$OS_VERSION_MAJOR_NUMBER" -lt "8" ] ; then
+#                 echo
+#                 echo "Debian version "$OS_VERSION" is not supported."
+#                 echo "Can't continue."
+#                 echo
+#                 exit
+#         fi
 # fi
 
 echo
@@ -905,9 +907,6 @@ echo "Reboot the computer to start FreeLCS or give the following command:"
 echo
 echo "sudo  -b  /etc/init.d/loudnesscorrection_init_script restart"
 echo
-echo "If you need libav format support, then please install it now with the command:"
-echo "sudo apt-get -y install libav-tools"
-echo
 
 END_OF_FILE
 
@@ -927,6 +926,27 @@ echo "Reboot the computer to start FreeLCS or give the following command:"
 echo
 echo "sudo  -b  systemctl  start  freelcs"
 echo
+
+END_OF_FILE
+
+fi
+
+
+MEDIA_CONVERTER_NAME="ffmpeg"
+
+if [ "$OS_NAME" == "ubuntu" ] && [ "$OS_VERSION_MAJOR_NUMBER" -lt "16" ] ; then
+	MEDIA_CONVERTER_NAME="avconv"
+fi
+
+if [ "$OS_NAME" == "debian" ] && [ "$OS_VERSION_MAJOR_NUMBER" -lt "9" ] ; then
+	MEDIA_CONVERTER_NAME="avconv"
+fi
+
+
+if [ "$MEDIA_CONVERTER_NAME" == "avconv" ] ; then
+
+cat >> "00-restore_freelcs_configuration.sh" << 'END_OF_FILE'
+
 echo "If you need libav format support, then please install it now with the command:"
 echo "sudo apt-get -y install libav-tools"
 echo
@@ -934,6 +954,20 @@ echo
 END_OF_FILE
 
 fi
+
+
+if [ "$MEDIA_CONVERTER_NAME" == "ffmpeg" ] ; then
+
+cat >> "00-restore_freelcs_configuration.sh" << 'END_OF_FILE'
+
+echo "If you need ffmpeg format support, then please install it now with the command:"
+echo "sudo apt-get -y install ffmpeg"
+echo
+
+END_OF_FILE
+
+fi
+
 
 chmod 755 "00-restore_freelcs_configuration.sh"
 
