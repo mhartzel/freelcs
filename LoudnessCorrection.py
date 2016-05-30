@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '283'
+loudnesscorrection_version = '284'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -3833,7 +3833,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			if len(ffmpeg_commandline) == 0:
 
 				if file_type == 'mpegts':
-					ffmpeg_commandline = [ffmpeg_executable_name, '-y', '-fflags', '+nofillin', '+discardcorrupt', '-i', file_to_process, '-vn']
+					ffmpeg_commandline = [ffmpeg_executable_name, '-y', '-fflags', '+nofillin+discardcorrupt', '-i', file_to_process, '-vn']
 				else:
 					ffmpeg_commandline = [ffmpeg_executable_name, '-y', '-fflags', '+nofillin', '-i', file_to_process, '-vn']
 			
