@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '284'
+loudnesscorrection_version = '285'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -5821,10 +5821,9 @@ try:
 			sys.exit(1)
 
 	# If both FFmpeg and Avconv are found then decide which one to use.
-	# Default is = If both are found then use avconv, not FFmpeg.
-	# This is because avconv is available on Ubuntu and Debian repositories, not because avconv is better.
-	# In fact it might be the opposite, but the Debian / Ubuntu maintainer has chosen to support only avconv
-	# for his egoistic reasons (he is part of the avconv developer group, that forked FFmpeg to start the libav - project).
+	# Default is = If both are found then use FFmpeg not avconv.
+	# This is because now (2016.05) all distros are transitioning from avconv back to FFmpeg. Ubuntu 16.04 already uses only FFmpeg, and Debian 9 will also.
+
 	ffmpeg_executable_name = ''
 
 	# If user has forced no_ffmpeg on the command line, don't use FFmpeg or avconv.
@@ -5832,11 +5831,11 @@ try:
 		ffmpeg_executable_found = False
 		avconv_executable_found = False
 
-	if ffmpeg_executable_found == True:
-		ffmpeg_executable_name = 'ffmpeg'
-
 	if avconv_executable_found == True:
 		ffmpeg_executable_name = 'avconv'
+
+	if ffmpeg_executable_found == True:
+		ffmpeg_executable_name = 'ffmpeg'
 
 	# Override some variables, if user gave same debug options on the commandline.
 	if force_samplepeak == True:
