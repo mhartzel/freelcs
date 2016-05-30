@@ -27,7 +27,7 @@ import email.mime.multipart
 import tempfile
 import copy
 
-version = '108'
+version = '109'
 freelcs_version = '3.3'
 
 ###################################
@@ -5215,6 +5215,15 @@ if (os_name == '') or (os_version == ''):
 # Convert os version number to float, so that we can easily compare version numbers
 os_version_float = float(os_version)
 
+# Define the name of the external media conversion tools depending on os version (libav-tools or FFmpeg)
+# This information is only used when printing text on the installer windows.
+media_converter_name = 'FFmpeg'
+
+if (os_name == 'ubuntu') and (os_version_float < 16.04):
+	media_converter_name = 'libav-tools'
+
+if (os_name == 'debian') and (os_version == '8'):
+	media_converter_name = 'libav-tools'
 
 # Create the root GUI window.
 root_window = tkinter.Tk()
@@ -6631,7 +6640,7 @@ row_counter = -1
 
 # Some explanatory texts.
 row_counter = row_counter + 1
-eleventh_window_label_1 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=int(text_wrap_length_in_pixels * 1.7), text='When you store a program in a MXF wrapper, then audio mixes are usually split up and saved as separate mono files. For a program with stereo and 5.1 mix, eight separate audio files are stored in the MXF. This complicates things when you want to measure loudness of those mixes, audio files needs to be combined back to full mixes before this is possible.\n\nThis FreeLCS feature allows you to enable remixing audio inside a MXF file back to original mixes before loudness measurement.\n\nThe boxes below allow you to define a default "MXF Remix Map" that is used if no other information about the mixes is available. The numbers above the boxes correspond to the mix number that you want to create and the boxes below lets you define how many input audio channels are combined to form the mix. You can have more mixes defined than you have physical audio files available, since only mixes that have all needed channels available will be created. It is also possible to create file specific remix maps, see the user manual for more information about it.\n\nNote that you need to install libav-tools for this feature to work.\n')
+eleventh_window_label_1 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=int(text_wrap_length_in_pixels * 1.7), text='When you store a program in a MXF wrapper, then audio mixes are usually split up and saved as separate mono files. For a program with stereo and 5.1 mix, eight separate audio files are stored in the MXF. This complicates things when you want to measure loudness of those mixes, audio files needs to be combined back to full mixes before this is possible.\n\nThis FreeLCS feature allows you to enable remixing audio inside a MXF file back to original mixes before loudness measurement.\n\nThe boxes below allow you to define a default "MXF Remix Map" that is used if no other information about the mixes is available. The numbers above the boxes correspond to the mix number that you want to create and the boxes below lets you define how many input audio channels are combined to form the mix. You can have more mixes defined than you have physical audio files available, since only mixes that have all needed channels available will be created. It is also possible to create file specific remix maps, see the user manual for more information about it.\n\nNote that you need to install ' + media_converter_name + ' for this feature to work.\n')
 eleventh_window_label_1.grid(column=0, row=row_counter, pady=10, padx=10, columnspan=16, sticky=(tkinter.W, tkinter.N))
 
 row_counter = row_counter + 1
@@ -7170,11 +7179,11 @@ eleventh_window_separator_1.grid(column=0, row=row_counter, padx=10, pady=10, co
 
 # Some explanatory texts.
 row_counter = row_counter + 1
-eleventh_window_label_3 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=int(text_wrap_length_in_pixels * 1.7), text="If you decide to install libav-tools, then you can define here what wrapper and codec formats you allow it to process. You can allow libav-tools to process all formats it supports or you can limit processing to royalty / patent free formats (Please see FAQ about format patents). If you don't install libav-tools, then these settings won't have any effect.\n\nIf you enabled 'Mxf Remix Map' above, then you need to allow libav-tools to process MXF here.\n")
+eleventh_window_label_3 = tkinter.ttk.Label(eleventh_frame_child_frame_1, wraplength=int(text_wrap_length_in_pixels * 1.7), text="If you decide to install " + media_converter_name + ", then you can define here what wrapper and codec formats you allow it to process. You can allow " + media_converter_name + " to process all formats it supports or you can limit processing to royalty / patent free formats (Please see FAQ about format patents). If you don't install " + media_converter_name + ", then these settings won't have any effect.\n\nIf you enabled 'Mxf Remix Map' above, then you need to allow " + media_converter_name + " to process MXF here.\n")
 eleventh_window_label_3.grid(column=0, row=row_counter, pady=10, padx=10, columnspan=16, sticky=(tkinter.W, tkinter.N))
 
 row_counter = row_counter + 1
-eleventh_window_label_5 = tkinter.ttk.Label(eleventh_frame_child_frame_1, text='Libav-tools allowed wrapper formats')
+eleventh_window_label_5 = tkinter.ttk.Label(eleventh_frame_child_frame_1, text=media_converter_name + ' allowed wrapper formats')
 eleventh_window_label_5.grid(column=0, row=row_counter, columnspan=4, padx=10, sticky=(tkinter.W))
 ffmpeg_wrapper_formats_true_radiobutton = tkinter.ttk.Radiobutton(eleventh_frame_child_frame_1, text='All', variable=enable_all_nonfree_ffmpeg_wrapper_formats, value=True, command=print_ffmpeg_usage_options)
 ffmpeg_wrapper_formats_false_radiobutton = tkinter.ttk.Radiobutton(eleventh_frame_child_frame_1, text='Only Wav, Flac, Ogg, Matroska and wrappers:', variable=enable_all_nonfree_ffmpeg_wrapper_formats, value=False, command=print_ffmpeg_usage_options)
@@ -7194,7 +7203,7 @@ eleventh_window_mpeg_enable = tkinter.Checkbutton(eleventh_frame_child_frame_1, 
 eleventh_window_mpeg_enable.grid(row=row_counter, column=column_counter, pady=5, padx=20, columnspan=2, sticky=(tkinter.W))
 
 row_counter = row_counter + 1
-eleventh_window_label_6 = tkinter.ttk.Label(eleventh_frame_child_frame_1, text='Libav-tools allowed codec formats')
+eleventh_window_label_6 = tkinter.ttk.Label(eleventh_frame_child_frame_1, text=media_converter_name + ' allowed codec formats')
 eleventh_window_label_6.grid(column=0, row=row_counter, columnspan=4, padx=10, sticky=(tkinter.W))
 ffmpeg_codec_formats_true_radiobutton = tkinter.ttk.Radiobutton(eleventh_frame_child_frame_1, text='All', variable=enable_all_nonfree_ffmpeg_codec_formats, value=True, command=print_ffmpeg_usage_options)
 ffmpeg_codec_formats_false_radiobutton = tkinter.ttk.Radiobutton(eleventh_frame_child_frame_1, text='Only PCM, Flac, Vorbis and codecs:', variable=enable_all_nonfree_ffmpeg_codec_formats, value=False, command=print_ffmpeg_usage_options)
@@ -7477,10 +7486,14 @@ ninth_window_finish_button.grid(column=2, row=3, padx=30, pady=10, sticky=(tkint
 ###########################################################################################################
 
 # Create the label for the frame
-ffmpeg_info_window_label_1 = tkinter.ttk.Label(ffmpeg_frame_child_frame_1, wraplength=text_wrap_length_in_pixels + 10, text="If you want FreeLCS to be able to decompress virtually any audio format, then you need to install libav-tools. You can do it by copy / pasting the following command in a terminal window and executing it:\n")
+ffmpeg_info_window_label_1 = tkinter.ttk.Label(ffmpeg_frame_child_frame_1, wraplength=text_wrap_length_in_pixels + 10, text="If you want FreeLCS to be able to decompress virtually any audio format, then you need to install " + media_converter_name + ". You can do it by copy / pasting the following command in a terminal window and executing it:\n")
 ffmpeg_info_window_label_1.grid(column=0, row=0, columnspan=4, pady=10, padx=10, sticky=(tkinter.N))
 
-ffmpeg_manual_installation_command = "sudo apt-get -y install libav-tools"
+ffmpeg_manual_installation_command = "sudo apt-get -y install ffmpeg"
+
+if media_converter_name == 'libav-tools':
+	ffmpeg_manual_installation_command = "sudo apt-get -y install libav-tools"
+
 
 # Create a text widget to display text that can be copy pasted.
 ffmpeg_info_window_text_widget = tkinter.Text(ffmpeg_frame_child_frame_1, width=40, height=1, wrap='none', undo=False)
@@ -7495,7 +7508,7 @@ ffmpeg_info_window_text_widget.focus()
 
 ffmpeg_info_window_text_widget.grid(column=0, row=1, columnspan=4, sticky=(tkinter.N, tkinter.S))
 
-ffmpeg_info_window_label_2 = tkinter.ttk.Label(ffmpeg_frame_child_frame_1, wraplength=text_wrap_length_in_pixels + 10, text="\nDecompressing patented formats with libav-tools may require a license from the rights holders. However libav-tools may also be used to process free formats (MXF, MKV, WebM and others) or formats with possibly expired patents (Mpeg1 Layer1, Mpeg 1 Layer2) without aquiring licenses. (Disclaimer: This is not legal advice, if in doubt ask a lawyer).\n\nLibav-tools is used to process files if it's installed before starting LoudnessCorrection. So you can always install it later and reboot your server to take advantage of libav-tools.\n\nSupported formats without libav-tools are: Wav, Flac, Ogg.\n\nThe command to uninstall libav-tools is: sudo apt-get remove libav-tools")
+ffmpeg_info_window_label_2 = tkinter.ttk.Label(ffmpeg_frame_child_frame_1, wraplength=text_wrap_length_in_pixels + 10, text="\nDecompressing patented formats with " + media_converter_name + " may require a license from the rights holders. However " + media_converter_name + " may also be used to process free formats (MXF, MKV, WebM and others) or formats with possibly expired patents (Mpeg1 Layer1, Mpeg 1 Layer2) without aquiring licenses. (Disclaimer: This is not legal advice, if in doubt ask a lawyer).\n\n" + media_converter_name + " is used to process files if it's installed before starting LoudnessCorrection. So you can always install it later and reboot your server to take advantage of " + media_converter_name + ".\n\nSupported formats without " + media_converter_name + " are: Wav, Flac, Ogg.\n\nThe command to uninstall " + media_converter_name + " is: sudo apt-get remove " + media_converter_name)
 ffmpeg_info_window_label_2.grid(column=0, row=2, columnspan=4, pady=10, padx=10, sticky=(tkinter.N))
 
 # Create the buttons for the frame
