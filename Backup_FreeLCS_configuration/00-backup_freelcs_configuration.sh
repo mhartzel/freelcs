@@ -40,10 +40,15 @@ if [ ! -e "/etc/os-release" ] ; then
 fi
 
 # Find the os name and lowercase it
+OS_NAME=""
+OS_VERSION=""
+OS_VERSION_MAJOR_NUMBER=""
+OS_VERSION_MINOR_NUMBER=""
+
 OS_NAME=`cat /etc/os-release | grep "^ID=" | sed 's/^ID=//' | sed 's/"//g' | sed 's/./\L&/g' `
 OS_VERSION=`cat /etc/os-release | grep "^VERSION_ID=" | sed 's/^VERSION_ID=//' | sed 's/"//g'`
 OS_VERSION_MAJOR_NUMBER=`echo $OS_VERSION | sed 's/\..*$//'`
-OS_VERSION_MINOR_NUMBER=`echo $OS_VERSION | sed 's/^.*\.//'`
+OS_VERSION_MINOR_NUMBER=`echo $OS_VERSION | grep "\." | sed 's/^.*\.//'`
 
 if [ "$OS_NAME" != "ubuntu" ] && [ "$OS_NAME" != "debian" ] ; then
 	echo
