@@ -481,8 +481,18 @@ echo "# Installing required packages with apt-get #"
 echo "#############################################"
 echo
 
-# If sox is installed as a apt - package, then remove it, because we are going to install it from source.
-apt-get remove -y sox
+# Only install sox from source on oses that don't have at least versio 14.4.0 available on repository
+SOX_INSTALLATION_COMMAND="sox"
+INSTALL_SOX_FROM_OS_REPOSITORY=true
+
+if [ "$OS_NAME" == "ubuntu" ] && [ "$OS_VERSION" == "12.04" ] ; then 
+	INSTALL_SOX_FROM_OS_REPOSITORY=false
+	SOX_INSTALLATION_COMMAND=""
+
+	# If sox is installed as a apt - package, then remove it, because we are going to install it from source.
+	apt-get remove -y sox
+
+fi
 
 apt-get -q=2 -y --reinstall install python3 idle3 automake autoconf libtool gnuplot mediainfo build-essential git cmake libsndfile-dev libmpg123-dev libmpcdec-dev libglib2.0-dev libfreetype6-dev librsvg2-dev libspeexdsp-dev libavcodec-dev libavformat-dev libtag1-dev libxml2-dev libgstreamer0.10-dev libgstreamer-plugins-base0.10-dev libqt4-dev $SAMBA_INSTALLATION_COMMAND $SOX_INSTALLATION_COMMAND $ADDITIONAL_PACKAGE_INSTALLATION_COMMANDS 
 
@@ -618,15 +628,6 @@ if [ "$INIT_SYSTEM_NAME" == "systemd" ] ; then
 		echo
 		exit
 	fi
-fi
-
-# Only install sox from source on oses that don't have at least versio 14.4.0 available on repository
-SOX_INSTALLATION_COMMAND="sox"
-INSTALL_SOX_FROM_OS_REPOSITORY=true
-
-if [ "$OS_NAME" == "ubuntu" ] && [ "$OS_VERSION" == "12.04" ] ; then 
-	INSTALL_SOX_FROM_OS_REPOSITORY=false
-	SOX_INSTALLATION_COMMAND=""
 fi
 
 
