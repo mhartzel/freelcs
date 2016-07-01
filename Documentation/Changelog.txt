@@ -1,3 +1,100 @@
+
+#####################################
+# Released FreeLCS 3.3 with:        #
+# ----------------------------      #
+# - LoudnessCorrection version 287  #
+# - HeartBeat_Checker version 022   #
+# - Installer version 109           #
+# - Latest Documentation            #
+#####################################
+
+Documentation
+-------------
+- Added info about dropping support of ubuntu 12.04 and Debian 7.
+- Recommend always to use a 64 bit operating system because the 32 bit version of mediainfo can't handle files bigger than 4 GB.
+- Ubuntu 16.04 Server locale works out of the box, no manual fixing needed anymore.
+- Added more info about OS X Samba problems. Copy files one by one to the FreeLCS server, most errors happen when transferring many files in one go.
+
+00-backup_freelcs_configuration.sh
+-----------------------------------
+- Corrected a bug I created in last commits causing sox not to be installed when restoring a FreeLCS backup.
+
+00-backup_freelcs_configuration.sh
+-----------------------------------
+Correct the OS_VERSION_MINOR_NUMBER parsing on Debian. This did not affect anything since the value is not yet used for anything, but maybe in the future :)
+
+00-backup_freelcs_configuration.sh
+-----------------------------------
+Install apt-get packages first and after that FreeLCS scripts, so that configuration file that comes with samba won't have a chance to overwrite users samba configuration.
+
+LoudnessCorrection 287
+-----------------------
+- Fix some of the new code meant for ubuntu 16.04 and FFmpeg 2.8.6 so that it still works correctly on older avconv based distros.
+
+LoudnessCorrection 285
+-----------------------
+- By default use FFmpeg, not avconv if both are found. This is because all distros are now transitioning from avconv back to FFmpeg. Ubuntu 16.04 already only uses FFmpeg and Debian 9 will also.
+
+installer 109
+--------------
+- Print correct text on installer window about installing libav-tools / FFmpeg on different distro versions. Ubuntu 16.04 now uses FFmpeg and previous versions of it and Debian 8 still uses libav-tools.
+
+00-backup_freelcs_configuration.sh
+-----------------------------------
+Updated to print a correct media converter installation command at the end of installation on both avconv and FFmpeg based distros.
+
+installer 108
+--------------
+- Removed support for debian 7.
+
+LoudnessCorrection 284
+-----------------------
+- Correction to previous commit :)
+
+LoudnessCorrection 283
+-----------------------
+Ubuntu 16.04 has changed from avconv to FFmpeg and it cuts 10 - 50 ms away from the audio when processing certain compressed formats (mpegts, mp3, aac). Found a fix :)
+
+LoudnessCorrection 282
+-----------------------
+FFmpeg does no longer skip corrupted audio frames but decodes them by default. This results in 10 - 40 ms full volume noise at the end of some multistream mpegts audio streams, and this in turn results the peak measurement showing a too high value for the stream. Fixed with FFmpeg option -fflags discardcorrupt.
+
+LoudnessCorrection 281
+-----------------------
+- Made some corrections to code in previous commit
+
+LoudnessCorrection 280
+-----------------------
+This version define formats that we don't want to support meaning files FFmpeg tries to convert with bad results. FFmpeg 2.8.6 on Ubuntu 16.04 tries to use Timidity with FFmpeg to create a wav from midi files, but the result is total garbage, prevent this.
+
+LoudnessCorrection 279
+-----------------------
+FFmpeg 2.8.6 prints info about 0 channel stream two times. First it complains that it can't find codec parameters, then it prints stream info. Prevent the first error message from incrementing the audio stream counter, since the 0 channel 'error' will be detected later in FFmpeg output when specifically checking for 0 channel streams.
+
+LoudnessCorrection 278
+-----------------------
+In Ubuntu 16.04 ffmpeg text output changed slightly causing wrapper format detection to fail. Fixed.
+
+LoudnessCorrection 277
+----------------------
+Gnuplot 5 in Ubuntu 16.04 reverses y axis. Detect os version and adjust y axis cordinates accordingly
+
+LoudnessCorrection 275
+-----------------------
+Force FFmpeg to use less threads. On Ubuntu 16.04 with a 48 stream audiofile, FFmpeg created 327 threads resulting in stack space running out and FFmpeg failing.
+
+LoudnessCorrection 274
+-----------------------
+- Fixed 24 bit flac detection on Ubuntu 16.04
+
+Installer 107
+--------------
+- Removed Ubuntu 12.04 from supported oses.
+
+Installer 105
+---------------
+- Installer is now allowed to run on Ubuntu 16.04. Updated FreeLCS version number to 3.3
+
 #####################################
 # Released FreeLCS 3.2 with:        #
 # ----------------------------      #
@@ -6,6 +103,14 @@
 # - Installer version 104           #
 # - Latest Documentation            #
 #####################################
+
+Documentation
+--------------
+- Updated documentation for the FreeLCS release 3.2 :)
+
+Backup / Restore script
+-----------------------
+- Bugfixes.
 
 Backup / Restore script
 ------------------------
@@ -57,7 +162,7 @@ Installer version 99
 
 Installer version 98
 ---------------------
-- Strted testing if running on Debian 8 needs anymodifications to the functionality. This version accepts Debian 8 as install target os :)
+- Started testing if running on Debian 8 needs anymodifications to the functionality. This version accepts Debian 8 as install target os :)
 
 #####################################
 # Released FreeLCS 3.1 with:        #
