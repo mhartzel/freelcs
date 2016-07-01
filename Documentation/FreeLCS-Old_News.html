@@ -1,3 +1,123 @@
-<!DOCTYPE html><html dir="ltr" lang="en">  <head>    <meta content="text/html; charset=utf-8" http-equiv="content-type">    <title>FreeLCS-Old_News</title>    <link href="Stylesheets/freelcs_stylesheet.css" rel="stylesheet" type="text/css">  </head>  <body>    <h2><strong>Old news:</strong> </h2>    2013.12.04 FreeLCS 2.4 released.<br>    <ul>      <li>Libebur128 source code repository that FreeLCS uses during        installation was reorganized by its author. The change broke        installation for FreeLCS 2.3 and older. I uploaded my backup of original        libebur128 source code to github and updated FreeLCS installer to        install libebur128 from this new repository.</li>      <li>All installations made before this change will continue to work fine,        but new installations or restoring an old backup made with FreeLCS 2.3        backup-tool won't work anymore. All new installations must be done with        version 2.4. Sorry for the inconvenience.</li>      <li>If you made a backup of your server using the tool provided in FreeLCS        2.3 zip, then please download FreeLCS version 2.4 and make a new backup.        The restore script in version 2.3 uses the original libebur128        repository and it does not work the way it used to when FreeLCS 2.3 was        released.</li>      <li>There is no new functionality in this release (though some new        features are under development :)</li>    </ul>    <strong>2013.03.29</strong> FreeLCS 2.3 released.    <h4> </h4>    <ul>      <li> This is a maintenance bug fix release.</li>      <li>Fixes a bug made in FreeLCS version 2.2 that affects only output files        bigger than 4 GB. When the output file was split to separate mono        channels, some channels were missing.</li>      <li>Fixed a number of ways LoudnessCorrection.py could be crashed by        deleting files that it was already processing.</li>      <li>Added a new script to backup / clone FreeLCS installation to another        Ubuntu machine. The script does not require X and can be used over a ssh        - connection. This functionality can be used to create automation that        clones FreeLCS installation to several machines quickly and easily. Read        about it <a href="file:///tavara/00-eCryptsFS-Auki/Koodaus/freelcs/Documentation/FreeLCS_User_Manual.html#Cloning%20a%20FreeLCS%20installation%20to%20another%20machine%20%28without%20a%20display%29">here</a>.      </li>    </ul>    <strong>2013.03.10 FreeLCS 2.2 released.<br>    </strong>    <ul>      <li><strong></strong>This is a maintenance bug fix release. This version        fixes a couple of bugs that sometimes caused file processing to hang.        This release also adds code that catches possible Python error messages        and sends them to the user. This helps to identify what situation caused        the error.</li>      <li>Addition to the manual "How to synchronize server clock to a NTP        server".</li>      <li>Correction to manual: "Use UUID as the device name when configuring        software raid". This solves the problem where raid device number        sometimes changes when a kernel update is installed.</li>      <li>The installer no longer installs FFmpeg, but if the user does, then        FFmpeg is used for file processing.</li>    </ul>    <strong>2012.10.11</strong> FreeLCS 2.1 released.    <ul>      <li>This release fixes a bug: bit depth was not preserved if input file        had many audio streams with uncompressed audio in it.</li>    </ul>    <strong>2012.10.01:</strong> FreeLCS 2.0 released :)    <ul>      <li>This is an important bug fix release and everybody should upgrade.</li>      <li>Fixes a large number of bugs and undesired behaviors in FreeLCS and        includes several enhancements.<br>      </li>      <li>Fixes a couple of problems in helper programs libebur128 and sox. The        sox version 14.3.2 that comes with Ubuntu 12.04 is not able to handle        bigger than 4 GB files correctly. FreeLCS installer now downloads sox        source code and compiles and installs version 14.4.0 that fixes the        problem.</li>      <li>Supported channel orders are now defined (<a href="FreeLCS_FAQ.html#What%20channel%20orders%20are%20supported%20?">see
-          FAQ</a>).<br>      </li>      <li>Libebur128 is patched to support channel orders: 4.0 (L, R, LS, RS)        and 5.0 (L, R, C, LFE, LS, RS). These were previously not supported.</li>      <li>Libebur128 developer fixed a bug that caused loudness calculation to        hang when processing lots of very short files.<br>      </li>      <li>Behaviour for files bigger than 4 GB is now defined (<a href="FreeLCS_FAQ.html#What%20happens%20if%20output%20file%20size%20exceeds%20wav%20format%204%20GB%20size%20limit%20?">see
-          FAQ</a>).</li>      <li>Complete log of all changes is in the <a href="Changelog.txt">changelog</a>.<a          href="file:///home/mika/freelcs/Documentation/Changelog.txt"></a></li>    </ul>    <strong>2012.07.16:</strong> Bugfix release 1.01. Also added the possibility    to select between sample peak and TruePeak measurement in the installer.<strong><br>      2012.07.08:</strong> First public release of FreeLCS 1.00.    <p></p>  </body></html>
+<!DOCTYPE html>
+<html dir="ltr" lang="en">
+  <head>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type">
+    <title>FreeLCS-Old_News</title>
+    <link href="Stylesheets/freelcs_stylesheet.css" rel="stylesheet" type="text/css">
+  </head>
+  <body>
+    <h2><strong>Old news:</strong> </h2>
+    2014.06.05 FreeLCS 3.0 released.<br>
+    <ul>
+      <li>This new release adds major new features. If you are happy with your
+        current FreeLCS 2.3 or 2.4 installation then there is no reason to
+        upgrade :)</li>
+      <li>Support for Debian 7, Ubuntu 12.04 Server, Ubuntu 14.04 Desktop and
+        Server added. Note that installation on <a href="file:///mounttipiste/Sailytettava_Tavara-Digiboxi/00-Yhteinen_Kotidirri/00-eCyptsFS-Auki/Koodaus/freelcs/Documentation/Debian_modifications_needed_before_FreeLCS_installation.html">Debian
+          7</a> and <a href="file:///mounttipiste/Sailytettava_Tavara-Digiboxi/00-Yhteinen_Kotidirri/00-eCyptsFS-Auki/Koodaus/freelcs/Documentation/Ubuntu_Server_modifications_needed_before_FreeLCS_installation.html">Ubuntu
+          Server</a> requires some modifications to the operating system
+        configuration before installation.</li>
+      <li>FreeLCS 3.0 is able to <a href="file:///mounttipiste/Sailytettava_Tavara-Digiboxi/00-Yhteinen_Kotidirri/00-eCyptsFS-Auki/Koodaus/freelcs/Documentation/Machine_readable_results_and_MXF_audio_remix_mapping.html#Machine_readable_results">write
+          loudness results to a machine readable file</a>. With this feature you
+        can make FreeLCS the loudness measurement step in your automated file
+        processing workflow. You can also configure FreeLCS not to produce any
+        output files (loudness corrected audio files, history graphics) since
+        these might not be needed in an automated workflow.</li>
+      <li>With FreeLCS 3.0 you can define how audio channels inside an MXF file
+        will be combined to new mixes before loudness processing. The feature is
+        called <a href="file:///mounttipiste/Sailytettava_Tavara-Digiboxi/00-Yhteinen_Kotidirri/00-eCyptsFS-Auki/Koodaus/freelcs/Documentation/Machine_readable_results_and_MXF_audio_remix_mapping.html#MXF_audio_remixing">MXF
+          audio remixing</a>.</li>
+      <li>FreeLCS is no longer tested with FFmpeg since FFmpeg is no longer
+        easily available in Ubuntu 14.04 repositories. The only common tool
+        easily avaible to Debian 7 and Ubuntu 12.04 and 14.04 users is avconv
+        from libav-tools. FreeLCS 3.0 uses avconv if it is installed by the
+        user. There is a small known problem with the avconv version that ships
+        with Ubuntu 14.04 , <a href="file:///mounttipiste/Sailytettava_Tavara-Digiboxi/00-Yhteinen_Kotidirri/00-eCyptsFS-Auki/Koodaus/freelcs/Documentation/known_problems.txt">read
+          about it here</a>.</li>
+    </ul>
+    2013.12.04 FreeLCS 2.4 released.<br>
+    <ul>
+      <li>Libebur128 source code repository that FreeLCS uses during
+        installation was reorganized by its author. The change broke
+        installation for FreeLCS 2.3 and older. I uploaded my backup of original
+        libebur128 source code to github and updated FreeLCS installer to
+        install libebur128 from this new repository.</li>
+      <li>All installations made before this change will continue to work fine,
+        but new installations or restoring an old backup made with FreeLCS 2.3
+        backup-tool won't work anymore. All new installations must be done with
+        version 2.4. Sorry for the inconvenience.</li>
+      <li>If you made a backup of your server using the tool provided in FreeLCS
+        2.3 zip, then please download FreeLCS version 2.4 and make a new backup.
+        The restore script in version 2.3 uses the original libebur128
+        repository and it does not work the way it used to when FreeLCS 2.3 was
+        released.</li>
+      <li>There is no new functionality in this release (though some new
+        features are under development :)</li>
+    </ul>
+    <strong>2013.03.29</strong> FreeLCS 2.3 released.
+    <h4> </h4>
+    <ul>
+      <li> This is a maintenance bug fix release.</li>
+      <li>Fixes a bug made in FreeLCS version 2.2 that affects only output files
+        bigger than 4 GB. When the output file was split to separate mono
+        channels, some channels were missing.</li>
+      <li>Fixed a number of ways LoudnessCorrection.py could be crashed by
+        deleting files that it was already processing.</li>
+      <li>Added a new script to backup / clone FreeLCS installation to another
+        Ubuntu machine. The script does not require X and can be used over a ssh
+        - connection. This functionality can be used to create automation that
+        clones FreeLCS installation to several machines quickly and easily. Read
+        about it <a href="file:///tavara/00-eCryptsFS-Auki/Koodaus/freelcs/Documentation/FreeLCS_User_Manual.html#Cloning%20a%20FreeLCS%20installation%20to%20another%20machine%20%28without%20a%20display%29">here</a>.
+      </li>
+    </ul>
+    <strong>2013.03.10 FreeLCS 2.2 released.<br>
+    </strong>
+    <ul>
+      <li><strong></strong>This is a maintenance bug fix release. This version
+        fixes a couple of bugs that sometimes caused file processing to hang.
+        This release also adds code that catches possible Python error messages
+        and sends them to the user. This helps to identify what situation caused
+        the error.</li>
+      <li>Addition to the manual "How to synchronize server clock to a NTP
+        server".</li>
+      <li>Correction to manual: "Use UUID as the device name when configuring
+        software raid". This solves the problem where raid device number
+        sometimes changes when a kernel update is installed.</li>
+      <li>The installer no longer installs FFmpeg, but if the user does, then
+        FFmpeg is used for file processing.</li>
+    </ul>
+    <strong>2012.10.11</strong> FreeLCS 2.1 released.
+    <ul>
+      <li>This release fixes a bug: bit depth was not preserved if input file
+        had many audio streams with uncompressed audio in it.</li>
+    </ul>
+    <strong>2012.10.01:</strong> FreeLCS 2.0 released :)
+    <ul>
+      <li>This is an important bug fix release and everybody should upgrade.</li>
+      <li>Fixes a large number of bugs and undesired behaviors in FreeLCS and
+        includes several enhancements.<br>
+      </li>
+      <li>Fixes a couple of problems in helper programs libebur128 and sox. The
+        sox version 14.3.2 that comes with Ubuntu 12.04 is not able to handle
+        bigger than 4 GB files correctly. FreeLCS installer now downloads sox
+        source code and compiles and installs version 14.4.0 that fixes the
+        problem.</li>
+      <li>Supported channel orders are now defined (<a href="FreeLCS_FAQ.html#What%20channel%20orders%20are%20supported%20?">see
+          FAQ</a>).<br>
+      </li>
+      <li>Libebur128 is patched to support channel orders: 4.0 (L, R, LS, RS)
+        and 5.0 (L, R, C, LFE, LS, RS). These were previously not supported.</li>
+      <li>Libebur128 developer fixed a bug that caused loudness calculation to
+        hang when processing lots of very short files.<br>
+      </li>
+      <li>Behaviour for files bigger than 4 GB is now defined (<a href="FreeLCS_FAQ.html#What%20happens%20if%20output%20file%20size%20exceeds%20wav%20format%204%20GB%20size%20limit%20?">see
+          FAQ</a>).</li>
+      <li>Complete log of all changes is in the <a href="Changelog.txt">changelog</a>.<a
+          href="file:///home/mika/freelcs/Documentation/Changelog.txt"></a></li>
+    </ul>
+    <strong>2012.07.16:</strong> Bugfix release 1.01. Also added the possibility
+    to select between sample peak and TruePeak measurement in the installer.<strong><br>
+      2012.07.08:</strong> First public release of FreeLCS 1.00.
+    <p></p>
+  </body>
+</html>

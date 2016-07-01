@@ -120,9 +120,9 @@
         are used to process audio files ?</a></h2>
     <ul>
       <li>Natively supported formats are <strong>wav</strong>, <strong>flac</strong>
-        and <strong>ogg</strong>. If <strong>libav-tools</strong> is installed
-        then it's used to extract and convert audio from unsupported formats to
-        wav and flac.<br>
+        and <strong>ogg</strong>. If <strong>FFmpeg </strong>or<strong>
+          libav-tools</strong> is installed then it's used to extract and
+        convert audio from unsupported formats to wav and flac.<br>
       </li>
       <li><strong>Mediainfo</strong> gets duration info from mpeg transport
         stream files.<br>
@@ -140,13 +140,13 @@
     <ul>
       <li><strong>Wav</strong>, <strong>flac</strong> and <strong>ogg</strong>
         are natively supported.</li>
-      <li>If libav-tools is installed then it is used to convert other formats
-        to supported formats before processing. Libav-tools supports a large
-        number of formats: <strong>mp4</strong>, <strong>mp3</strong>, <strong>mp2</strong>,
-        <strong>avi</strong>, <strong>mov</strong>, <strong>aac</strong>, <strong>h264</strong>,
-        <strong>vob</strong>, <strong>mkv</strong> to name a few. Libav-tools
-        is able to extract all audio streams from supported file types including
-        video files. <br>
+      <li>If FFmpeg or libav-tools is installed then it is used to convert other
+        formats to supported formats before processing. FFmpeg and Libav-tools
+        both support a large number of formats: <strong>mp4</strong>, <strong>mp3</strong>,
+        <strong>mp2</strong>, <strong>avi</strong>, <strong>mov</strong>, <strong>aac</strong>,
+        <strong>h264</strong>, <strong>vob</strong>, <strong>mkv</strong> to
+        name a few. FFmpeg and Libav-tools are able to extract all audio streams
+        from supported file types including video files. <br>
       </li>
       <li>Note that all channels of one mix must be in the same file. If your
         5.1 mix consists of 6 files, then you must combine them before dropping
@@ -163,16 +163,15 @@
         and&nbsp; audio conversion program from <strong>ffmpeg</strong> to <strong>avconv</strong>.
         This "fork" created a new project that continued development of the
         FFmpeg source code parallel to the FFmpeg - project. Both projects have
-        slowly evolved their own way creating a puzzling situation for the
-        users. Tools that both projects develop (FFmpeg and avconv) are quite
-        similar by features, but there are differences in capabilites and usage
-        here and there. More about the FFmpeg vs. libav situation can be read <a
-          href="http://blog.pkh.me/p/13-the-ffmpeg-libav-situation.html">here</a>.</li>
-      <li>Starting from Ubuntu version 14.04 FFmpeg is no more available in the
-        package repository, only libav is available for easy installation.
-        Because of this FreeLCS starting from version 3.0 only supports libav
-        (for all supported operating systems Debian 8, Debian 7, Ubuntu 14.04
-        and 12.04).</li>
+        slowly evolved their own way creating a puzzling situation for the user.
+        Tools that both projects develop (FFmpeg and avconv) are quite similar
+        by features, but there are differences in capabilites and usage here and
+        there. More about the FFmpeg vs. libav situation can be read <a href="http://blog.pkh.me/p/13-the-ffmpeg-libav-situation.html">here</a>.</li>
+      <li>This change from FFmpeg to libav-tools turned out to be a short one.
+        As of 2016.07 distributions are migrating away from libav back to
+        FFmpeg. Ubuntu 16.04 only has FFmpeg available in its repositories and
+        Debian 9 is going to make this change also. Ubuntu 12.04, 14.04 and
+        Debian 7 and 8 only offers libav-tools in their repositories.</li>
     </ul>
     <p><br>
     </p>
@@ -186,19 +185,18 @@
         FreeLCS supports wav and two royalty / patent free formats <strong>flac</strong>
         and <strong>ogg </strong>(license: <a href="http://flac.sourceforge.net/license.html">http://flac.sourceforge.net/license.html</a>).
         If your production is done in wav then you don't ever need to install
-        libav-tools.</li>
-      <li>Avconv is a video and audio conversion tool that can be used to
-        convert media to many different formats. Using avconv to decompress
-        audio from patented formats may require a license from the rights
-        holders. However avconv may also be used to process free formats (MXF,
-        MKV, WebM and others) or formats with possibly expired patents (Mpeg1
-        Layer1, Mpeg 1 Layer2) without acquiring licenses (source: <a href="http://en.wikipedia.org/wiki/MPEG-1#Patents">https://en.wikipedia.org/wiki/MPEG-1#Patents</a>).
+        libav-tools or FFmpeg.</li>
+      <li>Avconv / FFmpeg is a video and audio conversion tool that can be used
+        to convert media to many different formats. Using avconv or FFmpeg to
+        decompress audio from patented formats may require a license from the
+        rights holders. However avconv may also be used to process free formats
+        (MXF, MKV, WebM and others) or formats with possibly expired patents
+        (Mpeg1 Layer1, Mpeg 1 Layer2) without acquiring licenses (source: <a href="http://en.wikipedia.org/wiki/MPEG-1#Patents">https://en.wikipedia.org/wiki/MPEG-1#Patents</a>).
         To more complicate things some patented formats may be patented in some
         countries but not in others. Also the expiration dates for these patents
         may vary between countries.</li>
-      <li>FreeLCS uses avconv from the libav-tools package if it's installed but
-        works fine without it with wav, flac and ogg formats.<br>
-      </li>
+      <li>FreeLCS uses avconv or FFmpeg if it's installed but works fine without
+        it with wav, flac and ogg formats.</li>
     </ul>
     <p><br>
     </p>
@@ -218,12 +216,13 @@
     <h2> <a id="How many audio streams in a file are supported ?">How many
         audio streams in a file are supported ?</a></h2>
     <ul>
-      <li>When libav-tools is not installed: 1 audio stream.<br>
+      <li>When FFmpeg or libav-tools is not installed: 1 audio stream.<br>
       </li>
-      <li>When libav-tools is installed: the limit for the number of audio
-        streams in a single file has not been tested. I personally have tested
-        files with 16 streams with no problems. Upper limit is propably set by a
-        possible limit in libav-tools or file format in question.<br>
+      <li>When FFmpeg or libav-tools is installed: the limit for the number of
+        audio streams in a single file has not been tested. I personally have
+        tested files with 16 streams with no problems. Upper limit is propably
+        set by a possible limit in FFmpeg / libav-tools or file format in
+        question.<br>
       </li>
     </ul>
     <br>
@@ -259,13 +258,13 @@
       <li>First incoming files are searched for supported audio streams.</li>
       <li>FreeLCS natively supports wav, flac and ogg formats and one audio
         stream per file. If there are more streams or the audio format is
-        unsupported then libav-tools is used (only if libav-tools is installed)
-        to convert streams to a supported format.<br>
+        unsupported then FFmpeg / libav-tools is used (only if FFmpeg or
+        libav-tools is installed) to convert streams to a supported format.<br>
       </li>
-      <li>Libav-tools places extracted streams back to FreeLCS HotFolder so that
-        they are seen as new files coming into processing. When all streams have
-        been extracted then the original file is deleted as it is no longer
-        needed.<br>
+      <li>FFmpeg / Libav-tools places extracted streams back to FreeLCS
+        HotFolder so that they are seen as new files coming into processing.
+        When all streams have been extracted then the original file is deleted
+        as it is no longer needed.<br>
       </li>
       <li>Then two simultaneous loudness calculation processes are started for
         the file. One measures integrated loudness and the other momentary
@@ -357,9 +356,10 @@
     Sample rate should be preserved in all cases. <br>
     <br>
     The following rules for bit depth conversion comes from internal limitations
-    in sox and libav-tools.<br>
+    in sox and FFmpeg / libav-tools.<br>
     <br>
-    <u><strong>When </strong></u><u><strong>libav-tools is not installed:</strong></u><br>
+    <u><strong>When </strong></u><u><strong>FFmpeg and libav-tools are not
+        installed:</strong></u><br>
     <ul>
       <li>64 bit audio is not supported.</li>
       <li>If audio is in uncompressed PCM - format, then bit depth is preserved.<br>
@@ -372,7 +372,7 @@
         bits.<br>
       </li>
     </ul>
-    <u><strong>When </strong></u><u><strong>libav-tools is installed:</strong></u><br>
+    <u><strong>When </strong></u><u><strong>FFmpeg or libav-tools is installed:</strong></u><br>
     <ul>
       <li>If audio is in uncompressed PCM - format, then bit depth is preserved
         except that 64 bit audio will be converted to 32 bits because sox
@@ -418,17 +418,17 @@
     <br>
     <h2><a id="Is MXF supported ?">Is MXF supported ?</a></h2>
     <ul>
-      <li>Libav-tools supports MXF and I've been able to extract audio from MXF
-        - wrapped files with it. FreeLCS 3.0 allows the user to define MXF audio
-        remix maps that define how audio is to be recombined to different mixes
-        before loudness processing. However MXF is not one format, but a family
-        of formats. Every hardware and software vendor seem to have their own
-        version of it. MXF files created with one device might not be compatible
-        with a device created by another vendor. Because of this there is no
-        guarantee that FreeLCS can process every MXF - file you feed it. It
-        might be a good idea to do a thorough test with a large set of different
-        MXF files before you make this feature part of your workflow. More about
-        MXF Audio Remixing can be found in the <a href="Machine_readable_results_and_MXF_audio_remix_mapping.html#MXF_audio_remixing">user
+      <li>FFmpeg and Libav-tools both supports MXF and I've been able to extract
+        audio from MXF - wrapped files with it. FreeLCS 3.0 allows the user to
+        define MXF audio remix maps that define how audio is to be recombined to
+        different mixes before loudness processing. However MXF is not one
+        format, but a family of formats. Every hardware and software vendor seem
+        to have their own version of it. MXF files created with one device might
+        not be compatible with a device created by another vendor. Because of
+        this there is no guarantee that FreeLCS can process every MXF - file you
+        feed it. It might be a good idea to do a thorough test with a large set
+        of different MXF files before you make this feature part of your
+        workflow. More about MXF Audio Remixing can be found in the <a href="Machine_readable_results_and_MXF_audio_remix_mapping.html#MXF_audio_remixing">user
           manual</a>.</li>
     </ul>
     <br>
@@ -456,6 +456,12 @@
     <h2><a id="What Linux distributions are supported ?">What Linux
         distributions are supported ?</a></h2>
     <ul>
+    </ul>
+    <p><strong>FreeLCS 3.3 supports:</strong></p>
+    <ul>
+      <li>Debian 8 with and without a GUI</li>
+      <li>Ubuntu 16.04 LTS Desktop and Server</li>
+      <li>Ubuntu 14.04 LTS Desktop and Server</li>
     </ul>
     <p><strong>FreeLCS 3.2 supports:</strong></p>
     <ul>
@@ -834,9 +840,9 @@
       uses. Apple used Samba as its smb - implementation until OS X version
       10.6. At this point Samba changed its license in a way that Apple didn't
       like and Apple decided to write their own smb implementation (smbx) from
-      scratch. This is a huge task and from the beginning there has been serious
-      problems with OS X's interaction with other smb - implementations. OS X
-      versions 10.7 - 10.10 all suffer from these problems.</p>
+      scratch. This is a huge task and there has been serious problems with OS
+      X's interaction with other smb - implementations. OS X versions 10.7 -
+      10.10 all suffer from these problems.</p>
     <p>OS X incompatibility with the smb standard causes file transfers to
       FreeLCS - server randomly stop with one of the following error messages
       (these are from OS X 10.10.4):</p>
@@ -846,6 +852,12 @@
     After digging around the internet I found two workarounds for the problem.
     The solution is to force OS X to use an older version of the smb - protocol
     called <strong>cifs</strong>. These solutions are from this page: <a href="http://www.zdnet.com/article/mavericks-smb2-problem-and-fixes">http://www.zdnet.com/article/mavericks-smb2-problem-and-fixes</a><br>
+    <h3><strong>Important !!!!!!!</strong></h3>
+    <p><strong></strong>If you have problems described above, then try the
+      workarounds below and try to copy files one by to the FreeLCS server. It
+      seems most of the times I get these errors I have tried to transfer
+      multiple files in one go.<strong><br>
+      </strong></p>
     <h3>Workaround 1:</h3>
     <p>When you make the connection to FreeLCS replace "<strong>smb://</strong>"
       with "<strong>cifs://</strong>" at the beginning of the mount command.
@@ -892,21 +904,15 @@
     </strong>
     <div style="margin-left: 40px;"><strong>sudo apt-get purge python3 idle3</strong><br>
       <strong> </strong><br>
-      <strong>
-        sudo apt-get install python-software-properties</strong><br>
-      <strong>
-        sudo add-apt-repository ppa:fkrull/deadsnakes</strong><br>
+      <strong> sudo apt-get install python-software-properties</strong><br>
+      <strong> sudo add-apt-repository ppa:fkrull/deadsnakes</strong><br>
       <br>
-      <strong>
-        sudo apt-get update</strong><br>
-      <strong>
-        sudo apt-get install python3.4 idle-python3.4</strong><br>
+      <strong> sudo apt-get update</strong><br>
+      <strong> sudo apt-get install python3.4 idle-python3.4</strong><br>
       <strong> </strong><br>
-      <strong>
-        sudo rm /usr/bin/python3</strong><strong></strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <strong> sudo rm /usr/bin/python3</strong><strong></strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
       (This removes a symbolic link that starts up python3)<br>
-      <strong>
-        sudo ln -s /usr/bin/python3.4 /usr/bin/python3</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <strong> sudo ln -s /usr/bin/python3.4 /usr/bin/python3</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
       (This creates a new symbolic link for python3 and makes it point to the
       newly installed python3.4)<br>
       <br>

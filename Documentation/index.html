@@ -32,13 +32,18 @@
     Sata disks in software RAID 0.<br>
     <br>
     FreeLCS uses other open source programs to get the job done (Linux,
-    libebur128, gnuplot, libav-tools (optional), sox, mediainfo). All software
-    is free and Open Source.<br>
+    libebur128, gnuplot, FFmpeg / libav-tools (optional), sox, mediainfo). All
+    software is free and Open Source.<br>
     <br>
     More detailed information can be found in <a href="FreeLCS_FAQ.html">FAQ</a>,
     <a href="#Features">Features</a> and <a href="FreeLCS_User_Manual.html">User
       Manual</a>.<br>
     <h1><strong>Latest news:</strong></h1>
+    <h4>2016.07.01 FreeLCS 3.3 released.</h4>
+    <ul>
+      <li>This release supports Ubuntu 14.04 and 16.04 and Debian 8. Support for
+        Ubuntu 12.04 and Debian 7 is dropped.</li>
+    </ul>
     <h4>2015.10.05 FreeLCS 3.2 released.</h4>
     <ul>
       <li>This release adds support for Debian 8 that introduces a new os
@@ -71,33 +76,6 @@
           progress report</a>" and the server needs to check periodically if the
         IP - address has changed. No other changes to FreeLCS functionality in
         this release :)</li>
-    </ul>
-    <h4>2014.06.05 FreeLCS 3.0 released.</h4>
-    <ul>
-      <li>This new release adds major new features. If you are happy with your
-        current FreeLCS 2.3 or 2.4 installation then there is no reason to
-        upgrade :)</li>
-      <li>Support for Debian 7, Ubuntu 12.04 Server, Ubuntu 14.04 Desktop and
-        Server added. Note that installation on <a href="Debian_modifications_needed_before_FreeLCS_installation.html">Debian
-          7</a> and <a href="Ubuntu_Server_modifications_needed_before_FreeLCS_installation.html">Ubuntu
-          Server</a> requires some modifications to the operating system
-        configuration before installation.</li>
-      <li>FreeLCS 3.0 is able to <a href="Machine_readable_results_and_MXF_audio_remix_mapping.html#Machine_readable_results">write
-          loudness results to a machine readable file</a>. With this feature you
-        can make FreeLCS the loudness measurement step in your automated file
-        processing workflow. You can also configure FreeLCS not to produce any
-        output files (loudness corrected audio files, history graphics) since
-        these might not be needed in an automated workflow.</li>
-      <li>With FreeLCS 3.0 you can define how audio channels inside an MXF file
-        will be combined to new mixes before loudness processing. The feature is
-        called <a href="Machine_readable_results_and_MXF_audio_remix_mapping.html#MXF_audio_remixing">MXF
-          audio remixing</a>.</li>
-      <li>FreeLCS is no longer tested with FFmpeg since FFmpeg is no longer
-        easily available in Ubuntu 14.04 repositories. The only common tool
-        easily avaible to Debian 7 and Ubuntu 12.04 and 14.04 users is avconv
-        from libav-tools. FreeLCS 3.0 uses avconv if it is installed by the
-        user. There is a small known problem with the avconv version that ships
-        with Ubuntu 14.04 , <a href="known_problems.txt">read about it here</a>.</li>
     </ul>
     <h4>2013.03.11 <span style="font-weight: normal;">Released introductory
         material about EBU R128 recommendation and FreeLCS. This version is in
@@ -132,10 +110,11 @@
         10 - 20 faster than realtime.</li>
       <li>Cleans up automatically by deleting all files after a set time delay.</li>
       <li>Sends possible error messages to the admin by email.</li>
-      <li>If user installs <strong>libav-tools</strong> then additional
-        features becomes available:</li>
+      <li>If user installs <strong>FFmpeg </strong>or <strong>libav-tools</strong>
+        then additional features becomes available:</li>
       <ul>
-        <li>The wide range of libav-tools supported formats can be processed.</li>
+        <li>The wide range of FFmpeg / libav-tools supported formats can be
+          processed.</li>
         <li>Support for multistream files, all audio streams are extracted and
           processed individually.</li>
         <li>Extract audio from wrappers containing both video and audio.</li>

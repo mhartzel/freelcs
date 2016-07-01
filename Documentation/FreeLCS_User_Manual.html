@@ -20,8 +20,8 @@
     <h3><a href="#Installation">Installation</a></h3>
     <h3><a href="Ubuntu_Server_modifications_needed_before_FreeLCS_installation.html#Installing%20FreeLCS%20on%20a%20computer%20without%20a%20graphical%20user%20interface">Installing
         FreeLCS on a computer without a graphical user interface</a></h3>
-    <h3><a href="Machine_readable_results_and_MXF_audio_remix_mapping.html#Libav-tools_allowed_wrapper_and_codec_formats">Libav-tools
-        allowed wrapper and codec formats</a></h3>
+    <h3><a href="Machine_readable_results_and_MXF_audio_remix_mapping.html#Libav-tools_allowed_wrapper_and_codec_formats">FFmpeg
+        / Libav-tools allowed wrapper and codec formats</a></h3>
     <h3> <a href="#Files%20that%20FreeLCS%20creates%20in%20your%20system">Files
         that FreeLCS creates in your system</a></h3>
     <h3> <a href="#Usage">Usage</a></h3>
@@ -98,8 +98,8 @@
     Sata disks in software RAID 0. <br>
     <br>
     FreeLCS uses other open source programs to get the job done (Linux,
-    libebur128, gnuplot, libav-tools (optional), sox, mediainfo). All software
-    is free and Open Source.<br>
+    libebur128, gnuplot, FFmpeg / libav-tools (optional), sox, mediainfo). All
+    software is free and Open Source.<br>
     <br>
     <br>
     <h2> <a id="Features">Features</a></h2>
@@ -127,10 +127,11 @@
         10 - 20 faster than realtime.</li>
       <li>Cleans up automatically by deleting all files after a set time delay.</li>
       <li>Sends possible error messages to the admin by email.</li>
-      <li>If user installs <strong>libav-tools</strong> then additional
-        features becomes available:</li>
+      <li>If user installs <strong>FFmpeg </strong>or<strong> libav-tools</strong>
+        then additional features becomes available:</li>
       <ul>
-        <li>The wide range of libav-tools supported formats can be processed.</li>
+        <li>The wide range of FFmpeg / libav-tools supported formats can be
+          processed.</li>
         <li>Support for multistream files, all audio streams are extracted and
           processed individually.</li>
         <li>Extract audio from wrappers containing both video and audio.</li>
@@ -185,17 +186,19 @@
     <br>
     <p><strong></strong></p>
     <ul>
-      <li>If you don't know whether to choose 32 or 64 bit Linux version, use
-        the 32 bit one if you have less than 4 GB of ram and 64 bit if you have
-        more.</li>
-      <li>If you are planning to install Debian or Ubuntu on a virtual machine,
-        then choose the 32 bit version of the operating system since it will
-        need less ram than the 64 bit version. A good starting point for a
-        company server might be assigning 2 GB of ram and 6 processor cores for
-        the virtual machine running FreeLCS. All cores will only be used when
-        there are 3 files to process simultaneously. When FreeLCS virtual server
-        is idle, the cores are available to other virtual machines running on
-        the same hardware.</li>
+      <li>If you don't know whether to choose 32 or 64 bit Linux version, always
+        use 64 bit. FreeLCS uses external helper programs and one of those
+        (mediainfo) in it's 32 bit version is not able to handle big audio
+        files. The 64 bit version of mediainfo works fine with big files. The
+        only reason to use a 32 bit operating system is if you have less than 4
+        GB of ram and you don't plan to process big audio files (4 GB or
+        larger).</li>
+      <li>A good starting point for a company server running in a virtual
+        machine might be assigning 2 GB of ram and 6 processor cores for the
+        virtual machine running FreeLCS. All cores will only be used when there
+        are 3 files to process simultaneously. When FreeLCS virtual server is
+        idle, the cores are available to other virtual machines running on the
+        same hardware.</li>
       <li>It is recommended to use the JFS - filesystem for all disks, since the
         default filesystem ext4 has some quite serious bugs / design flaws that
         are probably never going to be fixed. JFS was designed by IBM to be a
@@ -506,11 +509,11 @@
         results. Most users will use the defaults meaning FreeLCS creates
         loudness corrected audio files, history graphics files and deletes
         multistream files immediately after audiostreams have been extracted
-        from them (multistream extraction requires you to install libav-tools).
-        This is how FreeLCS versions up to 2.4 worked by default. If you want
-        FreeLCS to work just like it did in versions up to 2.4, then make sure "<strong>Use
-          FreeLCS file output defaults</strong>" is "<strong>Yes</strong>" and
-        go to the next screen.</li>
+        from them (multistream extraction requires you to install FFmpeg or
+        libav-tools). This is how FreeLCS versions up to 2.4 worked by default.
+        If you want FreeLCS to work just like it did in versions up to 2.4, then
+        make sure "<strong>Use FreeLCS file output defaults</strong>" is "<strong>Yes</strong>"
+        and go to the next screen.</li>
       <li>If you however would like to integrate FreeLCS as a loudness
         measurement step in your automated file processing workflow, then you
         might want to change the defaults. FreeLCS 3.0 is able to output
@@ -528,14 +531,15 @@
         processing. <a href="Machine_readable_results_and_MXF_audio_remix_mapping.html#MXF_audio_remixing">Read
           more about it here</a>. Most users will leave "<strong>Enable MXF
           Audio Remixing</strong>" to "<strong>No</strong>".</li>
-      <li>In FreeLCS 3.0 it is possible to restrict libav-tools to only process
-        a small set of formats or allow it to process all formats it supports.
-        This feature is mainly designed to allow the user to restrict processing
-        only to patent free formats even when libav-tools is installed. Format
-        patentability varies from country to country, see more about it in <a href="FreeLCS_FAQ.html#Libav-tools%20/%20FFmpeg%20and%20patents">FAQ</a>.</li>
-      <li>Settings for allowed libav-tools formats are located at the bottom of
-        this window. These settings will have no effect if you don't install
-        libav-tools.</li>
+      <li>Starting from FreeLCS 3.0 it is possible to restrict FFmpeg /
+        libav-tools to only process a small set of formats or allow it to
+        process all formats it supports. This feature is mainly designed to
+        allow the user to restrict processing only to patent free formats even
+        when FFmpeg or libav-tools is installed. Format patentability varies
+        from country to country, see more about it in <a href="FreeLCS_FAQ.html#Libav-tools%20/%20FFmpeg%20and%20patents">FAQ</a>.</li>
+      <li>Settings for allowed FFmpeg / libav-tools formats are located at the
+        bottom of this window. These settings will have no effect if you don't
+        install FFmpeg /&nbsp; libav-tools.</li>
     </ul>
     <p><br>
     </p>
@@ -619,7 +623,8 @@
     <p><br>
     </p>
     <ul>
-      <li>The next window shows how you can install libav-tools if you need it.</li>
+      <li>The next window shows how you can install FFmpeg / libav-tools if you
+        need it.</li>
     </ul>
     <p><br>
     </p>
@@ -1611,21 +1616,18 @@
     the file with the command:<br>
     <p style="margin-left: 40px;"><strong>sudo nano
         /etc/systemd/system/reboot_weekly.service</strong></p>
-    <div style="margin-left: 40px;">
-    </div>
+    <div style="margin-left: 40px;"> </div>
     <p>Add the following content to the file:</p>
     <p style="margin-left: 40px;"><strong>[Unit] <br>
         Desciption=Reboot Weekly<br>
       </strong> <strong><br>
         [Service]<br>
         Type=simple</strong></p>
-    <div style="margin-left: 40px;">
-    </div>
+    <div style="margin-left: 40px;"> </div>
     <p style="margin-left: 40px;"><strong>ExecStart=/sbin/reboot</strong></p>
     <p>Now create the file "<strong>reboot_weekly.timer</strong>" that instructs
       systemd when to run the task (every Monday morning at 07:00). Startup the
-      nano - editor to create the file with the command:
-    </p>
+      nano - editor to create the file with the command: </p>
     <p style="margin-left: 40px;"><strong>sudo nano
         /etc/systemd/system/reboot_weekly.timer</strong></p>
     <p>Add the following content to the file:</p>
@@ -1677,22 +1679,19 @@
     instructs systemd what to do (get time). Startup the nano - editor to create
     the file with the command:<br>
     <p style="margin-left: 40px;"><strong>sudo nano /etc/systemd/system/</strong><strong>synchronize_clock.service</strong></p>
-    <div style="margin-left: 40px;">
-    </div>
+    <div style="margin-left: 40px;"> </div>
     <p>Add the following content to the file:</p>
     <p style="margin-left: 40px;"><strong>[Unit] <br>
         Desciption=Synchronize Clock<br>
       </strong> <strong><br>
         [Service]<br>
         Type=simple</strong></p>
-    <div style="margin-left: 40px;">
-    </div>
+    <div style="margin-left: 40px;"> </div>
     <p style="margin-left: 40px;"><strong>ExecStart=</strong><strong>/usr/sbin/ntpdate
         192.168.1.110</strong></p>
     <p>Now create the file "<strong>synchronize_clock.timer</strong>" that
       instructs systemd when to run the task (every day at 06:25 am). Startup
-      the nano - editor to create the file with the command:
-    </p>
+      the nano - editor to create the file with the command: </p>
     <p style="margin-left: 40px;"><strong>sudo nano /etc/systemd/system/</strong><strong>synchronize_clock.timer</strong></p>
     <p>Add the following content to the file:</p>
     <p style="margin-left: 40px;"><strong>[Unit]<br>
@@ -1777,8 +1776,7 @@
     to reproduce the bug in his own system in order to fix it. So when reporting
     a bug report the following:<br>
     <ul>
-      <li>The operating system version that you use (Ubuntu 12.04 32bit or 64
-        bit)</li>
+      <li>The operating system version that you use.</li>
       <li>The version of the FreeLCS - package that you use.<br>
       </li>
       <li>The steps that needs to be done in order to make the bug appear.</li>
