@@ -1,18 +1,659 @@
-<!DOCTYPE html><html dir="ltr" lang="en">  <head>    <meta content="text/html; charset=utf-8" http-equiv="content-type">    <title>Machine readable results and MXF audio remix mapping</title>  </head>  <body> <a href="#Machine_readable_results">Machine readable results</a><br>    <br>    <a href="#Separator_characters_in_the_machine_readable_results_file">Separator
-      characters in the machine readable results file</a><br>    <br>    <a href="#Machine_readable_results_file_format">Machine readable results      file format</a><br>    <br>    <a href="#MXF_audio_remixing">MXF audio remixing</a><br>    <br>    <a href="#The_MXF_Problem">The MXF Problem</a><br>    <br>    <a href="#MXF_remix_map">MXF remix map</a><br>    <br>    <a href="#Default_MXF_remix_map">Default MXF remix map</a><br>    <br>    <a href="#File_specific_MXF_remix_map">File specific MXF remix map</a><br>    <br>    <a href="#Detailed_explanation_of_the_channel_remixing_feature">Detailed      explanation of the channel remixing feature</a><br>    <br>    <a href="#Libav-tools_allowed_wrapper_and_codec_formats">Libav-tools allowed      wrapper and codec formats</a><br>    <br>    <br>    <br>    <br>    <br>    <h2><a id="Machine_readable_results">Machine readable results</a></h2>    <p>FreeLCS 3.0 lets you define how it outputs its results. Most users will      want the old behavior from FreeLCS version up to 2.4 that is: create a      loudness corrected audio file, a history graphics file and delete      multistream files immediately after all audiostreams have been extracted      to individual files (multistream extraction requires installation of      libav-tools). This "old" behaviour is achieved by setting "<strong>Use        FreeLCS file output defaults</strong>" to <strong>"Yes"</strong>.</p>    <p>If you would like to integrate FreeLCS as a loudness measurement step in      your automated file processing workflow, then you might want to change the      defaults.</p>    <p><br>    </p>    <img alt="" src="Pictures/Installation-17.jpg"><br>    <br>    <br>    When you set "<strong>Use FreeLCS file output defaults</strong>" to "<strong>No</strong>",
-    then you can change settings for the output files FreeLCS creates.<br>    <br>    If your FreeLCS - machine is the loudness measurement step in an automated    file processing workflow, then you might want to disable some output file    creation. You can prevent creation of loudness corrected files and history    graphics files. You can also prevent FreeLCS from deleting multistream input    files after audio extraction if you need the original file to remain on the    disk for further processing.<br>    <br>    FreeLCS 3.0 is also able to output loudness measurement results in a machine    readable file. You might want this if some other device needs to read in    loudness measurement results to make a decision about how the file is    processed further.<br>    <p><br>    </p>    <img alt="" src="Pictures/Installation-18.jpg">    <p><br>    </p>    <h2><a id="Separator_characters_in_the_machine_readable_results_file">Separator
-        characters in the machine readable results file</a></h2>    <p>There can be many audio streams in one input file, FreeLCS writes these      streams to individual audio files before loudness processing (multistream      support requires libav-tools). As a single input file can result in many      output files, the machine readable results file may consist of loudness      results of many audio files. </p>    <p>Loudness measurement results of a single file needs to be separated from      each other by a known character or group of characters for a machine be      able to interpret the results. If the input file resulted to many output      files, then we need to separate each record of results with another known      character or group of characters. The separator characters must be chosen      from a group of characters that can never appear in a file name.<br>    </p>    <p>This problem has been solved when the <a href="https://en.wikipedia.org/wiki/ASCII">ASCII
+<!DOCTYPE html>
+<html dir="ltr" lang="en">
+  <head>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type">
+    <title>Machine readable results and MXF audio remix mapping</title>
+  </head>
+  <body> <a href="#Machine_readable_results">Machine readable results</a><br>
+    <br>
+    <a href="#Separator_characters_in_the_machine_readable_results_file">Separator
+      characters in the machine readable results file</a><br>
+    <br>
+    <a href="#Machine_readable_results_file_format">Machine readable results
+      file format</a><br>
+    <br>
+    <a href="#MXF_audio_remixing">MXF audio remixing</a><br>
+    <br>
+    <a href="#The_MXF_Problem">The MXF Problem</a><br>
+    <br>
+    <a href="#MXF_remix_map">MXF remix map</a><br>
+    <br>
+    <a href="#Default_MXF_remix_map">Default MXF remix map</a><br>
+    <br>
+    <a href="#File_specific_MXF_remix_map">File specific MXF remix map</a><br>
+    <br>
+    <a href="#Detailed_explanation_of_the_channel_remixing_feature">Detailed
+      explanation of the channel remixing feature</a><br>
+    <br>
+    <a href="#Libav-tools_allowed_wrapper_and_codec_formats">FFmpeg /
+      Libav-tools allowed wrapper and codec formats</a><br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <h2><a id="Machine_readable_results">Machine readable results</a></h2>
+    <p>FreeLCS 3.0 lets you define how it outputs its results. Most users will
+      want the old behavior from FreeLCS version up to 2.4 that is: create a
+      loudness corrected audio file, a history graphics file and delete
+      multistream files immediately after all audiostreams have been extracted
+      to individual files (multistream extraction requires installation of
+      FFmpeg or libav-tools). This "old" behaviour is achieved by setting "<strong>Use
+        FreeLCS file output defaults</strong>" to <strong>"Yes"</strong>.</p>
+    <p>If you would like to integrate FreeLCS as a loudness measurement step in
+      your automated file processing workflow, then you might want to change the
+      defaults.</p>
+    <p><br>
+    </p>
+    <img alt="" src="Pictures/Installation-17.jpg"><br>
+    <br>
+    <br>
+    When you set "<strong>Use FreeLCS file output defaults</strong>" to "<strong>No</strong>",
+    then you can change settings for the output files FreeLCS creates.<br>
+    <br>
+    If your FreeLCS - machine is the loudness measurement step in an automated
+    file processing workflow, then you might want to disable some output file
+    creation. You can prevent creation of loudness corrected files and history
+    graphics files. You can also prevent FreeLCS from deleting multistream input
+    files after audio extraction if you need the original file to remain on the
+    disk for further processing.<br>
+    <br>
+    FreeLCS 3.0 is also able to output loudness measurement results in a machine
+    readable file. You might want this if some other device needs to read in
+    loudness measurement results to make a decision about how the file is
+    processed further.<br>
+    <p><br>
+    </p>
+    <img alt="" src="Pictures/Installation-18.jpg">
+    <p><br>
+    </p>
+    <h2><a id="Separator_characters_in_the_machine_readable_results_file">Separator
+        characters in the machine readable results file</a></h2>
+    <p>There can be many audio streams in one input file, FreeLCS writes these
+      streams to individual audio files before loudness processing (multistream
+      support requires FFmpeg or libav-tools). As a single input file can result
+      in many output files, the machine readable results file may consist of
+      loudness results of many audio files. </p>
+    <p>Loudness measurement results of a single file needs to be separated from
+      each other by a known character or group of characters for a machine be
+      able to interpret the results. If the input file resulted to many output
+      files, then we need to separate each record of results with another known
+      character or group of characters. The separator characters must be chosen
+      from a group of characters that can never appear in a file name.<br>
+    </p>
+    <p>This problem has been solved when the <a href="https://en.wikipedia.org/wiki/ASCII">ASCII
         character set</a> was designed. The designers assigned two <a href="https://en.wikipedia.org/wiki/Delimiter#ASCII_delimited_text">characters
-        for this job</a>: <strong>ASCII character 31</strong> is meant for      separating different values from each other and <strong>ASCII character        30</strong> is meant for separating different records of data from each      other. Character 31 is called the <strong>Unit Separator</strong> and      character 30 is called the <strong>Record Separator</strong>. The      operating system doesn't allow these characters in file names, so they are      safe to use as data separators.</p>    <p>The machine readable results file is a simple text file with loudness      measurement results written to it. Sometimes there might be reason for a      person to open a machine readable results file in a text editor to check      the values inside it. This is not possible if the ASCII character 30 is      used as the record separator. In this case the user sees the results as      one huge continuous line of text. This is why I chose to use the windows      line feed string (ASCII character 13 followed with character 10) as the      default record separator. When this record separator is used, then a      machine readable results file becomes much more readable when opened in a      text editor, because the editor splits results for individual audio files      as separate lines of text.</p>    <p>However you can select any non printable ASCII character as the unit and      record separator. You can use 1 or 2 character strings for each.</p>    <p><br>    </p>    <h2><a id="Machine_readable_results_file_format">Machine readable results        file format</a></h2>    <p>The machine readable results file name is constructed like this:&nbsp;<strong>        InputFileName-machine_readable_results.txt</strong></p>    <p>Example: Input file name is:&nbsp; <strong>Euroviisut-2007-Final.mp4</strong></p>    <p>Machine readable results file name is:&nbsp; <strong>Euroviisut-2007-Final.mp4-machine_readable_results.txt</strong></p>    <p>When you know the name of the input file, then you can get the machine      readable results file name just by appending "<strong>-machine_readable_results.txt</strong>"      to the name.<br>      <strong></strong></p>    <p><strong><br>      </strong></p>    <p>A machine readable results file has information about all audio streams      of a single input file. Values for a single output stream are separated      with the unit separator string. The record separator string is placed      where a record of values for one audio stream ends and a record of values      for the next audio stream begins. Unit and record separator strings are      both defined during FreeLCS installation.</p>    <p><br>    </p>    <p><strong style="text-decoration: underline;">The items in the machine        readable results file are:</strong></p>    <p>Note: item count starts from zero.</p>    <p><br>      <strong>00</strong> = The number of this audio stream. <br>      <strong>01</strong> = Total number of supported streams in the input file.<br>      <strong>02</strong> = Total number of streams in the input file.<br>      <strong>03</strong> = Create Loudness Corrected Files (True / False).<br>      <strong>04</strong> = Number of files in this audio stream.<br>      <br>      <strong>05</strong> = Integrated Loudness (I) (If loudness is below      measurement threshold, then this value is '<strong>inf</strong>').<br>      <strong>06</strong> = Loudness Range (LRA).<br>      <strong>07</strong> = Highest Peak (dBTP or dBFS depending which      measurement method the user selected during installation).<br>      <strong>08</strong> = Number Of Channels in this audio stream. <br>      <strong>09</strong> = Sample Rate.<br>      <strong>10</strong> = Bit Depth.<br>      <strong>11</strong> = Duration rounded to seconds.</p>    <p><br>      <strong>12</strong> = Loudness calculation error code (Codes explained      below).<br>      <strong>13</strong> = Reason for error (text string).</p>    <p><br>      <strong>14</strong> = List of output filenames.</p>    <p><br>    </p>    <p><strong style="text-decoration: underline;">Detailed explanations of the        items:</strong><br>      <br>      <strong style="text-decoration: underline;">Items 00 - 04:</strong><br>    </p>    <ul>      <li><strong>Item 0:</strong> The number of this audio stream. If there are        many audio streams in the input file, then this number tells you which        one of these streams this mix is.</li>      <li><strong>Item 1</strong>: Total number of supported streams in the        input file. There can be both unsupported and supported streams in a        input file. This value tells you how many streams FreeLCS is able to        process from the input file.</li>      <li><strong>Item 2</strong>: Total number of streams in the input file.        This number contains both the unsupported and supported streams in a        input file.</li>      <li><strong>Item 3</strong>: Create Loudness Corrected Files (True /        False). This value tells you if the user has instructed FreeLCS to        create loudness corrected files or not (this is set during FreeLCS        installation). If this is "False" then FreeLCS will not produce loudness        corrected audio files.</li>      <li><strong>Item 4</strong>: Number of files in this audio stream. This        tells you how many audio files this audio stream resulted to. This        number is always 1 except in two cases. It is 0 when an error happened        and FreeLCS was not able to process the stream. In this case this number        tells you that there are zero resulting output files.&nbsp; The other        case when this value differs from 1 is when the output file size is so        big that FreeLCS needs to split the file to one file per audio channel.        In this case this number tells you the number of audio files the audio        stream was split into. Items from number 14-&gt; will tell you names of        the output files.</li>    </ul>    <strong style="text-decoration: underline;"><strong style="text-decoration: underline;">Items</strong>      05 - 11:</strong><br>    <br>    <ul>      <li><strong>Item 5</strong>: Integrated Loudness of the input file. If        loudness is below measurement threshold, then this value is '<strong>inf</strong>'.</li>      <li> <strong>Item 6</strong>: Loudness Range of the input file.</li>      <li> <strong>Item 7</strong>: Highest Peak of the uncorrected input        file&nbsp; (dBTP or dBFS depending which measurement method the user        selected during installation).</li>      <li> <strong>Item 8</strong>: Number Of Channels in this audio stream.        This tells you how many channels there are in this audio stream.</li>      <li> <strong>Item 9</strong>: Sample Rate.</li>      <li> <strong>Item 10</strong>: Bit Depth.</li>      <li> <strong>Item 11</strong>: Duration rounded to seconds.</li>    </ul>    <strong style="text-decoration: underline;"><strong style="text-decoration: underline;">Items</strong>      12 - 13:</strong><br>    <br>    <ul>      <li><strong>Item 12:</strong> This value holds possible error codes. If        this value is 0 then FreeLCS successfully processed the stream,        otherwise processing failed and there will be no loudness calculation        results nor loudness corrected files for this stream. Error code <strong>9</strong>        means that in addition of supported files, there are some audio files        inside the MXF wrapper that FreeLCS is not able to process. When MXF        audio remixing feature is on, then this situation may produce unexpected        results meaning that audio channels inside the MXF file might be        combined in ways that the user did not anticipate. MXF audio remixing        works correctly only when FreeLCS is able to process all files inside        the MXF wrapper. </li>      <li><strong>Item 13:</strong> This item is the error message text. If        there is no error then this item is empty. </li>    </ul>    <strong style="text-decoration: underline;"><strong style="text-decoration: underline;">Items</strong>      14:</strong><br>    <br>    <ul>      <li><strong>Item 14:</strong> The items from number 14-&gt; will tell you        the names of output audio files. If the output file has been split to        one file per audio channel, then here are all the output file names        separated by the unit separator..</li>    </ul>    <p><br>      <br>      <strong style="text-decoration: underline;">Error codes for item number        12:</strong><br>    </p>    <strong>0</strong> = No Errors<br>    <strong>1</strong> = Loudness is below measurement threshold (-70 LUFS)<br>    <strong>2</strong> = Error in integrated loudness calculation<br>    <strong>3</strong> = File transfer failed<br>    <strong>4</strong> = Audio duration is less than 1 second<br>    <strong>5</strong> = Zero channels in audio stream<br>    <strong>6</strong> = Channel count bigger than 6 is unsupported<br>    <strong>7</strong> = No Audio Streams Found In File <br>    <strong>8</strong> = Sox encountered an error<br>    <strong>9</strong> = There are unsupported audio streams in input MXF - file    while MXF audio remixing function is on. When MXF audio remixing feature is    on, then this situation may produce unexpected results meaning that audio    channels inside the MXF file might be combined in ways that the user did not    anticipate. MXF audio remixing works correctly only when FreeLCS is able to    process all files inside the MXF wrapper.<br>    <strong>10</strong> = File wrapper format is not supported<br>    <strong>11</strong> = Audio compression codec is not supported<br>    <strong>100</strong> = Unknown Error<br>    <br>    If you want a machine to interpret the values inside the machine readable    file, then you first must check the <strong>item 12</strong> for errors. If    <strong>item 12</strong> is zero, then FreeLCS successfully processed the    file. Then check <strong>item 1</strong> for information about how many    output files resulted from the input file. <strong>Item 1</strong> tells    you how many loudness results you need to read (one record of results for    each supported input stream). Now you can read in the loudness measurement    results for each supported input stream (<strong>items 5 - 7</strong> for    each record). If <strong>item 12</strong> is not zero, then an error    happened and there are no loudness calculation results to read (exception    error code 9). The error number tells you what the the error was and the    error message text is located in item <strong>13</strong>. <br>    <br>    <h3>Example 1:</h3>    FreeLCS has processed a input file that has only one audio stream in it. It    is a wav file named: <strong>Test_File-01.wav</strong>&nbsp; The machine    readable results file name is:&nbsp; <strong>Test_File-01.wav-machine_readable_results.txt</strong><br>    <br>    The values inside the machine readable results file are below. Note that I    have changed the unit separator character to comma here to make the text    more human readable :)<br>    <br>    <strong style="font-family: monospace;">1, 1, 1, True, 1, -22.9, 12.2, -6.7,      2, 48000, 16, 3070, 0,&nbsp; , Test_File-01_-23_LUFS.wav</strong><br>    <br>    <br>    <h3>Example 2:</h3>    FreeLCS has processed a transport stream file that had 14 audio streams in    it. All streams were first saved to separate files and then went through    loudness processing.<br>    <br>    The input file name was:&nbsp; <strong>20120712-2000-0000091191.mpg</strong>&nbsp;
-    and the machine readable results file name was:&nbsp; <strong>20120712-2000-0000091191.mpg-machine_readable_results.txt</strong><br>    <br>    The result records for the files are separated by the record separator, in    this case it is ASCII characters 13 and 10 (which is the code that instructs    a text editor to split the text to separate text lines).<br>    <br>    There are now 14 records of results because the one input file resulted in    14 output files. Note that there was an error processing streams 4 and 6.    The streams were present in the transport stream, but they had zero audio    channels.<br>    <br>    The values inside the machine readable results file are below. Note that I    have changed the unit separator character to comma here to make the text    more human readable :)<br>    <br>    <br>    <strong><span style="font-family: monospace;">1, 12, 14, True, 1, -21.5,        10.7, -8.5, 2, 48000, 16, 600, 0,&nbsp; ,        20120712-2000-0000091191-AudioStream-1-ChannelCount-2_-23_LUFS.wav <br>        2, 12, 14, True, 1, -18.0, 4.2, -0.6, 2, 48000, 16, 600, 0,&nbsp; ,        20120712-2000-0000091191-AudioStream-2-ChannelCount-2_-23_LUFS.wav <br>        3, 12, 14, True, 1, -24.0, 13.0, -5.8, 2, 48000, 16, 600, 0,&nbsp; ,        20120712-2000-0000091191-AudioStream-3-ChannelCount-2_-23_LUFS.wav <br>        4, 12, 14, True, 0, 0, 0, 0, 0, 0, 0, 0, 5, There are zero audio        channels in stream number 4,&nbsp; <br>        5, 12, 14, True, 1, -20.7, 11.3, -6.7, 2, 48000, 16, 600, 0,&nbsp; ,        20120712-2000-0000091191-AudioStream-5-ChannelCount-2_-23_LUFS.wav <br>        6, 12, 14, True, 0, 0, 0, 0, 0, 0, 0, 0, 5, There are zero audio        channels in stream number 6,&nbsp; <br>        7, 12, 14, True, 1, -17.2, 12.6, -6.1, 2, 48000, 16, 600, 0,&nbsp; ,        20120712-2000-0000091191-AudioStream-7-ChannelCount-2_-23_LUFS.wav <br>        8, 12, 14, True, 1, -24.8, 10.7, -10.1, 2, 48000, 16, 58, 0,&nbsp; ,        20120712-2000-0000091191-AudioStream-8-ChannelCount-2_-23_LUFS.wav <br>        9, 12, 14, True, 1, -23.9, 3.1, -9.7, 2, 48000, 16, 600, 0,&nbsp; ,        20120712-2000-0000091191-AudioStream-9-ChannelCount-2_-23_LUFS.wav <br>        10, 12, 14, True, 1, -23.4, 10.0, -4.2, 2, 48000, 16, 600, 0,&nbsp; ,        20120712-2000-0000091191-AudioStream-10-ChannelCount-2_-23_LUFS.wav <br>        11, 12, 14, True, 1, -22.6, 6.6, -7.5, 2, 48000, 16, 600, 0,&nbsp; ,        20120712-2000-0000091191-AudioStream-11-ChannelCount-2_-23_LUFS.wav <br>        12, 12, 14, True, 1, -18.8, 14.1, -1.6, 2, 48000, 16, 600, 0,&nbsp; ,        20120712-2000-0000091191-AudioStream-12-ChannelCount-2_-23_LUFS.wav <br>        13, 12, 14, True, 1, -20.0, 2.8, -8.2, 2, 48000, 16, 600, 0,&nbsp; ,        20120712-2000-0000091191-AudioStream-13-ChannelCount-2_-23_LUFS.wav <br>        14, 12, 14, True, 1, -21.4, 8.2, -3.5, 2, 48000, 16, 600, 0,&nbsp; ,        20120712-2000-0000091191-AudioStream-14-ChannelCount-2_-23_LUFS.wav</span></strong><br>    <br>    <br>    <h3>Example 3:</h3>    FreeLCS has processed a file that had 16 audio streams in it. EBU R128 only    supports channel counts up to 6, but streams 1 - 10 had more than 6 channels    each resulting in an error. The name of the input file was:&nbsp; <strong>16_audio_streams.mkv</strong>&nbsp;
-    and the name of the machine readable results file was:&nbsp; <strong>16_audio_streams.mkv-machine_readable_results.txt</strong><br>    <br>    The values inside the machine readable results file are below. Unit    separator character has been changed to comma here to make the text more    human readable.<br>    <br>    <br>    <strong><span style="font-family: monospace;">1, 6, 16, True, 0, 0, 0, 0, 0,        0, 0, 0, 6, There are 12 channels in stream 1, only channel counts from        one to six are supported,&nbsp; <br>        2, 6, 16, True, 0, 0, 0, 0, 0, 0, 0, 0, 6, There are 15 channels in        stream 2, only channel counts from one to six are supported,&nbsp; <br>        3, 6, 16, True, 0, 0, 0, 0, 0, 0, 0, 0, 6, There are 13 channels in        stream 3, only channel counts from one to six are supported,&nbsp; <br>        4, 6, 16, True, 0, 0, 0, 0, 0, 0, 0, 0, 6, There are 14 channels in        stream 4, only channel counts from one to six are supported,&nbsp; <br>        5, 6, 16, True, 0, 0, 0, 0, 0, 0, 0, 0, 6, There are 11 channels in        stream 5, only channel counts from one to six are supported,&nbsp; <br>        6, 6, 16, True, 0, 0, 0, 0, 0, 0, 0, 0, 6, There are 16 channels in        stream 6, only channel counts from one to six are supported,&nbsp; <br>        7, 6, 16, True, 0, 0, 0, 0, 0, 0, 0, 0, 6, There are 10 channels in        stream 7, only channel counts from one to six are supported,&nbsp; <br>        8, 6, 16, True, 0, 0, 0, 0, 0, 0, 0, 0, 6, There are 9 channels in        stream 8, only channel counts from one to six are supported,&nbsp; <br>        9, 6, 16, True, 0, 0, 0, 0, 0, 0, 0, 0, 6, There are 8 channels in        stream 9, only channel counts from one to six are supported,&nbsp; <br>        10, 6, 16, True, 0, 0, 0, 0, 0, 0, 0, 0, 6, There are 7 channels in        stream 10, only channel counts from one to six are supported,&nbsp; <br>        11, 6, 16, True, 1, -18.4, 0.0, -23.0, 6, 48000, 24, 20, 0,&nbsp; ,        16_audio_streams-AudioStream-11-ChannelCount-6_-23_LUFS.wav <br>        12, 6, 16, True, 1, -18.4, 0.0, -23.0, 5, 48000, 32, 20, 0,&nbsp; ,        16_audio_streams-AudioStream-12-ChannelCount-5_-23_LUFS.wav <br>        13, 6, 16, True, 1, -19.2, 0.0, -22.1, 4, 48000, 8, 20, 0,&nbsp; ,        16_audio_streams-AudioStream-13-ChannelCount-4_-23_LUFS.wav <br>        14, 6, 16, True, 1, -21.2, 0.0, -23.0, 3, 48000, 16, 20, 0,&nbsp; ,        16_audio_streams-AudioStream-14-ChannelCount-3_-23_LUFS.wav <br>        15, 6, 16, True, 1, -23.0, 0.0, -23.0, 2, 48000, 24, 20, 0,&nbsp; ,        16_audio_streams-AudioStream-15-ChannelCount-2_-23_LUFS.wav <br>        16, 6, 16, True, 1, -26.0, 0.0, -23.0, 1, 48000, 32, 20, 0,&nbsp; ,        16_audio_streams-AudioStream-16-ChannelCount-1_-23_LUFS.wav</span></strong><br>    <br>    <br>    <strong style="text-decoration: underline;">Example 4:</strong><br>    <br>    FreeLCS has processed a file that had 3 streams in it. The file is 3 hous 12    minutes long and first stream is 5.1 audio. The first stream is so big that    the output file size would have exceeded wav format max size of 4 GB, so    FreeLCS split this 5.1 file to one file per audio channel resulting in 6    output files.<br>    <br>    The name of the input file was:&nbsp; <strong>Euroviisut-2007-Final.mp4&nbsp;</strong>    and the name of the machine readable results file was:&nbsp; <strong>Euroviisut-2007-Final.mp4-machine_readable_results.txt<br>    </strong><br>    The values inside the machine readable results file are below. Unit    separator character has been changed to comma here to make the text more    human readable.<strong> </strong>Also note that the first line of text is    so long that its wraps around here to the next line, the 3 different audio    streams are separated by an empty line here for better readability.<strong><br>      <br>    </strong><br>    <strong><span style="font-family: monospace;">1, 3, 3, True, 6, -14.8, 4.4,        -0.8, 6, 48000, 16, 11554, 0,&nbsp; ,        Euroviisut-2007-Final-AudioStream-1-ChannelCount-6-Channel-1_-23_LUFS.wav,        Euroviisut-2007-Final-AudioStream-1-ChannelCount-6-Channel-2_-23_LUFS.wav,
+        for this job</a>: <strong>ASCII character 31</strong> is meant for
+      separating different values from each other and <strong>ASCII character
+        30</strong> is meant for separating different records of data from each
+      other. Character 31 is called the <strong>Unit Separator</strong> and
+      character 30 is called the <strong>Record Separator</strong>. The
+      operating system doesn't allow these characters in file names, so they are
+      safe to use as data separators.</p>
+    <p>The machine readable results file is a simple text file with loudness
+      measurement results written to it. Sometimes there might be reason for a
+      person to open a machine readable results file in a text editor to check
+      the values inside it. This is not possible if the ASCII character 30 is
+      used as the record separator. In this case the user sees the results as
+      one huge continuous line of text. This is why I chose to use the windows
+      line feed string (ASCII character 13 followed with character 10) as the
+      default record separator. When this record separator is used, then a
+      machine readable results file becomes much more readable when opened in a
+      text editor, because the editor splits results for individual audio files
+      as separate lines of text.</p>
+    <p>However you can select any non printable ASCII character as the unit and
+      record separator. You can use 1 or 2 character strings for each.</p>
+    <p><br>
+    </p>
+    <h2><a id="Machine_readable_results_file_format">Machine readable results
+        file format</a></h2>
+    <p>The machine readable results file name is constructed like this:&nbsp;<strong>
+        InputFileName-machine_readable_results.txt</strong></p>
+    <p>Example: Input file name is:&nbsp; <strong>Euroviisut-2007-Final.mp4</strong></p>
+    <p>Machine readable results file name is:&nbsp; <strong>Euroviisut-2007-Final.mp4-machine_readable_results.txt</strong></p>
+    <p>When you know the name of the input file, then you can get the machine
+      readable results file name just by appending "<strong>-machine_readable_results.txt</strong>"
+      to the name.<br>
+      <strong></strong></p>
+    <p><strong><br>
+      </strong></p>
+    <p>A machine readable results file has information about all audio streams
+      of a single input file. Values for a single output stream are separated
+      with the unit separator string. The record separator string is placed
+      where a record of values for one audio stream ends and a record of values
+      for the next audio stream begins. Unit and record separator strings are
+      both defined during FreeLCS installation.</p>
+    <p><br>
+    </p>
+    <p><strong style="text-decoration: underline;">The items in the machine
+        readable results file are:</strong></p>
+    <p>Note: item count starts from zero.</p>
+    <p><br>
+      <strong>00</strong> = The number of this audio stream. <br>
+      <strong>01</strong> = Total number of supported streams in the input file.<br>
+      <strong>02</strong> = Total number of streams in the input file.<br>
+      <strong>03</strong> = Create Loudness Corrected Files (True / False).<br>
+      <strong>04</strong> = Number of files in this audio stream.<br>
+      <br>
+      <strong>05</strong> = Integrated Loudness (I) (If loudness is below
+      measurement threshold, then this value is '<strong>inf</strong>').<br>
+      <strong>06</strong> = Loudness Range (LRA).<br>
+      <strong>07</strong> = Highest Peak (dBTP or dBFS depending which
+      measurement method the user selected during installation).<br>
+      <strong>08</strong> = Number Of Channels in this audio stream. <br>
+      <strong>09</strong> = Sample Rate.<br>
+      <strong>10</strong> = Bit Depth.<br>
+      <strong>11</strong> = Duration rounded to seconds.</p>
+    <p><br>
+      <strong>12</strong> = Loudness calculation error code (Codes explained
+      below).<br>
+      <strong>13</strong> = Reason for error (text string).</p>
+    <p><br>
+      <strong>14</strong> = List of output filenames.</p>
+    <p><br>
+    </p>
+    <p><strong style="text-decoration: underline;">Detailed explanations of the
+        items:</strong><br>
+      <br>
+      <strong style="text-decoration: underline;">Items 00 - 04:</strong><br>
+    </p>
+    <ul>
+      <li><strong>Item 0:</strong> The number of this audio stream. If there are
+        many audio streams in the input file, then this number tells you which
+        one of these streams this mix is.</li>
+      <li><strong>Item 1</strong>: Total number of supported streams in the
+        input file. There can be both unsupported and supported streams in a
+        input file. This value tells you how many streams FreeLCS is able to
+        process from the input file.</li>
+      <li><strong>Item 2</strong>: Total number of streams in the input file.
+        This number contains both the unsupported and supported streams in a
+        input file.</li>
+      <li><strong>Item 3</strong>: Create Loudness Corrected Files (True /
+        False). This value tells you if the user has instructed FreeLCS to
+        create loudness corrected files or not (this is set during FreeLCS
+        installation). If this is "False" then FreeLCS will not produce loudness
+        corrected audio files.</li>
+      <li><strong>Item 4</strong>: Number of files in this audio stream. This
+        tells you how many audio files this audio stream resulted to. This
+        number is always 1 except in two cases. It is 0 when an error happened
+        and FreeLCS was not able to process the stream. In this case this number
+        tells you that there are zero resulting output files.&nbsp; The other
+        case when this value differs from 1 is when the output file size is so
+        big that FreeLCS needs to split the file to one file per audio channel.
+        In this case this number tells you the number of audio files the audio
+        stream was split into. Items from number 14-&gt; will tell you names of
+        the output files.</li>
+    </ul>
+    <strong style="text-decoration: underline;"><strong style="text-decoration: underline;">Items</strong>
+      05 - 11:</strong><br>
+    <br>
+    <ul>
+      <li><strong>Item 5</strong>: Integrated Loudness of the input file. If
+        loudness is below measurement threshold, then this value is '<strong>inf</strong>'.</li>
+      <li> <strong>Item 6</strong>: Loudness Range of the input file.</li>
+      <li> <strong>Item 7</strong>: Highest Peak of the uncorrected input
+        file&nbsp; (dBTP or dBFS depending which measurement method the user
+        selected during installation).</li>
+      <li> <strong>Item 8</strong>: Number Of Channels in this audio stream.
+        This tells you how many channels there are in this audio stream.</li>
+      <li> <strong>Item 9</strong>: Sample Rate.</li>
+      <li> <strong>Item 10</strong>: Bit Depth.</li>
+      <li> <strong>Item 11</strong>: Duration rounded to seconds.</li>
+    </ul>
+    <strong style="text-decoration: underline;"><strong style="text-decoration: underline;">Items</strong>
+      12 - 13:</strong><br>
+    <br>
+    <ul>
+      <li><strong>Item 12:</strong> This value holds possible error codes. If
+        this value is 0 then FreeLCS successfully processed the stream,
+        otherwise processing failed and there will be no loudness calculation
+        results nor loudness corrected files for this stream. Error code <strong>9</strong>
+        means that in addition of supported files, there are some audio files
+        inside the MXF wrapper that FreeLCS is not able to process. When MXF
+        audio remixing feature is on, then this situation may produce unexpected
+        results meaning that audio channels inside the MXF file might be
+        combined in ways that the user did not anticipate. MXF audio remixing
+        works correctly only when FreeLCS is able to process all files inside
+        the MXF wrapper. </li>
+      <li><strong>Item 13:</strong> This item is the error message text. If
+        there is no error then this item is empty. </li>
+    </ul>
+    <strong style="text-decoration: underline;"><strong style="text-decoration: underline;">Items</strong>
+      14:</strong><br>
+    <br>
+    <ul>
+      <li><strong>Item 14:</strong> The items from number 14-&gt; will tell you
+        the names of output audio files. If the output file has been split to
+        one file per audio channel, then here are all the output file names
+        separated by the unit separator..</li>
+    </ul>
+    <p><br>
+      <br>
+      <strong style="text-decoration: underline;">Error codes for item number
+        12:</strong><br>
+    </p>
+    <strong>0</strong> = No Errors<br>
+    <strong>1</strong> = Loudness is below measurement threshold (-70 LUFS)<br>
+    <strong>2</strong> = Error in integrated loudness calculation<br>
+    <strong>3</strong> = File transfer failed<br>
+    <strong>4</strong> = Audio duration is less than 1 second<br>
+    <strong>5</strong> = Zero channels in audio stream<br>
+    <strong>6</strong> = Channel count bigger than 6 is unsupported<br>
+    <strong>7</strong> = No Audio Streams Found In File <br>
+    <strong>8</strong> = Sox encountered an error<br>
+    <strong>9</strong> = There are unsupported audio streams in input MXF - file
+    while MXF audio remixing function is on. When MXF audio remixing feature is
+    on, then this situation may produce unexpected results meaning that audio
+    channels inside the MXF file might be combined in ways that the user did not
+    anticipate. MXF audio remixing works correctly only when FreeLCS is able to
+    process all files inside the MXF wrapper.<br>
+    <strong>10</strong> = File wrapper format is not supported<br>
+    <strong>11</strong> = Audio compression codec is not supported<br>
+    <strong>100</strong> = Unknown Error<br>
+    <br>
+    If you want a machine to interpret the values inside the machine readable
+    file, then you first must check the <strong>item 12</strong> for errors. If
+    <strong>item 12</strong> is zero, then FreeLCS successfully processed the
+    file. Then check <strong>item 1</strong> for information about how many
+    output files resulted from the input file. <strong>Item 1</strong> tells
+    you how many loudness results you need to read (one record of results for
+    each supported input stream). Now you can read in the loudness measurement
+    results for each supported input stream (<strong>items 5 - 7</strong> for
+    each record). If <strong>item 12</strong> is not zero, then an error
+    happened and there are no loudness calculation results to read (exception
+    error code 9). The error number tells you what the the error was and the
+    error message text is located in item <strong>13</strong>. <br>
+    <br>
+    <h3>Example 1:</h3>
+    FreeLCS has processed a input file that has only one audio stream in it. It
+    is a wav file named: <strong>Test_File-01.wav</strong>&nbsp; The machine
+    readable results file name is:&nbsp; <strong>Test_File-01.wav-machine_readable_results.txt</strong><br>
+    <br>
+    The values inside the machine readable results file are below. Note that I
+    have changed the unit separator character to comma here to make the text
+    more human readable :)<br>
+    <br>
+    <strong style="font-family: monospace;">1, 1, 1, True, 1, -22.9, 12.2, -6.7,
+      2, 48000, 16, 3070, 0,&nbsp; , Test_File-01_-23_LUFS.wav</strong><br>
+    <br>
+    <br>
+    <h3>Example 2:</h3>
+    FreeLCS has processed a transport stream file that had 14 audio streams in
+    it. All streams were first saved to separate files and then went through
+    loudness processing.<br>
+    <br>
+    The input file name was:&nbsp; <strong>20120712-2000-0000091191.mpg</strong>&nbsp;
+    and the machine readable results file name was:&nbsp; <strong>20120712-2000-0000091191.mpg-machine_readable_results.txt</strong><br>
+    <br>
+    The result records for the files are separated by the record separator, in
+    this case it is ASCII characters 13 and 10 (which is the code that instructs
+    a text editor to split the text to separate text lines).<br>
+    <br>
+    There are now 14 records of results because the one input file resulted in
+    14 output files. Note that there was an error processing streams 4 and 6.
+    The streams were present in the transport stream, but they had zero audio
+    channels.<br>
+    <br>
+    The values inside the machine readable results file are below. Note that I
+    have changed the unit separator character to comma here to make the text
+    more human readable :)<br>
+    <br>
+    <br>
+    <strong><span style="font-family: monospace;">1, 12, 14, True, 1, -21.5,
+        10.7, -8.5, 2, 48000, 16, 600, 0,&nbsp; ,
+        20120712-2000-0000091191-AudioStream-1-ChannelCount-2_-23_LUFS.wav <br>
+        2, 12, 14, True, 1, -18.0, 4.2, -0.6, 2, 48000, 16, 600, 0,&nbsp; ,
+        20120712-2000-0000091191-AudioStream-2-ChannelCount-2_-23_LUFS.wav <br>
+        3, 12, 14, True, 1, -24.0, 13.0, -5.8, 2, 48000, 16, 600, 0,&nbsp; ,
+        20120712-2000-0000091191-AudioStream-3-ChannelCount-2_-23_LUFS.wav <br>
+        4, 12, 14, True, 0, 0, 0, 0, 0, 0, 0, 0, 5, There are zero audio
+        channels in stream number 4,&nbsp; <br>
+        5, 12, 14, True, 1, -20.7, 11.3, -6.7, 2, 48000, 16, 600, 0,&nbsp; ,
+        20120712-2000-0000091191-AudioStream-5-ChannelCount-2_-23_LUFS.wav <br>
+        6, 12, 14, True, 0, 0, 0, 0, 0, 0, 0, 0, 5, There are zero audio
+        channels in stream number 6,&nbsp; <br>
+        7, 12, 14, True, 1, -17.2, 12.6, -6.1, 2, 48000, 16, 600, 0,&nbsp; ,
+        20120712-2000-0000091191-AudioStream-7-ChannelCount-2_-23_LUFS.wav <br>
+        8, 12, 14, True, 1, -24.8, 10.7, -10.1, 2, 48000, 16, 58, 0,&nbsp; ,
+        20120712-2000-0000091191-AudioStream-8-ChannelCount-2_-23_LUFS.wav <br>
+        9, 12, 14, True, 1, -23.9, 3.1, -9.7, 2, 48000, 16, 600, 0,&nbsp; ,
+        20120712-2000-0000091191-AudioStream-9-ChannelCount-2_-23_LUFS.wav <br>
+        10, 12, 14, True, 1, -23.4, 10.0, -4.2, 2, 48000, 16, 600, 0,&nbsp; ,
+        20120712-2000-0000091191-AudioStream-10-ChannelCount-2_-23_LUFS.wav <br>
+        11, 12, 14, True, 1, -22.6, 6.6, -7.5, 2, 48000, 16, 600, 0,&nbsp; ,
+        20120712-2000-0000091191-AudioStream-11-ChannelCount-2_-23_LUFS.wav <br>
+        12, 12, 14, True, 1, -18.8, 14.1, -1.6, 2, 48000, 16, 600, 0,&nbsp; ,
+        20120712-2000-0000091191-AudioStream-12-ChannelCount-2_-23_LUFS.wav <br>
+        13, 12, 14, True, 1, -20.0, 2.8, -8.2, 2, 48000, 16, 600, 0,&nbsp; ,
+        20120712-2000-0000091191-AudioStream-13-ChannelCount-2_-23_LUFS.wav <br>
+        14, 12, 14, True, 1, -21.4, 8.2, -3.5, 2, 48000, 16, 600, 0,&nbsp; ,
+        20120712-2000-0000091191-AudioStream-14-ChannelCount-2_-23_LUFS.wav</span></strong><br>
+    <br>
+    <br>
+    <h3>Example 3:</h3>
+    FreeLCS has processed a file that had 16 audio streams in it. EBU R128 only
+    supports channel counts up to 6, but streams 1 - 10 had more than 6 channels
+    each resulting in an error. The name of the input file was:&nbsp; <strong>16_audio_streams.mkv</strong>&nbsp;
+    and the name of the machine readable results file was:&nbsp; <strong>16_audio_streams.mkv-machine_readable_results.txt</strong><br>
+    <br>
+    The values inside the machine readable results file are below. Unit
+    separator character has been changed to comma here to make the text more
+    human readable.<br>
+    <br>
+    <br>
+    <strong><span style="font-family: monospace;">1, 6, 16, True, 0, 0, 0, 0, 0,
+        0, 0, 0, 6, There are 12 channels in stream 1, only channel counts from
+        one to six are supported,&nbsp; <br>
+        2, 6, 16, True, 0, 0, 0, 0, 0, 0, 0, 0, 6, There are 15 channels in
+        stream 2, only channel counts from one to six are supported,&nbsp; <br>
+        3, 6, 16, True, 0, 0, 0, 0, 0, 0, 0, 0, 6, There are 13 channels in
+        stream 3, only channel counts from one to six are supported,&nbsp; <br>
+        4, 6, 16, True, 0, 0, 0, 0, 0, 0, 0, 0, 6, There are 14 channels in
+        stream 4, only channel counts from one to six are supported,&nbsp; <br>
+        5, 6, 16, True, 0, 0, 0, 0, 0, 0, 0, 0, 6, There are 11 channels in
+        stream 5, only channel counts from one to six are supported,&nbsp; <br>
+        6, 6, 16, True, 0, 0, 0, 0, 0, 0, 0, 0, 6, There are 16 channels in
+        stream 6, only channel counts from one to six are supported,&nbsp; <br>
+        7, 6, 16, True, 0, 0, 0, 0, 0, 0, 0, 0, 6, There are 10 channels in
+        stream 7, only channel counts from one to six are supported,&nbsp; <br>
+        8, 6, 16, True, 0, 0, 0, 0, 0, 0, 0, 0, 6, There are 9 channels in
+        stream 8, only channel counts from one to six are supported,&nbsp; <br>
+        9, 6, 16, True, 0, 0, 0, 0, 0, 0, 0, 0, 6, There are 8 channels in
+        stream 9, only channel counts from one to six are supported,&nbsp; <br>
+        10, 6, 16, True, 0, 0, 0, 0, 0, 0, 0, 0, 6, There are 7 channels in
+        stream 10, only channel counts from one to six are supported,&nbsp; <br>
+        11, 6, 16, True, 1, -18.4, 0.0, -23.0, 6, 48000, 24, 20, 0,&nbsp; ,
+        16_audio_streams-AudioStream-11-ChannelCount-6_-23_LUFS.wav <br>
+        12, 6, 16, True, 1, -18.4, 0.0, -23.0, 5, 48000, 32, 20, 0,&nbsp; ,
+        16_audio_streams-AudioStream-12-ChannelCount-5_-23_LUFS.wav <br>
+        13, 6, 16, True, 1, -19.2, 0.0, -22.1, 4, 48000, 8, 20, 0,&nbsp; ,
+        16_audio_streams-AudioStream-13-ChannelCount-4_-23_LUFS.wav <br>
+        14, 6, 16, True, 1, -21.2, 0.0, -23.0, 3, 48000, 16, 20, 0,&nbsp; ,
+        16_audio_streams-AudioStream-14-ChannelCount-3_-23_LUFS.wav <br>
+        15, 6, 16, True, 1, -23.0, 0.0, -23.0, 2, 48000, 24, 20, 0,&nbsp; ,
+        16_audio_streams-AudioStream-15-ChannelCount-2_-23_LUFS.wav <br>
+        16, 6, 16, True, 1, -26.0, 0.0, -23.0, 1, 48000, 32, 20, 0,&nbsp; ,
+        16_audio_streams-AudioStream-16-ChannelCount-1_-23_LUFS.wav</span></strong><br>
+    <br>
+    <br>
+    <strong style="text-decoration: underline;">Example 4:</strong><br>
+    <br>
+    FreeLCS has processed a file that had 3 streams in it. The file is 3 hous 12
+    minutes long and first stream is 5.1 audio. The first stream is so big that
+    the output file size would have exceeded wav format max size of 4 GB, so
+    FreeLCS split this 5.1 file to one file per audio channel resulting in 6
+    output files.<br>
+    <br>
+    The name of the input file was:&nbsp; <strong>Euroviisut-2007-Final.mp4&nbsp;</strong>
+    and the name of the machine readable results file was:&nbsp; <strong>Euroviisut-2007-Final.mp4-machine_readable_results.txt<br>
+    </strong><br>
+    The values inside the machine readable results file are below. Unit
+    separator character has been changed to comma here to make the text more
+    human readable.<strong> </strong>Also note that the first line of text is
+    so long that its wraps around here to the next line, the 3 different audio
+    streams are separated by an empty line here for better readability.<strong><br>
+      <br>
+    </strong><br>
+    <strong><span style="font-family: monospace;">1, 3, 3, True, 6, -14.8, 4.4,
+        -0.8, 6, 48000, 16, 11554, 0,&nbsp; ,
+        Euroviisut-2007-Final-AudioStream-1-ChannelCount-6-Channel-1_-23_LUFS.wav,
+        Euroviisut-2007-Final-AudioStream-1-ChannelCount-6-Channel-2_-23_LUFS.wav,
         Euroviisut-2007-Final-AudioStream-1-ChannelCount-6-Channel-3_-23_LUFS.wav,
         Euroviisut-2007-Final-AudioStream-1-ChannelCount-6-Channel-4_-23_LUFS.wav,
         Euroviisut-2007-Final-AudioStream-1-ChannelCount-6-Channel-5_-23_LUFS.wav,
         Euroviisut-2007-Final-AudioStream-1-ChannelCount-6-Channel-6_-23_LUFS.wav
-        <br> <br>        2, 3, 3, True, 1, -10.4, 8.5, 1.3, 2, 48000, 16, 11554, 0,&nbsp; ,        Euroviisut-2007-Final-AudioStream-2-ChannelCount-2_-23_LUFS.wav <br>        <br>        3, 3, 3, True, 1, -16.8, 7.8, -3.1, 2, 48000, 16, 11554, 0,&nbsp; ,        Euroviisut-2007-Final-AudioStream-3-ChannelCount-2_-23_LUFS.wav</span></strong><br>    <br>    <br>    <br>    <h2><a id="MXF_audio_remixing">MXF audio remixing</a></h2>    <p>FreeLCS 3.0 lets you define how you want audio inside an MXF file to be      recombined before loudness processing. This feature is called MXF audio      remixing. <br>      <strong></strong></p>    <p>If you want to use MXF audio remixing, then you must install libav-tools      and allow MXF wrapper format processing during FreeLCS installation. </p>    <p><strong>Important note:</strong> This function is not guaranteed to work      !!!!!!! MXF is not one format, but a family of formats (<a href="https://en.wikipedia.org/wiki/Material_Exchange_Format#MXF_in_use">more
-        info on Wikipedia</a>). Every hardware and software vendor seem to have      their own version of it. MXF files created with one device might not be      compatible with a device created by another vendor. Because of this there      is no guarantee that FreeLCS can process every MXF - file you feed it. It      might be a good idea to do a thorough test with a large set of different      MXF files before you make this feature part of your workflow.</p>    <p><br>    </p>    <h3><a id="The_MXF_Problem">The MXF Problem</a><br>    </h3>    <p>Consider an example where video and audio of a program is wrapper inside      an MXF wrapper. The program has two versions of the audio: a stereo      version (2 channels) and an 5.1 version (6 channels). Audio might be      stored inside the MXF wrapper as one 8 channel audio file (<strong>Example        1</strong>), or as 8 separate mono files (<strong>Example 2</strong>).</p>    <p><strong style="text-decoration: underline;">Example 1:</strong></p>    <p>Input #0, mxf, from 'Testfile-1.mxf':<br>      &nbsp;&nbsp;&nbsp; Duration: 00:45:37.20, start: 0.000000, bitrate: 59232      kb/s<br>      &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; Stream #0.0: Video: mpeg2video      (4:2:2), yuv422p, 1920x1080 [PAR 1:1 DAR 16:9], 50000 kb/s, 25 fps, 25      tbr, 25 tbn, 50 tbc<br>      <strong>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; Stream #0.1: Audio: pcm_s24le,        48000 Hz, 8 channels, s32, 9216 kb/s</strong></p>    <p><strong style="text-decoration: underline;">Example 2:</strong></p>    <p>Input #0, mxf, from 'Testfile-2':<br>      &nbsp;&nbsp;&nbsp; Duration: 00:45:37.20, start: 0.000000, bitrate: 60157      kb/s<br>      &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; Stream #0.0: Video: mpeg2video      (4:2:2), yuv422p, 1920x1080 [PAR 1:1 DAR 16:9], 50000 kb/s, 25 fps, 25      tbr, 25 tbn, 50 tbc<br>      <strong>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; Stream #0.1: Audio: pcm_s24le,        48000 Hz, 1 channels, s32, 1152 kb/s<br>        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Stream #0.2: Audio: pcm_s24le,        48000 Hz, 1 channels, s32, 1152 kb/s<br>        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Stream #0.3: Audio: pcm_s24le,        48000 Hz, 1 channels, s32, 1152 kb/s<br>        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Stream #0.4: Audio: pcm_s24le,        48000 Hz, 1 channels, s32, 1152 kb/s<br>        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Stream #0.5: Audio: pcm_s24le,        48000 Hz, 1 channels, s32, 1152 kb/s<br>        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Stream #0.6: Audio: pcm_s24le,        48000 Hz, 1 channels, s32, 1152 kb/s<br>        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Stream #0.7: Audio: pcm_s24le,        48000 Hz, 1 channels, s32, 1152 kb/s<br>        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Stream #0.8: Audio: pcm_s24le,        48000 Hz, 1 channels, s32, 1152 kb/s</strong></p>    <p><br>    </p>    <p>Audio from these MXF files can't be processed with FreeLCS because it has      no knowledge about which files belong to the same audio version (mix).      This information can be provided to FreeLCS in the form of a MXF remix      map.</p>    <p><br>    </p>    <h2><a id="MXF_remix_map">MXF remix map</a></h2>    <p>A MXF remix map tells FreeLCS how audio channels inside a MXF file must      be recombined before loudness processing. When a remix map is active then      FreeLCS first extracts audio from the MXF wrapper and then recombines      audio channels according to the remix map and writes each resulting mix to      a separate audio file. Then FreeLCS moves these files to the HotFolder so      that they go through the normal loudness processing.</p>    <p><br>    </p>    <h3><a id="Default_MXF_remix_map">Default MXF remix map</a></h3>    <p> You can define a default remix map during FreeLCS installation. This      default map is used when there is no other information available about a      specific MXF file.</p>    <p>In the picture below a green number above a box corresponds to the number      of the mix. The number inside a box defines how many audio channels this      mix has. A total of 48 remix parameters can be defined meaning that      channels inside an MXF file can be recombined to max 48 new audio files.      The default remix map is all number 2's. This means that if there is no      file specific MXF remix map found then recombine all audio files found      inside a MXF file to stereo files.</p>    If you know all your MXF files have these four mixes:    <ol>      <li>Stereo</li>      <li>5.1</li>      <li>Stereo</li>      <li>Stereo</li>    </ol>    <p>Then you could define a default remix map of: <strong>2, 6, 2, 2</strong>&nbsp;
-      meaning that you put number 2's in boxes 1, 3 and 4 and number 6 in box 2.      You can have more mix definitions than you have physical audio channels      inside your MXF files, FreeLCS only recreates those mixes that can be      completely created with audio channels available in the MXF file. If there      are more audio channels inside an MXF file than is needed to recreate all      mixes in the remix map, then the extra channels are not used for anything.</p>    <p><br>    </p>    <img alt="" src="Pictures/MXF_Remixing-01.jpg">    <p><br>    </p>    <h3><a id="File_specific_MXF_remix_map">File specific MXF remix map</a></h3>    <p>In addition to the default remix map the user can use file specific MXF      remix maps. A file specific remix map overrides the default remix map      defined during installation. For example if most of your files have the      same channel configuration, then you would assign this configuration to      the default MXF remix map during FreeLCS installation. Once in a while you      might want to process a file that has a channel configuration differing      from your regular MXF files. In this case you could override the default      channel configuration only for this file with a file specific remix map.</p>    <p><br>    </p>    <p>A file specific remix map is a simple <strong>text file</strong> that      contains channel counts separated with a comma. The name of the remix map      file is always the same as the name of the MXF file it is used for, except      the file extension of the original file "<strong>.mxf</strong>" is      replaced with "<strong>.remix_map</strong>". You can have more mix      definitions than you have physical audio channels inside your MXF file,      FreeLCS only recreates those mixes that can be completely created with      audio channels available in the MXF file. If there are more audio channels      inside an MXF file than is needed to recreate all mixes in the remix map,      then the extra channels are not used for anything.</p>    <p><br>    </p>    <p><strong>Example:</strong></p>    The user wants to extract 5 mixes from an MXF file. These mixes are:<strong>      stereo, 5.1, stereo, stereo, 5.0</strong><br>    <br>    MXF file name:&nbsp; <strong>Testfile.mxf</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    <br> Remix map file name:&nbsp; <strong>Testfile.remix_map</strong><br>    Contents of the remix map file:&nbsp; <strong>2,6,2,2,5</strong><br>    <p>As you can see, it is very easy to use file specific remix maps. You just      create a text file and put some numbers in it separated by commas. The      numbers are the channel counts for each mix you want FreeLCS to recombine      before loudness processing. </p>    <p><strong>Important:</strong> a file specific remix map must be in the      FreeLCS HotFolder <strong>BEFORE</strong> the MXF file arrives there.      FreeLCS checks once for each MXF file if it can find the corresponding      file specific remix map, and if it is not found then FreeLCS processes the      file according to the information it has available then. FreeLCS won't      check for the existence of a remix map again after processing has started.</p>    <p><br>    </p>    <h2><a id="Detailed_explanation_of_the_channel_remixing_feature">Detailed        explanation of the channel remixing feature<br>      </a></h2>    <p>I have seen some very peculiar MXF files. One file had several mono audio      files in it except in between the mono files there was a single stereo      file. How is FreeLCS supposed to know from which file to take the audio      channels user has defined in a remix map ? Because of this peculiarity I      designed FreeLCS to be "blind" to the physical audio files inside a MXF      file, FreeLCS only "sees" a bunch of audio channels available to it.      FreeLCS does not care which physical file the channel comes from, it just      uses channels starting from file 1 channel 1 and going forward to the next      file until it gets all channels needed to fulfill a channel count defined      in a remix map.</p>    <p><br>    </p>    <p><strong style="text-decoration: underline;">Example:</strong></p>    <p>Most MXF files will have several mono files or 8 channel files inside but      consider this theoretical example. Suppose the channel counts in audio      files inside a MXF file was:</p>    Audio file 1: <strong>channels 1</strong><br>    Audio file 2: <strong>channels 2</strong><br>    Audio file 3: <strong>channels 3</strong><br>    Audio file 4: <strong>channels 4</strong><br>    <p>What happens if the user defines a channel map where required channel      counts for each mix to recreate is the opposite of the available channels      inside the MXF:</p>    <p>Remix map: <strong>4, 3, 2, 1</strong></p>    <p><br>    </p>    <p>This is how FreeLCS gets channels for each channel count defined in the      remix map:</p>    <p><br>    </p>    <p>Channels left in physical audio files before processing starts: <strong>1,
-        2, 3, 4</strong></p>    <p><br>    </p>    <p><strong>Remix map item 1 needs 4 channels</strong>: FreeLCS&nbsp; takes      all channels from physical files: 1 and 2 totalling 3 channels, then it      needs one more channel and takes the first channel of file 3. After the      first mix is created channels left in physical audio files: <strong>0, 0,        2, 4</strong>.</p>    <p><strong>Remix map item 2 needs 3 channels</strong>: FreeLCS takes the 2      channels that are left in physical file 3 and then the first channel from      physical file 4. After the second mix is created channels left in physical      audio files: <strong>0, 0, 0, 3</strong>.</p>    <p><strong>Remix map item 3 needs 2 channels</strong>: FreeLCS takes      channels 2 and 3 that are still unused in physical file 4. After the third      mix is created channels left in physical audio files: <strong>0, 0, 0, 1</strong>.</p>    <p><strong>Remix map item 4 needs 1 channels</strong>: Then we only have      channel 4 left of physical file 4 and that fulfills the last remix map      definition for 1 channels. After the fourth mix is created channels left      in physical audio files: <strong>0, 0, 0, 0</strong>.</p>    <p></p>    <p><br>    </p>    <p><br>    </p>    <h2><a id="Libav-tools_allowed_wrapper_and_codec_formats">Libav-tools        allowed wrapper and codec formats</a></h2>    <p>In FreeLCS 3.0 it is possible to restrict libav-tools to only process a      small set of formats or allow it to process all formats it supports. This      feature is mainly designed to allow the user to restrict processing only      to patent free formats even when libav-tools is installed. Format      patentability varies from country to country, see more about it in <a href="FreeLCS_FAQ.html#Libav-tools%20/%20FFmpeg%20and%20patents">FAQ</a>.</p>    <p><br>    </p>    <p>If you enabled MXF remixing, then you must install libav-tools and allow      MXF wrapper format processing. In the picture below libav-tools is allowed      to process all formats it supports (All includes MXF :)</p>    <p><br>    </p>    <img alt="" src="Pictures/MXF_Remixing-02.jpg"><br>    <br>    <br>    In the following picture libav-tools processing has been restricted to    wrapper formats: <strong>Wav, Flac, Ogg, Matroska, MXF, Webm&nbsp;</strong>    and&nbsp; codec formats: <strong>PCM, Flac, Vorbis</strong>.<br>    <br>    <br>    <img alt="" src="Pictures/MXF_Remixing-03.jpg"><br>    <p><br>    </p>    <p>The option "<strong>All Mpeg</strong>" enables wrapper formats: <strong>mpeg,
-        mp2, mp3, mp4, m4v, m4a, mpegts, mpegtsraw, mpegvideo, mpeg1video,        mpeg2video, vcd, svcd, dvd, vob</strong>. Some of these might be still      patented and require a licence from the rights holder (see <a href="FreeLCS_FAQ.html#Libav-tools%20/%20FFmpeg%20and%20patents">FAQ</a>).<br>    </p>    <p><br>    </p>    <br>    <br>    <br>    <br>    <br>    <br>    <br>  </body></html>
+        <br> <br>
+        2, 3, 3, True, 1, -10.4, 8.5, 1.3, 2, 48000, 16, 11554, 0,&nbsp; ,
+        Euroviisut-2007-Final-AudioStream-2-ChannelCount-2_-23_LUFS.wav <br>
+        <br>
+        3, 3, 3, True, 1, -16.8, 7.8, -3.1, 2, 48000, 16, 11554, 0,&nbsp; ,
+        Euroviisut-2007-Final-AudioStream-3-ChannelCount-2_-23_LUFS.wav</span></strong><br>
+    <br>
+    <br>
+    <br>
+    <h2><a id="MXF_audio_remixing">MXF audio remixing</a></h2>
+    <p>FreeLCS 3.0 lets you define how you want audio inside an MXF file to be
+      recombined before loudness processing. This feature is called MXF audio
+      remixing. <br>
+      <strong></strong></p>
+    <p>If you want to use MXF audio remixing, then you must install FFmpeg or
+      libav-tools and allow MXF wrapper format processing during FreeLCS
+      installation. </p>
+    <p><strong>Important note:</strong> This function is not guaranteed to work
+      !!!!!!! MXF is not one format, but a family of formats (<a href="https://en.wikipedia.org/wiki/Material_Exchange_Format#MXF_in_use">more
+        info on Wikipedia</a>). Every hardware and software vendor seem to have
+      their own version of it. MXF files created with one device might not be
+      compatible with a device created by another vendor. Because of this there
+      is no guarantee that FreeLCS can process every MXF - file you feed it. It
+      might be a good idea to do a thorough test with a large set of different
+      MXF files before you make this feature part of your workflow.</p>
+    <p><br>
+    </p>
+    <h3><a id="The_MXF_Problem">The MXF Problem</a><br>
+    </h3>
+    <p>Consider an example where video and audio of a program is wrapper inside
+      an MXF wrapper. The program has two versions of the audio: a stereo
+      version (2 channels) and an 5.1 version (6 channels). Audio might be
+      stored inside the MXF wrapper as one 8 channel audio file (<strong>Example
+        1</strong>), or as 8 separate mono files (<strong>Example 2</strong>).</p>
+    <p><strong style="text-decoration: underline;">Example 1:</strong></p>
+    <p>Input #0, mxf, from 'Testfile-1.mxf':<br>
+      &nbsp;&nbsp;&nbsp; Duration: 00:45:37.20, start: 0.000000, bitrate: 59232
+      kb/s<br>
+      &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; Stream #0.0: Video: mpeg2video
+      (4:2:2), yuv422p, 1920x1080 [PAR 1:1 DAR 16:9], 50000 kb/s, 25 fps, 25
+      tbr, 25 tbn, 50 tbc<br>
+      <strong>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; Stream #0.1: Audio: pcm_s24le,
+        48000 Hz, 8 channels, s32, 9216 kb/s</strong></p>
+    <p><strong style="text-decoration: underline;">Example 2:</strong></p>
+    <p>Input #0, mxf, from 'Testfile-2':<br>
+      &nbsp;&nbsp;&nbsp; Duration: 00:45:37.20, start: 0.000000, bitrate: 60157
+      kb/s<br>
+      &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; Stream #0.0: Video: mpeg2video
+      (4:2:2), yuv422p, 1920x1080 [PAR 1:1 DAR 16:9], 50000 kb/s, 25 fps, 25
+      tbr, 25 tbn, 50 tbc<br>
+      <strong>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; Stream #0.1: Audio: pcm_s24le,
+        48000 Hz, 1 channels, s32, 1152 kb/s<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Stream #0.2: Audio: pcm_s24le,
+        48000 Hz, 1 channels, s32, 1152 kb/s<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Stream #0.3: Audio: pcm_s24le,
+        48000 Hz, 1 channels, s32, 1152 kb/s<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Stream #0.4: Audio: pcm_s24le,
+        48000 Hz, 1 channels, s32, 1152 kb/s<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Stream #0.5: Audio: pcm_s24le,
+        48000 Hz, 1 channels, s32, 1152 kb/s<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Stream #0.6: Audio: pcm_s24le,
+        48000 Hz, 1 channels, s32, 1152 kb/s<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Stream #0.7: Audio: pcm_s24le,
+        48000 Hz, 1 channels, s32, 1152 kb/s<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Stream #0.8: Audio: pcm_s24le,
+        48000 Hz, 1 channels, s32, 1152 kb/s</strong></p>
+    <p><br>
+    </p>
+    <p>Audio from these MXF files can't be processed with FreeLCS because it has
+      no knowledge about which files belong to the same audio version (mix).
+      This information can be provided to FreeLCS in the form of a MXF remix
+      map.</p>
+    <p><br>
+    </p>
+    <h2><a id="MXF_remix_map">MXF remix map</a></h2>
+    <p>A MXF remix map tells FreeLCS how audio channels inside a MXF file must
+      be recombined before loudness processing. When a remix map is active then
+      FreeLCS first extracts audio from the MXF wrapper and then recombines
+      audio channels according to the remix map and writes each resulting mix to
+      a separate audio file. Then FreeLCS moves these files to the HotFolder so
+      that they go through the normal loudness processing.</p>
+    <p><br>
+    </p>
+    <h3><a id="Default_MXF_remix_map">Default MXF remix map</a></h3>
+    <p> You can define a default remix map during FreeLCS installation. This
+      default map is used when there is no other information available about a
+      specific MXF file.</p>
+    <p>In the picture below a green number above a box corresponds to the number
+      of the mix. The number inside a box defines how many audio channels this
+      mix has. A total of 48 remix parameters can be defined meaning that
+      channels inside an MXF file can be recombined to max 48 new audio files.
+      The default remix map is all number 2's. This means that if there is no
+      file specific MXF remix map found then recombine all audio files found
+      inside a MXF file to stereo files.</p>
+    If you know all your MXF files have these four mixes:
+    <ol>
+      <li>Stereo</li>
+      <li>5.1</li>
+      <li>Stereo</li>
+      <li>Stereo</li>
+    </ol>
+    <p>Then you could define a default remix map of: <strong>2, 6, 2, 2</strong>&nbsp;
+      meaning that you put number 2's in boxes 1, 3 and 4 and number 6 in box 2.
+      You can have more mix definitions than you have physical audio channels
+      inside your MXF files, FreeLCS only recreates those mixes that can be
+      completely created with audio channels available in the MXF file. If there
+      are more audio channels inside an MXF file than is needed to recreate all
+      mixes in the remix map, then the extra channels are not used for anything.</p>
+    <p><br>
+    </p>
+    <img alt="" src="Pictures/MXF_Remixing-01.jpg">
+    <p><br>
+    </p>
+    <h3><a id="File_specific_MXF_remix_map">File specific MXF remix map</a></h3>
+    <p>In addition to the default remix map the user can use file specific MXF
+      remix maps. A file specific remix map overrides the default remix map
+      defined during installation. For example if most of your files have the
+      same channel configuration, then you would assign this configuration to
+      the default MXF remix map during FreeLCS installation. Once in a while you
+      might want to process a file that has a channel configuration differing
+      from your regular MXF files. In this case you could override the default
+      channel configuration only for this file with a file specific remix map.</p>
+    <p><br>
+    </p>
+    <p>A file specific remix map is a simple <strong>text file</strong> that
+      contains channel counts separated with a comma. The name of the remix map
+      file is always the same as the name of the MXF file it is used for, except
+      the file extension of the original file "<strong>.mxf</strong>" is
+      replaced with "<strong>.remix_map</strong>". You can have more mix
+      definitions than you have physical audio channels inside your MXF file,
+      FreeLCS only recreates those mixes that can be completely created with
+      audio channels available in the MXF file. If there are more audio channels
+      inside an MXF file than is needed to recreate all mixes in the remix map,
+      then the extra channels are not used for anything.</p>
+    <p><br>
+    </p>
+    <p><strong>Example:</strong></p>
+    The user wants to extract 5 mixes from an MXF file. These mixes are:<strong>
+      stereo, 5.1, stereo, stereo, 5.0</strong><br>
+    <br>
+    MXF file name:&nbsp; <strong>Testfile.mxf</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <br> Remix map file name:&nbsp; <strong>Testfile.remix_map</strong><br>
+    Contents of the remix map file:&nbsp; <strong>2,6,2,2,5</strong><br>
+    <p>As you can see, it is very easy to use file specific remix maps. You just
+      create a text file and put some numbers in it separated by commas. The
+      numbers are the channel counts for each mix you want FreeLCS to recombine
+      before loudness processing. </p>
+    <p><strong>Important:</strong> a file specific remix map must be in the
+      FreeLCS HotFolder <strong>BEFORE</strong> the MXF file arrives there.
+      FreeLCS checks once for each MXF file if it can find the corresponding
+      file specific remix map, and if it is not found then FreeLCS processes the
+      file according to the information it has available then. FreeLCS won't
+      check for the existence of a remix map again after processing has started.</p>
+    <p><br>
+    </p>
+    <h2><a id="Detailed_explanation_of_the_channel_remixing_feature">Detailed
+        explanation of the channel remixing feature<br>
+      </a></h2>
+    <p>I have seen some very peculiar MXF files. One file had several mono audio
+      files in it except in between the mono files there was a single stereo
+      file. How is FreeLCS supposed to know from which file to take the audio
+      channels user has defined in a remix map ? Because of this peculiarity I
+      designed FreeLCS to be "blind" to the physical audio files inside a MXF
+      file, FreeLCS only "sees" a bunch of audio channels available to it.
+      FreeLCS does not care which physical file the channel comes from, it just
+      uses channels starting from file 1 channel 1 and going forward to the next
+      file until it gets all channels needed to fulfill a channel count defined
+      in a remix map.</p>
+    <p><br>
+    </p>
+    <p><strong style="text-decoration: underline;">Example:</strong></p>
+    <p>Most MXF files will have several mono files or 8 channel files inside but
+      consider this theoretical example. Suppose the channel counts in audio
+      files inside a MXF file was:</p>
+    Audio file 1: <strong>channels 1</strong><br>
+    Audio file 2: <strong>channels 2</strong><br>
+    Audio file 3: <strong>channels 3</strong><br>
+    Audio file 4: <strong>channels 4</strong><br>
+    <p>What happens if the user defines a channel map where required channel
+      counts for each mix to recreate is the opposite of the available channels
+      inside the MXF:</p>
+    <p>Remix map: <strong>4, 3, 2, 1</strong></p>
+    <p><br>
+    </p>
+    <p>This is how FreeLCS gets channels for each channel count defined in the
+      remix map:</p>
+    <p><br>
+    </p>
+    <p>Channels left in physical audio files before processing starts: <strong>1,
+        2, 3, 4</strong></p>
+    <p><br>
+    </p>
+    <p><strong>Remix map item 1 needs 4 channels</strong>: FreeLCS&nbsp; takes
+      all channels from physical files: 1 and 2 totalling 3 channels, then it
+      needs one more channel and takes the first channel of file 3. After the
+      first mix is created channels left in physical audio files: <strong>0, 0,
+        2, 4</strong>.</p>
+    <p><strong>Remix map item 2 needs 3 channels</strong>: FreeLCS takes the 2
+      channels that are left in physical file 3 and then the first channel from
+      physical file 4. After the second mix is created channels left in physical
+      audio files: <strong>0, 0, 0, 3</strong>.</p>
+    <p><strong>Remix map item 3 needs 2 channels</strong>: FreeLCS takes
+      channels 2 and 3 that are still unused in physical file 4. After the third
+      mix is created channels left in physical audio files: <strong>0, 0, 0, 1</strong>.</p>
+    <p><strong>Remix map item 4 needs 1 channels</strong>: Then we only have
+      channel 4 left of physical file 4 and that fulfills the last remix map
+      definition for 1 channels. After the fourth mix is created channels left
+      in physical audio files: <strong>0, 0, 0, 0</strong>.</p>
+    <p></p>
+    <p><br>
+    </p>
+    <p><br>
+    </p>
+    <h2><a id="Libav-tools_allowed_wrapper_and_codec_formats">FFmpeg /
+        Libav-tools allowed wrapper and codec formats</a></h2>
+    <p>In FreeLCS 3.0 it is possible to restrict FFmpeg / libav-tools to only
+      process a small set of formats or allow it to process all formats it
+      supports. This feature is mainly designed to allow the user to restrict
+      processing only to patent free formats even when FFmpeg or libav-tools is
+      installed. Format patentability varies from country to country, see more
+      about it in <a href="FreeLCS_FAQ.html#Libav-tools%20/%20FFmpeg%20and%20patents">FAQ</a>.</p>
+    <p><br>
+    </p>
+    <p>If you enabled MXF remixing, then you must install FFmpeg or libav-tools
+      and allow MXF wrapper format processing. In the picture below libav-tools
+      is allowed to process all formats it supports (All includes MXF :)</p>
+    <p><br>
+    </p>
+    <img alt="" src="Pictures/MXF_Remixing-02.jpg"><br>
+    <br>
+    <br>
+    In the following picture libav-tools processing has been restricted to
+    wrapper formats: <strong>Wav, Flac, Ogg, Matroska, MXF, Webm&nbsp;</strong>
+    and&nbsp; codec formats: <strong>PCM, Flac, Vorbis</strong>.<br>
+    <br>
+    <br>
+    <img alt="" src="Pictures/MXF_Remixing-03.jpg"><br>
+    <p><br>
+    </p>
+    <p>The option "<strong>All Mpeg</strong>" enables wrapper formats: <strong>mpeg,
+        mp2, mp3, mp4, m4v, m4a, mpegts, mpegtsraw, mpegvideo, mpeg1video,
+        mpeg2video, vcd, svcd, dvd, vob</strong>. Some of these might be still
+      patented and require a licence from the rights holder (see <a href="FreeLCS_FAQ.html#Libav-tools%20/%20FFmpeg%20and%20patents">FAQ</a>).<br>
+    </p>
+    <p><br>
+    </p>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+  </body>
+</html>

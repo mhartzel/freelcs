@@ -4,4 +4,4 @@ Ubuntu 14.04 ships with avconv version 9.11 and I encountered the following prob
 
 - Avconv 9.11 detects micosoft gsm audio codec format (microsoft GSM 6.10) sample rate incorrectly. 32 KHz is recognized as 8 KHz. The playback speed of the resulting output file is incorrect. This codec format is not widely used, so the impact of this bug is very low.
 
-
+Ubuntu 16,04 ships with FFmpeg version 2.8.6 which corrects this problem.

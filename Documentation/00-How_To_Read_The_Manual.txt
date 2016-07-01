@@ -1,6 +1,6 @@
 
 
-FreeLCS user manual is stored in the file "FreeLCS_1.0_User_Manual.html".
+FreeLCS user manual is stored in the file "FreeLCS_User_Manual.html".
 
 You can read the manual by opening it in a web-browser.
 
@@ -9,3 +9,5 @@ This can be done (depending on operating system and browser) by:
 - Double clicking on the html - file
 - Right clicking on the html - file and selecting and option like "Open in web-browser".
 - Opening an web-browser and selecting "File / Open File" from it's menu.
+
+You can also open the "index.html" in a browser and navigate a local copy of FreeLCS site and its documentation.
