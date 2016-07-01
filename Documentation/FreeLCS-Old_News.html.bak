@@ -17,7 +17,7 @@
           7</a> and <a href="Ubuntu_Server_modifications_needed_before_FreeLCS_installation.html">Ubuntu
           Server</a> requires some modifications to the operating system
         configuration before installation.</li>
-      <li>FreeLCS 3.0 is able to <a href="Machine_readable_results_and_MXF_audio_remix_mapping.html#Machine_readable_results">write
+      <li>FreeLCS 3.0 is able to <a href="Machine_readable_results_and_MXF_audio_remix_mapping.html">write
           loudness results to a machine readable file</a>. With this feature you
         can make FreeLCS the loudness measurement step in your automated file
         processing workflow. You can also configure FreeLCS not to produce any
