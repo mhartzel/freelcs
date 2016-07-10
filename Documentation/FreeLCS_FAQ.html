@@ -438,7 +438,7 @@
       <li>If your audio tools don't support flac then you can use Audacity to
         manipulate files in this format. Audacity is a free simple multitrack
         audio tool and it supports Mac, Linux and windows.</li>
-      <li>Audacity site is here: <a href="http://audacity.sourceforge.net/?lang=en">http://audacity.sourceforge.net/?lang=en</a></li>
+      <li>Audacity site is here: <a href="http://www.audacityteam.org/">http://www.audacityteam.org/</a></li>
     </ul>
     <p><br>
     </p>
@@ -519,7 +519,16 @@
       you need to restart FreeLCS to restore normal operation. You can restart
       FreeLCS either by rebooting the computer or giving this command as root on
       the commandline:</p>
+    <p><br>
+    </p>
+    <p>On systemd based distros (Debian 8 and Ubuntu 16.04):</p>
+    <p><strong>systemctl restart freelcs</strong></p>
+    <p><br>
+    </p>
+    <p>On init based distros (Debian 7, Ubuntu 12.04 and 14.04):</p>
     <p><strong>/etc/init.d/loudnesscorrection_init_script restart</strong></p>
+    <p><strong><br>
+      </strong></p>
     Note that it takes about 2 minutes for the service to start on init based
     systems (Ubuntu 12.04, 14.04, Debian 7). This delay has been put in because
     it takes some time before all Linux services are available when the computer
