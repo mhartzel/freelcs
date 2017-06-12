@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '287'
+loudnesscorrection_version = '288'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -1159,7 +1159,7 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 					peak_measurement_unit = 'dBTP'
 
 				# Generate gnuplot commands for plotting the graphics. Put all gnuplot commands in a list.
-				# Gnuplot 5 in Ubuntu 16.04 reverses y axis. Detect os version and adjust y axis cordinates accordingly
+				# Gnuplot 5 in Ubuntu 16.04 and Debian 9 reverses y axis. Detect os version and adjust y axis cordinates accordingly
 
 				gnuplot_y_axis_commands = 'set yrange [ 0 : -60 ] noreverse nowriteback'
 
@@ -1170,6 +1170,10 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 						os_version_major_number = int(temp)
 
 					if os_version_major_number >= 16:
+						gnuplot_y_axis_commands = 'set yrange [ -60 : 0 ] nowriteback'
+
+				if os_name == 'debian':
+					if int(os_version) >= 9:
 						gnuplot_y_axis_commands = 'set yrange [ -60 : 0 ] nowriteback'
 
 				gnuplot_commands=['set terminal jpeg size 1280,960 medium font \'arial\'', \

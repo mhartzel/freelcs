@@ -27,8 +27,8 @@ import email.mime.multipart
 import tempfile
 import copy
 
-version = '109'
-freelcs_version = '3.3'
+version = '110'
+freelcs_version = '3.4'
 
 ###################################
 # Function definitions start here #
@@ -594,6 +594,7 @@ def send_test_email(*args):
 		third_window_label_17['foreground'] = 'black'
 	
 	connect_to_smtp_server()
+
 	if email_sending_message_1.get() == 'Error sending email !!!!!!!':
 		third_window_label_15['foreground'] = 'red'
 		third_window_label_17['foreground'] = 'red'
@@ -1965,6 +1966,10 @@ def install_init_scripts_and_config_files(*args):
 		sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
 		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
 		
+		# Starting from Debian 9 systemd (232-25) writes nonerror messages to stderr (why ? stderr is meant only for real ERROR messages)
+		if  'Created symlink' in sudo_stderr_string:
+			sudo_stderr_string = ''
+
 		# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 		if len(sudo_stderr_string) != 0:
 			show_error_message_on_seventh_window(sudo_stderr_string)
@@ -3467,6 +3472,8 @@ def define_program_installation_commands():
 	global libebur128_make_build_and_install_commands
 	global libebur128_simplified_build_and_install_commands_displayed_to_user
 	global libebur128_repository_url
+	global os_name
+	global os_version
 
 	libebur128_repository_directory_name = os.path.splitext(os.path.split(libebur128_repository_url)[1])[0]
 	
@@ -3489,6 +3496,12 @@ def define_program_installation_commands():
 		libebur128_dependencies_install_commands = ['build-essential', 'git', 'cmake', 'libsndfile-dev', 'libmpg123-dev', 'libmpcdec-dev', \
 		'libglib2.0-dev', 'libfreetype6-dev', 'librsvg2-dev', 'libspeexdsp-dev', 'libavcodec-dev', 'libavformat-dev', 'libtag1-dev', \
 		'libxml2-dev', 'libgstreamer0.10-dev', 'libgstreamer-plugins-base0.10-dev', 'libqt4-dev']
+	# Debian 9 updated packages libgstreamer????-dev and libgstreamer-plugins-base????-dev from version 0.10 to version 1.0
+	if (os_name == 'debian') and (int(os_version) >= 9):
+		if loudness_path == '':
+			libebur128_dependencies_install_commands = ['build-essential', 'git', 'cmake', 'libsndfile-dev', 'libmpg123-dev', 'libmpcdec-dev', \
+			'libglib2.0-dev', 'libfreetype6-dev', 'librsvg2-dev', 'libspeexdsp-dev', 'libavcodec-dev', 'libavformat-dev', 'libtag1-dev', \
+			'libxml2-dev', 'libgstreamer1.0-dev', 'libgstreamer-plugins-base1.0-dev', 'libqt4-dev']
 	if loudness_path == '':
 		# Store commands of downloading and building libebur128 sourcecode to lists.
 		libebur128_git_commands = ['cd ' + directory_for_os_temporary_files, \
@@ -5154,7 +5167,7 @@ os_name = ''
 os_version = ''
 
 # Define supported operating systems and versions
-supported_platforms = {'debian': ['8'], 'ubuntu': ['14.04', '16.04']}
+supported_platforms = {'debian': ['8','9'], 'ubuntu': ['14.04', '16.04']}
 
 # Parse commandline arguments.
 for item in sys.argv[1:]:
