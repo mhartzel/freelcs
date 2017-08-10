@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '288'
+loudnesscorrection_version = '289'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -5778,7 +5778,8 @@ try:
 	mediainfo_executable_found = False
 	smbstatus_executable_found = False
 	libebur128_loudness_executable_found = False
-	libebur128_path = '/usr/bin/loudness'
+	loudness_executable_name = 'loudness-freelcs'
+	libebur128_path = '/usr/bin/' + loudness_executable_name
 	os_environment_list = os.environ["PATH"].split(os.pathsep)
 	for os_path in os_environment_list:
 		
@@ -5806,10 +5807,10 @@ try:
 		if smbstatus_true_or_false == True:
 			smbstatus_executable_found = True
 			
-		libebur128_loudness_executable_true_or_false = os.path.exists(os_path + os.sep + 'loudness') and os.access(os_path + os.sep + 'loudness', os.X_OK)
+		libebur128_loudness_executable_true_or_false = os.path.exists(os_path + os.sep + loudness_executable_name) and os.access(os_path + os.sep + loudness_executable_name, os.X_OK)
 		if libebur128_loudness_executable_true_or_false == True:
 			libebur128_loudness_executable_found = True
-			libebur128_path = os_path + os.sep + 'loudness'
+			libebur128_path = os_path + os.sep + loudness_executable_name
 		
 	if gnuplot_executable_found == False:
 		error_message = '\n!!!!!!! gnuplot - can not be found or it does not have \'executable\' permissions on !!!!!!!' * english + '\n!!!!!!! gnuplot - ohjelmaa ei löydy tai sillä ei ole käynnistyksen mahdollistava \'executable\' oikeudet päällä !!!!!!!' * finnish

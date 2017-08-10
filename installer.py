@@ -27,7 +27,7 @@ import email.mime.multipart
 import tempfile
 import copy
 
-version = '110'
+version = '111'
 freelcs_version = '3.4'
 
 ###################################
@@ -494,6 +494,7 @@ def set_directory_names_according_to_language():
 		'security = user', \
 		'map to guest = Bad Password', \
 		'socket options = TCP_NODELAY', \
+		'# server min protocol = SMB2', \
 		'', \
 		'[' + hotfolder_name_to_use + ']', \
 		'comment = ' + hotfolder_name_to_use, \
@@ -2295,7 +2296,7 @@ def find_paths_to_all_external_programs_we_need():
 	else:
 		mediainfo_is_installed.set('Installed')
 	
-	loudness_path = find_program_in_os_path('loudness')
+	loudness_path = find_program_in_os_path('loudness-freelcs')
 	check_libebur128_version_and_add_git_commands_to_checkout_specific_commit()
 	if loudness_path == '':
 		libebur128_is_installed.set('Not Installed')
@@ -3472,6 +3473,8 @@ def define_program_installation_commands():
 	global libebur128_make_build_and_install_commands
 	global libebur128_simplified_build_and_install_commands_displayed_to_user
 	global libebur128_repository_url
+	global libebur128_archive_name
+	global path_to_libebur128_source_archive
 	global os_name
 	global os_version
 
@@ -3494,29 +3497,77 @@ def define_program_installation_commands():
 		needed_packages_install_commands.append('mediainfo')
 	if loudness_path == '':
 		libebur128_dependencies_install_commands = ['build-essential', 'git', 'cmake', 'libsndfile-dev', 'libmpg123-dev', 'libmpcdec-dev', \
-		'libglib2.0-dev', 'libfreetype6-dev', 'librsvg2-dev', 'libspeexdsp-dev', 'libavcodec-dev', 'libavformat-dev', 'libtag1-dev', \
-		'libxml2-dev', 'libgstreamer0.10-dev', 'libgstreamer-plugins-base0.10-dev', 'libqt4-dev']
-	# Debian 9 updated packages libgstreamer????-dev and libgstreamer-plugins-base????-dev from version 0.10 to version 1.0
-	if (os_name == 'debian') and (int(os_version) >= 9):
-		if loudness_path == '':
-			libebur128_dependencies_install_commands = ['build-essential', 'git', 'cmake', 'libsndfile-dev', 'libmpg123-dev', 'libmpcdec-dev', \
-			'libglib2.0-dev', 'libfreetype6-dev', 'librsvg2-dev', 'libspeexdsp-dev', 'libavcodec-dev', 'libavformat-dev', 'libtag1-dev', \
-			'libxml2-dev', 'libgstreamer1.0-dev', 'libgstreamer-plugins-base1.0-dev', 'libqt4-dev']
+		'libglib2.0-dev', 'libfreetype6-dev', 'librsvg2-dev', 'libavcodec-dev', 'libavformat-dev', 'libtag1-dev', \
+		'libxml2-dev', 'libqt4-dev']
 	if loudness_path == '':
 		# Store commands of downloading and building libebur128 sourcecode to lists.
-		libebur128_git_commands = ['cd ' + directory_for_os_temporary_files, \
+		libebur128_git_commands = [ '', \
+		'cd ' + directory_for_os_temporary_files, \
+		'', \
 		'if [ -e "' +  directory_for_os_temporary_files + os.sep + libebur128_repository_directory_name  + '" ] ; then rm -rf "' + directory_for_os_temporary_files + os.sep + libebur128_repository_directory_name  +  '" ; fi', \
-		'if [ -e "' +  directory_for_os_temporary_files + os.sep + 'libebur128" ] ; then rm -rf "' + directory_for_os_temporary_files + os.sep + 'libebur128" ; fi', \
-		'git clone ' + libebur128_repository_url, 
-		'mv ' + libebur128_repository_directory_name + ' libebur128', \
-		'cd libebur128']
+		'', \
+		'if [ -e "' +  directory_for_os_temporary_files + os.sep + libebur128_archive_name  + '" ] ; then rm -f "' + directory_for_os_temporary_files + os.sep + libebur128_archive_name  +  '" ; fi', \
+		'', \
+		'if [ "' + path_to_libebur128_source_archive + '" != "" ] && [ -e "' +  path_to_libebur128_source_archive  + '" ] ; then cp "' + path_to_libebur128_source_archive + '" "' + directory_for_os_temporary_files + os.sep + '"', \
+		'	tar xJf "' + directory_for_os_temporary_files + os.sep + libebur128_archive_name + '"', \
+		'else', \
+		'	git clone ' + libebur128_repository_url,  \
+		'fi', \
+		'', \
+		'cd ' + libebur128_repository_directory_name ]
 		
 		# Check if libebur128 is at version we need and add commands to get the version we want.
-		libebur128_simplified_build_and_install_commands_displayed_to_user = ['mkdir build', 'cd build', 'cmake -DUSE_AVFORMAT=False -Wno-dev -DCMAKE_INSTALL_PREFIX:PATH=/usr ..', 'make -w', 'make install']
+		libebur128_simplified_build_and_install_commands_displayed_to_user = ['mkdir build', \
+		'cd build', \
+		'cmake .. -DCMAKE_BUILD_TYPE=Release -Wno-dev   -DCMAKE_INSTALL_PREFIX:PATH=/usr', \
+		'make -w', \
+		'make install'
+		'cp loudness-freelcs /usr/bin/', \
+		'cp libinput_sndfile-freelcs.so  /usr/lib/', \
+		'cp libinput_ffmpeg-freelcs.so   /usr/lib/', \
+		'cp libinput_mpg123-freelcs.so   /usr/lib/', \
+		'cp libinput_musepack-freelcs.so /usr/lib/', \
+		'', \
+		'chmod 755 /usr/bin/loudness-freelcs', \
+		'chmod 644 /usr/lib/libinput_sndfile-freelcs.so', \
+		'chmod 644 /usr/lib/libinput_ffmpeg-freelcs.so', \
+		'chmod 644 /usr/lib/libinput_mpg123-freelcs.so', \
+		'chmod 644 /usr/lib/libinput_musepack-freelcs.so', \
+		'', \
+		'chown root:root /usr/bin/loudness-freelcs', \
+		'chown root:root /usr/lib/libinput_sndfile-freelcs.so', \
+		'chown root:root /usr/lib/libinput_ffmpeg-freelcs.so', \
+		'chown root:root /usr/lib/libinput_mpg123-freelcs.so', \
+		'chown root:root /usr/lib/libinput_musepack-freelcs.so', \
+		'', \
+		'ldconfig']
+
 		check_libebur128_version_and_add_git_commands_to_checkout_specific_commit()
 
-		libebur128_cmake_commands = ['cd ' + directory_for_os_temporary_files + '/libebur128', 'mkdir build', 'cd build', 'cmake -DUSE_AVFORMAT=False -Wno-dev -DCMAKE_INSTALL_PREFIX:PATH=/usr ..']
-		libebur128_make_build_and_install_commands = ['cd ' + directory_for_os_temporary_files + '/libebur128/build', 'make -s -j 4', 'make install']
+		libebur128_cmake_commands = ['cd ' + directory_for_os_temporary_files + os.sep + libebur128_repository_directory_name, 'mkdir build', 'cd build', 'cmake .. -DCMAKE_BUILD_TYPE=Release -Wno-dev   -DCMAKE_INSTALL_PREFIX:PATH=/usr']
+		libebur128_make_build_and_install_commands = ['cd ' + directory_for_os_temporary_files + os.sep + libebur128_repository_directory_name + os.sep + 'build', \
+		'make -s -j 4', \
+		'make install', \
+		'', \
+		'cp loudness-freelcs             /usr/bin/', \
+		'cp libinput_sndfile-freelcs.so  /usr/lib/', \
+		'cp libinput_ffmpeg-freelcs.so   /usr/lib/', \
+		'cp libinput_mpg123-freelcs.so   /usr/lib/', \
+		'cp libinput_musepack-freelcs.so /usr/lib/', \
+		'', \
+		'chmod 755 /usr/bin/loudness-freelcs', \
+		'chmod 644 /usr/lib/libinput_sndfile-freelcs.so', \
+		'chmod 644 /usr/lib/libinput_ffmpeg-freelcs.so', \
+		'chmod 644 /usr/lib/libinput_mpg123-freelcs.so', \
+		'chmod 644 /usr/lib/libinput_musepack-freelcs.so', \
+		'', \
+		'chown root:root /usr/bin/loudness-freelcs', \
+		'chown root:root /usr/lib/libinput_sndfile-freelcs.so', \
+		'chown root:root /usr/lib/libinput_ffmpeg-freelcs.so', \
+		'chown root:root /usr/lib/libinput_mpg123-freelcs.so', \
+		'chown root:root /usr/lib/libinput_musepack-freelcs.so', \
+		'', \
+		'ldconfig']
 
 
 def check_libebur128_version_and_add_git_commands_to_checkout_specific_commit():
@@ -3527,27 +3578,14 @@ def check_libebur128_version_and_add_git_commands_to_checkout_specific_commit():
 	global directory_for_os_temporary_files
 	global libebur128_simplified_build_and_install_commands_displayed_to_user
 	global force_reinstallation_of_all_programs
-	
-	## Check if libebur128 'loudness' is recent enough version to be free of known bugs.
-	## Since loudness is installed by compiling it from source, the timestamp of the executable tells us if we have the version we want.
-	#loudness_required_installation_timestamp = int(time.mktime(time.strptime(' '.join(loudness_required_install_date_list), "%d %m %Y"))) # Convert date to seconds from epoch.
-	
-	## Get last modification time from program 'loudness'.
-	#loudness_installation_timestamp = int(os.lstat(loudness_path).st_mtime)
-	
-	#if loudness_installation_timestamp < loudness_required_installation_timestamp: # 'loudness' compilation date must be at least the required date otherwise we have a known buggy version of the program.
-		#loudness_path = '' # Empty value in the path-variable forces reinstallation of the 'loudness' program.
-		#libebur128_is_installed.set('Not Installed')
-		#all_needed_external_programs_are_installed = False
-	#else:
-		#libebur128_is_installed.set('Installed')
+	global libebur128_patch_name
 	
 	# Get the path of the 'loudness' program.
-	local_variable_pointing_to_loudness_executable = find_program_in_os_path('loudness')
+	local_variable_pointing_to_loudness_executable = find_program_in_os_path('loudness-freelcs')
 	loudness_command_output_string = ''
 	
 	if local_variable_pointing_to_loudness_executable != '':
-		# Run libebur128 and check if it needs 4.0 (L, R, LS, RS) and 5.0 (L, R, C, LS, RS) compatibility patch
+		# Run libebur128 and check if it is our version with disabled progress bar
 		loudness_command_output, unused_stderr = subprocess.Popen(local_variable_pointing_to_loudness_executable, stdout=subprocess.PIPE, stdin=None, close_fds=True).communicate()
 		
 		# Convert libebur128 output from binary to UTF-8 text.
@@ -3557,21 +3595,31 @@ def check_libebur128_version_and_add_git_commands_to_checkout_specific_commit():
 		libebur128_version_is_the_one_we_require = True
 		libebur128_is_installed.set('Installed')
 	else:
-		# We get here if loudness is not installed or if it is installed but it's help text does not have the text that our 4.0 + 5.0 patch applies at the end of it.
+		# We get here if loudness is not installed or if it is installed but it's help text does not have the text that our patch applies at the end of it.
 		libebur128_version_is_the_one_we_require = False
 		libebur128_is_installed.set('Not Installed')
 		loudness_path = '' # Empty value in the path-variable forces reinstallation of the 'loudness' program.
 		all_needed_external_programs_are_installed = False
-		libebur128_simplified_build_and_install_commands_displayed_to_user = ['git checkout --force 18d1b743b27b810ebf04e012c34105a71c1620b1', 'mkdir build', 'cd build', 'cmake -DUSE_AVFORMAT=False -Wno-dev -DCMAKE_INSTALL_PREFIX:PATH=/usr ..', 'make -w', 'make install']
+		libebur128_simplified_build_and_install_commands_displayed_to_user = ['mkdir build', \
+		'cd build', \
+		'cmake .. -DCMAKE_BUILD_TYPE=Release -Wno-dev   -DCMAKE_INSTALL_PREFIX:PATH=/usr', \
+		'make -w', \
+		'make install'
+		'cp loudness-freelcs /usr/bin/', \
+		'cp libinput_sndfile-freelcs.so  /usr/lib/', \
+		'cp libinput_ffmpeg-freelcs.so   /usr/lib/', \
+		'cp libinput_mpg123-freelcs.so   /usr/lib/', \
+		'cp libinput_musepack-freelcs.so /usr/lib/']
 	
 	if (libebur128_version_is_the_one_we_require == False) and (libebur128_git_commands != []):
-		
+	
+		# patch -s -p1 < libebur128-patch-2017.07.28-4.diff
 		# Add 4.0 (L, R, LS, RS) and 5.0 (L, R, C, LS, RS) compatibility patching commands to git commands, but don't do it if it has already been done.
-		if 'LIBEBUR128_REQUIRED_GIT_COMMIT_VERSION="18d1b743b27b810ebf04e012c34105a71c1620b1"' not in libebur128_git_commands:
+		if 'LIBEBUR128_REQUIRED_GIT_COMMIT_VERSION="83c2e9fc9776be8a87d4064e50927dc42d7471e3"' not in libebur128_git_commands:
 			libebur128_git_commands.extend(['', \
 			'# Get the git commit number of current version of libebur128', \
 			'echo', \
-			'LIBEBUR128_REQUIRED_GIT_COMMIT_VERSION="18d1b743b27b810ebf04e012c34105a71c1620b1"', \
+			'LIBEBUR128_REQUIRED_GIT_COMMIT_VERSION="83c2e9fc9776be8a87d4064e50927dc42d7471e3"', \
 			'LIBEBUR128_CURRENT_COMMIT=`git rev-parse HEAD`', \
 			'', \
 			'# If libebur128 commit number does not match, check out the correct version from git', \
@@ -3594,135 +3642,22 @@ def check_libebur128_version_and_add_git_commands_to_checkout_specific_commit():
 			'	fi', \
 			'fi', \
 			'', \
-			'# Write the patch data at the end of this script to libebur128 root directory', \
-			'FULL_PATH_TO_SELF="' + directory_for_os_temporary_files + os.sep + 'libebur128_download_commands.sh"', \
-			'FULL_PATH_TO_PATCH="' + directory_for_os_temporary_files + os.sep + 'libebur128' + os.sep + 'libebur128_scanner_4.0_and_5.0_channel_mapping_hack.diff"', \
-			'tail --lines 104 "$FULL_PATH_TO_SELF" > "$FULL_PATH_TO_PATCH"', \
 			'echo', \
 			'', \
-			'# Apply the 4.0 and 5.0 channel order patch to libebur128', \
-			'OUTPUT_FROM_PATCHING=`git apply --whitespace=nowarn "$FULL_PATH_TO_PATCH" 2>&1`', \
+			'# Apply the freelcs patch to libebur128', \
+			'OUTPUT_FROM_PATCHING=`patch -s -p1 < ' + libebur128_patch_name  + '`', \
 			'', \
 			'# Check if applying patch produced an error', \
 			'', \
 			'case "$OUTPUT_FROM_PATCHING" in', \
 			'	*error*) echo "There was an error when applying patch to libebur128 !!!!!!!"  ; exit ;;', \
+			'	*fail*) echo "There was an error when applying patch to libebur128 !!!!!!!"  ; exit ;;', \
 			'	*cannot*) echo "There was an error when applying patch to libebur128 !!!!!!!"  ; exit ;;', \
 			'	*fatal*) echo "There was an error when applying patch to libebur128 !!!!!!!"  ; exit ;;', \
 			'	*) echo "libebur128 patched successfully :)" ;;', \
 			'esac', \
 			'echo', \
 			'', \
-			'# Stop script here, the rest of this is data for the libebur128 patch file', \
-			'exit', \
-			'', \
-			'# The libebur128 4.0 (L, R, LS, RS) and 5.0 (L, R, C, LS, RS) patch starts here', \
-			'# This patch is written to its own file and applied to libebur128', \
-			'', \
-			'diff --git a/ebur128/ebur128.c b/ebur128/ebur128.c', \
-			'index 320a6b5..f194d83 100644', \
-			'--- a/ebur128/ebur128.c', \
-			'+++ b/ebur128/ebur128.c', \
-			'@@ -166,6 +166,17 @@ static int ebur128_init_channel_map(ebur128_state* st) {', \
-			'       default: st->d->channel_map[i] = EBUR128_UNUSED;         break;', \
-			'     }', \
-			'   }', \
-			'+  ', \
-			'+  if (st->channels == 4) {', \
-			'+	st->d->channel_map[2] = EBUR128_LEFT_SURROUND;', \
-			'+	st->d->channel_map[3] = EBUR128_RIGHT_SURROUND;', \
-			'+	}', \
-			'+', \
-			'+  if (st->channels == 5) {', \
-			'+	st->d->channel_map[3] = EBUR128_LEFT_SURROUND;', \
-			'+	st->d->channel_map[4] = EBUR128_RIGHT_SURROUND;', \
-			'+	}', \
-			'+', \
-			'   return EBUR128_SUCCESS;', \
-			' }', \
-			' ', \
-			'diff --git a/scanner/inputaudio/ffmpeg/input_ffmpeg.c b/scanner/inputaudio/ffmpeg/input_ffmpeg.c', \
-			'index f41d0c9..f3600f8 100644', \
-			'--- a/scanner/inputaudio/ffmpeg/input_ffmpeg.c', \
-			'+++ b/scanner/inputaudio/ffmpeg/input_ffmpeg.c', \
-			'@@ -177,6 +177,7 @@ close_file:', \
-			' }', \
-			' ', \
-			' static int ffmpeg_set_channel_map(struct input_handle* ih, int* st) {', \
-			'+  return 1;', \
-			'   if (ih->codec_context->channel_layout) {', \
-			'     unsigned int channel_map_index = 0;', \
-			'     int bit_counter = 0;', \
-			'diff --git a/scanner/inputaudio/gstreamer/input_gstreamer.c b/scanner/inputaudio/gstreamer/input_gstreamer.c', \
-			'index 6f28822..9f3663e 100644', \
-			'--- a/scanner/inputaudio/gstreamer/input_gstreamer.c', \
-			'+++ b/scanner/inputaudio/gstreamer/input_gstreamer.c', \
-			'@@ -256,6 +256,7 @@ static int gstreamer_open_file(struct input_handle* ih, const char* filename) {', \
-			' }', \
-			' ', \
-			' static int gstreamer_set_channel_map(struct input_handle* ih, int* st) {', \
-			'+  return 0;', \
-			'   gint j;', \
-			'   for (j = 0; j < ih->n_channels; ++j) {', \
-			'     switch (ih->channel_positions[j]) {', \
-			'diff --git a/scanner/inputaudio/sndfile/input_sndfile.c b/scanner/inputaudio/sndfile/input_sndfile.c', \
-			'index aee098b..79e0f04 100644', \
-			'--- a/scanner/inputaudio/sndfile/input_sndfile.c', \
-			'+++ b/scanner/inputaudio/sndfile/input_sndfile.c', \
-			'@@ -60,6 +60,7 @@ static int sndfile_open_file(struct input_handle* ih, const char* filename) {', \
-			' }', \
-			' ', \
-			' static int sndfile_set_channel_map(struct input_handle* ih, int* st) {', \
-			'+  return 1;', \
-			'   int result;', \
-			'   int* channel_map = (int*) calloc((size_t) ih->file_info.channels, sizeof(int));', \
-			'   if (!channel_map) return 1;', \
-			'diff --git a/scanner/scanner-common/scanner-common.c b/scanner/scanner-common/scanner-common.c', \
-			'index 3a65db0..417dfad 100644', \
-			'--- a/scanner/scanner-common/scanner-common.c', \
-			'+++ b/scanner/scanner-common/scanner-common.c', \
-			'@@ -331,16 +331,19 @@ void process_files(GSList *files, struct scan_opts *opts) {', \
-			' ', \
-			'     // Start the progress bar thread. It misuses progress_mutex and', \
-			'     // progress_cond to signal when it is ready.', \
-			'-    g_mutex_lock(progress_mutex);', \
-			'-    progress_bar_thread = g_thread_create(print_progress_bar,', \
-			'-                                          &started, TRUE, NULL);', \
-			'-    while (!started)', \
-			'-        g_cond_wait(progress_cond, progress_mutex);', \
-			'-    g_mutex_unlock(progress_mutex);', \
-			'+    //', \
-			'+    // Note progress bar causes hangs sometimes and this is why progress bar is disabled when using libebur128 with FreeLCS', \
-			'+    //', \
-			'+    // g_mutex_lock(progress_mutex);', \
-			'+    // progress_bar_thread = g_thread_create(print_progress_bar,', \
-			'+    //                                       &started, TRUE, NULL);', \
-			'+    // while (!started)', \
-			'+    //     g_cond_wait(progress_cond, progress_mutex);', \
-			'+    // g_mutex_unlock(progress_mutex);', \
-			' ', \
-			'     pool = g_thread_pool_new((GFunc) init_state_and_scan_work_item,', \
-			'                              opts, nproc(), FALSE, NULL);', \
-			'     g_slist_foreach(files, (GFunc) init_state_and_scan, pool);', \
-			'     g_thread_pool_free(pool, FALSE, TRUE);', \
-			'-    g_thread_join(progress_bar_thread);', \
-			'+    // g_thread_join(progress_bar_thread);', \
-			' }', \
-			'diff --git a/scanner/scanner.c b/scanner/scanner.c', \
-			'index d952f80..05fcd7e 100644', \
-			'--- a/scanner/scanner.c', \
-			'+++ b/scanner/scanner.c', \
-			'@@ -90,6 +90,10 @@ static void print_help(void) {', \
-			'     printf("  -m, --momentary=INTERVAL   print momentary loudness every INTERVAL seconds\\n");', \
-			'     printf("  -s, --shortterm=INTERVAL   print shortterm loudness every INTERVAL seconds\\n");', \
-			'     printf("  -i, --integrated=INTERVAL  print integrated loudness every INTERVAL seconds\\n");', \
-			'+    printf("\\n");', \
-			'+    printf("  Patched to support 4.0 (L, R, LS, RS) and 5.0 (L, R, C, LS, RS) files.\\n");', \
-			'+    printf("  Patched to disable progress bar.\\n");', \
-			'+    printf("\\n");', \
-			' }', \
-			' ', \
-			' static gboolean recursive = FALSE;', \
 			''])
 	
 	if debug == True:
@@ -5421,7 +5356,7 @@ all_ip_addresses_of_the_machine = []
 all_ip_addresses_of_the_machine = get_ip_addresses_of_the_host_machine()
 peak_measurement_method = '--peak=true'
 installation_is_running = False
-libebur128_repository_url = "http://github.com/mhartzel/libebur128_fork_for_freelcs_2.4.git"
+libebur128_repository_url = "http://github.com/mhartzel/libebur128_fork_for_freelcs_3.4.git"
 # Define logfile name
 current_time = time.time()
 installation_logfile_name = 'freelcs_installation_log_' + str(parse_time(current_time)).replace(' ','_').replace(':','.') + '.txt'
@@ -5454,6 +5389,9 @@ libebur128_make_build_and_install_commands = []
 libebur128_simplified_build_and_install_commands_displayed_to_user = []
 sox_download_make_build_and_install_commands = []
 sox_simplified_build_and_install_commands_displayed_to_user = []
+libebur128_archive_name = 'libebur128_fork_for_freelcs_3.4.tar.xz'
+libebur128_patch_name = 'libebur128-patch-2017.07.28-4.diff'
+path_to_libebur128_source_archive = find_program_in_current_dir(libebur128_archive_name)
 
 # Define which os versions don't have a properly working sox in their repositories
 # In these cases sox is installed by compiling a proper version from source
@@ -5674,6 +5612,7 @@ if smb_conf_version == 2:
 	'security = user', \
 	'map to guest = Bad Password', \
 	'socket options = TCP_NODELAY', \
+	'# server min protocol = SMB2', \
 	'', \
 	'[LoudnessCorrection]', \
 	'comment = LoudnessCorrection', \
