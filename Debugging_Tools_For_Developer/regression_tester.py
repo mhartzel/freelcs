@@ -861,7 +861,7 @@ if loudness_correction_version == 0:
 	sys.exit(1)
 
 # Check if libebur128 scanner is installed.
-libebur128_scanner_path = '/usr/bin/loudness'
+libebur128_scanner_path = '/usr/bin/loudness-freelcs'
 
 if os.path.exists(libebur128_scanner_path) == False:
 	print()
