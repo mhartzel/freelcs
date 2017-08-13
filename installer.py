@@ -27,7 +27,7 @@ import email.mime.multipart
 import tempfile
 import copy
 
-version = '111'
+version = '112'
 freelcs_version = '3.4'
 
 ###################################
@@ -3579,6 +3579,7 @@ def check_libebur128_version_and_add_git_commands_to_checkout_specific_commit():
 	global libebur128_simplified_build_and_install_commands_displayed_to_user
 	global force_reinstallation_of_all_programs
 	global libebur128_patch_name
+	global libebur128_required_commit
 	
 	# Get the path of the 'loudness' program.
 	local_variable_pointing_to_loudness_executable = find_program_in_os_path('loudness-freelcs')
@@ -3613,13 +3614,12 @@ def check_libebur128_version_and_add_git_commands_to_checkout_specific_commit():
 	
 	if (libebur128_version_is_the_one_we_require == False) and (libebur128_git_commands != []):
 	
-		# patch -s -p1 < libebur128-patch-2017.07.28-4.diff
 		# Add 4.0 (L, R, LS, RS) and 5.0 (L, R, C, LS, RS) compatibility patching commands to git commands, but don't do it if it has already been done.
-		if 'LIBEBUR128_REQUIRED_GIT_COMMIT_VERSION="83c2e9fc9776be8a87d4064e50927dc42d7471e3"' not in libebur128_git_commands:
+		if 'LIBEBUR128_REQUIRED_GIT_COMMIT_VERSION="' + libebur128_required_commit + '"' not in libebur128_git_commands:
 			libebur128_git_commands.extend(['', \
 			'# Get the git commit number of current version of libebur128', \
 			'echo', \
-			'LIBEBUR128_REQUIRED_GIT_COMMIT_VERSION="83c2e9fc9776be8a87d4064e50927dc42d7471e3"', \
+			'LIBEBUR128_REQUIRED_GIT_COMMIT_VERSION="' + libebur128_required_commit + '"', \
 			'LIBEBUR128_CURRENT_COMMIT=`git rev-parse HEAD`', \
 			'', \
 			'# If libebur128 commit number does not match, check out the correct version from git', \
@@ -5390,7 +5390,8 @@ libebur128_simplified_build_and_install_commands_displayed_to_user = []
 sox_download_make_build_and_install_commands = []
 sox_simplified_build_and_install_commands_displayed_to_user = []
 libebur128_archive_name = 'libebur128_fork_for_freelcs_3.4.tar.xz'
-libebur128_patch_name = 'libebur128-patch-2017.07.28-4.diff'
+libebur128_patch_name = 'libebur128-patch-2017.08.14.diff'
+libebur128_required_commit = '5464c5a923b28fe8677479d54f0ca59602942027'
 path_to_libebur128_source_archive = find_program_in_current_dir(libebur128_archive_name)
 
 # Define which os versions don't have a properly working sox in their repositories
