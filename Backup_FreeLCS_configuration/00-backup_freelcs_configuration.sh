@@ -273,6 +273,13 @@ if [ "$INIT_SYSTEM_NAME" == "systemd" ] ; then
 	fi
 fi
 
+LIBEBUR128_ARCHIVE_NAME="libebur128_fork_for_freelcs_3.4.tar.xz"
+LIBEBUR128_DIR_NAME="libebur128_fork_for_freelcs_3.4"
+
+if [ -e "../../$LIBEBUR128_ARCHIVE_NAME" ] ; then
+	cp "../../$LIBEBUR128_ARCHIVE_NAME" .
+fi
+
 echo "Writing restoration script to backup dir ..."
 echo "---------------------------------------------"
 echo
@@ -326,6 +333,9 @@ cat >> "00-restore_freelcs_configuration.sh" << 'END_OF_FILE'
 # Check which init system the operating system uses init or systemd
 INIT_SYSTEM_NAME=""
 INIT_SYSTEM_NAME=`ps --pid 1 --no-headers -c -o cmd`
+
+LIBEBUR128_ARCHIVE_NAME="libebur128_fork_for_freelcs_3.4.tar.xz"
+LIBEBUR128_DIR_NAME="libebur128_fork_for_freelcs_3.4"
 
 if [ "$INIT_SYSTEM_NAME" != "systemd" ] && [  "$INIT_SYSTEM_NAME" != "init" ] ; then
 
@@ -459,6 +469,18 @@ if [ -e "/tmp/libebur128_fork_for_freelcs_2.4" ] ; then
 	fi
 fi
 
+if [ -e "/tmp/$LIBEBUR128_DIR_NAME" ] ; then
+
+	rm -rf "/tmp/$LIBEBUR128_DIR_NAME"
+
+	if [ "$?" -ne "0"  ] ; then
+		echo
+		echo "Error, could not delete temporary dir /tmp/"$LIBEBUR128_DIR_NAME
+		echo
+		exit
+	fi
+fi
+
 if [ -e "/tmp/sox_personal_fork" ] ; then
 
 	rm -rf "/tmp/sox_personal_fork"
@@ -498,7 +520,7 @@ APT_PACKAGE_LIST="python3 idle3 automake autoconf libtool gnuplot mediainfo buil
 
 if [ "$OS_NAME" == "debian" ] && [ "$OS_VERSION_MAJOR_NUMBER" -gt "8" ] ; then
 
-	APT_PACKAGE_LIST="python3 idle3 automake autoconf libtool gnuplot mediainfo build-essential git cmake libsndfile-dev libmpg123-dev libmpcdec-dev libglib2.0-dev libfreetype6-dev librsvg2-dev libspeexdsp-dev libavcodec-dev libavformat-dev libtag1-dev libxml2-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libqt4-dev"
+	APT_PACKAGE_LIST="python3 idle3 automake autoconf libtool gnuplot mediainfo build-essential git cmake libsndfile-dev libmpg123-dev libmpcdec-dev libglib2.0-dev libfreetype6-dev librsvg2-dev libavcodec-dev libavformat-dev libtag1-dev libxml2-dev libqt4-dev"
 
 fi
 
@@ -639,28 +661,46 @@ if [ "$INIT_SYSTEM_NAME" == "systemd" ] ; then
 fi
 
 
-echo
-echo "##########################"
-echo "# Downloading libebur128 #"
-echo "##########################"
-echo
-
-cd /tmp
-git clone http://github.com/mhartzel/libebur128_fork_for_freelcs_2.4.git
-
-if [ "$?" -ne "0"  ] ; then
-	echo
-	echo "Error downloading libebur128 source code, can not continue."
-	echo
-	exit
+if [ -e "$LIBEBUR128_ARCHIVE_NAME" ] ; then
+	cp "$LIBEBUR128_ARCHIVE_NAME" /tmp
 fi
 
-mv libebur128_fork_for_freelcs_2.4 libebur128
-cd libebur128
+cd /tmp
+
+if [ -e "$LIBEBUR128_ARCHIVE_NAME" ] ; then
+
+	echo
+	echo "########################################"
+	echo "# Extracting libebur128 source archive #"
+	echo "########################################"
+	echo
+
+	tar xJf "$LIBEBUR128_ARCHIVE_NAME"
+
+else
+
+	echo
+	echo "######################################"
+	echo "# Downloading libebur128 source code #"
+	echo "######################################"
+	echo
+
+	git clone http://github.com/mhartzel/$LIBEBUR128_DIR_NAME.git
+
+	if [ "$?" -ne "0"  ] ; then
+		echo
+		echo "Error downloading libebur128 source code, can not continue."
+		echo
+		exit
+	fi
+
+fi
+
+cd $LIBEBUR128_DIR_NAME
 
 # Get the git commit number of current version of libebur128
 echo
-LIBEBUR128_REQUIRED_GIT_COMMIT_VERSION="18d1b743b27b810ebf04e012c34105a71c1620b1"
+LIBEBUR128_REQUIRED_GIT_COMMIT_VERSION="5464c5a923b28fe8677479d54f0ca59602942027"
 LIBEBUR128_CURRENT_COMMIT=`git rev-parse HEAD`
 
 # If libebur128 commit number does not match, check out the correct version from git
@@ -683,123 +723,6 @@ else
 	fi
 fi
 
-echo
-echo "#######################################################################################################################"
-echo "# Writing libebur128 4.0 and 5.0 and progress bar disable patch to a separate file for patching the libebur128 source #"
-echo "#######################################################################################################################"
-echo
-
-FULL_PATH_TO_SELF="/tmp/libebur128_download_commands.sh"
-FULL_PATH_TO_PATCH="/tmp/libebur128/libebur128_scanner_4.0_and_5.0_channel_mapping_hack.diff"
-
-cat > "$FULL_PATH_TO_PATCH" << 'END_OF_PATCH'
-diff --git a/ebur128/ebur128.c b/ebur128/ebur128.c
-index 320a6b5..f194d83 100644
---- a/ebur128/ebur128.c
-+++ b/ebur128/ebur128.c
-@@ -166,6 +166,17 @@ static int ebur128_init_channel_map(ebur128_state* st) {
-       default: st->d->channel_map[i] = EBUR128_UNUSED;         break;
-     }
-   }
-+  
-+  if (st->channels == 4) {
-+	st->d->channel_map[2] = EBUR128_LEFT_SURROUND;
-+	st->d->channel_map[3] = EBUR128_RIGHT_SURROUND;
-+	}
-+
-+  if (st->channels == 5) {
-+	st->d->channel_map[3] = EBUR128_LEFT_SURROUND;
-+	st->d->channel_map[4] = EBUR128_RIGHT_SURROUND;
-+	}
-+
-   return EBUR128_SUCCESS;
- }
- 
-diff --git a/scanner/inputaudio/ffmpeg/input_ffmpeg.c b/scanner/inputaudio/ffmpeg/input_ffmpeg.c
-index f41d0c9..f3600f8 100644
---- a/scanner/inputaudio/ffmpeg/input_ffmpeg.c
-+++ b/scanner/inputaudio/ffmpeg/input_ffmpeg.c
-@@ -177,6 +177,7 @@ close_file:
- }
- 
- static int ffmpeg_set_channel_map(struct input_handle* ih, int* st) {
-+  return 1;
-   if (ih->codec_context->channel_layout) {
-     unsigned int channel_map_index = 0;
-     int bit_counter = 0;
-diff --git a/scanner/inputaudio/gstreamer/input_gstreamer.c b/scanner/inputaudio/gstreamer/input_gstreamer.c
-index 6f28822..9f3663e 100644
---- a/scanner/inputaudio/gstreamer/input_gstreamer.c
-+++ b/scanner/inputaudio/gstreamer/input_gstreamer.c
-@@ -256,6 +256,7 @@ static int gstreamer_open_file(struct input_handle* ih, const char* filename) {
- }
- 
- static int gstreamer_set_channel_map(struct input_handle* ih, int* st) {
-+  return 0;
-   gint j;
-   for (j = 0; j < ih->n_channels; ++j) {
-     switch (ih->channel_positions[j]) {
-diff --git a/scanner/inputaudio/sndfile/input_sndfile.c b/scanner/inputaudio/sndfile/input_sndfile.c
-index aee098b..79e0f04 100644
---- a/scanner/inputaudio/sndfile/input_sndfile.c
-+++ b/scanner/inputaudio/sndfile/input_sndfile.c
-@@ -60,6 +60,7 @@ static int sndfile_open_file(struct input_handle* ih, const char* filename) {
- }
- 
- static int sndfile_set_channel_map(struct input_handle* ih, int* st) {
-+  return 1;
-   int result;
-   int* channel_map = (int*) calloc((size_t) ih->file_info.channels, sizeof(int));
-   if (!channel_map) return 1;
-diff --git a/scanner/scanner-common/scanner-common.c b/scanner/scanner-common/scanner-common.c
-index 3a65db0..417dfad 100644
---- a/scanner/scanner-common/scanner-common.c
-+++ b/scanner/scanner-common/scanner-common.c
-@@ -331,16 +331,19 @@ void process_files(GSList *files, struct scan_opts *opts) {
- 
-     // Start the progress bar thread. It misuses progress_mutex and
-     // progress_cond to signal when it is ready.
--    g_mutex_lock(progress_mutex);
--    progress_bar_thread = g_thread_create(print_progress_bar,
--                                          &started, TRUE, NULL);
--    while (!started)
--        g_cond_wait(progress_cond, progress_mutex);
--    g_mutex_unlock(progress_mutex);
-+    //
-+    // Note progress bar causes hangs sometimes and this is why progress bar is disabled when using libebur128 with FreeLCS
-+    //
-+    // g_mutex_lock(progress_mutex);
-+    // progress_bar_thread = g_thread_create(print_progress_bar,
-+    //                                       &started, TRUE, NULL);
-+    // while (!started)
-+    //     g_cond_wait(progress_cond, progress_mutex);
-+    // g_mutex_unlock(progress_mutex);
- 
-     pool = g_thread_pool_new((GFunc) init_state_and_scan_work_item,
-                              opts, nproc(), FALSE, NULL);
-     g_slist_foreach(files, (GFunc) init_state_and_scan, pool);
-     g_thread_pool_free(pool, FALSE, TRUE);
--    g_thread_join(progress_bar_thread);
-+    // g_thread_join(progress_bar_thread);
- }
-diff --git a/scanner/scanner.c b/scanner/scanner.c
-index d952f80..05fcd7e 100644
---- a/scanner/scanner.c
-+++ b/scanner/scanner.c
-@@ -90,6 +90,10 @@ static void print_help(void) {
-     printf("  -m, --momentary=INTERVAL   print momentary loudness every INTERVAL seconds\n");
-     printf("  -s, --shortterm=INTERVAL   print shortterm loudness every INTERVAL seconds\n");
-     printf("  -i, --integrated=INTERVAL  print integrated loudness every INTERVAL seconds\n");
-+    printf("\n");
-+    printf("  Patched to support 4.0 (L, R, LS, RS) and 5.0 (L, R, C, LS, RS) files.\n");
-+    printf("  Patched to disable progress bar.\n");
-+    printf("\n");
- }
- 
- static gboolean recursive = FALSE;
-
-END_OF_PATCH
-
 
 echo
 echo "########################################################################"
@@ -807,7 +730,9 @@ echo "# Applying libebur128 4.0 and 5.0 - channel patch to libebur128 source #"
 echo "########################################################################"
 echo
 
-OUTPUT_FROM_PATCHING=`git apply --whitespace=nowarn "$FULL_PATH_TO_PATCH" 2>&1`
+PATCH_NAME=`ls -1 libebur128-patch-*.diff`
+
+OUTPUT_FROM_PATCHING=`patch -s -p1 < "$PATCH_NAME"`
 
 # Check if applying patch produced an error
 
@@ -815,6 +740,7 @@ case "$OUTPUT_FROM_PATCHING" in
 	*error*) echo "There was an error when applying patch to libebur128 !!!!!!!"  ; exit ;;
 	*cannot*) echo "There was an error when applying patch to libebur128 !!!!!!!"  ; exit ;;
 	*fatal*) echo "There was an error when applying patch to libebur128 !!!!!!!"  ; exit ;;
+	*fail*) echo "There was an error when applying patch to libebur128 !!!!!!!"  ; exit ;;
 	*) echo "libebur128 patched successfully :)" ;;
 esac
 echo
@@ -825,10 +751,10 @@ echo "# Preparing libebur128 source for compilation #"
 echo "###############################################"
 echo
 
-cd /tmp/libebur128
+cd /tmp/$LIBEBUR128_DIR_NAME
 mkdir build
 cd build
-cmake -DUSE_AVFORMAT=False -Wno-dev -DCMAKE_INSTALL_PREFIX:PATH=/usr ..
+cmake .. -DCMAKE_BUILD_TYPE=Release -Wno-dev   -DCMAKE_INSTALL_PREFIX:PATH=/usr
 
 echo
 echo "#######################################"
@@ -836,7 +762,6 @@ echo "# Compiling and installing libebur128 #"
 echo "#######################################"
 echo
 
-cd /tmp/libebur128/build
 make -s -j 4
 
 if [ "$?" -ne "0"  ] ; then
@@ -848,6 +773,31 @@ fi
 
 make install
 
+echo
+echo "##############################################################################"
+echo "# Installing executable 'loudness-freelcs' and libebur128 file input plugins #"
+echo "##############################################################################"
+echo
+
+cp loudness-freelcs             /usr/bin/
+cp libinput_sndfile-freelcs.so  /usr/lib/
+cp libinput_ffmpeg-freelcs.so   /usr/lib/
+cp libinput_mpg123-freelcs.so   /usr/lib/
+cp libinput_musepack-freelcs.so /usr/lib/
+
+chmod 755 /usr/bin/loudness-freelcs
+chmod 644 /usr/lib/libinput_sndfile-freelcs.so
+chmod 644 /usr/lib/libinput_ffmpeg-freelcs.so
+chmod 644 /usr/lib/libinput_mpg123-freelcs.so
+chmod 644 /usr/lib/libinput_musepack-freelcs.so
+
+chown root:root /usr/bin/loudness-freelcs
+chown root:root /usr/lib/libinput_sndfile-freelcs.so
+chown root:root /usr/lib/libinput_ffmpeg-freelcs.so
+chown root:root /usr/lib/libinput_mpg123-freelcs.so
+chown root:root /usr/lib/libinput_musepack-freelcs.so
+
+ldconfig
 
 # Install sox from source
 if [ "$INSTALL_SOX_FROM_OS_REPOSITORY" == false  ] ; then
