@@ -27,7 +27,7 @@ import email.mime.multipart
 import tempfile
 import copy
 
-version = '112'
+version = '114'
 freelcs_version = '3.4'
 
 ###################################
@@ -38,7 +38,7 @@ def call_first_frame_on_top():
 	# This function can be called only from the second window.
 	# Hide the second window and show the first window.
 	license_frame.grid_forget()
-	second_frame.grid_forget()
+	sixth_frame.grid_forget()
 	first_frame.grid(column=0, row=0, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E))
 
 	## Get Frame dimensions and resize root_window to fit the whole frame.
@@ -53,7 +53,7 @@ def call_first_frame_on_top():
 def call_second_frame_on_top():
 	# This function can be called from the first and third windows.
 	# Hide the first and third windows and show the second window.
-	first_frame.grid_forget()
+	sixth_frame.grid_forget()
 	third_frame.grid_forget()
 	second_frame.grid(column=0, row=0, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E))
 	
@@ -155,7 +155,7 @@ def call_fifth_frame_on_top():
 	# This function can be called from two possible windows depending on did the user come here by clicking Next or Back buttons.
 	# Hide the the frames for other windows and raise the one we want.
 	eleventh_frame.grid_forget()
-	sixth_frame.grid_forget()
+	seventh_frame.grid_forget()
 	fifth_frame.grid(column=0, row=0, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E, tkinter.S))
 	
 	# Get Frame dimensions and resize root_window to fit the whole frame.
@@ -185,8 +185,8 @@ def call_sixth_frame_on_top():
 	
 	# Read samba configuration from the fifth window text label and assign configuration to a list.
 	set_samba_configuration()
-	fifth_frame.grid_forget()
-	seventh_frame.grid_forget()
+	first_frame.grid_forget()
+	second_frame.grid_forget()
 	root_password_entrybox.focus() # Set keyboard focus to the entrybox.
 	sixth_frame.grid(column=0, row=0, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E))
 	
@@ -2147,7 +2147,7 @@ def test_if_root_password_is_valid(*args):
 	if root_password_was_accepted == True:
 		# Password was accepted and our command was successfully run as root.
 		root_password_was_not_accepted_message.set('') # Remove possible error message from the screen.	
-		call_seventh_frame_on_top() # Call the next window.
+		call_second_frame_on_top() # Call the next window.
 
 def show_error_message_on_root_password_window(error_in_string_format):
 	
@@ -5998,7 +5998,7 @@ first_window_label_2.grid(column=0, row=1, columnspan=4, pady=10, padx=20, stick
 # Create the buttons for the frame
 first_window_quit_button = tkinter.Button(first_frame, text = "Quit", command = quit_program)
 first_window_quit_button.grid(column=1, row=2, padx=30, pady=10, sticky=(tkinter.E, tkinter.N))
-first_window_next_button = tkinter.Button(first_frame, text = "Next", command = call_second_frame_on_top)
+first_window_next_button = tkinter.Button(first_frame, text = "Next", command = call_sixth_frame_on_top)
 first_window_next_button.grid(column=2, row=2, padx=30, pady=10, sticky=(tkinter.W, tkinter.N))
 
 
@@ -6115,7 +6115,7 @@ file_expiry_time_in_minutes_combobox.bind('<<ComboboxSelected>>', convert_file_e
 file_expiry_time_in_minutes_combobox.grid(column=3, row=0, pady=10, padx=10, sticky=(tkinter.N))
 
 # Create the buttons under childframes
-second_window_back_button = tkinter.Button(second_frame, text = "Back", command = call_first_frame_on_top)
+second_window_back_button = tkinter.Button(second_frame, text = "Back", command = call_sixth_frame_on_top)
 second_window_back_button.grid(column=1, row=5, padx=30, pady=10, sticky=(tkinter.E, tkinter.N))
 second_window_next_button = tkinter.Button(second_frame, text = "Next", command = call_third_frame_on_top)
 second_window_next_button.grid(column=2, row=5, padx=30, pady=10, sticky=(tkinter.W, tkinter.N))
@@ -7230,7 +7230,7 @@ first_window_back_button = tkinter.Button(fifth_frame, text = "Back", command = 
 first_window_back_button.grid(column=1, row=1, padx=30, pady=10, sticky=(tkinter.W, tkinter.N))
 first_window_undo_button = tkinter.Button(fifth_frame, text = "Undo", command = undo_text_in_text_widget)
 first_window_undo_button.grid(column=2, row=1, padx=30, pady=10, sticky=(tkinter.W, tkinter.N))
-first_window_next_button = tkinter.Button(fifth_frame, text = "Next", command = call_sixth_frame_on_top)
+first_window_next_button = tkinter.Button(fifth_frame, text = "Next", command = call_seventh_frame_on_top)
 first_window_next_button.grid(column=3, row=1, padx=30, pady=10, sticky=(tkinter.W, tkinter.N))
 
 
@@ -7254,7 +7254,7 @@ sixth_window_label_2 = tkinter.ttk.Label(sixth_frame_child_frame_1, foreground='
 sixth_window_label_2.grid(column=0, row=2, padx=10, pady=5, columnspan=4, sticky=(tkinter.W, tkinter.N))
 
 # Create the buttons for the frame
-sixth_window_back_button = tkinter.Button(sixth_frame, text = "Back", command = call_fifth_frame_on_top)
+sixth_window_back_button = tkinter.Button(sixth_frame, text = "Back", command = call_first_frame_on_top)
 sixth_window_back_button.grid(column=1, row=1, padx=30, pady=10, sticky=(tkinter.E, tkinter.N))
 sixth_window_next_button = tkinter.Button(sixth_frame, text = "Next", command = test_if_root_password_is_valid)
 sixth_window_next_button.grid(column=2, row=1, padx=30, pady=10, sticky=(tkinter.W, tkinter.N))
@@ -7348,7 +7348,7 @@ seventh_window_show_button_2 = tkinter.Button(seventh_frame_child_frame_1, text 
 seventh_window_show_button_2.grid(column=3, row=15, padx=30, pady=2, sticky=(tkinter.N))
 
 # Create the buttons for the frame
-seventh_window_back_button = tkinter.Button(seventh_frame, text = "Back", command = call_sixth_frame_on_top)
+seventh_window_back_button = tkinter.Button(seventh_frame, text = "Back", command = call_fifth_frame_on_top)
 seventh_window_back_button.grid(column=1, row=1, padx=30, pady=10, sticky=(tkinter.E, tkinter.N))
 seventh_window_next_button = tkinter.Button(seventh_frame, text = "Next", command = call_ffmpeg_info_frame_on_top)
 seventh_window_next_button.grid(column=2, row=1, padx=30, pady=10, sticky=(tkinter.W, tkinter.N))	
