@@ -26,8 +26,9 @@ import email.mime.text
 import email.mime.multipart
 import tempfile
 import copy
+import stat
 
-version = '114'
+version = '115'
 freelcs_version = '3.4'
 
 ###################################
@@ -922,40 +923,185 @@ def get_list_of_normal_user_accounts_from_os():
 	return(error_happened, error_message, list_of_normal_users_accounts)
 	
 def get_list_of_ram_devices_from_os():
-	
+
 	# This program gets the list of ram disks from the os and prints it.
+
 	global list_of_ram_devices
+	global brd_module_loads_at_os_startup
+	global brd_module_built_into_kernel
+	global brd_module_loaded_as_kernel_module
+	kernel_name_and_version_number = ''
 	error_happened = False
 	error_message = ''
 
-	try:
-		# Get directory listing for HotFolder. The 'break' statement stops the for - statement from recursing into subdirectories.
-		for path, list_of_directories, list_of_files in os.walk('/dev/'):
-			break
-			
-	except IOError as reason_for_error:
-		error_happened = True
-		list_of_ram_devices = ['Error !!!!!!!']
-		error_message = 'Error getting list of os ram devices: ' + str(reason_for_error)
-	except OSError as reason_for_error:
-		error_happened = True
-		list_of_ram_devices = ['Error !!!!!!!']
-		error_message = 'Error getting list of os ram devices: ' + str(reason_for_error)
+	# Ubuntu 16.04 unexpectedly removed ram device driver (brd) from the kernel in 2017. It used to always be there in Ubuntu 12.04, 14.04 and also 16.04 until spring 2017.
+	# Debian also ships their kernels without the brd driver built in so we might as well set it up for the user from now on
+	# Test if brd is either built in or loaded as a module) otherwise load brd.
+
+	# Get root password
+	password = root_password.get()  + '\n' # Add a carriage return after the root password
+	password = password.encode('utf-8') # Convert password from string to binary format.
+
+	#################################################################
+	# Check if brd module is now loaded into ram as a kernel module #
+	#################################################################
+	commands_to_run = ['sudo', '-k', '-p', '', '-S', 'lsmod'] # Create the commandline we need to run as root.
+
+	if debug == True:
+		print()
+		print('Running commands:', commands_to_run)
+
+	# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
+	sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
+	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+
+	for line in sudo_stdout:
+
+		line = line.strip().split()[0]
+
+		if line == '':
+			continue
+
+		if 'brd' in line:
+			brd_module_loaded_as_kernel_module = True
+
+	##################################################
+	# Check if brd - module is built into the kernel #
+	##################################################
+
+	# First get the name and version number of the kernel
+	commands_to_run = ['sudo', '-k', '-p', '', '-S', 'uname', '-r'] # Create the commandline we need to run as root.
+
+	if debug == True:
+		print()
+		print('Running commands:', commands_to_run)
+
+	# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
+	sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
+	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+
+	kernel_name_and_version_number = sudo_stdout.strip()
+
+	# Find module name in built in module list /lib/modules/KERNEL_NAME_AND_VERSION/modules.builtin
+	path_to_builtin_modules_list = '/lib/modules/' + kernel_name_and_version_number + '/modules.builtin'
+
+	# Read the built in modules list as root
+	commands_to_run = ['sudo', '-k', '-p', '', '-S', 'cat', path_to_builtin_modules_list] # Create the commandline we need to run as root.
+
+	if debug == True:
+		print()
+		print('Running commands:', commands_to_run)
+
+	# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
+	sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
+	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+
+	for line in sudo_stdout:
+
+		line = line.strip().split()[0]
+
+		if line.startswith('#') == True:
+			continue
+
+		if line == '':
+			continue
+
+		if 'brd.ko' in line:
+			brd_module_built_into_kernel = True
+
+	##########################################################################
+	# Check if module brd is in /etc/modules and loads when the os starts up #
+	##########################################################################
+
+	commands_to_run = ['sudo', '-k', '-p', '', '-S', 'cat', '/etc/modules'] # Create the commandline we need to run as root.
+
+	if debug == True:
+		print()
+		print('Running commands:', commands_to_run)
+
+	# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
+	sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
+	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+
+	for line in sudo_stdout:
+
+		line = line.strip().split()[0]
+
+		if line.startswith('#') == True:
+			continue
+
+		if line == '':
+			continue
+
+		if 'brd' in line:
+			brd_module_loads_at_os_startup = True
+
+	if debug == True:
+		print()
+		print('brd_module_loads_at_os_startup =', brd_module_loads_at_os_startup)
+		print('brd_module_built_into_kernel =', brd_module_built_into_kernel)
+		print('brd_module_loaded_as_kernel_module =', brd_module_loaded_as_kernel_module)
+
+	#############################################################################
+	# Load the brd module if it is not built into the kernel or loaded into ram #
+	#############################################################################
+
+	if (brd_module_built_into_kernel == False) and (brd_module_loaded_as_kernel_module == False):
+
+		# Sudo switches are:
+		# -k = Forget authentication immediately after command.
+		# -p = Use a custom string to prompt the user for the password (we use an empty string here).
+		# -S = Read password from stdin.
+		
+		commands_to_run = ['sudo', '-k', '-p', '', '-S', 'modprobe', 'brd', 'rd_nr=5'] # Create the commandline we need to run as root.
+
+		if debug == True:
+			print()
+			print('Running commands:', commands_to_run)
+
+		# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
+		sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
+		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+
+		if sudo_stderr_string != '':
+			error_happened = True
+			error_message = 'Loading ram disk driver by: modprobe returned and error: ' + sudo_stderr_string
+
+	########################################
+	# Try to get the list of ram - devices #
+	########################################
 
 	if error_happened == False:
-		for item in list_of_files:
-			if ('ram' in item) and (int(item.strip('ram')) < 10) and (item != 'ram0'):
-				list_of_ram_devices.append('/dev/' + item)
 
-		list_of_ram_devices.sort()
-	
-	if len(list_of_ram_devices) == 0:
-		error_happened = True
-		error_message = 'Unknown error getting the list of ram devices from the os'
+		try:
+			# Get directory listing for HotFolder. The 'break' statement stops the for - statement from recursing into subdirectories.
+			for path, list_of_directories, list_of_files in os.walk('/dev/'):
+				break
+				
+		except IOError as reason_for_error:
+			error_happened = True
+			list_of_ram_devices = ['Error !!!!!!!']
+			error_message = 'Error getting list of os ram devices: ' + str(reason_for_error)
+		except OSError as reason_for_error:
+			error_happened = True
+			list_of_ram_devices = ['Error !!!!!!!']
+			error_message = 'Error getting list of os ram devices: ' + str(reason_for_error)
+
+		if error_happened == False:
+			for item in list_of_files:
+				if ('ram' in item) and (int(item.strip('ram')) < 10) and (item != 'ram0'):
+					list_of_ram_devices.append('/dev/' + item)
+
+			list_of_ram_devices.sort()
+		
+		if len(list_of_ram_devices) == 0:
+			error_happened = True
+			error_message = 'Unknown error getting the list of ram devices from the os'
 		
 	return(error_happened, error_message, list_of_ram_devices)
 	
 def print_ram_device_name(*args):
+
 	if debug == True:
 		print()
 		print('ram_device_name =', ram_device_name.get())
@@ -1044,6 +1190,8 @@ def install_init_scripts_and_config_files(*args):
 	global directory_for_os_temporary_files
 	global sh_path
 	global os_init_system_name
+	global brd_module_loads_at_os_startup
+	global brd_module_built_into_kernel
 	
 	#############################################################################################
 	# Create the init script that is going to start LoudnessCorrection when the computer starts #
@@ -1659,9 +1807,9 @@ def install_init_scripts_and_config_files(*args):
 			# Password was accepted and our command was successfully run as root.
 			root_password_was_not_accepted_message.set('') # Remove possible error message from the screen.
 			
-			#######################################
-			# Change configfile'/etc/samba' owner #
-			#######################################
+			#############################
+			# Change '/etc/samba' owner #
+			#############################
 			
 			commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chown', 'root:root', '/etc/samba'] # Create the commandline we need to run as root.
 
@@ -1771,6 +1919,91 @@ def install_init_scripts_and_config_files(*args):
 		
 		# Password was accepted and our command was successfully run as root.
 		root_password_was_not_accepted_message.set('') # Remove possible error message from the screen.
+
+
+	#####################################################################################
+	# Add module brd to /etc/modules so that it gets loaded every time the os starts up #
+	#####################################################################################
+
+	modules_file_name = '/etc/modules'
+
+	# Read in the modules file text to a list
+	if (brd_module_loads_at_os_startup == False) and (brd_module_built_into_kernel == False):
+
+		if (os.path.exists(modules_file_name)):
+
+			modules_file_text_list = []
+
+			try:
+				with open(modules_file_name, 'rt') as file_handler:
+					file_handler.seek(0) # Make sure that the 'read' - pointer is in the beginning of the source file
+					modules_file_text_list.extend(file_handler.readlines())
+
+			except IOError as reason_for_error:
+				show_error_message_on_seventh_window('Error opening ' + modules_file_name  + ' for reading: ' + str(reason_for_error))
+				return(True) # There was an error, exit this subprogram.
+
+			except OSError as reason_for_error:
+				show_error_message_on_seventh_window('Error opening ' + modules_file_name  + ' for reading: ' + str(reason_for_error))
+				return(True) # There was an error, exit this subprogram.
+
+		# Password was accepted and our command was successfully run as root.
+		root_password_was_not_accepted_message.set('') # Remove possible error message from the screen.
+	
+		# Move the modules file to /etc/modules_timestamp
+		if os.path.exists(modules_file_name):
+			old_modules_file_timestamp = int(os.lstat(modules_file_name).st_mtime)
+			old_modules_file_timestamp_string = parse_time(old_modules_file_timestamp)
+			old_modules_file_timestamp_string = old_modules_file_timestamp_string.replace(' at ', '__')
+		
+			commands_to_run = ['sudo', '-k', '-p', '', '-S', 'mv', '-f', modules_file_name, modules_file_name + '_' + old_modules_file_timestamp_string] # Create the commandline we need to run as root.
+
+			# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
+			sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
+			sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+			
+			# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
+			if len(sudo_stderr_string) != 0:
+				show_error_message_on_seventh_window(sudo_stderr_string)
+				return(True) # There was an error, exit this subprogram.
+
+		# Test if module brd is already in the modules list
+		brd_found_in_modules_file = False
+
+		for text_line in modules_file_text_list:
+
+			text_line = text_line.strip()
+
+			if text_line == '':
+				continue
+
+			if text_line.startswith('#'):
+				continue
+
+			if 'brd' in text_line:
+				brd_found_in_modules_file = True
+
+		# Add text 'brd' to the modules file text list if it is not already there
+		if brd_found_in_modules_file == False:
+			modules_file_text_list.append('\n# FreeLCS needs the brd kernel ram disk driver')
+			modules_file_text_list.append('\nbrd')
+
+		# Write the newmodules file to disk
+		try:
+			with open(modules_file_name, 'wt') as file_handler: # Open logfile, the 'with' method closes files when execution exits the with - block
+				file_handler.writelines(modules_file_text_list)
+
+				file_handler.flush() # Flushes written data to os cache
+				os.fsync(file_handler.fileno()) # Flushes os cache to disk
+
+		except IOError as reason_for_error:
+			show_error_message_on_seventh_window('Error opening ' + modules_file_name  + ' for writing: ' + str(reason_for_error))
+			return(True) # There was an error, exit this subprogram.
+
+		except OSError as reason_for_error:
+			show_error_message_on_seventh_window('Error opening ' + modules_file_name  + ' for writing: ' + str(reason_for_error))
+			return(True) # There was an error, exit this subprogram.
+
 		
 	########################################
 	# Write init script to its target path #
@@ -5161,7 +5394,11 @@ if (os_name == '') or (os_version == ''):
 	temporary_list = []
 
 # Convert os version number to float, so that we can easily compare version numbers
-os_version_float = float(os_version)
+if os_version.isdigit():
+
+	os_version_float = float(os_version)
+else:
+	os_version_float = 0.0
 
 # Define the name of the external media conversion tools depending on os version (libav-tools or FFmpeg)
 # This information is only used when printing text on the installer windows.
@@ -5393,6 +5630,9 @@ libebur128_archive_name = 'libebur128_fork_for_freelcs_3.4.tar.xz'
 libebur128_patch_name = 'libebur128-patch-2017.08.14.diff'
 libebur128_required_commit = '5464c5a923b28fe8677479d54f0ca59602942027'
 path_to_libebur128_source_archive = find_program_in_current_dir(libebur128_archive_name)
+brd_module_loads_at_os_startup = False
+brd_module_built_into_kernel = False
+brd_module_loaded_as_kernel_module = False
 
 # Define which os versions don't have a properly working sox in their repositories
 # In these cases sox is installed by compiling a proper version from source
@@ -5625,7 +5865,9 @@ if smb_conf_version == 2:
 
 samba_configuration_file_content_as_a_string = '\n'.join(samba_configuration_file_content)
 
-# If there is a previously saved settings-file then read in settings from that and assign values to variables.
+###############################################################################################################
+# If there is a previously saved settings-file then read in settings from that and assign values to variables #
+###############################################################################################################
 previously_saved_settings_dict = {}
 previously_saved_email_sending_details = {}
 
@@ -6368,19 +6610,27 @@ fourth_window_separator_1.grid(column=0, row=4, padx=10, pady=10, columnspan=5, 
 fourth_window_label_3 = tkinter.ttk.Label(fourth_frame_child_frame_1, text='Use this ram device for creating the ram disk:')
 fourth_window_label_3.grid(column=0, row=5, columnspan=4, padx=10, sticky=(tkinter.W, tkinter.N))
 ram_device_name_combobox = tkinter.ttk.Combobox(fourth_frame_child_frame_1, justify=tkinter.CENTER, textvariable=ram_device_name)
+
 # Get the ram device names from the os.
 error_happened, error_message, list_of_ram_devices = get_list_of_ram_devices_from_os()
+
+# Create another label with explanatory text on it.
+ram_disk_text="If you know you haven't used ram - devices for anything on this computer, then you can just select the first ram device /dev/ram1."
+ram_disk_text_color='black'
+
 if error_happened == True:
-	fourth_window_error_label_1 = tkinter.ttk.Label(fourth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, foreground='red', text=error_message)
-	fourth_window_error_label_1.grid(column=0, row=10, columnspan=4, padx=10, pady=10, sticky=(tkinter.W, tkinter.N))
+	ram_disk_text=error_message
+	ram_disk_text_color='red'
+
 ram_device_name_combobox['values'] = list_of_ram_devices
+
 if len(list_of_ram_devices) > 0:
 	ram_device_name_combobox.set(list_of_ram_devices[0])
+
 ram_device_name_combobox.bind('<<ComboboxSelected>>', print_ram_device_name)
 ram_device_name_combobox.grid(column=3, row=5, columnspan=2, padx=10, sticky=(tkinter.N))
 
-# Create another label with explanatory text on it.
-fourth_window_label_4 = tkinter.ttk.Label(fourth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text="If you know you haven't used ram - devices for anything on this computer, then you can just select the first ram device /dev/ram1.")
+fourth_window_label_4 = tkinter.ttk.Label(fourth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, foreground=ram_disk_text_color, text=ram_disk_text)
 fourth_window_label_4.grid(column=0, row=6, columnspan=4, pady=10, padx=10, sticky=(tkinter.W, tkinter.N))
 
 # Define a horizontal line to space out groups of rows.
@@ -6430,7 +6680,7 @@ fourth_window_back_button = tkinter.Button(fourth_frame, text = "Back", command 
 fourth_window_back_button.grid(column=1, row=1, padx=30, pady=10, sticky=(tkinter.E, tkinter.N))
 fourth_window_next_button = tkinter.Button(fourth_frame, text = "Next", command = call_tenth_frame_on_top)
 
-# If we were no successful in getting the list of ram device names from the os and create_ram_disk = True, disable the next button.
+# If we were not successful in getting the list of ram device names from the os and create_ram_disk = True, disable the next button.
 if (len(list_of_ram_devices) == 0) and (create_a_ram_disk_for_html_report.get() == True):
 	fourth_window_next_button['state'] = 'disabled'
 # If we were not successful in getting the list of user accounts from the os, disable the next button.
