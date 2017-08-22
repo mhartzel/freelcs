@@ -799,6 +799,83 @@ chown root:root /usr/lib/libinput_musepack-freelcs.so
 
 ldconfig
 
+
+#################################################
+# Handle loading of kernel module brd if needed #
+#################################################
+
+BRD_MODULE_BUILT_INTO_KERNEL=false
+BRD_MODULE_LOADED_AS_KERNEL_MODULE=false
+BRD_MODULE_LOADS_AT_OS_STARTUP=false
+KERNEL_VERSION=`uname -r`
+BUILTIN_MODULES_PATH="/lib/modules/"$KERNEL_VERSION"/modules.builtin"
+BUILTIN_MODULES_LIST=`cat $BUILTIN_MODULES_PATH`
+MODULES_LOADED_AT_BOOT_PATH="/etc/modules"
+
+###############################################
+# Test if brd module is built into the kernel #
+###############################################
+case $BUILTIN_MODULES_LIST in
+	*brd.ko*)
+		BRD_MODULE_BUILT_INTO_KERNEL=true
+		;;
+	*brd.ko)
+		BRD_MODULE_BUILT_INTO_KERNEL=true
+esac
+
+################################################
+# Test if brd module is now loaded into memory #
+################################################
+BRD_LOADED_INTO_RAM=`lsmod | grep brd | awk '{ print $1 }'`
+
+if [ "$BRD_LOADED_INTO_RAM" == "brd"  ] ; then BRD_MODULE_LOADED_AS_KERNEL_MODULE=true ; fi
+
+
+#########################################
+# Test if brd module is in /etc/modules #
+#########################################
+BRD_IS_IN_MODULES_FILE=`cat /etc/modules | sed 's/#.*//g' | sed '/^\s*$/d'`
+
+
+case $BRD_IS_IN_MODULES_FILE in
+	*brd*)
+		BRD_MODULE_LOADS_AT_OS_STARTUP=true
+esac
+
+###########################################
+# Load brd if it is not running right now #
+###########################################
+
+if [ "$BRD_MODULE_BUILT_INTO_KERNEL" == false ] && [ "$BRD_MODULE_LOADED_AS_KERNEL_MODULE" == false  ] ; then
+
+	echo
+	echo "########################################################"
+	echo "# Loading ram disk driver (kernel module brd) into ram #"
+	echo "########################################################"
+	echo
+
+	modprobe brd
+fi
+
+######################################################
+# Add brd to /etc/modules if it is not already there #
+######################################################
+
+if [ "$BRD_MODULE_BUILT_INTO_KERNEL" == false  ] && [ "$BRD_MODULE_LOADS_AT_OS_STARTUP" == false  ] ; then 
+
+	echo
+	echo "################################################################"
+	echo "# Adding ram disk driver (kernel module brd) into "$MODULES_LOADED_AT_BOOT_PATH" #"
+	echo "################################################################"
+	echo
+
+	echo "" >> $MODULES_LOADED_AT_BOOT_PATH
+	echo "# FreeLCS needs the brd kernel ram disk driver" >> $MODULES_LOADED_AT_BOOT_PATH
+	echo "brd" >> $MODULES_LOADED_AT_BOOT_PATH
+	echo "" >> $MODULES_LOADED_AT_BOOT_PATH
+fi
+
+
 # Install sox from source
 if [ "$INSTALL_SOX_FROM_OS_REPOSITORY" == false  ] ; then
 	echo
