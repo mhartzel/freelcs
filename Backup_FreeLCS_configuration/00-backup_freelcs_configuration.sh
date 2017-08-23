@@ -475,7 +475,7 @@ if [ -e "/tmp/libebur128_fork_for_freelcs_3.4" ] ; then
 
 	if [ "$?" -ne "0"  ] ; then
 		echo
-		echo "Error, could not delete temporary dir /tmp/libebur128_fork_for_freelcs_2.4"
+		echo "Error, could not delete temporary dir /tmp/libebur128_fork_for_freelcs_3.4"
 		echo
 		exit
 	fi
