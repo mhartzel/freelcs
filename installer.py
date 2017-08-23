@@ -27,7 +27,7 @@ import email.mime.multipart
 import tempfile
 import copy
 
-version = '117'
+version = '118'
 freelcs_version = '3.4'
 
 ###################################
@@ -183,8 +183,6 @@ def call_sixth_frame_on_top():
 	# This function can be called from two possible windows depending on did the user come here by clicking Next or Back buttons.
 	# Hide the the frames for other windows and raise the one we want.
 	
-	# Read samba configuration from the fifth window text label and assign configuration to a list.
-	set_samba_configuration()
 	first_frame.grid_forget()
 	second_frame.grid_forget()
 	root_password_entrybox.focus() # Set keyboard focus to the entrybox.
@@ -201,6 +199,9 @@ def call_sixth_frame_on_top():
 
 def call_seventh_frame_on_top():
 	
+	# Read samba configuration from the fifth window text label and assign configuration to a list.
+	set_samba_configuration()
+
 	# This function can be called from two possible windows depending on did the user come here by clicking Next or Back buttons.
 	# Hide the the frames for other windows and raise the one we want.
 	sixth_frame.grid_forget()
@@ -405,6 +406,7 @@ def set_directory_names_according_to_language():
 	global os_name
 	global os_version
 	global os_version_float
+	global samba_configuration_file_content
 	
 	path = target_path.get()
 	
@@ -518,6 +520,11 @@ def set_directory_names_according_to_language():
 		print('directory_for_temporary_files =', directory_for_temporary_files.get())
 		print('english =', english)
 		print('finnish =', finnish)
+		print()
+		print('samba_configuration_file_content:')
+		for item in samba_configuration_file_content:
+			print(item)
+		print()
 		
 def print_number_of_processors_cores_to_use(*args):
 	if debug == True:
