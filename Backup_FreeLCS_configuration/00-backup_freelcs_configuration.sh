@@ -528,10 +528,7 @@ if [ "$OS_NAME" == "ubuntu" ] && [ "$OS_VERSION" == "12.04" ] ; then
 
 fi
 
-
 APT_PACKAGE_LIST="python3 idle3 automake autoconf libtool gnuplot mediainfo build-essential git cmake libsndfile-dev libmpg123-dev libmpcdec-dev libglib2.0-dev libfreetype6-dev librsvg2-dev libavcodec-dev libavformat-dev libtag1-dev libxml2-dev libqt4-dev"
-
-fi
 
 apt-get -q=2 -y --reinstall install $APT_PACKAGE_LIST $SAMBA_INSTALLATION_COMMAND $SOX_INSTALLATION_COMMAND $ADDITIONAL_PACKAGE_INSTALLATION_COMMANDS 
 
