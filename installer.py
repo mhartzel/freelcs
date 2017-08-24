@@ -27,7 +27,7 @@ import email.mime.multipart
 import tempfile
 import copy
 
-version = '118'
+version = '119'
 freelcs_version = '3.4'
 
 ###################################
@@ -5479,7 +5479,7 @@ if (os_name == '') or (os_version == ''):
 	temporary_list = []
 
 # Convert os version number to float, so that we can easily compare version numbers
-if os_version.isdigit():
+if os_version.replace('.','',1).isdigit():
 
 	os_version_float = float(os_version)
 else:
