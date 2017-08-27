@@ -20,9 +20,9 @@
     that FreeLCS uses when printing the loudness history graphics file is not
     installed by default. These problems can be easily corrected.<br>
     <br>
-    <h2>Fixing Ubuntu Server locale</h2>
-    <strong>Note: </strong>This step is not necessary on Ubuntu 16.04 Server,
-    the locale works correctly without this modification.<br>
+    <h2>Fixing Ubuntu 12.04 and 14.04 Server locale</h2>
+    For Ubuntu 16.04 use the <a href="Debian_modifications_needed_before_FreeLCS_installation.html#Fixing_Debian_locale">Debian
+      method described here</a>.<br>
     <br>
     Ubuntu Server locale is not configured correctly by default, this produces
     error messages during program package installation and stops the FreeLCS
@@ -97,8 +97,8 @@
     <p><br>
     </p>
     <h2>Installing FreeLCS over ssh with X - forwarding</h2>
-    Note that FreeLCS installation always requires connection to the internet,
-    since the installer fetches needed packages from the net.<br>
+    FreeLCS installation requires either a connection to the internet or access
+    to a local Debian / Ubuntu package repository.<br>
     <br>
     This method requires two computers: one Linux or OS X machine with the X
     windowing system installed (<strong>Desktop computer</strong>) and the

@@ -1042,7 +1042,8 @@ echo
 echo "Please note that the restoration script '00-restore_freelcs_configuration.sh'"
 echo "will not ask for confirmation but starts restoration right away when you start the script."
 echo
-echo "Internet connection is required for the restoration."
+echo "FreeLCS restoration requires either a connection to the internet or"
+echo "access to a local Debian / Ubuntu package repository."
 echo
 echo "NOTE !!!!!!! It is very important that you restore FreeLCS onto the same Linux distro"
 echo "and version that it was originally installed on. There are some differences between"

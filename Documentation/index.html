@@ -39,6 +39,26 @@
     <a href="#Features">Features</a> and <a href="FreeLCS_User_Manual.html">User
       Manual</a>.<br>
     <h1><strong>Latest news:</strong></h1>
+    <h4>2017.08.31 FreeLCS 3.4 released.</h4>
+    <ul>
+      <li>This release supports Ubuntu 14.04, 16.04 and Debian 8 and 9.</li>
+      <li>Libebur128 is upgraded to the latest version 1.2.2. The new version
+        uses a new method to calculate true peak values. I'm testing each new
+        FreeLCS release with the same set of&nbsp; 214 files (35 GB). 192 of
+        them measure the same truepeak value as with the previous version of
+        libebur128. The rest of them get mostly a lower truepeak value than
+        before.</li>
+      <li>Libebur128 version 1.2.2 source archive is included in the FreeLCS
+        installation package. So now you don't have to have an internet
+        connection while you install FreeLCS as long as you have access to a
+        local Debian / Ubuntu package repository.</li>
+      <li>Ubuntu 16.04 dropped the ram disk driver (brd module) from the kernel
+        in the middle of the 16.04 support cycle. Debian also does not load brd
+        by default, so FreeLCS now handles loading of the brd module
+        automatically if the module is not loaded or built into kernel.</li>
+      <li>If you need to disable smb protocol version1 then remove the character
+        # from smb.con in front of line: # server min protocol = SMB2</li>
+    </ul>
     <h4>2016.07.01 FreeLCS 3.3 released.</h4>
     <ul>
       <li>This release supports Ubuntu 14.04 and 16.04 and Debian 8. Support for

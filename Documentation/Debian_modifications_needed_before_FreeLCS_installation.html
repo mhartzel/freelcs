@@ -1,5 +1,236 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"><html dir="ltr" lang="en">  <head>    <meta content="text/html; charset=utf-8" http-equiv="content-type">    <title>Debian modifications needed before FreeLCS installation</title>    <meta content="Mikael Hartzell" name="author">  </head>  <body>    <h1> Debian modifications needed before FreeLCS installation</h1>    Debian 7 support was added in FreeLCS version 3.0.&nbsp; Earlier Debian    versions have not been tested, they may or may not work. Later Debian    releases are also supported by FreeLCS.<br>    <br>    Canonical builds its Ubuntu releases using Debian software packages.    Therefore both of these Linux distributions have much in common, but also    have some differences. Some small config changes must be made to Debian    before FreeLCS can be installed and run.<br>    <br>    <br>    <h2>Remove cd / dvd installation media from sources.list</h2>    <ul>      <li>Debian adds the install cd / dvd as a available repository for        software package installation. When you install new software then Debian        first tries to find it on the installation cd / dvd. If the disk is not        inserted, then installation stops with an error message. This prevents        FreeLCS from installing the software packages it needs. The installation        disk must be removed from the list of available installation sources.        This list is a simple text file that can be manually edited.</li>      <li>Open the Terminal (<strong> /Applications/Accessories/Terminal </strong>)        and get root provileges by giving the following command (will ask for        root password):</li>    </ul>    <p style="margin-left: 40px;"><strong>su root</strong></p>    <ul>      <li>Open the installation source list to a text editor in the terminal        with the following command:</li>    </ul>    <p style="margin-left: 40px;"><strong>nano -w /etc/apt/sources.list</strong></p>    <ul>      <li>Find lines that start with:&nbsp;&nbsp; <strong>deb cdrom&nbsp;</strong>&nbsp;&nbsp;
-        and add a&nbsp; <strong>#</strong>&nbsp; character in front of each.        This disables the line.</li>      <li>Example: the following line:</li>    </ul>    <p style="margin-left: 40px;"><strong>deb cdrom:[Debian GNU/Linux 7.2.0        _Wheezy_ - Official i386 DVD Binary-1 20131012-12:56]/ wheezy contrib        main</strong></p>    <ul>      <li>becomes:</li>    </ul>    <p style="margin-left: 40px;"><strong># deb cdrom:[Debian GNU/Linux 7.2.0        _Wheezy_ - Official i386 DVD Binary-1 20131012-12:56]/ wheezy contrib        main</strong></p>    <ul>      <li>Save the modified file using the keyboard command: <strong>ctrl + o</strong></li>      <li>Exit the nano - editor with keyboard command: <strong>ctrl + x</strong></li>    </ul>    <br>    <br>    <h2>Install the sudo - program and add user to the sudo group</h2>    FreeLCS uses the <strong>sudo</strong> - program to get root permissions    during installation. If sudo is not available then FreeLCS installation    fails.<br>    <br>    Debian installs sudo if you selected the 'Desktop' - installation during    Debian install process. To ensure that sudo is installed, try to reinstall    it:<br>    <ul>      <li>Get root permissions with the following terminal command (asks for        root password):</li>    </ul>    <div style="margin-left: 40px;"><strong>su root</strong></div>    <ul>      <li>Install the sudo package:</li>    </ul>    <div style="margin-left: 40px;"><strong>apt-get -y install sudo</strong></div>    <ul>      <li>The user account that you use to run the FreeLCS installer must have        permission to run the sudo - program. This permission is given by adding        the user to the group named '<strong>sudo</strong>'. In the following        example we assume that the name of this user account is&nbsp;        'john'.&nbsp; Change this name to your actual user account name.</li>      <li>Add the user account to the group '<strong>sudo</strong>' with the        following terminal command:</li>    </ul>    <p style="margin-left: 40px;"><strong>adduser&nbsp;&nbsp; john&nbsp;&nbsp;        sudo</strong></p>    <ul>      <li>If you are logged in with the user account that you added to the group        'sudo', then you must now log out and back in for the changes to take        effect.</li>    </ul>    <ul>      <li> If sudo installation gives you the error: "<strong>unable to locate          package sudo</strong>", then some of the required package repositories        are missing from the text file:&nbsp; <strong>/etc/apt/sources.list</strong>&nbsp;&nbsp;
-        Below you can see an example of my working sources.list. You must        run&nbsp;&nbsp; <strong>apt-get update</strong>&nbsp;&nbsp; after you        make changes to the package repository settings so that the database for        available packages gets updated.</li>    </ul>    <h3 style="margin-left: 40px;">Debian 8:</h3>    <div style="margin-left: 40px;"># deb cdrom:[Debian GNU/Linux 8.0.0 _Jessie_      - Official amd64 DVD Binary-1 20150425-12:54]/ jessie contrib main<br>      <br>      deb http://security.debian.org/ jessie/updates main contrib<br>      deb-src http://security.debian.org/ jessie/updates main contrib<br>      <br>      deb http://ftp.fi.debian.org/debian/ jessie main<br>      deb-src http://ftp.fi.debian.org/debian/ jessie main<br>      deb http://ftp.fi.debian.org/debian/ jessie-updates main contrib<br>      deb-src http://ftp.fi.debian.org/debian/ jessie-updates main contrib<br>      <br>      # jessie-updates, previously known as 'volatile'<br>      # A network mirror was not selected during install.&nbsp; The following      entries<br>      # are provided as examples, but you should amend them as appropriate<br>      # for your mirror of choice.<br>      #<br>      # deb http://ftp.debian.org/debian/ jessie-updates main contrib<br>      # deb-src http://ftp.debian.org/debian/ jessie-updates main contrib<br>    </div>    <h3 style="margin-left: 40px;">Debian 7:</h3>    <ul>    </ul>    <div style="margin-left: 40px;"># deb cdrom:[Debian GNU/Linux 7.2.0 _Wheezy_      - Official i386 DVD Binary-1 20131012-12:56]/ wheezy contrib main<br>      <br>      deb http://ftp.fi.debian.org/debian/ wheezy main<br>      deb-src http://ftp.fi.debian.org/debian/ wheezy main<br>      <br>      deb http://security.debian.org/ wheezy/updates main contrib<br>      deb-src http://security.debian.org/ wheezy/updates main contrib<br>      <br>      # wheezy-updates, previously known as 'volatile'<br>      deb http://ftp.fi.debian.org/debian/ wheezy-updates main contrib<br>      deb-src http://ftp.fi.debian.org/debian/ wheezy-updates main contrib</div>    <br>    <br>    <h2>Load kernel module brd</h2>    <ul>      <li>This step assumes that you have the '<strong>sudo</strong>' - program        installed (installation steps described above).</li>      <li>FreeLCS writes every 5 seconds a html file to the disk. This html -        file stores information about what the server is currently doing. Users        can view this file with a web browser like Firefox. This file is written        to a ram - disk that is automatically created when FreeLCS software        starts up. Ram - disk speeds up reading and writing this file when the        server is under heavy load. The ram disk is created using a kernel        module named <strong>brd</strong>. This module is built into Ubuntu        kernel, but on Debian the user must load it before FreeLCS - software        starts.</li>      <li>First load the brd module with the following terminal command (will        ask for password):</li>    </ul>    <p style="margin-left: 40px;"><strong>sudo modprobe brd</strong></p>    <ul>      <li>Now the&nbsp; brd module is running and can be used. The module must        be added to the text file&nbsp;&nbsp;<strong> /etc/modules</strong>&nbsp;&nbsp;
-        for it to be automatically loaded during the next boot. Open        the&nbsp;&nbsp; <strong>/etc/modules</strong> - file in a text editor        with the following terminal command (will ask for password):</li>    </ul>    <p style="margin-left: 40px;"><strong>sudo nano -w /etc/modules</strong></p>    <ul>      <li>Add text:&nbsp;&nbsp; <strong>brd</strong>&nbsp;&nbsp; on its own        line at the end of the file.</li>      <li>Save the modified file using the keyboard command: <strong>ctrl + o</strong></li>      <li>Exit the nano - editor with keyboard command: <strong>ctrl + x</strong></li>    </ul>    If you did not install a graphical desktop during Debian install, then you    need to do two more modifications described below. If you did install a    graphical desktop then you can go ahead with the <a href="FreeLCS_User_Manual.html#Installation">normal
-      FreeLCS install procedure described in the user manual</a> :)<br>    <br>    <br>    <h2>Fixing Debian locale</h2>    If you installed a graphical desktop during Debian installation, then your    locale should be configured correctly, if not then you should configure it    before FreeLCS installation. Locale error messages during program package    installation stops the FreeLCS installer.<br>    <br>    <ul>      <li>Run the command:</li>    </ul>    <div style="margin-left: 40px;"><strong>sudo dpkg-reconfigure locales</strong></div>    <br>    <ul>      <li>Select your locale from the list. Search for your language and the        text "UTF-8". I have selected the Finnish language in the picture below.</li>    </ul>    <p><br>    </p>    <img alt="" src="Pictures/Debian_Locale_Configuration-01.png"><br>    <br>    <br>    <ul>      <li>Next window asks you to decide which locale is the system default. In        the picture below I chose the default to be english us.</li>    </ul>    <p><br>    </p>    <img alt="" src="Pictures/Debian_Locale_Configuration-02.png"><br>    <br>    <br>    Now you need to log out and back in for the locale changes to take effect.<br>    <br>    <br>    <br>    <h2>Fixing history graphics file fonts</h2>    If you did not install a graphical desktop during Debian install, then the    font used to create text on FreeLCS history graphics files is missing. When    the font is missing gnuplot uses an ugly default font which includes only    english characters and not any special characters used in other European    languages.<br>    <br>    Install liberation fonts:&nbsp; <strong>sudo apt-get install      fonts-liberation</strong><br>    <br>    Next create a link to the font that is used when FreeLCS creates history    graphics files:<br>    <br>    <strong>sudo&nbsp; ln&nbsp;&nbsp;      /usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf&nbsp;&nbsp;      /usr/share/fonts/truetype/arial.ttf<br>      <br>      <br>      <br>    </strong>  </body></html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html dir="ltr" lang="en">
+  <head>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type">
+    <title>Debian modifications needed before FreeLCS installation</title>
+    <meta content="Mikael Hartzell" name="author">
+  </head>
+  <body>
+    <h1> Debian modifications needed before FreeLCS installation</h1>
+    Debian 7 support was added in FreeLCS version 3.0.&nbsp; Earlier Debian
+    versions have not been tested, they may or may not work. Later Debian
+    releases are also supported by FreeLCS.<br>
+    <br>
+    Canonical builds its Ubuntu releases using Debian software packages.
+    Therefore both of these Linux distributions have much in common, but also
+    have some differences. Some small config changes must be made to Debian
+    before FreeLCS can be installed and run.<br>
+    <br>
+    <br>
+    <h2>Remove cd / dvd installation media from sources.list</h2>
+    <ul>
+      <li>Debian adds the install cd / dvd as a available repository for
+        software package installation. When you install new software then Debian
+        first tries to find it on the installation cd / dvd. If the disk is not
+        inserted, then installation stops with an error message. This prevents
+        FreeLCS from installing the software packages it needs. The installation
+        disk must be removed from the list of available installation sources.
+        This list is a simple text file that can be manually edited.</li>
+      <li>Open the Terminal (<strong> /Applications/Accessories/Terminal </strong>)
+        and get root provileges by giving the following command (will ask for
+        root password):</li>
+    </ul>
+    <p style="margin-left: 40px;"><strong>su root</strong></p>
+    <ul>
+      <li>Open the installation source list to a text editor in the terminal
+        with the following command:</li>
+    </ul>
+    <p style="margin-left: 40px;"><strong>nano -w /etc/apt/sources.list</strong></p>
+    <ul>
+      <li>Find lines that start with:&nbsp;&nbsp; <strong>deb cdrom&nbsp;</strong>&nbsp;&nbsp;
+        and add a&nbsp; <strong>#</strong>&nbsp; character in front of each.
+        This disables the line.</li>
+      <li>Example: the following line:</li>
+    </ul>
+    <p style="margin-left: 40px;"><strong>deb cdrom:[Debian GNU/Linux 7.2.0
+        _Wheezy_ - Official i386 DVD Binary-1 20131012-12:56]/ wheezy contrib
+        main</strong></p>
+    <ul>
+      <li>becomes:</li>
+    </ul>
+    <p style="margin-left: 40px;"><strong># deb cdrom:[Debian GNU/Linux 7.2.0
+        _Wheezy_ - Official i386 DVD Binary-1 20131012-12:56]/ wheezy contrib
+        main</strong></p>
+    <ul>
+      <li>Save the modified file using the keyboard command: <strong>ctrl + o</strong></li>
+      <li>Exit the nano - editor with keyboard command: <strong>ctrl + x</strong></li>
+    </ul>
+    <br>
+    <br>
+    <h2>Install the sudo - program and add user to the sudo group</h2>
+    FreeLCS uses the <strong>sudo</strong> - program to get root permissions
+    during installation. If sudo is not available then FreeLCS installation
+    fails.<br>
+    <br>
+    Debian installs sudo if you selected the 'Desktop' - installation during
+    Debian install process. To ensure that sudo is installed, try to reinstall
+    it:<br>
+    <ul>
+      <li>Get root permissions with the following terminal command (asks for
+        root password):</li>
+    </ul>
+    <div style="margin-left: 40px;"><strong>su root</strong></div>
+    <ul>
+      <li>Install the sudo package:</li>
+    </ul>
+    <div style="margin-left: 40px;"><strong>apt-get -y install sudo</strong></div>
+    <ul>
+      <li>The user account that you use to run the FreeLCS installer must have
+        permission to run the sudo - program. This permission is given by adding
+        the user to the group named '<strong>sudo</strong>'. In the following
+        example we assume that the name of this user account is&nbsp;
+        'john'.&nbsp; Change this name to your actual user account name.</li>
+      <li>Add the user account to the group '<strong>sudo</strong>' with the
+        following terminal command:</li>
+    </ul>
+    <p style="margin-left: 40px;"><strong>adduser&nbsp;&nbsp; john&nbsp;&nbsp;
+        sudo</strong></p>
+    <ul>
+      <li>If you are logged in with the user account that you added to the group
+        'sudo', then you must now log out and back in for the changes to take
+        effect.</li>
+    </ul>
+    <ul>
+      <li> If sudo installation gives you the error: "<strong>unable to locate
+          package sudo</strong>", then some of the required package repositories
+        are missing from the text file:&nbsp; <strong>/etc/apt/sources.list</strong>&nbsp;&nbsp;
+        Below you can see an example of my working sources.list. You must
+        run&nbsp;&nbsp; <strong>apt-get update</strong>&nbsp;&nbsp; after you
+        make changes to the package repository settings so that the database for
+        available packages gets updated.</li>
+    </ul>
+    <h3 style="margin-left: 40px;">Debian 8:</h3>
+    <div style="margin-left: 40px;"># deb cdrom:[Debian GNU/Linux 8.0.0 _Jessie_
+      - Official amd64 DVD Binary-1 20150425-12:54]/ jessie contrib main<br>
+      <br>
+      deb http://security.debian.org/ jessie/updates main contrib<br>
+      deb-src http://security.debian.org/ jessie/updates main contrib<br>
+      <br>
+      deb http://ftp.fi.debian.org/debian/ jessie main<br>
+      deb-src http://ftp.fi.debian.org/debian/ jessie main<br>
+      deb http://ftp.fi.debian.org/debian/ jessie-updates main contrib<br>
+      deb-src http://ftp.fi.debian.org/debian/ jessie-updates main contrib<br>
+      <br>
+      # jessie-updates, previously known as 'volatile'<br>
+      # A network mirror was not selected during install.&nbsp; The following
+      entries<br>
+      # are provided as examples, but you should amend them as appropriate<br>
+      # for your mirror of choice.<br>
+      #<br>
+      # deb http://ftp.debian.org/debian/ jessie-updates main contrib<br>
+      # deb-src http://ftp.debian.org/debian/ jessie-updates main contrib<br>
+    </div>
+    <h3 style="margin-left: 40px;">Debian 7:</h3>
+    <ul>
+    </ul>
+    <div style="margin-left: 40px;"># deb cdrom:[Debian GNU/Linux 7.2.0 _Wheezy_
+      - Official i386 DVD Binary-1 20131012-12:56]/ wheezy contrib main<br>
+      <br>
+      deb http://ftp.fi.debian.org/debian/ wheezy main<br>
+      deb-src http://ftp.fi.debian.org/debian/ wheezy main<br>
+      <br>
+      deb http://security.debian.org/ wheezy/updates main contrib<br>
+      deb-src http://security.debian.org/ wheezy/updates main contrib<br>
+      <br>
+      # wheezy-updates, previously known as 'volatile'<br>
+      deb http://ftp.fi.debian.org/debian/ wheezy-updates main contrib<br>
+      deb-src http://ftp.fi.debian.org/debian/ wheezy-updates main contrib</div>
+    <br>
+    <br>
+    <h2>Load kernel module brd</h2>
+    <p>Beginning with FreeLCS version 3.4 loading of the brd module is done
+      automatically for you. The instructions below apply only to FreeLCS 3.3
+      and earlier.</p>
+    <ul>
+      <li>This step assumes that you have the '<strong>sudo</strong>' - program
+        installed (installation steps described above).</li>
+      <li>FreeLCS writes every 5 seconds a html file to the disk. This html -
+        file stores information about what the server is currently doing. Users
+        can view this file with a web browser like Firefox. This file is written
+        to a ram - disk that is automatically created when FreeLCS software
+        starts up. Ram - disk speeds up reading and writing this file when the
+        server is under heavy load. The ram disk is created using a kernel
+        module named <strong>brd</strong>. This module is built into Ubuntu
+        kernel, but on Debian the user must load it before FreeLCS - software
+        starts.</li>
+      <li>First load the brd module with the following terminal command (will
+        ask for password):</li>
+    </ul>
+    <p style="margin-left: 40px;"><strong>sudo modprobe brd</strong></p>
+    <ul>
+      <li>Now the&nbsp; brd module is running and can be used. The module must
+        be added to the text file&nbsp;&nbsp;<strong> /etc/modules</strong>&nbsp;&nbsp;
+        for it to be automatically loaded during the next boot. Open
+        the&nbsp;&nbsp; <strong>/etc/modules</strong> - file in a text editor
+        with the following terminal command (will ask for password):</li>
+    </ul>
+    <p style="margin-left: 40px;"><strong>sudo nano -w /etc/modules</strong></p>
+    <ul>
+      <li>Add text:&nbsp;&nbsp; <strong>brd</strong>&nbsp;&nbsp; on its own
+        line at the end of the file.</li>
+      <li>Save the modified file using the keyboard command: <strong>ctrl + o</strong></li>
+      <li>Exit the nano - editor with keyboard command: <strong>ctrl + x</strong></li>
+    </ul>
+    If you did not install a graphical desktop during Debian install, then you
+    need to do two more modifications described below. If you did install a
+    graphical desktop then you can go ahead with the <a href="FreeLCS_User_Manual.html#Installation">normal
+      FreeLCS install procedure described in the user manual</a> :)<br>
+    <br>
+    <br>
+    <h2><a name="Fixing_Debian_locale">Fixing Debian locale</a></h2>
+    Ubuntu 16.04&nbsp; locale is also fixed by using the method described below.<br>
+    &nbsp;<br>
+    If you installed a graphical desktop during Debian installation, then your
+    locale should be configured correctly, if not then you should configure it
+    before FreeLCS installation. Locale error messages during program package
+    installation stops the FreeLCS installer.<br>
+    <br>
+    <ul>
+      <li>Run the command:</li>
+    </ul>
+    <div style="margin-left: 40px;"><strong>sudo dpkg-reconfigure locales</strong></div>
+    <br>
+    <ul>
+      <li>Select your locale from the list. Search for your language and the
+        text "UTF-8". I have selected the Finnish language in the picture below.</li>
+    </ul>
+    <p><br>
+    </p>
+    <img alt="" src="Pictures/Debian_Locale_Configuration-01.png"><br>
+    <br>
+    <br>
+    <ul>
+      <li>Next window asks you to decide which locale is the system default. In
+        the picture below I chose the default to be english us.</li>
+    </ul>
+    <p><br>
+    </p>
+    <img alt="" src="Pictures/Debian_Locale_Configuration-02.png"><br>
+    <br>
+    <br>
+    Now you need to log out and back in for the locale changes to take effect.<br>
+    <br>
+    <br>
+    <br>
+    <h2>Fixing history graphics file fonts</h2>
+    If you did not install a graphical desktop during Debian install, then the
+    font used to create text on FreeLCS history graphics files is missing. When
+    the font is missing gnuplot uses an ugly default font which includes only
+    english characters and not any special characters used in other European
+    languages.<br>
+    <br>
+    Install liberation fonts:&nbsp; <strong>sudo apt-get install
+      fonts-liberation</strong><br>
+    <br>
+    Next create a link to the font that is used when FreeLCS creates history
+    graphics files:<br>
+    <br>
+    <strong>sudo&nbsp; ln&nbsp;&nbsp;
+      /usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf&nbsp;&nbsp;
+      /usr/share/fonts/truetype/arial.ttf<br>
+      <br>
+      <br>
+      <br>
+    </strong>
+  </body>
+</html>

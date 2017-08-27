@@ -19,6 +19,6 @@ Usage
 
 Result: The FreeLCS installation has been cloned to several machines.
 
-Note: Internet connection is required during restoration, since all needed programs are downloaded and installed from the net
+Note: FreeLCS restoration requires either a connection to the internet or access to a local Debian / Ubuntu package repository.
 
 

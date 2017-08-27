@@ -166,8 +166,8 @@
     <h2> <a id="Installation">Installation</a></h2>
     <ul>
     </ul>
-    Note that FreeLCS installation always requires connection to the internet,
-    since the installer fetches needed packages from the net.<br>
+    FreeLCS installation requires either a connection to the internet or access
+    to a local Debian / Ubuntu package repository.<br>
     <br>
     The installation instructions below apply to <strong>Ubuntu Desktop</strong>.
     This is the most user friendly of the supported operating systems.
@@ -365,12 +365,27 @@
     </p>
     <p></p>
     <ul>
-      <li>Click "<strong>Next</strong>" when you have read the next window.<br>
+      <li>Click "<strong>Next</strong>" when you have ticked "I accept the
+        license agreement".<br>
       </li>
     </ul>
     <p><br>
     </p>
     <img src="Pictures/Installation-03.jpg">
+    <p><br>
+    </p>
+    <ul>
+      <li>The next window asks for your password. On Ubuntu type in the password
+        for the first user that you created during Ubuntu installation. </li>
+      <li>(<strong>Debian</strong>: type in the password for the non privileged
+        user you created during installation (the second user you created)).</li>
+      <li>The installer uses this password to get root - proviledes. Root
+        permissions are needed when FreeLCS program files are installed into the
+        Linux system.</li>
+    </ul>
+    <p><br>
+    </p>
+    <img alt="" src="Pictures/Installation-09.jpg">
     <p><br>
     </p>
     <ul>
@@ -570,24 +585,7 @@
     <p><br>
     </p>
     <img src="Pictures/Installation-08.jpg">
-    <p><br>
-    </p>
-    <ul>
-      <li>The next window asks for your password. On Ubuntu type in the password
-        for the first user that you created during Ubuntu installation. </li>
-      <li>(<strong>Debian</strong>: type in the password for the non privileged
-        user you created during installation (the second user you created)).</li>
-      <li>The installer uses this password to get root - proviledes. Root
-        permissions are needed when FreeLCS program files are installed into the
-        Linux system.<br>
-      </li>
-    </ul>
-    <p><br>
-    </p>
-    <p><img src="Pictures/Installation-09.jpg"><br>
-    </p>
-    <p><br>
-    </p>
+    <p></p>
     <ul>
       <li>The next window lists all external programs that FreeLCS needs. Just
         click the "<strong>Install</strong>" - button and the installer will
@@ -706,34 +704,28 @@
     is a new one that got introduced in Debian 8. Ubuntu will also move to using
     systemd as their startup system. <br>
     <br>
-    <h2>Files created on an init based os (Ubuntu 12.04, 14.04, Debian 7):</h2>
-    <strong>/usr/bin/LoudnessCorrection.py</strong><br>
-    <strong>/usr/bin/HeartBeat_Checker.py</strong><br>
-    <strong>/etc/LoudnessCorrection_Settings.pickle</strong><br>
-    <strong>/etc/samba/smb.conf</strong><br>
-    <strong>/etc/init.d/loudnesscorrection_init_script</strong><br>
-    <strong>/etc/rc2.d/S99loudnesscorrection_init_script&nbsp;&nbsp; </strong>(Only
-    on Ubuntu 12.04 and 14.04)<strong><br>
-      <strong>/etc/rc2.d/</strong>S21loudnesscorrection_init_script&nbsp;&nbsp;
-    </strong>(Only on Debian 7. The number at the start of the file name
-    (S21loudnesscorrection_init_script) varies).<br>
-    <br>
-    If you want to remove FreeLCS then stop FreeLCS and delete the startup files
-    with these terminal commands:<br>
-    <br>
-    <strong>sudo /etc/init.d/loudnesscorrection_init_script stop</strong><br>
-    <strong>sudo rm path_to_file</strong>&nbsp;&nbsp; <br>
-    <br>
     <h2>Files created on a systemd based os (Debian 8, Ubuntu 16.04 and newer):</h2>
-    <strong>/usr/bin/LoudnessCorrection.py</strong><br>
-    <strong>/usr/bin/HeartBeat_Checker.py</strong><br>
-    <strong>/etc/LoudnessCorrection_Settings.pickle</strong><br>
-    <strong>/etc/samba/smb.conf</strong><br>
-    <strong>/etc/systemd/system/loudnesscorrection_init_script</strong><br>
-    <strong>/etc/systemd/system/freelcs.service</strong><br>
+    <strong>/usr/bin/LoudnessCorrection.py<br>
+      /usr/bin/HeartBeat_Checker.py<br>
+      <br>
+      /etc/LoudnessCorrection_Settings.pickle<br>
+      /etc/samba/smb.conf<br>
+      /etc/systemd/system/loudnesscorrection_init_script<br>
+      /etc/systemd/system/freelcs.service<br>
+      <br>
+      /usr/bin/loudness-freelcs<br>
+      <br>
+    </strong>Some file installation paths depend on the distribution, you can
+    find these files with the command:<br>
     <br>
-    If you want to remove FreeLCS then stop FreeLCS and delete the startup files
-    with these terminal commands:<br>
+    <strong>find /usr/lib/ -name "*freelcs*"<br>
+    </strong> <br>
+    The text "<strong>brd</strong>" is added to <strong>/etc/modules</strong>
+    if it is not already there and the brd module is not built into the kernel.
+    Brd is a ram disk driver.<br>
+    <br>
+    If you want to remove FreeLCS then stop FreeLCS and delete the files
+    listed above with these terminal commands:<br>
     <br>
     <strong>systemctl stop freelcs.service<br>
       systemctl disable freelsc.service<br>
@@ -1757,8 +1749,8 @@
         same user on all machines where you restore a FreeLCS backup. If the
         user account defined during FreeLCS installation does not exist then
         FreeLCS programs fail to run.</li>
-      <li>Internet connection is required during restoration, since all needed
-        programs are downloaded and installed from the net</li>
+      <li>FreeLCS installation requires either a connection to the internet or
+        access to a local Debian / Ubuntu package repository.</li>
     </ul>
     <br>
     <br>
