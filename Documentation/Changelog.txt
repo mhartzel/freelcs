@@ -1,5 +1,102 @@
 
 #####################################
+# Released FreeLCS 3.4 with:        #
+# ----------------------------      #
+# - LoudnessCorrection version 289  #
+# - HeartBeat_Checker version 022   #
+# - Installer version 119           #
+# - Latest Documentation            #
+#####################################
+
+
+Documentation
+--------------
+Updated documentation for FreeLCS 3.4 release.
+
+Installer 119
+--------------
+Found a bug that caused writing a Samba version 3.x smb.conf file on Ubuntu 14.04 and 16.04 when it should have written a samba version 4.1 file. Fixed.
+
+00-backup_freelcs_configuration.sh
+-----------------------------------
+Removed extra 'fi' left after last edit.
+
+00-backup_freelcs_configuration.sh
+-----------------------------------
+Fix typo.
+
+00-backup_freelcs_configuration.sh
+----------------------------------
+Install the same apt packages now for all supported Linux versions. Removed checking for Debian 9.
+
+Installer 118
+-------------
+Samba configuration file was not correctly written. Fixed.
+
+00-backup_freelcs_configuration.sh
+-----------------------------------
+The backup / Restore script now handles loading of the ram disk driver (kernel module brd)
+
+Installer 117
+-------------
+Fix a bunch of bugs introduced to new code in the previous commit :)
+
+Installer 115
+-------------
+Add ram disk module brd to /etc/modules if it is not already there or compiled into the kernel.
+
+Installer 114
+--------------
+The root password is needed in the beginning of the installation process, since we are going to need to 'modprobe brd' on Ubuntu 16.04 and newer and Debian. Ask root password at the start of the installation process.
+
+00-backup_freelcs_configuration.sh
+----------------------------------
+Fixed backup_freelcs_configuration.sh to use local libebur128 source archive if it is available.
+
+Installer 112
+--------------
+- Changed patchfile name and libebur128 source commit number to the latest that forces sane channel masp to 4 and 5 channel audio files
+
+Installer
+----------
+Libebur128 1.2.2 still gets 4 channel audio file channel maps sometimes wrong. Added code in the patch that forces 4.0 (L,R,LS,RS) and 5.0 (L,R,C,LS,RS) mapping for 4 and 5 channel files.
+
+Regression Tester
+-----------------
+'loudness' executable name has changed to 'loudness-freelcs'.
+
+Installer version 111
+----------------------
+Added libebur128 version 1.2.2 source archive to FreeLCS installer package.
+- Install libebur128 version 1.2.2 from source package included in FreeLCS distribution. If included source is not found download source from github.
+- Change libebur128 file names so that they won't conflict with names from debian libebur128 package. User can install and remove the debian package now without affecting FreeLCS. Libebur128 debian package still does not have the 'loudness' executable that is needed for loudness calculations. The 'loudness' executable is installed by FreeLCS installer as 'loudness-freelcs'.
+- Added option 'server min protocol = SMB2' as a commented option in smb.conf. In case you want to disable smb protocol version 1 (cifs) just remove the # character in front of the option.
+
+LoudnessCorrection 289
+-----------------------
+- program 'loudness' is now called 'loudness-freelcs'.
+
+00-backup_freelcs_configuration.sh
+-----------------------------------
+Debian 9 support added to configuration backup script.
+
+Installer
+----------
+Added support for Debian 9. Needs more testing.
+
+Documentation:
+--------------
+- Link to Audacity web page was out of date. Added info about how freelcs can be restarted on a systemd based distro.
+
+Documentation
+--------------
+- Fixed links that got broken when I moved some "news" items from index.html to FreeLCS-Old_News.htm
+
+Documentation
+--------------
+Forgot to update some documentation files, fixed :)
+
+#####################################
 # Released FreeLCS 3.3 with:        #
 # ----------------------------      #
 # - LoudnessCorrection version 287  #
