@@ -27,8 +27,8 @@ import email.mime.multipart
 import tempfile
 import copy
 
-version = '119'
-freelcs_version = '3.4'
+version = '120'
+freelcs_version = '3.5'
 
 ###################################
 # Function definitions start here #
@@ -951,7 +951,7 @@ def get_list_of_ram_devices_from_os():
 	#################################################################
 	# Check if brd module is now loaded into ram as a kernel module #
 	#################################################################
-	commands_to_run = ['sudo', '-k', '-p', '', '-S', 'lsmod'] # Create the commandline we need to run as root.
+	commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'lsmod'] # Create the commandline we need to run as root.
 
 	if debug == True:
 		print()
@@ -959,8 +959,8 @@ def get_list_of_ram_devices_from_os():
 
 	# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 	sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
-	sudo_stdout_string = str(sudo_stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
+	sudo_stdout_string = str(sudo_stdout.decode('UTF-8')).strip() # Convert sudo possible error output from binary to UTF-8 text.
 	sudo_stdout_list = list(sudo_stdout_string.split('\n'))
 
 	for line in sudo_stdout_list:
@@ -978,7 +978,7 @@ def get_list_of_ram_devices_from_os():
 	##################################################
 
 	# First get the name and version number of the kernel
-	commands_to_run = ['sudo', '-k', '-p', '', '-S', 'uname', '-r'] # Create the commandline we need to run as root.
+	commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'uname', '-r'] # Create the commandline we need to run as root.
 
 	if debug == True:
 		print()
@@ -986,8 +986,8 @@ def get_list_of_ram_devices_from_os():
 
 	# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 	sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-	sudo_stdout_string = str(sudo_stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
-	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+	sudo_stdout_string = str(sudo_stdout.decode('UTF-8')).strip() # Convert sudo possible error output from binary to UTF-8 text.
+	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip() # Convert sudo possible error output from binary to UTF-8 text.
 
 	kernel_name_and_version_number = sudo_stdout_string.strip()
 
@@ -995,7 +995,7 @@ def get_list_of_ram_devices_from_os():
 	path_to_builtin_modules_list = '/lib/modules/' + kernel_name_and_version_number + '/modules.builtin'
 
 	# Read the built in modules list as root
-	commands_to_run = ['sudo', '-k', '-p', '', '-S', 'cat', path_to_builtin_modules_list] # Create the commandline we need to run as root.
+	commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'cat', path_to_builtin_modules_list] # Create the commandline we need to run as root.
 
 	if debug == True:
 		print()
@@ -1003,8 +1003,8 @@ def get_list_of_ram_devices_from_os():
 
 	# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 	sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-	sudo_stdout_string = str(sudo_stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
-	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+	sudo_stdout_string = str(sudo_stdout.decode('UTF-8')).strip() # Convert sudo possible error output from binary to UTF-8 text.
+	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 	sudo_stdout_list = list(sudo_stdout_string.split('\n'))
 
 	for line in sudo_stdout_list:
@@ -1024,7 +1024,7 @@ def get_list_of_ram_devices_from_os():
 	# Check if module brd is in /etc/modules and loads when the os starts up #
 	##########################################################################
 
-	commands_to_run = ['sudo', '-k', '-p', '', '-S', 'cat', '/etc/modules'] # Create the commandline we need to run as root.
+	commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'cat', '/etc/modules'] # Create the commandline we need to run as root.
 
 	if debug == True:
 		print()
@@ -1032,8 +1032,8 @@ def get_list_of_ram_devices_from_os():
 
 	# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 	sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-	sudo_stdout_string = str(sudo_stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
-	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+	sudo_stdout_string = str(sudo_stdout.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
+	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 	sudo_stdout_list = list(sudo_stdout_string.split('\n'))
 
 	for line in sudo_stdout_list:
@@ -1066,7 +1066,7 @@ def get_list_of_ram_devices_from_os():
 		# -p = Use a custom string to prompt the user for the password (we use an empty string here).
 		# -S = Read password from stdin.
 		
-		commands_to_run = ['sudo', '-k', '-p', '', '-S', 'modprobe', 'brd', 'rd_nr=5'] # Create the commandline we need to run as root.
+		commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'modprobe', 'brd', 'rd_nr=5'] # Create the commandline we need to run as root.
 
 		if debug == True:
 			print()
@@ -1074,7 +1074,7 @@ def get_list_of_ram_devices_from_os():
 
 		# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 		sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 
 		if sudo_stderr_string != '':
 			error_happened = True
@@ -1612,11 +1612,11 @@ def install_init_scripts_and_config_files(*args):
 	# Copy LoudnessCorrection.py to /usr/bin/ #
 	###########################################
 	
-	commands_to_run = ['sudo', '-k', '-p', '', '-S', 'cp', '-f', path_to_loudnesscorrection, '/usr/bin/' + os.path.basename(path_to_loudnesscorrection)] # Create the commandline we need to run as root.
+	commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'cp', '-f', path_to_loudnesscorrection, '/usr/bin/' + os.path.basename(path_to_loudnesscorrection)] # Create the commandline we need to run as root.
 
 	# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 	sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 	
 	# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 	if len(sudo_stderr_string) != 0:
@@ -1630,11 +1630,11 @@ def install_init_scripts_and_config_files(*args):
 	# Change LoudnessCorrection.py permissions #
 	############################################
 	
-	commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chmod', '755', '/usr/bin/' + os.path.basename(path_to_loudnesscorrection)] # Create the commandline we need to run as root.
+	commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'chmod', '755', '/usr/bin/' + os.path.basename(path_to_loudnesscorrection)] # Create the commandline we need to run as root.
 
 	# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 	sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 	
 	# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 	if len(sudo_stderr_string) != 0:
@@ -1648,11 +1648,11 @@ def install_init_scripts_and_config_files(*args):
 	# Change LoudnessCorrection.py owner #
 	######################################
 	
-	commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chown', 'root:root', '/usr/bin/' + os.path.basename(path_to_loudnesscorrection)] # Create the commandline we need to run as root.
+	commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'chown', 'root:root', '/usr/bin/' + os.path.basename(path_to_loudnesscorrection)] # Create the commandline we need to run as root.
 
 	# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 	sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 	
 	# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 	if len(sudo_stderr_string) != 0:
@@ -1666,11 +1666,11 @@ def install_init_scripts_and_config_files(*args):
 	# Copy HeartBeat_Checker.py to /usr/bin/ #
 	##########################################
 	
-	commands_to_run = ['sudo', '-k', '-p', '', '-S', 'cp', path_to_heartbeat_checker, '/usr/bin/' + os.path.basename(path_to_heartbeat_checker)] # Create the commandline we need to run as root.
+	commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'cp', path_to_heartbeat_checker, '/usr/bin/' + os.path.basename(path_to_heartbeat_checker)] # Create the commandline we need to run as root.
 
 	# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 	sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 	
 	# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 	if len(sudo_stderr_string) != 0:
@@ -1684,11 +1684,11 @@ def install_init_scripts_and_config_files(*args):
 	# Change HeartBeat_Checker.py permissions #
 	###########################################
 	
-	commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chmod', '755', '/usr/bin/' + os.path.basename(path_to_heartbeat_checker)] # Create the commandline we need to run as root.
+	commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'chmod', '755', '/usr/bin/' + os.path.basename(path_to_heartbeat_checker)] # Create the commandline we need to run as root.
 
 	# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 	sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 	
 	# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 	if len(sudo_stderr_string) != 0:
@@ -1702,11 +1702,11 @@ def install_init_scripts_and_config_files(*args):
 	# Change HeartBeat_Checker.py owner #
 	#####################################
 	
-	commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chown', 'root:root', '/usr/bin/' + os.path.basename(path_to_heartbeat_checker)] # Create the commandline we need to run as root.
+	commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'chown', 'root:root', '/usr/bin/' + os.path.basename(path_to_heartbeat_checker)] # Create the commandline we need to run as root.
 
 	# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 	sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 	
 	# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 	if len(sudo_stderr_string) != 0:
@@ -1740,11 +1740,11 @@ def install_init_scripts_and_config_files(*args):
 	# Move configfile from '/tmp/Loudness_Correction_Settings.pickle' to '/etc/Loudness_Correction_Settings.pickle' as root #
 	#########################################################################################################################
 
-	commands_to_run = ['sudo', '-k', '-p', '', '-S', 'mv', '-f', path_for_configfile_in_temp_directory, configfile_path] # Create the commandline we need to run as root.
+	commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'mv', '-f', path_for_configfile_in_temp_directory, configfile_path] # Create the commandline we need to run as root.
 
 	# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 	sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 	
 	# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 	if len(sudo_stderr_string) != 0:
@@ -1758,11 +1758,11 @@ def install_init_scripts_and_config_files(*args):
 	# Change configfile permissions #
 	#################################
 	
-	commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chmod', '644', configfile_path] # Create the commandline we need to run as root.
+	commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'chmod', '644', configfile_path] # Create the commandline we need to run as root.
 
 	# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 	sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 	
 	# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 	if len(sudo_stderr_string) != 0:
@@ -1776,11 +1776,11 @@ def install_init_scripts_and_config_files(*args):
 	# Change configfile owner #
 	###########################
 	
-	commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chown', 'root:root', configfile_path] # Create the commandline we need to run as root.
+	commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'chown', 'root:root', configfile_path] # Create the commandline we need to run as root.
 
 	# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 	sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 	
 	# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 	if len(sudo_stderr_string) != 0:
@@ -1801,11 +1801,11 @@ def install_init_scripts_and_config_files(*args):
 		#################################################################
 		
 		if not os.path.exists('/etc/samba'):
-			commands_to_run = ['sudo', '-k', '-p', '', '-S', 'mkdir', '-p', '/etc/samba'] # Create the commandline we need to run as root.
+			commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'mkdir', '-p', '/etc/samba'] # Create the commandline we need to run as root.
 
 			# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 			sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-			sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+			sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 			
 			# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 			if len(sudo_stderr_string) != 0:
@@ -1819,11 +1819,11 @@ def install_init_scripts_and_config_files(*args):
 			# Change '/etc/samba' permissions #
 			###################################
 			
-			commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chmod', '755', '/etc/samba'] # Create the commandline we need to run as root.
+			commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'chmod', '755', '/etc/samba'] # Create the commandline we need to run as root.
 
 			# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 			sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-			sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+			sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 			
 			# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 			if len(sudo_stderr_string) != 0:
@@ -1837,11 +1837,11 @@ def install_init_scripts_and_config_files(*args):
 			# Change '/etc/samba' owner #
 			#############################
 			
-			commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chown', 'root:root', '/etc/samba'] # Create the commandline we need to run as root.
+			commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'chown', 'root:root', '/etc/samba'] # Create the commandline we need to run as root.
 
 			# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 			sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-			sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+			sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 			
 			# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 			if len(sudo_stderr_string) != 0:
@@ -1860,11 +1860,11 @@ def install_init_scripts_and_config_files(*args):
 			old_samba_configfile_timestamp_string = parse_time(old_samba_configfile_timestamp)
 			old_samba_configfile_timestamp_string = old_samba_configfile_timestamp_string.replace(' at ', '__')
 		
-			commands_to_run = ['sudo', '-k', '-p', '', '-S', 'mv', '-f', '/etc/samba/smb.conf', '/etc/samba/smb.conf' + '_' + old_samba_configfile_timestamp_string] # Create the commandline we need to run as root.
+			commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'mv', '-f', '/etc/samba/smb.conf', '/etc/samba/smb.conf' + '_' + old_samba_configfile_timestamp_string] # Create the commandline we need to run as root.
 
 			# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 			sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-			sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+			sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 			
 			# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 			if len(sudo_stderr_string) != 0:
@@ -1896,11 +1896,11 @@ def install_init_scripts_and_config_files(*args):
 		# Move Samba configfile from '/tmp/smb.conf' to '/etc/samba/smb.conf' as root #
 		###############################################################################
 		
-		commands_to_run = ['sudo', '-k', '-p', '', '-S', 'mv', '-f', directory_for_os_temporary_files + os.sep + 'smb.conf', '/etc/samba/smb.conf'] # Create the commandline we need to run as root.
+		commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'mv', '-f', directory_for_os_temporary_files + os.sep + 'smb.conf', '/etc/samba/smb.conf'] # Create the commandline we need to run as root.
 
 		# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 		sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 		
 		# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 		if len(sudo_stderr_string) != 0:
@@ -1914,11 +1914,11 @@ def install_init_scripts_and_config_files(*args):
 		# Change Samba configfile permissions #
 		#######################################
 		
-		commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chmod', '644', '/etc/samba/smb.conf'] # Create the commandline we need to run as root.
+		commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'chmod', '644', '/etc/samba/smb.conf'] # Create the commandline we need to run as root.
 
 		# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 		sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 		
 		# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 		if len(sudo_stderr_string) != 0:
@@ -1932,11 +1932,11 @@ def install_init_scripts_and_config_files(*args):
 		# Change Samba configfile owner #
 		#################################
 		
-		commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chown', 'root:root', '/etc/samba/smb.conf'] # Create the commandline we need to run as root.
+		commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'chown', 'root:root', '/etc/samba/smb.conf'] # Create the commandline we need to run as root.
 
 		# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 		sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 		
 		# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 		if len(sudo_stderr_string) != 0:
@@ -1983,11 +1983,11 @@ def install_init_scripts_and_config_files(*args):
 			old_modules_file_timestamp_string = parse_time(old_modules_file_timestamp)
 			old_modules_file_timestamp_string = old_modules_file_timestamp_string.replace(' at ', '__')
 		
-			commands_to_run = ['sudo', '-k', '-p', '', '-S', 'mv', '-f', modules_file_path + os.sep + modules_file_name, modules_file_path + os.sep + modules_file_name + '_' + old_modules_file_timestamp_string] # Create the commandline we need to run as root.
+			commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'mv', '-f', modules_file_path + os.sep + modules_file_name, modules_file_path + os.sep + modules_file_name + '_' + old_modules_file_timestamp_string] # Create the commandline we need to run as root.
 
 			# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 			sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-			sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+			sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 			
 			# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 			if len(sudo_stderr_string) != 0:
@@ -2036,11 +2036,11 @@ def install_init_scripts_and_config_files(*args):
 		# Move Modules configfile from '/tmp/modules' to '/etc/modules' as root #
 		#########################################################################
 		
-		commands_to_run = ['sudo', '-k', '-p', '', '-S', 'mv', '-f', directory_for_os_temporary_files + os.sep + modules_file_name, modules_file_path + os.sep + modules_file_name] # Create the commandline we need to run as root.
+		commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'mv', '-f', directory_for_os_temporary_files + os.sep + modules_file_name, modules_file_path + os.sep + modules_file_name] # Create the commandline we need to run as root.
 
 		# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 		sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 		
 		# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 		if len(sudo_stderr_string) != 0:
@@ -2054,11 +2054,11 @@ def install_init_scripts_and_config_files(*args):
 		# Change Modules configfile permissions #
 		#########################################
 		
-		commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chmod', '644', modules_file_path + os.sep + modules_file_name] # Create the commandline we need to run as root.
+		commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'chmod', '644', modules_file_path + os.sep + modules_file_name] # Create the commandline we need to run as root.
 
 		# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 		sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 		
 		# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 		if len(sudo_stderr_string) != 0:
@@ -2072,11 +2072,11 @@ def install_init_scripts_and_config_files(*args):
 		# Change Modules configfile owner #
 		###################################
 		
-		commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chown', 'root:root', modules_file_path + os.sep + modules_file_name] # Create the commandline we need to run as root.
+		commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'chown', 'root:root', modules_file_path + os.sep + modules_file_name] # Create the commandline we need to run as root.
 
 		# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 		sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 		
 		# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 		if len(sudo_stderr_string) != 0:
@@ -2113,11 +2113,11 @@ def install_init_scripts_and_config_files(*args):
 	# Move init script from '/tmp/loudnesscorrection_init_script' to '/etc/init.d/loudnesscorrection_init_script' as root #
 	#######################################################################################################################
 
-	commands_to_run = ['sudo', '-k', '-p', '', '-S', 'mv', '-f', directory_for_os_temporary_files + os.sep + loudnesscorrection_init_script_name, loudnesscorrection_init_script_path] # Create the commandline we need to run as root.
+	commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'mv', '-f', directory_for_os_temporary_files + os.sep + loudnesscorrection_init_script_name, loudnesscorrection_init_script_path] # Create the commandline we need to run as root.
 
 	# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 	sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 	
 	# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 	if len(sudo_stderr_string) != 0:
@@ -2131,11 +2131,11 @@ def install_init_scripts_and_config_files(*args):
 	# Change init script permissions #
 	##################################
 	
-	commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chmod', '755', loudnesscorrection_init_script_path] # Create the commandline we need to run as root.
+	commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'chmod', '755', loudnesscorrection_init_script_path] # Create the commandline we need to run as root.
 
 	# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 	sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 	
 	# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 	if len(sudo_stderr_string) != 0:
@@ -2149,11 +2149,11 @@ def install_init_scripts_and_config_files(*args):
 	# Change init script owner #
 	############################
 	
-	commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chown', 'root:root', loudnesscorrection_init_script_path] # Create the commandline we need to run as root.
+	commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'chown', 'root:root', loudnesscorrection_init_script_path] # Create the commandline we need to run as root.
 
 	# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 	sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 	
 	# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 	if len(sudo_stderr_string) != 0:
@@ -2177,13 +2177,13 @@ def install_init_scripts_and_config_files(*args):
 		# insserv links the init script to   /etc/rc2.d/  and it automatically adds a number to the link name (example:  S21loudnesscorrection_init_script)
 
 		if os_name == 'ubuntu':
-			commands_to_run = ['sudo', '-k', '-p', '', '-S', 'ln', '-s', '-f', loudnesscorrection_init_script_path, loudnesscorrection_init_script_link_path] # Create the commandline we need to run as root.
+			commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'ln', '-s', '-f', loudnesscorrection_init_script_path, loudnesscorrection_init_script_link_path] # Create the commandline we need to run as root.
 		if os_name == 'debian':
-			commands_to_run = ['sudo', '-k', '-p', '', '-S', 'insserv', '-d', loudnesscorrection_init_script_path] # Create the commandline we need to run as root.
+			commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'insserv', '-d', loudnesscorrection_init_script_path] # Create the commandline we need to run as root.
 
 		# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 		sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 		
 		# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 		if len(sudo_stderr_string) != 0:
@@ -2222,11 +2222,11 @@ def install_init_scripts_and_config_files(*args):
 		# Move service file from temporary directory to target directory #
 		##################################################################
 
-		commands_to_run = ['sudo', '-k', '-p', '', '-S', 'mv', '-f', directory_for_os_temporary_files + os.sep + systemd_service_file_name, systemd_service_file_path] # Create the commandline we need to run as root.
+		commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'mv', '-f', directory_for_os_temporary_files + os.sep + systemd_service_file_name, systemd_service_file_path] # Create the commandline we need to run as root.
 
 		# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 		sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 		
 		# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 		if len(sudo_stderr_string) != 0:
@@ -2240,11 +2240,11 @@ def install_init_scripts_and_config_files(*args):
 		# Change service file permissions #
 		###################################
 		
-		commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chmod', '644', systemd_service_file_path] # Create the commandline we need to run as root.
+		commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'chmod', '644', systemd_service_file_path] # Create the commandline we need to run as root.
 
 		# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 		sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 		
 		# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 		if len(sudo_stderr_string) != 0:
@@ -2258,11 +2258,11 @@ def install_init_scripts_and_config_files(*args):
 		# Change service file owner #
 		#############################
 		
-		commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chown', 'root:root', systemd_service_file_path] # Create the commandline we need to run as root.
+		commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'chown', 'root:root', systemd_service_file_path] # Create the commandline we need to run as root.
 
 		# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 		sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 		
 		# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 		if len(sudo_stderr_string) != 0:
@@ -2276,11 +2276,11 @@ def install_init_scripts_and_config_files(*args):
 		# Enable FreeLCS systemd service #
 		##################################
 		
-		commands_to_run = ['sudo', '-k', '-p', '', '-S', 'systemctl', '-q', 'enable', systemd_service_file_name] # Create the commandline we need to run as root.
+		commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'systemctl', '-q', 'enable', systemd_service_file_name] # Create the commandline we need to run as root.
 
 		# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 		sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 		
 		# Starting from Debian 9 systemd (232-25) writes nonerror messages to stderr (why ? stderr is meant only for real ERROR messages)
 		if  'Created symlink' in sudo_stderr_string:
@@ -2322,11 +2322,11 @@ def install_init_scripts_and_config_files(*args):
 	# Move installation logfile from '/tmp/' to '/var/log/' as root #
 	#################################################################
 	
-	commands_to_run = ['sudo', '-k', '-p', '', '-S', 'mv', '-f', directory_for_os_temporary_files + os.sep + installation_logfile_name, installation_logfile_path + os.sep + installation_logfile_name] # Create the commandline we need to run as root.
+	commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'mv', '-f', directory_for_os_temporary_files + os.sep + installation_logfile_name, installation_logfile_path + os.sep + installation_logfile_name] # Create the commandline we need to run as root.
 
 	# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 	sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 	
 	# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 	if len(sudo_stderr_string) != 0:
@@ -2340,11 +2340,11 @@ def install_init_scripts_and_config_files(*args):
 	# Change installation logfile permissions #
 	###########################################
 	
-	commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chmod', '644', installation_logfile_path + os.sep + installation_logfile_name] # Create the commandline we need to run as root.
+	commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'chmod', '644', installation_logfile_path + os.sep + installation_logfile_name] # Create the commandline we need to run as root.
 
 	# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 	sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 	
 	# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 	if len(sudo_stderr_string) != 0:
@@ -2358,11 +2358,11 @@ def install_init_scripts_and_config_files(*args):
 	# Change installation logfile owner #
 	#####################################
 	
-	commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chown', 'root:root', installation_logfile_path + os.sep + installation_logfile_name] # Create the commandline we need to run as root.
+	commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'chown', 'root:root', installation_logfile_path + os.sep + installation_logfile_name] # Create the commandline we need to run as root.
 
 	# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 	sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 	
 	# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 	if len(sudo_stderr_string) != 0:
@@ -2396,12 +2396,19 @@ def test_if_root_password_is_valid(*args):
 	# Copy LoudnessCorrection.py to /usr/bin/ #
 	###########################################
 	
-	commands_to_run = ['sudo', '-k', '-p', '', '-S', 'cp', '-f', path_to_loudnesscorrection, '/usr/bin/' + target_testfile_name] # Create the commandline we need to run as root.
+	commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'cp', '-f', path_to_loudnesscorrection, '/usr/bin/' + target_testfile_name] # Create the commandline we need to run as root.
 
 	# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 	sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 	
+	if debug == True:
+		print()
+		print('commands_to_run =', commands_to_run)
+		print('len(sudo_stderr_string) =', len(sudo_stderr_string))
+		print('sudo_stderr_string = "' + sudo_stderr_string + '"')
+		print()
+
 	# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 	if len(sudo_stderr_string) != 0:
 		root_password_was_accepted = False
@@ -2413,12 +2420,19 @@ def test_if_root_password_is_valid(*args):
 	
 	if root_password_was_accepted == True:
 	
-		commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chmod', '755', '/usr/bin/' + target_testfile_name] # Create the commandline we need to run as root.
+		commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'chmod', '755', '/usr/bin/' + target_testfile_name] # Create the commandline we need to run as root.
 
 		# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 		sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 		
+		if debug == True:
+			print()
+			print('commands_to_run =', commands_to_run)
+			print('len(sudo_stderr_string) =', len(sudo_stderr_string))
+			print('sudo_stderr_string = "' + sudo_stderr_string + '"')
+			print()
+
 		# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 		if len(sudo_stderr_string) != 0:
 			root_password_was_accepted = False
@@ -2430,12 +2444,19 @@ def test_if_root_password_is_valid(*args):
 	
 	if root_password_was_accepted == True:
 	
-		commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chown', 'root:root', '/usr/bin/' + target_testfile_name] # Create the commandline we need to run as root.
+		commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'chown', 'root:root', '/usr/bin/' + target_testfile_name] # Create the commandline we need to run as root.
 
 		# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 		sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 		
+		if debug == True:
+			print()
+			print('commands_to_run =', commands_to_run)
+			print('len(sudo_stderr_string) =', len(sudo_stderr_string))
+			print('sudo_stderr_string = "' + sudo_stderr_string + '"')
+			print()
+
 		# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 		if len(sudo_stderr_string) != 0:
 			root_password_was_accepted = False
@@ -2447,12 +2468,19 @@ def test_if_root_password_is_valid(*args):
 	
 	if root_password_was_accepted == True:
 	
-		commands_to_run = ['sudo', '-k', '-p', '', '-S', 'rm', '-f', '/usr/bin/' + target_testfile_name] # Create the commandline we need to run as root.
+		commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'rm', '-f', '/usr/bin/' + target_testfile_name] # Create the commandline we need to run as root.
 
 		# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 		sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 		
+		if debug == True:
+			print()
+			print('commands_to_run =', commands_to_run)
+			print('len(sudo_stderr_string) =', len(sudo_stderr_string))
+			print('sudo_stderr_string = "' + sudo_stderr_string + '"')
+			print()
+
 		# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 		if len(sudo_stderr_string) != 0:
 			root_password_was_accepted = False
@@ -2530,9 +2558,9 @@ def find_program_in_current_dir(program_name_to_find):
 	if true_or_false == True:
 			program_path = current_directory + os.sep + program_name_to_find
 	if debug == True:
-			print()
-			print('program_path =', program_path)
-			print()
+		print()
+		print('program_path =', program_path)
+		print()
 	return(program_path)
 
 def set_seventh_window_label_texts_and_colors():
@@ -2784,7 +2812,7 @@ def install_missing_programs(*args):
 		###################################################
 		
 		# Create the commandline we need to run as root.
-		commands_to_run = ['sudo', '-k', '-p', '', '-S']
+		commands_to_run = ['sudo', '-k', '-p', ' ', '-S']
 		commands_to_run.extend(apt_get_commands)
 		commands_to_run.extend(needed_packages_install_commands)
 
@@ -2823,8 +2851,8 @@ def install_missing_programs(*args):
 
 		# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 		sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-		sudo_stdout_string = str(sudo_stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
-		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+		sudo_stdout_string = str(sudo_stdout.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
+		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 		all_installation_messages = all_installation_messages + '-' * 80 + '\n' + sudo_stdout_string + sudo_stderr_string
 		
 		if debug == True:
@@ -2851,7 +2879,7 @@ def install_missing_programs(*args):
 			#################################################################
 			
 			# Create the commandline we need to run as root.
-			commands_to_run = ['sudo', '-k', '-p', '', '-S']
+			commands_to_run = ['sudo', '-k', '-p', ' ', '-S']
 			commands_to_run.extend(apt_get_commands)
 			commands_to_run.extend(libebur128_dependencies_install_commands)
 
@@ -2878,8 +2906,8 @@ def install_missing_programs(*args):
 
 			# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 			sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-			sudo_stdout_string = str(sudo_stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
-			sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+			sudo_stdout_string = str(sudo_stdout.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
+			sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 			all_installation_messages = all_installation_messages + '-' * 80 + '\n' + sudo_stdout_string + sudo_stderr_string
 			
 			if debug == True:
@@ -2913,7 +2941,7 @@ def install_missing_programs(*args):
 			if os.path.exists(directory_for_os_temporary_files + os.sep + libebur128_source_downloadfile):
 				
 				# Create the commandline we need to run as root.
-				commands_to_run = ['sudo', '-k', '-p', '', '-S', 'rm', '-f', directory_for_os_temporary_files + os.sep + libebur128_source_downloadfile]
+				commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'rm', '-f', directory_for_os_temporary_files + os.sep + libebur128_source_downloadfile]
 
 				if debug == True:
 					print()
@@ -2921,8 +2949,8 @@ def install_missing_programs(*args):
 
 				# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 				sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
-				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 				all_installation_messages = all_installation_messages + '-' * 80 + '\n' + sudo_stdout_string + sudo_stderr_string
 				
 				if debug == True:
@@ -2940,7 +2968,7 @@ def install_missing_programs(*args):
 				# Remove libebur128 source code directory tree.
 				
 				# Create the commandline we need to run as root.
-				commands_to_run = ['sudo', '-k', '-p', '', '-S', 'rm', '-rf', directory_for_os_temporary_files + os.sep + 'libebur128']
+				commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'rm', '-rf', directory_for_os_temporary_files + os.sep + 'libebur128']
 
 				if debug == True:
 					print()
@@ -2948,8 +2976,8 @@ def install_missing_programs(*args):
 
 				# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 				sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
-				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 				all_installation_messages = all_installation_messages + '-' * 80 + '\n' + sudo_stdout_string + sudo_stderr_string
 				
 				if debug == True:
@@ -2994,7 +3022,7 @@ def install_missing_programs(*args):
 				#############################################################
 				
 				# Create the commandline we need to run as root.
-				commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chmod', '755', directory_for_os_temporary_files + os.sep + libebur128_source_downloadfile]
+				commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'chmod', '755', directory_for_os_temporary_files + os.sep + libebur128_source_downloadfile]
 
 				if debug == True:
 					print()
@@ -3002,8 +3030,8 @@ def install_missing_programs(*args):
 
 				# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 				sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
-				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 				all_installation_messages = all_installation_messages + '-' * 80 + '\n' + sudo_stdout_string + sudo_stderr_string
 				
 				if debug == True:
@@ -3023,7 +3051,7 @@ def install_missing_programs(*args):
 				#######################################################
 				
 				# Create the commandline we need to run as root.
-				commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chown', 'root:root', directory_for_os_temporary_files + os.sep + libebur128_source_downloadfile]
+				commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'chown', 'root:root', directory_for_os_temporary_files + os.sep + libebur128_source_downloadfile]
 
 				if debug == True:
 					print()
@@ -3031,8 +3059,8 @@ def install_missing_programs(*args):
 
 				# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 				sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
-				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 				all_installation_messages = all_installation_messages + '-' * 80 + '\n' + sudo_stdout_string + sudo_stderr_string
 				
 				if debug == True:
@@ -3052,7 +3080,7 @@ def install_missing_programs(*args):
 				##############################################
 				
 				# Create the commandline we need to run as root.
-				commands_to_run = ['sudo', '-k', '-p', '', '-S', directory_for_os_temporary_files + os.sep + libebur128_source_downloadfile]
+				commands_to_run = ['sudo', '-k', '-p', ' ', '-S', directory_for_os_temporary_files + os.sep + libebur128_source_downloadfile]
 				
 				seventh_window_label_16['foreground'] = 'dark green'
 				seventh_window_label_17['foreground'] = 'dark green'
@@ -3077,8 +3105,8 @@ def install_missing_programs(*args):
 
 				# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 				sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
-				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 				all_installation_messages = all_installation_messages + '-' * 80 + '\n' + sudo_stdout_string + sudo_stderr_string
 				
 				if debug == True:
@@ -3109,7 +3137,7 @@ def install_missing_programs(*args):
 				if os.path.exists(directory_for_os_temporary_files + os.sep + cmake_commandfile):
 					
 					# Create the commandline we need to run as root.
-					commands_to_run = ['sudo', '-k', '-p', '', '-S', 'rm', '-f', directory_for_os_temporary_files + os.sep + cmake_commandfile]
+					commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'rm', '-f', directory_for_os_temporary_files + os.sep + cmake_commandfile]
 
 					if debug == True:
 						print()
@@ -3117,8 +3145,8 @@ def install_missing_programs(*args):
 
 					# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 					sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-					sudo_stdout_string = str(sudo_stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
-					sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+					sudo_stdout_string = str(sudo_stdout.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
+					sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 					all_installation_messages = all_installation_messages + '-' * 80 + '\n' + sudo_stdout_string + sudo_stderr_string
 					
 					if debug == True:
@@ -3163,7 +3191,7 @@ def install_missing_programs(*args):
 				##########################################################
 				
 				# Create the commandline we need to run as root.
-				commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chmod', '755', directory_for_os_temporary_files + os.sep + cmake_commandfile]
+				commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'chmod', '755', directory_for_os_temporary_files + os.sep + cmake_commandfile]
 
 				if debug == True:
 					print()
@@ -3171,8 +3199,8 @@ def install_missing_programs(*args):
 
 				# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 				sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
-				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 				all_installation_messages = all_installation_messages + '-' * 80 + '\n' + sudo_stdout_string + sudo_stderr_string
 				
 				if debug == True:
@@ -3192,7 +3220,7 @@ def install_missing_programs(*args):
 				####################################################
 				
 				# Create the commandline we need to run as root.
-				commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chown', 'root:root', directory_for_os_temporary_files + os.sep + cmake_commandfile]
+				commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'chown', 'root:root', directory_for_os_temporary_files + os.sep + cmake_commandfile]
 
 				if debug == True:
 					print()
@@ -3200,8 +3228,8 @@ def install_missing_programs(*args):
 
 				# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 				sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
-				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 				all_installation_messages = all_installation_messages + '-' * 80 + '\n' + sudo_stdout_string + sudo_stderr_string
 				
 				if debug == True:
@@ -3221,7 +3249,7 @@ def install_missing_programs(*args):
 				###########################################
 				
 				# Create the commandline we need to run as root.
-				commands_to_run = ['sudo', '-k', '-p', '', '-S', directory_for_os_temporary_files + os.sep + cmake_commandfile]
+				commands_to_run = ['sudo', '-k', '-p', ' ', '-S', directory_for_os_temporary_files + os.sep + cmake_commandfile]
 				
 				seventh_window_label_16['foreground'] = 'dark green'
 				seventh_window_label_17['foreground'] = 'dark green'
@@ -3246,8 +3274,8 @@ def install_missing_programs(*args):
 
 				# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 				sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
-				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 				all_installation_messages = all_installation_messages + '-' * 80 + '\n' + sudo_stdout_string + sudo_stderr_string
 				
 				if debug == True:
@@ -3278,7 +3306,7 @@ def install_missing_programs(*args):
 				if os.path.exists(directory_for_os_temporary_files + os.sep + make_and_build_commandfile):
 					
 					# Create the commandline we need to run as root.
-					commands_to_run = ['sudo', '-k', '-p', '', '-S', 'rm', '-f', directory_for_os_temporary_files + os.sep + make_and_build_commandfile]
+					commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'rm', '-f', directory_for_os_temporary_files + os.sep + make_and_build_commandfile]
 
 					if debug == True:
 						print()
@@ -3286,8 +3314,8 @@ def install_missing_programs(*args):
 
 					# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 					sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-					sudo_stdout_string = str(sudo_stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
-					sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+					sudo_stdout_string = str(sudo_stdout.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
+					sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 					all_installation_messages = all_installation_messages + '-' * 80 + '\n' + sudo_stdout_string + sudo_stderr_string
 					
 					if debug == True:
@@ -3332,7 +3360,7 @@ def install_missing_programs(*args):
 				########################################################
 				
 				# Create the commandline we need to run as root.
-				commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chmod', '755', directory_for_os_temporary_files + os.sep + make_and_build_commandfile]
+				commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'chmod', '755', directory_for_os_temporary_files + os.sep + make_and_build_commandfile]
 
 				if debug == True:
 					print()
@@ -3340,8 +3368,8 @@ def install_missing_programs(*args):
 
 				# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 				sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
-				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 				all_installation_messages = all_installation_messages + '-' * 80 + '\n' + sudo_stdout_string + sudo_stderr_string
 				
 				if debug == True:
@@ -3361,7 +3389,7 @@ def install_missing_programs(*args):
 				##################################################
 				
 				# Create the commandline we need to run as root.
-				commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chown', 'root:root', directory_for_os_temporary_files + os.sep + make_and_build_commandfile]
+				commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'chown', 'root:root', directory_for_os_temporary_files + os.sep + make_and_build_commandfile]
 
 				if debug == True:
 					print()
@@ -3369,8 +3397,8 @@ def install_missing_programs(*args):
 
 				# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 				sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
-				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 				all_installation_messages = all_installation_messages + '-' * 80 + '\n' + sudo_stdout_string + sudo_stderr_string
 				
 				if debug == True:
@@ -3390,7 +3418,7 @@ def install_missing_programs(*args):
 				#########################################
 				
 				# Create the commandline we need to run as root.
-				commands_to_run = ['sudo', '-k', '-p', '', '-S', directory_for_os_temporary_files + os.sep + make_and_build_commandfile]
+				commands_to_run = ['sudo', '-k', '-p', ' ', '-S', directory_for_os_temporary_files + os.sep + make_and_build_commandfile]
 				
 				seventh_window_label_16['foreground'] = 'dark green'
 				seventh_window_label_17['foreground'] = 'dark green'
@@ -3415,8 +3443,8 @@ def install_missing_programs(*args):
 
 				# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 				sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
-				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 				all_installation_messages = all_installation_messages + '-' * 80 + '\n' + sudo_stdout_string + sudo_stderr_string
 				
 				if debug == True:
@@ -3448,7 +3476,7 @@ def install_missing_programs(*args):
 			if os.path.exists(directory_for_os_temporary_files + os.sep + sox_source_downloadfile):
 				
 				# Create the commandline we need to run as root.
-				commands_to_run = ['sudo', '-k', '-p', '', '-S', 'rm', '-f', directory_for_os_temporary_files + os.sep + sox_source_downloadfile]
+				commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'rm', '-f', directory_for_os_temporary_files + os.sep + sox_source_downloadfile]
 
 				if debug == True:
 					print()
@@ -3456,8 +3484,8 @@ def install_missing_programs(*args):
 
 				# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 				sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
-				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 				all_installation_messages = all_installation_messages + '-' * 80 + '\n' + sudo_stdout_string + sudo_stderr_string
 				
 				if debug == True:
@@ -3475,7 +3503,7 @@ def install_missing_programs(*args):
 				# Remove sox source code directory tree.
 				
 				# Create the commandline we need to run as root.
-				commands_to_run = ['sudo', '-k', '-p', '', '-S', 'rm', '-rf', directory_for_os_temporary_files + os.sep + 'sox']
+				commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'rm', '-rf', directory_for_os_temporary_files + os.sep + 'sox']
 
 				if debug == True:
 					print()
@@ -3483,8 +3511,8 @@ def install_missing_programs(*args):
 
 				# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 				sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
-				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 				all_installation_messages = all_installation_messages + '-' * 80 + '\n' + sudo_stdout_string + sudo_stderr_string
 				
 				if debug == True:
@@ -3529,7 +3557,7 @@ def install_missing_programs(*args):
 				######################################################
 				
 				# Create the commandline we need to run as root.
-				commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chmod', '755', directory_for_os_temporary_files + os.sep + sox_source_downloadfile]
+				commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'chmod', '755', directory_for_os_temporary_files + os.sep + sox_source_downloadfile]
 
 				if debug == True:
 					print()
@@ -3537,8 +3565,8 @@ def install_missing_programs(*args):
 
 				# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 				sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
-				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 				all_installation_messages = all_installation_messages + '-' * 80 + '\n' + sudo_stdout_string + sudo_stderr_string
 				
 				if debug == True:
@@ -3558,7 +3586,7 @@ def install_missing_programs(*args):
 				#######################################################
 				
 				# Create the commandline we need to run as root.
-				commands_to_run = ['sudo', '-k', '-p', '', '-S', 'chown', 'root:root', directory_for_os_temporary_files + os.sep + sox_source_downloadfile]
+				commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'chown', 'root:root', directory_for_os_temporary_files + os.sep + sox_source_downloadfile]
 
 				if debug == True:
 					print()
@@ -3566,8 +3594,8 @@ def install_missing_programs(*args):
 
 				# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 				sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
-				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 				all_installation_messages = all_installation_messages + '-' * 80 + '\n' + sudo_stdout_string + sudo_stderr_string
 				
 				if debug == True:
@@ -3587,7 +3615,7 @@ def install_missing_programs(*args):
 				##############################################
 				
 				# Create the commandline we need to run as root.
-				commands_to_run = ['sudo', '-k', '-p', '', '-S', directory_for_os_temporary_files + os.sep + sox_source_downloadfile]
+				commands_to_run = ['sudo', '-k', '-p', ' ', '-S', directory_for_os_temporary_files + os.sep + sox_source_downloadfile]
 				
 				seventh_window_label_16['foreground'] = 'dark green'
 				seventh_window_label_17['foreground'] = 'dark green'
@@ -3612,8 +3640,8 @@ def install_missing_programs(*args):
 
 				# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 				sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
-				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stdout_string = str(sudo_stdout.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
+				sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 				all_installation_messages = all_installation_messages + '-' * 80 + '\n' + sudo_stdout_string + sudo_stderr_string
 				
 				if debug == True:
@@ -5420,7 +5448,7 @@ os_name = ''
 os_version = ''
 
 # Define supported operating systems and versions
-supported_platforms = {'debian': ['8','9'], 'ubuntu': ['14.04', '16.04']}
+supported_platforms = {'debian': ['8','9'], 'ubuntu': ['14.04', '16.04', '18.04']}
 
 # Parse commandline arguments.
 for item in sys.argv[1:]:
@@ -5714,8 +5742,8 @@ libebur128_simplified_build_and_install_commands_displayed_to_user = []
 sox_download_make_build_and_install_commands = []
 sox_simplified_build_and_install_commands_displayed_to_user = []
 libebur128_archive_name = 'libebur128_fork_for_freelcs_3.4.tar.xz'
-libebur128_patch_name = 'libebur128-patch-2017.08.14.diff'
-libebur128_required_commit = '5464c5a923b28fe8677479d54f0ca59602942027'
+libebur128_patch_name = 'libebur128-patch-2018.05.05-2.diff'
+libebur128_required_commit = '118f14a6fbba3ec08d423bd8f44bb79844c24176'
 path_to_libebur128_source_archive = find_program_in_current_dir(libebur128_archive_name)
 brd_module_loads_at_os_startup = False
 brd_module_built_into_kernel = False
