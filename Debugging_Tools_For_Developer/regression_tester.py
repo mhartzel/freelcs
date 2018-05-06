@@ -673,11 +673,11 @@ def test_if_root_password_is_valid(source_testfile_path, password):
 	
 	source_test_file_name = os.path.split(source_testfile_path)[1]
 	
-	commands_to_run = ['sudo', '-k', '-p', '', '-S', 'cp', '-f', source_testfile_path, os.sep + 'etc' + os.sep + source_test_file_name] # Create the commandline we need to run as root.
+	commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'cp', '-f', source_testfile_path, os.sep + 'etc' + os.sep + source_test_file_name] # Create the commandline we need to run as root.
 	
 	# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 	sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip() # Convert sudo possible error output from binary to UTF-8 text.
 	
 	# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 	if len(sudo_stderr_string) != 0:
@@ -693,11 +693,11 @@ def test_if_root_password_is_valid(source_testfile_path, password):
 	
 	if root_password_was_accepted == True:
 	
-		commands_to_run = ['sudo', '-k', '-p', '', '-S', 'rm', '-f', os.sep + 'etc' + os.sep + source_test_file_name] # Create the commandline we need to run as root.	     
+		commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'rm', '-f', os.sep + 'etc' + os.sep + source_test_file_name] # Create the commandline we need to run as root.	     
 		
 		# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 		sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)		     
-		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+		sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 		
 		# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 		if len(sudo_stderr_string) != 0:
@@ -727,11 +727,11 @@ def shutdown_computer(password):
 	# -p = Use a custom string to prompt the user for the password (we use an empty string here).
 	# -S = Read password from stdin.
 	
-	commands_to_run = ['sudo', '-k', '-p', '', '-S', '/sbin/poweroff'] # Create the commandline we need to run as root.
+	commands_to_run = ['sudo', '-k', '-p', ' ', '-S', '/sbin/poweroff'] # Create the commandline we need to run as root.
 	
 	# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
 	sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
-	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
+	sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
 	
 	# If sudo stderr ouput is nonempty, then an error happened, check for the cause for the error.
 	if len(sudo_stderr_string) != 0:
