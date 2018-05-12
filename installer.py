@@ -1473,8 +1473,6 @@ def install_init_scripts_and_config_files(*args):
 	'enable_mxf_wrapper' : true_false_string[enable_mxf_wrapper.get()], \
 	'enable_webm_wrapper' : true_false_string[enable_webm_wrapper.get()], \
 	'enable_nonfree_mpeg_wrappers' : true_false_string[enable_nonfree_mpeg_wrappers.get()], \
-	'enable_mp1_codec' : true_false_string[enable_mp1_codec.get()], \
-	'enable_mp2_codec' : true_false_string[enable_mp2_codec.get()], \
 	'os_name' : os_name, \
 	'os_version' : os_version, \
 	'os_init_system_name' : os_init_system_name \
@@ -1580,8 +1578,6 @@ def install_init_scripts_and_config_files(*args):
 	user_defined_configuration_options.append('enable_mxf_wrapper = ' + str(all_settings_dict['enable_mxf_wrapper']))
 	user_defined_configuration_options.append('enable_webm_wrapper = ' + str(all_settings_dict['enable_webm_wrapper']))
 	user_defined_configuration_options.append('enable_nonfree_mpeg_wrappers = ' + str(all_settings_dict['enable_nonfree_mpeg_wrappers']))
-	user_defined_configuration_options.append('enable_mp1_codec = ' + str(all_settings_dict['enable_mp1_codec']))
-	user_defined_configuration_options.append('enable_mp2_codec = ' + str(all_settings_dict['enable_mp2_codec']))
 	user_defined_configuration_options.append('----------------------------------------------------------------------------------------------------')
 	user_defined_configuration_options.append('')
 	user_defined_configuration_options.append('silent = ' + str(all_settings_dict['silent']))
@@ -4985,55 +4981,9 @@ def print_ffmpeg_usage_options(*args):
 	if enable_all_nonfree_ffmpeg_codec_formats.get() == True:
 		# User wants to enable all FFmpeg codec formats.
 		ffmpeg_allowed_codec_formats = ['all']
-		eleventh_window_mp1_enable.configure(state='disabled')
-		eleventh_window_mp2_enable.configure(state='disabled')
 	else:
 		# User wants to only enable a limited set of formats.
 		ffmpeg_allowed_codec_formats = copy.deepcopy(ffmpeg_free_codec_formats)
-		eleventh_window_mp1_enable.configure(state='normal')
-		eleventh_window_mp2_enable.configure(state='normal')
-
-		if enable_mp1_codec.get() == True:
-			# User wants to enable mpeg layer 1 decoding add mp1 to list of allowed formats.
-			if 'mp1' not in ffmpeg_allowed_codec_formats:
-				ffmpeg_allowed_codec_formats.append('mp1')
-			if 'mp1float' not in ffmpeg_allowed_codec_formats:
-				ffmpeg_allowed_codec_formats.append('mp1float')
-
-			# If user enables mpeg codecs, then also enable all mpeg wrappers.
-			if enable_all_nonfree_ffmpeg_wrapper_formats.get() == False:
-				enable_nonfree_mpeg_wrappers.set(True)
-
-				for format_name in mpeg_nonfree_wrapper_formats:
-					if format_name not in ffmpeg_allowed_wrapper_formats:
-						ffmpeg_allowed_wrapper_formats.append(format_name)
-		else:
-			# User wants to disable mpeg layer 1 decoding remove mp1 from list of allowed formats.
-			if 'mp1' in ffmpeg_allowed_codec_formats:
-				ffmpeg_allowed_codec_formats.remove('mp1')
-			if 'mp1float' in ffmpeg_allowed_codec_formats:
-				ffmpeg_allowed_codec_formats.remove('mp1float')
-
-		if enable_mp2_codec.get() == True:
-			# User wants to enable mpeg layer 2 decoding add mp2 to list of allowed formats.
-			if 'mp2' not in ffmpeg_allowed_codec_formats:
-				ffmpeg_allowed_codec_formats.append('mp2')
-			if 'mp2float' not in ffmpeg_allowed_codec_formats:
-				ffmpeg_allowed_codec_formats.append('mp2float')
-
-			# If user enables mpeg codecs, then also enable all mpeg wrappers.
-			if enable_all_nonfree_ffmpeg_wrapper_formats.get() == False:
-				enable_nonfree_mpeg_wrappers.set(True)
-
-				for format_name in mpeg_nonfree_wrapper_formats:
-					if format_name not in ffmpeg_allowed_wrapper_formats:
-						ffmpeg_allowed_wrapper_formats.append(format_name)
-		else:
-			# User wants to disable mpeg layer 2 decoding remove mp2 from list of allowed formats.
-			if 'mp2' in ffmpeg_allowed_codec_formats:
-				ffmpeg_allowed_codec_formats.remove('mp2')
-			if 'mp2float' in ffmpeg_allowed_codec_formats:
-				ffmpeg_allowed_codec_formats.remove('mp2float')
 
 	if enable_mxf_audio_remixing.get() == True:
 
@@ -5251,8 +5201,6 @@ def print_ffmpeg_usage_options(*args):
 		print('enable_mxf_wrapper =', true_false_string[enable_mxf_wrapper.get()])
 		print('enable_webm_wrapper =', true_false_string[enable_webm_wrapper.get()])
 		print('enable_nonfree_mpeg_wrappers =', true_false_string[enable_nonfree_mpeg_wrappers.get()])
-		print('enable_mp1_codec =', true_false_string[enable_mp1_codec.get()])
-		print('enable_mp2_codec =', true_false_string[enable_mp2_codec.get()])
 		print()
 		print('ffmpeg_allowed_wrapper_formats =', ffmpeg_allowed_wrapper_formats)
 		print('ffmpeg_allowed_codec_formats =', ffmpeg_allowed_codec_formats)
@@ -5391,8 +5339,6 @@ def assign_user_selected_values_to_remix_map_and_show_next_window(*args):
 		print()
 		print('enable_mxf_wrapper =', true_false_string[enable_mxf_wrapper.get()])
 		print('enable_webm_wrapper =', true_false_string[enable_webm_wrapper.get()])
-		print('enable_mp1_codec =', true_false_string[enable_mp1_codec.get()])
-		print('enable_mp2_codec =', true_false_string[enable_mp2_codec.get()])
 		print()
 		print('ffmpeg_allowed_wrapper_formats =', ffmpeg_allowed_wrapper_formats)
 		print('ffmpeg_allowed_codec_formats =', ffmpeg_allowed_codec_formats)
@@ -5814,7 +5760,9 @@ ffmpeg_free_codec_formats.append('vorbis')
 ffmpeg_free_codec_formats.append('opus')
 ffmpeg_free_codec_formats.append('ac3')
 ffmpeg_free_codec_formats.append('mp1')
+ffmpeg_free_codec_formats.append('mp1float')
 ffmpeg_free_codec_formats.append('mp2')
+ffmpeg_free_codec_formats.append('mp2float')
 ffmpeg_free_codec_formats.append('mp3')
 
 enable_all_nonfree_ffmpeg_codec_formats = tkinter.BooleanVar()
@@ -5828,10 +5776,6 @@ enable_webm_wrapper=tkinter.IntVar()
 enable_webm_wrapper.set(0)
 enable_nonfree_mpeg_wrappers=tkinter.IntVar()
 enable_nonfree_mpeg_wrappers.set(0)
-enable_mp1_codec=tkinter.IntVar()
-enable_mp1_codec.set(0)
-enable_mp2_codec=tkinter.IntVar()
-enable_mp2_codec.set(0)
 
 
 # Define variables for window comboboxes that show MXF Audio Remix Map values.
@@ -6147,14 +6091,6 @@ if int(config_file_created_by_installer_version) >= 39:
 			enable_nonfree_mpeg_wrappers.set(previously_saved_settings_dict['enable_nonfree_mpeg_wrappers'])
 			if debug == True:
 				print('enable_nonfree_mpeg_wrappers =', previously_saved_settings_dict['enable_nonfree_mpeg_wrappers'])
-	if 'enable_mp1_codec' in previously_saved_settings_dict:
-			enable_mp1_codec.set(previously_saved_settings_dict['enable_mp1_codec'])
-			if debug == True:
-				print('enable_mp1_codec =', previously_saved_settings_dict['enable_mp1_codec'])
-	if 'enable_mp2_codec' in previously_saved_settings_dict:
-			enable_mp2_codec.set(previously_saved_settings_dict['enable_mp2_codec'])
-			if debug == True:
-				print('enable_mp2_codec =', previously_saved_settings_dict['enable_mp2_codec'])
 	if debug == True:
 		print('-' * 75)
 
@@ -7523,17 +7459,9 @@ row_counter = row_counter + 1
 eleventh_window_label_6 = tkinter.ttk.Label(eleventh_frame_child_frame_1, text=media_converter_name + ' allowed codec formats')
 eleventh_window_label_6.grid(column=0, row=row_counter, columnspan=4, padx=10, sticky=(tkinter.W))
 ffmpeg_codec_formats_true_radiobutton = tkinter.ttk.Radiobutton(eleventh_frame_child_frame_1, text='All', variable=enable_all_nonfree_ffmpeg_codec_formats, value=True, command=print_ffmpeg_usage_options)
-ffmpeg_codec_formats_false_radiobutton = tkinter.ttk.Radiobutton(eleventh_frame_child_frame_1, text='Only PCM, Flac, Vorbis and codecs:', variable=enable_all_nonfree_ffmpeg_codec_formats, value=False, command=print_ffmpeg_usage_options)
+ffmpeg_codec_formats_false_radiobutton = tkinter.ttk.Radiobutton(eleventh_frame_child_frame_1, text='Only free codecs: PCM, Flac, Vorbis, Opus, Ac3, Mpeg 1 Layers 1, 2 and 3 ', variable=enable_all_nonfree_ffmpeg_codec_formats, value=False, command=print_ffmpeg_usage_options)
 ffmpeg_codec_formats_true_radiobutton.grid(column=4, row=row_counter, padx=15, columnspan=2, sticky=(tkinter.W))
 ffmpeg_codec_formats_false_radiobutton.grid(column=5, row=row_counter, padx=15, columnspan=7, sticky=(tkinter.W))
-
-column_counter = 10
-eleventh_window_mp1_enable = tkinter.Checkbutton(eleventh_frame_child_frame_1, text="Mpeg Layer 1 Audio", variable=enable_mp1_codec, command=print_ffmpeg_usage_options)
-eleventh_window_mp1_enable.grid(row=row_counter, column=column_counter, pady=5, padx=10, columnspan=3, sticky=(tkinter.W))
-
-column_counter = column_counter + 3
-eleventh_window_mp2_enable = tkinter.Checkbutton(eleventh_frame_child_frame_1, text="Mpeg Layer 2 Audio", variable=enable_mp2_codec, command=print_ffmpeg_usage_options)
-eleventh_window_mp2_enable.grid(row=row_counter, column=column_counter, pady=5, padx=10, columnspan=3, sticky=(tkinter.W))
 
 # Define a horizontal line to space out groups of rows.
 row_counter = row_counter + 1
