@@ -329,7 +329,7 @@ global_mxf_audio_remix_channel_map = [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2] # Example
 
 mxf_formats = ['mxf','mxf_d10']
 mpeg_nonfree_wrapper_formats = ['mp4','m4v','m4a']
-ffmpeg_free_wrapper_formats = ['wav','flac','ogg','mkv','matroska','mka','mpeg','mp2','mp3','mpegts','mpegtsraw','mpegvideo','mpeg1video','mpeg2video','vcd','svcd','dvd','vob']
+ffmpeg_free_wrapper_formats = ['wav','flac','ogg','mkv','matroska','mka','mpeg','mp2','mp3','mpegts','mpegtsraw','mpegvideo','mpeg1video','mpeg2video','vcd','svcd','dvd','vob','ac3']
 
 enable_all_nonfree_ffmpeg_wrapper_formats = True
 
