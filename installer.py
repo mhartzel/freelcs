@@ -6617,10 +6617,10 @@ third_window_separator_2 = tkinter.ttk.Separator(third_frame_child_frame_1, orie
 third_window_separator_2.grid(column=0, row=24, padx=10, columnspan=3, sticky=(tkinter.W, tkinter.E))
 
 # Define labels that are used to display error or success messages.
-third_window_label_15 = tkinter.ttk.Label(third_frame_child_frame_1, textvariable=email_sending_message_1, wraplength=text_wrap_length_in_pixels)
+third_window_label_15 = tkinter.ttk.Label(third_frame_child_frame_1, textvariable=email_sending_message_1, wraplength=text_wrap_length_in_pixels + 150)
 third_window_label_15.grid(column=0, row=25, padx=10, pady=5, columnspan=3, sticky=(tkinter.W, tkinter.N))
 
-third_window_label_17 = tkinter.ttk.Label(third_frame_child_frame_1, textvariable=email_sending_message_2, wraplength=text_wrap_length_in_pixels)
+third_window_label_17 = tkinter.ttk.Label(third_frame_child_frame_1, textvariable=email_sending_message_2, wraplength=text_wrap_length_in_pixels + 150)
 third_window_label_17.grid(column=0, row=26, padx=10, pady=5, columnspan=3, sticky=(tkinter.W, tkinter.N))
 
 # Create the buttons for the frame
@@ -7439,21 +7439,21 @@ row_counter = row_counter + 1
 eleventh_window_label_5 = tkinter.ttk.Label(eleventh_frame_child_frame_1, text=media_converter_name + ' allowed wrapper formats')
 eleventh_window_label_5.grid(column=0, row=row_counter, columnspan=4, padx=10, sticky=(tkinter.W))
 ffmpeg_wrapper_formats_true_radiobutton = tkinter.ttk.Radiobutton(eleventh_frame_child_frame_1, text='All', variable=enable_all_nonfree_ffmpeg_wrapper_formats, value=True, command=print_ffmpeg_usage_options)
-ffmpeg_wrapper_formats_false_radiobutton = tkinter.ttk.Radiobutton(eleventh_frame_child_frame_1, text='Only Wav, Flac, Ogg, Matroska and wrappers:', variable=enable_all_nonfree_ffmpeg_wrapper_formats, value=False, command=print_ffmpeg_usage_options)
+ffmpeg_wrapper_formats_false_radiobutton = tkinter.ttk.Radiobutton(eleventh_frame_child_frame_1, text='Only Wav, Flac, Ogg, Matroska, Ac3, free Mpeg and:', variable=enable_all_nonfree_ffmpeg_wrapper_formats, value=False, command=print_ffmpeg_usage_options)
 ffmpeg_wrapper_formats_true_radiobutton.grid(column=4, row=row_counter, padx=15, columnspan=2, sticky=(tkinter.W))
-ffmpeg_wrapper_formats_false_radiobutton.grid(column=5, row=row_counter, padx=15, columnspan=8, sticky=(tkinter.W))
+ffmpeg_wrapper_formats_false_radiobutton.grid(column=5, row=row_counter, padx=15, columnspan=10, sticky=(tkinter.W))
 
-column_counter = 11
+column_counter = 12
 eleventh_window_mxf_enable = tkinter.Checkbutton(eleventh_frame_child_frame_1, text="Mxf", variable=enable_mxf_wrapper, command=print_ffmpeg_usage_options)
 eleventh_window_mxf_enable.grid(row=row_counter, column=column_counter, pady=5, padx=10, columnspan=2, sticky=(tkinter.W))
 
 column_counter = column_counter + 1
-eleventh_window_webm_enable = tkinter.Checkbutton(eleventh_frame_child_frame_1, text="Webm", variable=enable_webm_wrapper, command=print_ffmpeg_usage_options)
-eleventh_window_webm_enable.grid(row=row_counter, column=column_counter, pady=5, padx=10, columnspan=2, sticky=(tkinter.W))
+eleventh_window_mpeg_enable = tkinter.Checkbutton(eleventh_frame_child_frame_1, text="Mp4", variable=enable_nonfree_mpeg_wrappers, command=print_ffmpeg_usage_options)
+eleventh_window_mpeg_enable.grid(row=row_counter, column=column_counter, pady=5, padx=10, columnspan=2, sticky=(tkinter.W))
 
 column_counter = column_counter + 1
-eleventh_window_mpeg_enable = tkinter.Checkbutton(eleventh_frame_child_frame_1, text="nonfree mpeg (mp4)", variable=enable_nonfree_mpeg_wrappers, command=print_ffmpeg_usage_options)
-eleventh_window_mpeg_enable.grid(row=row_counter, column=column_counter, pady=5, padx=20, columnspan=2, sticky=(tkinter.W))
+eleventh_window_webm_enable = tkinter.Checkbutton(eleventh_frame_child_frame_1, text="Webm", variable=enable_webm_wrapper, command=print_ffmpeg_usage_options)
+eleventh_window_webm_enable.grid(row=row_counter, column=column_counter, pady=5, padx=10, columnspan=2, sticky=(tkinter.W))
 
 row_counter = row_counter + 1
 eleventh_window_label_6 = tkinter.ttk.Label(eleventh_frame_child_frame_1, text=media_converter_name + ' allowed codec formats')
@@ -7461,7 +7461,7 @@ eleventh_window_label_6.grid(column=0, row=row_counter, columnspan=4, padx=10, s
 ffmpeg_codec_formats_true_radiobutton = tkinter.ttk.Radiobutton(eleventh_frame_child_frame_1, text='All', variable=enable_all_nonfree_ffmpeg_codec_formats, value=True, command=print_ffmpeg_usage_options)
 ffmpeg_codec_formats_false_radiobutton = tkinter.ttk.Radiobutton(eleventh_frame_child_frame_1, text='Only free codecs: PCM, Flac, Vorbis, Opus, Ac3, Mpeg 1 Layers 1, 2 and 3 ', variable=enable_all_nonfree_ffmpeg_codec_formats, value=False, command=print_ffmpeg_usage_options)
 ffmpeg_codec_formats_true_radiobutton.grid(column=4, row=row_counter, padx=15, columnspan=2, sticky=(tkinter.W))
-ffmpeg_codec_formats_false_radiobutton.grid(column=5, row=row_counter, padx=15, columnspan=7, sticky=(tkinter.W))
+ffmpeg_codec_formats_false_radiobutton.grid(column=5, row=row_counter, padx=15, columnspan=9, sticky=(tkinter.W))
 
 # Define a horizontal line to space out groups of rows.
 row_counter = row_counter + 1
