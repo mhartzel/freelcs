@@ -27,7 +27,7 @@ import email.mime.multipart
 import tempfile
 import copy
 
-version = '121'
+version = '122'
 freelcs_version = '3.5'
 
 ###################################
@@ -3819,6 +3819,7 @@ def define_program_installation_commands():
 	global path_to_libebur128_source_archive
 	global os_name
 	global os_version
+	global os_version_float
 
 	libebur128_repository_directory_name = os.path.splitext(os.path.split(libebur128_repository_url)[1])[0]
 	
@@ -3859,9 +3860,18 @@ def define_program_installation_commands():
 		'cd ' + libebur128_repository_directory_name ]
 		
 		# Check if libebur128 is at version we need and add commands to get the version we want.
+		# Version 1.2.4 of libebur128 does not build cleanly on ubuntu 16.04, it probably misses some c++11 headers. The problem lies in TAGLIB so I just disable building it because we don't need it for anything.
+		cmake_commandline = 'cmake .. -DCMAKE_BUILD_TYPE=Release -Wno-dev   -DCMAKE_INSTALL_PREFIX:PATH=/usr'
+
+		if (os_name == 'ubuntu') and (os_version_float < 18.04):
+			cmake_commandline = 'cmake .. -DCMAKE_BUILD_TYPE=Release -Wno-dev   -DCMAKE_INSTALL_PREFIX:PATH=/usr -DDISABLE_TAGLIB=true'
+
+		if (os_name == 'debian') and (os_version_float < 9):
+			cmake_commandline = 'cmake .. -DCMAKE_BUILD_TYPE=Release -Wno-dev   -DCMAKE_INSTALL_PREFIX:PATH=/usr -DDISABLE_TAGLIB=true'
+
 		libebur128_simplified_build_and_install_commands_displayed_to_user = ['mkdir build', \
 		'cd build', \
-		'cmake .. -DCMAKE_BUILD_TYPE=Release -Wno-dev   -DCMAKE_INSTALL_PREFIX:PATH=/usr', \
+		cmake_commandline, \
 		'make -w', \
 		'make install'
 		'cp loudness-freelcs /usr/bin/', \
@@ -3886,7 +3896,7 @@ def define_program_installation_commands():
 
 		check_libebur128_version_and_add_git_commands_to_checkout_specific_commit()
 
-		libebur128_cmake_commands = ['cd ' + directory_for_os_temporary_files + os.sep + libebur128_repository_directory_name, 'mkdir build', 'cd build', 'cmake .. -DCMAKE_BUILD_TYPE=Release -Wno-dev   -DCMAKE_INSTALL_PREFIX:PATH=/usr']
+		libebur128_cmake_commands = ['cd ' + directory_for_os_temporary_files + os.sep + libebur128_repository_directory_name, 'mkdir build', 'cd build', cmake_commandline]
 		libebur128_make_build_and_install_commands = ['cd ' + directory_for_os_temporary_files + os.sep + libebur128_repository_directory_name + os.sep + 'build', \
 		'make -s -j 4', \
 		'make install', \
@@ -3922,6 +3932,8 @@ def check_libebur128_version_and_add_git_commands_to_checkout_specific_commit():
 	global force_reinstallation_of_all_programs
 	global libebur128_patch_name
 	global libebur128_required_commit
+	global os_name
+	global os_version_float
 	
 	# Get the path of the 'loudness' program.
 	local_variable_pointing_to_loudness_executable = find_program_in_os_path('loudness-freelcs')
@@ -3943,9 +3955,19 @@ def check_libebur128_version_and_add_git_commands_to_checkout_specific_commit():
 		libebur128_is_installed.set('Not Installed')
 		loudness_path = '' # Empty value in the path-variable forces reinstallation of the 'loudness' program.
 		all_needed_external_programs_are_installed = False
+
+		# Version 1.2.4 of libebur128 does not build cleanly on ubuntu 16.04, it probably misses some c++11 headers. The problem lies in TAGLIB so I just disable building it because we don't need it for anything.
+		cmake_commandline = 'cmake .. -DCMAKE_BUILD_TYPE=Release -Wno-dev   -DCMAKE_INSTALL_PREFIX:PATH=/usr'
+
+		if (os_name == 'ubuntu') and (os_version_float < 18.04):
+			cmake_commandline = 'cmake .. -DCMAKE_BUILD_TYPE=Release -Wno-dev   -DCMAKE_INSTALL_PREFIX:PATH=/usr -DDISABLE_TAGLIB=true'
+
+		if (os_name == 'debian') and (os_version_float < 9):
+			cmake_commandline = 'cmake .. -DCMAKE_BUILD_TYPE=Release -Wno-dev   -DCMAKE_INSTALL_PREFIX:PATH=/usr -DDISABLE_TAGLIB=true'
+
 		libebur128_simplified_build_and_install_commands_displayed_to_user = ['mkdir build', \
 		'cd build', \
-		'cmake .. -DCMAKE_BUILD_TYPE=Release -Wno-dev   -DCMAKE_INSTALL_PREFIX:PATH=/usr', \
+		cmake_commandline, \
 		'make -w', \
 		'make install'
 		'cp loudness-freelcs /usr/bin/', \
