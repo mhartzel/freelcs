@@ -760,7 +760,25 @@ echo
 cd /tmp/$LIBEBUR128_DIR_NAME
 mkdir build
 cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release -Wno-dev   -DCMAKE_INSTALL_PREFIX:PATH=/usr
+
+END_OF_FILE
+
+# Libebur128 does not build cleanly anymore on old distros when TAGLIB is enabled, disable it for those distros.
+CMAKE_COMMANLINE = "cmake .. -DCMAKE_BUILD_TYPE=Release -Wno-dev   -DCMAKE_INSTALL_PREFIX:PATH=/usr"
+
+if [ "$OS_NAME" == "ubuntu" ] && [ "$OS_VERSION_MAJOR_NUMBER" -lt "18" ] ; then
+	CMAKE_COMMANLINE = "cmake .. -DCMAKE_BUILD_TYPE=Release -Wno-dev   -DCMAKE_INSTALL_PREFIX:PATH=/usr -DDISABLE_TAGLIB=true"
+fi
+
+if [ "$OS_NAME" == "debian" ] && [ "$OS_VERSION_MAJOR_NUMBER" -lt "9" ] ; then
+	CMAKE_COMMANLINE = "cmake .. -DCMAKE_BUILD_TYPE=Release -Wno-dev   -DCMAKE_INSTALL_PREFIX:PATH=/usr -DDISABLE_TAGLIB=true"
+fi
+
+echo $CMAKE_COMMANLINE >> "00-restore_freelcs_configuration.sh"
+
+
+# Continue writing 00-restore_freelcs_configuration.sh
+cat >> "00-restore_freelcs_configuration.sh" << 'END_OF_FILE'
 
 echo
 echo "#######################################"
