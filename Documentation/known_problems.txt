@@ -1,3 +1,8 @@
+Ubuntu 18.04 Server
+-------------------
+When installing on Ubuntu 18.04 Server using XForwarding over SSH with the installer GUI open on another Desktop computer: It seems to be impossible to write the character @ into the installer window. The character is needed when writing email addresses. Please write the character in a Terminal on the Desktop computer and copy + paste it to the installer window.
+
+
 Ubuntu 14.04
 -------------
 Ubuntu 14.04 ships with avconv version 9.11 and I encountered the following problem with it while doing regression testing with my 150 test files:

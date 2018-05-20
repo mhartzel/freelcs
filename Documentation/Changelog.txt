@@ -1,5 +1,29 @@
 
 #####################################
+# Released FreeLCS 3.5 with:        #
+# ----------------------------      #
+# - LoudnessCorrection version 291  #
+# - HeartBeat_Checker version 022   #
+# - Installer version 122           #
+# - Latest Documentation            #
+#####################################
+
+
+- Updated documentation for FreeLCS 3.5 release.
+- 00-backup_freelcs_configuration.sh: Forgot to update required git commit number. Fixed.
+- 00-backup_freelcs_configuration.sh: Oh Bash and your horrible inconsistent syntax :)
+- 00-backup_freelcs_configuration.sh: Libebur128 does not build cleanly anymore on old distros when TAGLIB is enabled, disable it for those distros.
+- Installer version 122. Version 1.2.4 of libebur128 does not build cleanly on ubuntu 16.04 naymore, it probably misses some c++11 headers. The problem lies in TAGLIB so I just disable building it because we don't need it for anything.
+- Added formats: 'mov','3gp','3g2','mj2' to nonfree mpeg formats, that gets enables if the user enables mp4. All these formats are based on mp4.
+- Adjusted GUI for moving ac3, mpeg layers 1 - 3 to free formats.
+- Forgot to add ac3 to free wrapper formats. Fixed.
+- More modifications required by adding Mpeg 1 Layer 1, 2, 3, Ac3 to free codecs.
+- Added opus and formats whos patents has epired (mpeg Layer 1, 2, 3 and AC-3) to free formats. Dropped support for Ubuntu 14.04. Work still in progress.
+- LoudnessCorrection version updated to 290. There are no changes in LoudnessCorrection functionality, but new regression tests needs a new version number as the version number is part of the name of the directory where regression test results are saved. regression_tester also needed some minor changes to work around a buggy "sudo" utility distributed with Ubuntu 18.04. Sudo -p does not work as it used to and this bug seems to be fixed in next sudo version. For some reason Ubuntu decided to include the buggy version in its distro.
+- Installer 120: Added initial support for Ubuntu 18.04. Upgraded libebur128 to versio 1.2.4 and added a compatible freelcs patch to it.
+
+
+#####################################
 # Released FreeLCS 3.4 with:        #
 # ----------------------------      #
 # - LoudnessCorrection version 289  #

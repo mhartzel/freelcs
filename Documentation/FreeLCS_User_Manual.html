@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html dir="ltr" lang="en">
   <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <title>FreeLCS User Manual</title>
     <meta content="Mikael Hartzell" name="author">
   </head>
@@ -38,6 +38,8 @@
         Mounting the server HotFolder from windows 7</a></h3>
     <h3> <a href="#Making%20the%20mount%20permanent%20in%20windows%207">Making
         the mount permanent in windows 7</a></h3>
+    <h3><a href="#Making%20a%20mount%20permanent%20in%20windows%2010">Making a
+        mount permanent in windows 10</a></h3>
     <h3> <a href="#Html%20Progress%20report">Html Progress Report</a></h3>
     <h3><a href="#Static%20ip%20-%20address%20for%20the%20server">Static ip -
         address for the server</a></h3>
@@ -154,7 +156,7 @@
       <li>You need a computer with at least 2 processor cores.</li>
       <li>2 GB of RAM&nbsp; (there probably is not much advantage in having
         more).</li>
-      <li> Ubuntu Linux 12.04 LTS, 14.04 LTS, Debian 7 or 8.</li>
+      <li> Ubuntu Linux 18.04 LTS, 16.04 LTS, Debian 9 or 8.</li>
       <li>A person that is able to set up and update an Linux server.</li>
       <li>1 Gbit ethernet is recommended.</li>
       <li>&nbsp;The <a href="FreeLCS_FAQ.html">FAQ</a> discusses things like
@@ -199,11 +201,9 @@
         are 3 files to process simultaneously. When FreeLCS virtual server is
         idle, the cores are available to other virtual machines running on the
         same hardware.</li>
-      <li>It is recommended to use the JFS - filesystem for all disks, since the
-        default filesystem ext4 has some quite serious bugs / design flaws that
-        are probably never going to be fixed. JFS was designed by IBM to be a
-        very fault tolerant filesystem for big database servers. It is able to
-        survive power outages and has been in serious production use for years.</li>
+      <li>It is recommended to use <strong>Ext4</strong> or <strong>XFS</strong>
+        filesystems for all disks. These are now very stable and much faster
+        than the JFS filesystem I used to recommend earlier.</li>
       <li>During the installation of Ubuntu and Debian, you are prompted to
         create the first user. It is important to use a password for this
         account, do not leave the password empty.</li>
@@ -496,7 +496,7 @@
         between audio samples. These peaks can go above the maximum allowed 0
         dBFS and cause distortion when the digital signal is converted back to
         analog. TruePeak measurement calculates new samples in between existing
-        audio samples and finds these hidden peaks. EBU R128 recoommends always
+        audio samples and finds these hidden peaks. EBU R128 recommends always
         using TruePeak method to measure audio peaks. TruePeak calculation is
         about four time slower than finding the highest existing audio sample in
         a file.<br>
@@ -552,6 +552,12 @@
         allow the user to restrict processing only to patent free formats even
         when FFmpeg or libav-tools is installed. Format patentability varies
         from country to country, see more about it in <a href="FreeLCS_FAQ.html#Libav-tools%20/%20FFmpeg%20and%20patents">FAQ</a>.</li>
+      <li>As of 2018 the <strong>patents for formats: Dolby AC-3, Mpeg 1 Layers
+          1, 2 and 3 (mp1, mp2, mp3) have expired</strong>. These formats are
+        now patent free and can be used without paying license fees. More of
+        this and links to the current patent situation of these format in <a href="FreeLCS_FAQ.html#Libav-tools%20/%20FFmpeg%20and%20patents">FAQ
+          here</a>. These formats are now enabled if you enable free formats in
+        this window. FFmpeg or libav-tools is required to use these formats.</li>
       <li>Settings for allowed FFmpeg / libav-tools formats are located at the
         bottom of this window. These settings will have no effect if you don't
         install FFmpeg /&nbsp; libav-tools.</li>
@@ -562,13 +568,19 @@
     <p><br>
     </p>
     <ul>
-      <li>In the following picture libav-tools processing has been restricted to
-        wrapper formats: <strong>Wav, Flac, Ogg, Matroska, MXF, Webm&nbsp;</strong>
-        and codec formats: <strong>PCM, Flac, Vorbis</strong>.</li>
+      <li>In the following picture FFmpeg / libav-tools processing has been
+        restricted to wrapper formats: <strong>Wav, Flac, Ogg, Matroska, AC-3,
+          Mpeg 1 Layers 1, 2 and 3, MXF, Webm&nbsp;</strong> and codec formats:
+        <strong>PCM, Flac, Vorbis, Opus, AC-3, Mpeg 1 layers 1, 2 and 3</strong>.</li>
     </ul>
     <p><br>
     </p>
     <img alt="" src="Pictures/MXF_Remixing-03.jpg">
+    <ul>
+      <li>The option "<strong>Mp4</strong>" enables wrapper formats: <strong>mp4,
+          m4v, m4a</strong> and formats based on mp4: <strong>mov, 3gp, 3g2,
+          mj2</strong>.</li>
+    </ul>
     <p><br>
     </p>
     <ul>
@@ -579,8 +591,10 @@
         default FreeLCS samba configuration is shown on the window and you can
         edit it if you like. Only change the configuration if you know your
         settings will work in your network. In all other cases just leave the
-        configuration as it is and click "Next".<br>
-      </li>
+        configuration as it is and click "Next".</li>
+      <li>If you want to disable SMB protocol version 1 (cifs), then remove the
+        character # from the beginning of line: <strong># server min protocol =
+          SMB2</strong></li>
     </ul>
     <p><br>
     </p>
@@ -635,7 +649,7 @@
     <ul>
       <li>The last window shows the terminal command to start LoudnessCorrection
         immediately. The picture below is from a <strong>systemd</strong> based
-        operating system (Debian 8, Ubuntu 16.04).</li>
+        operating system (Debian 8, Ubuntu 16.04 and later).</li>
       <li>The easiest way to start loudness correction however is to restart the
         computer.</li>
     </ul>
@@ -724,8 +738,8 @@
     if it is not already there and the brd module is not built into the kernel.
     Brd is a ram disk driver.<br>
     <br>
-    If you want to remove FreeLCS then stop FreeLCS and delete the files
-    listed above with these terminal commands:<br>
+    If you want to remove FreeLCS then stop FreeLCS and delete the files listed
+    above with these terminal commands:<br>
     <br>
     <strong>systemctl stop freelcs.service<br>
       systemctl disable freelsc.service<br>
@@ -1051,8 +1065,31 @@
     </p>
     <p><img src="Pictures/Mounting_From_windows-08.jpg"><br>
     </p>
-    <br>
-    <br>
+    <p> </p>
+    <p><br>
+    </p>
+    <h2><a id="Making a mount permanent in windows 10">Making the mount
+        permanent in windows 10</a></h2>
+    <ul>
+      <li>Open windows file explorer and right - click on "<strong>This PC</strong>".
+        Select "<strong>Map Network Drive</strong>" from the menu.</li>
+    </ul>
+    <p><br>
+    </p>
+    <p><img src="Pictures/win10-01.jpg" alt=""></p>
+    <p><br>
+    </p>
+    <ul>
+      <li>Write the address of the server in the window. The address must start
+        with two backward slashes and end with "\LoudnessCorrection". Make sure
+        that the option "Reconnect at sign-in" is tagged, without it windows
+        won't make the mount when windows starts up. Click "Finnish".</li>
+    </ul>
+    <p><br>
+    </p>
+    <img src="Pictures/win10-02.jpg" alt=""><br>
+    <p><br>
+    </p>
     <h2> <a id="Html Progress report">Html Progress Report</a><br>
     </h2>
     If you selected "<strong>Write html progress report</strong>" = "<strong>yes</strong>"
@@ -1289,7 +1326,8 @@
         now try creating the raid-device again with the command on the previous
         line.</li>
       <li>When raid-device creation succeeds without error messages, format the
-        raid device with the <strong>JFS</strong> filesystem: <strong>mkfs.jfs
+        raid device with <strong>Ext4</strong> or <strong>XFS</strong>
+        filesystem (in this example we use ext4): <strong>mkfs.ext4
           /dev/md0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </strong>(Warning: this
         will wipe out all data on the disks)<strong><br>
         </strong></li>
@@ -1315,7 +1353,7 @@
         &nbsp; &nbsp; the command will show output like below:<strong></strong></li>
     </ul>
     <p style="margin-left: 80px;"><strong>/dev/</strong><strong>md0</strong><strong>:
-        UUID="229f0670-c8c2-4145-b2f4-b1100d9cb918" TYPE="jfs"</strong></p>
+        UUID="229f0670-c8c2-4145-b2f4-b1100d9cb918" TYPE="ext4"</strong></p>
     <ul>
       <li>Add the device to your <strong>/etc/fstab</strong> so that it gets
         automatically mounted next time the computer starts up. It is important

@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html dir="ltr" lang="en">
   <head>
-    <meta content="text/html; charset=utf-8" http-equiv="content-type">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
     <title>Ubuntu Server modifications needed before FreeLCS installation</title>
     <meta content="Mikael Hartzell" name="author">
   </head>
@@ -21,8 +21,9 @@
     installed by default. These problems can be easily corrected.<br>
     <br>
     <h2>Fixing Ubuntu 12.04 and 14.04 Server locale</h2>
-    For Ubuntu 16.04 use the <a href="Debian_modifications_needed_before_FreeLCS_installation.html#Fixing_Debian_locale">Debian
+    For <strong>Ubuntu 16.04 and newer</strong> use the <a href="Debian_modifications_needed_before_FreeLCS_installation.html#Fixing_Debian_locale">Debian
       method described here</a>.<br>
+    <p> </p>
     <br>
     Ubuntu Server locale is not configured correctly by default, this produces
     error messages during program package installation and stops the FreeLCS
@@ -124,8 +125,10 @@
       <li>Now quit the ssh connection and create it again now using X -
         forwarding:</li>
     </ul>
-    <div style="margin-left: 40px;"><strong>ssh&nbsp; -X&nbsp; -C&nbsp;
-        -l&nbsp;&nbsp; username &nbsp; 192.168.1.1</strong></div>
+    <div style="margin-left: 40px;"><strong>ssh&nbsp; -Y&nbsp; -C&nbsp;
+        -l&nbsp;&nbsp; username &nbsp; 192.168.1.1</strong>&nbsp;&nbsp;&nbsp;&nbsp;
+      (If this does not work try replacing the option -Y with -X).<strong><br>
+      </strong></div>
     <ul>
       <li>You might get the message "<strong>.Xauthority does not exist</strong>".
         This is not an error, but an announcement telling that the file in
@@ -165,7 +168,14 @@
     the <strong>Desktop</strong> computer, even though the installer really
     runs on the <strong>server</strong>. Now you can follow the <a href="FreeLCS_User_Manual.html#Installer_starts">Ubuntu
       Desktop installation instructions.</a><br>
-    <br>
+    <p><br>
+    </p>
+    <p><strong>Note !!!!!!! </strong>When installing using this method on
+      Ubuntu Server 18.04 there seems to be a bug that won't let you write the
+      character @ to the installer window (used in email addresses). Please
+      write the character on a terminal on your Desktop computer and copy /
+      paste it to the installer window. This bug seems only to exist on Ubuntu
+      18.04.</p>
     <br>
     <br>
     <h2><a name="Automatic security updates on Ubuntu Server and Debian"></a>Automatic

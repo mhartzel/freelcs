@@ -1,15 +1,14 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html dir="ltr" lang="en">
   <head>
-    <meta content="text/html; charset=utf-8" http-equiv="content-type">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
     <title>Debian modifications needed before FreeLCS installation</title>
     <meta content="Mikael Hartzell" name="author">
   </head>
   <body>
     <h1> Debian modifications needed before FreeLCS installation</h1>
-    Debian 7 support was added in FreeLCS version 3.0.&nbsp; Earlier Debian
-    versions have not been tested, they may or may not work. Later Debian
-    releases are also supported by FreeLCS.<br>
+    Debian support was added in FreeLCS version 3.0. Later Debian releases are
+    also supported by FreeLCS.<br>
     <br>
     Canonical builds its Ubuntu releases using Debian software packages.
     Therefore both of these Linux distributions have much in common, but also
@@ -42,14 +41,14 @@
         This disables the line.</li>
       <li>Example: the following line:</li>
     </ul>
-    <p style="margin-left: 40px;"><strong>deb cdrom:[Debian GNU/Linux 7.2.0
-        _Wheezy_ - Official i386 DVD Binary-1 20131012-12:56]/ wheezy contrib
+    <p style="margin-left: 40px;"><strong>deb cdrom:[Debian GNU/Linux 9.4.0
+        _Stretch_ - Official amd64 DVD Binary-1 20180310-11:21]/ stretch contrib
         main</strong></p>
     <ul>
       <li>becomes:</li>
     </ul>
-    <p style="margin-left: 40px;"><strong># deb cdrom:[Debian GNU/Linux 7.2.0
-        _Wheezy_ - Official i386 DVD Binary-1 20131012-12:56]/ wheezy contrib
+    <p style="margin-left: 40px;"><strong># deb cdrom:[Debian GNU/Linux 9.4.0
+        _Stretch_ - Official amd64 DVD Binary-1 20180310-11:21]/ stretch contrib
         main</strong></p>
     <ul>
       <li>Save the modified file using the keyboard command: <strong>ctrl + o</strong></li>
@@ -99,6 +98,31 @@
         make changes to the package repository settings so that the database for
         available packages gets updated.</li>
     </ul>
+    <h3 style="margin-left: 40px;">Debian 9:</h3>
+    <div style="margin-left: 40px;"># deb cdrom:[Debian GNU/Linux 9.4.0
+      _Stretch_ - Official amd64 DVD Binary-1 20180310-11:21]/ stretch contrib
+      main<br>
+      <br>
+      deb http://security.debian.org/debian-security stretch/updates main
+      contrib<br>
+      deb-src http://security.debian.org/debian-security stretch/updates main
+      contrib</div>
+    <div style="margin-left: 40px;"><br>
+    </div>
+    <div style="margin-left: 40px;">deb http://ftp.fi.debian.org/debian/ stretch
+      main<br>
+      deb-src http://ftp.fi.debian.org/debian/ stretch main<br>
+      deb http://ftp.fi.debian.org/debian/ stretch-updates main contrib<br>
+      deb-src http://ftp.fi.debian.org/debian/ stretch-updates main contrib</div>
+    <div style="margin-left: 40px;"><br>
+      # stretch-updates, previously known as 'volatile'<br>
+      # A network mirror was not selected during install.&nbsp; The following
+      entries<br>
+      # are provided as examples, but you should amend them as appropriate<br>
+      # for your mirror of choice.<br>
+      #<br>
+      # deb http://deb.debian.org/debian/ stretch-updates main contrib<br>
+      # deb-src http://deb.debian.org/debian/ stretch-updates main contrib</div>
     <h3 style="margin-left: 40px;">Debian 8:</h3>
     <div style="margin-left: 40px;"># deb cdrom:[Debian GNU/Linux 8.0.0 _Jessie_
       - Official amd64 DVD Binary-1 20150425-12:54]/ jessie contrib main<br>
@@ -120,27 +144,11 @@
       # deb http://ftp.debian.org/debian/ jessie-updates main contrib<br>
       # deb-src http://ftp.debian.org/debian/ jessie-updates main contrib<br>
     </div>
-    <h3 style="margin-left: 40px;">Debian 7:</h3>
-    <ul>
-    </ul>
-    <div style="margin-left: 40px;"># deb cdrom:[Debian GNU/Linux 7.2.0 _Wheezy_
-      - Official i386 DVD Binary-1 20131012-12:56]/ wheezy contrib main<br>
-      <br>
-      deb http://ftp.fi.debian.org/debian/ wheezy main<br>
-      deb-src http://ftp.fi.debian.org/debian/ wheezy main<br>
-      <br>
-      deb http://security.debian.org/ wheezy/updates main contrib<br>
-      deb-src http://security.debian.org/ wheezy/updates main contrib<br>
-      <br>
-      # wheezy-updates, previously known as 'volatile'<br>
-      deb http://ftp.fi.debian.org/debian/ wheezy-updates main contrib<br>
-      deb-src http://ftp.fi.debian.org/debian/ wheezy-updates main contrib</div>
-    <br>
     <br>
     <h2>Load kernel module brd</h2>
-    <p>Beginning with FreeLCS version 3.4 loading of the brd module is done
-      automatically for you. The instructions below apply only to FreeLCS 3.3
-      and earlier.</p>
+    <p><strong>Note !!!!!!!</strong> <strong>FreeLCS version 3.4</strong> and
+      newer handles loading of the <strong>brd module automatically</strong>
+      for you. The instructions below apply only to FreeLCS 3.3 and earlier.</p>
     <ul>
       <li>This step assumes that you have the '<strong>sudo</strong>' - program
         installed (installation steps described above).</li>
@@ -178,7 +186,8 @@
     <br>
     <br>
     <h2><a name="Fixing_Debian_locale">Fixing Debian locale</a></h2>
-    Ubuntu 16.04&nbsp; locale is also fixed by using the method described below.<br>
+    Ubuntu 16.04 and newer locale can also be fixed by using the method
+    described below.<br>
     &nbsp;<br>
     If you installed a graphical desktop during Debian installation, then your
     locale should be configured correctly, if not then you should configure it

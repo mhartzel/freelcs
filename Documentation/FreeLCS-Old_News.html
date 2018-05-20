@@ -1,13 +1,49 @@
 <!DOCTYPE html>
 <html dir="ltr" lang="en">
   <head>
-    <meta content="text/html; charset=utf-8" http-equiv="content-type">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
     <title>FreeLCS-Old_News</title>
     <link href="Stylesheets/freelcs_stylesheet.css" rel="stylesheet" type="text/css">
   </head>
   <body>
-    <h2><strong>Old news:</strong> </h2>
-    2014.06.05 FreeLCS 3.0 released.<br>
+    <h2><strong>Old news:</strong></h2>
+    2015.10.05 FreeLCS 3.2 released.<br>
+    <ul>
+      <li>This release adds support for Debian 8 that introduces a new os
+        startup system called systemd. Systemd introduces some changes to how
+        the operating system is started up, so FreeLCS needed to adjust to these
+        changes.</li>
+      <li>FreeLCS 3.2 supports Ubuntu 12.04, Ubuntu 14.04, Debian 7 and Debian
+        8. IMPORTANT !!!!!!! Ubuntu 12.04 updates brings in a broken version of
+        python3. <a href="FreeLCS_FAQ.html#Ubuntu_12.04_updates_breaks_python3">Here
+          are two possible solutions to the problem</a>.</li>
+      <li>Fixed a small bug: the HeartBeat_Checker program crashed if the
+        computer started up and could not get an ip - address. What
+        HeartBeat_Checker does is <a href="FreeLCS_User_Manual.html#HeartBeat_Checker_Explained">explained
+          here</a>.</li>
+      <li>I stumbled upon a&nbsp; problem with OS X versions 10.7 - 10.10 and
+        their smb - protocol implementation. This causes problems when files are
+        copied over from these OS X versions to the FreeLCS - server. I also
+        found two workarounds, <a href="FreeLCS_FAQ.html#Errors_copying_files_from_OS_X_10.7-10.10_to_FreeLCS-Server">read
+          more about it here</a>.</li>
+      <li>Ubuntu 12.04 updates brings in a broken version of python3. <a href="FreeLCS_FAQ.html#Ubuntu_12.04_updates_breaks_python3">Here
+          are two possible solutions to the problem</a>.</li>
+      <li>No changes to the processing of audio files.</li>
+    </ul>
+    <p></p>
+    2014.09.11 FreeLCS 3.1 released
+    <ul>
+      <li>This minor update only fixes one bug that caused 3 - 4 unnecessary
+        error messages per week complaining that the FreeLCS server could not
+        find out what it's IP - address was. FreeLCS prints the IP - address of
+        the server on the "<a href="FreeLCS_User_Manual.html#Html%20Progress%20report">Html
+          progress report</a>" and the server needs to check periodically if the
+        IP - address has changed. No other changes to FreeLCS functionality in
+        this release :)</li>
+    </ul>
+    <p></p>
+    2014.06.05 FreeLCS 3.0 released.
+    <p> </p>
     <ul>
       <li>This new release adds major new features. If you are happy with your
         current FreeLCS 2.3 or 2.4 installation then there is no reason to

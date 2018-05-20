@@ -189,18 +189,16 @@
       <li>Avconv / FFmpeg is a video and audio conversion tool that can be used
         to convert media to many different formats. Using avconv or FFmpeg to
         decompress audio from patented formats may require a license from the
-        rights holders. However avconv may also be used to process free formats
-        (MXF, MKV, WebM and others) or formats with possibly expired patents
-        (Mpeg1 Layer1, Mpeg 1 Layer2) without acquiring licenses (source: <a href="http://en.wikipedia.org/wiki/MPEG-1#Patents">https://en.wikipedia.org/wiki/MPEG-1#Patents</a>).
-        To more complicate things some patented formats may be patented in some
-        countries but not in others. Also the expiration dates for these patents
-        may vary between countries.</li>
+        rights holders. However FFmpeg / avconv may also be used to process free
+        formats (MXF, MKV, WebM and others). To more complicate things some
+        patented formats may be patented in some countries but not in others.
+        Also the expiration dates for these patents may vary between countries.</li>
       <li>FreeLCS uses avconv or FFmpeg if it's installed but works fine without
         it with wav, flac and ogg formats.</li>
-      <li>As of 2018 patents of some popular audio formats have been expired:
-        Dolby AC-3, Mpeg 1 layers 1, 2 and 3 (the last one is more commonly
-        known as mp3). These formats are now free and can be used freely without
-        paying any lisence fees. Sources: <a href="https://en.wikipedia.org/wiki/Dolby_Digital#License">https://en.wikipedia.org/wiki/Dolby_Digital#License</a>&nbsp;&nbsp;
+      <li><strong>As of 2018 patents of some popular audio formats have expired:</strong>
+        Dolby <strong>AC-3</strong>, Mpeg 1 layers 1, 2 and 3<strong> </strong>(<strong>mp1,
+          mp2 and mp3</strong>). These formats are now patent free and can be
+        used freely without paying any licence fees. Sources: <a href="https://en.wikipedia.org/wiki/Dolby_Digital#License">https://en.wikipedia.org/wiki/Dolby_Digital#License</a>&nbsp;&nbsp;
         <a href="https://en.wikipedia.org/wiki/MPEG-1#Patents">https://en.wikipedia.org/wiki/MPEG-1#Patents</a>&nbsp;&nbsp;
         <a href="https://en.wikipedia.org/wiki/MP3#Licensing,_ownership_and_legislation">https://en.wikipedia.org/wiki/MP3#Licensing,_ownership_and_legislation</a></li>
     </ul>
@@ -211,12 +209,17 @@
     <ul>
       <li>Yes, in FreeLCS 3.0 you can set avconv / FFmpeg allowed formats during
         installation. In the following picture below allowed wrapper formats are
-        restricted to:&nbsp;&nbsp; <strong>wav</strong>, <strong>flac</strong>
-        <strong>ogg</strong>, <strong>matroska</strong> &nbsp; and allowed
-        codec formats are restricted to: &nbsp; <strong>pcm</strong>, <strong>flac</strong>,
-        <strong>vorbis</strong>.</li>
+        restricted to:&nbsp;&nbsp; <strong>wav, flac ogg, matroska, AC-3 and
+          Mpeg 1 Layers 1, 2, 3 and MXF</strong>. &nbsp; Allowed codec formats
+        are restricted to: &nbsp; <strong>Pcm, Flac, Vorbis, Opus, AC-3 and
+          Mpeg 1 Layers 1, 2, 3</strong>.</li>
     </ul>
     <img alt="" src="Pictures/MXF_Remixing-05.jpg">
+    <ul>
+      <li>The option "<strong>Mp4</strong>" enables wrapper formats: <strong>mp4,
+          m4v, m4a</strong> and formats based on mp4: <strong>mov, 3gp, 3g2,
+          mj2</strong>.</li>
+    </ul>
     <p><br>
     </p>
     <h2> <a id="How many audio streams in a file are supported ?">How many
@@ -463,6 +466,13 @@
         distributions are supported ?</a></h2>
     <ul>
     </ul>
+    <p><strong>FreeLCS 3.5 Supports:</strong></p>
+    <ul>
+      <li>Debian 9 with and without a GUI</li>
+      <li>Debian 8 with and without a GUI</li>
+      <li>Ubuntu 18.04 LTS Desktop and Server</li>
+      <li>Ubuntu 16.04 LTS Desktop and Server</li>
+    </ul>
     <p><strong>FreeLCS 3.4 supports:</strong></p>
     <ul>
       <li>Debian 9 with and without a GUI</li>
@@ -505,12 +515,12 @@
     <br>
     LTS stands for <strong>L</strong>ong <strong>T</strong>erm <strong>S</strong>upport.
     Ubuntu LTS releases get security updates for 5 years from the first release
-    date. <strong>Ubuntu 14.04 LTS</strong> will get security updates until
-    April 2019.<br>
+    date. <strong>Ubuntu 18.04 LTS</strong> will get security updates up to
+    April 2023.<br>
     <br>
     Canonical releases a new Ubuntu LTS version every 2 years. If you install
-    FreeLCS on Ubuntu 16.04 then you will need to upgrade the software not
-    sooner than 2021.<br>
+    FreeLCS on Ubuntu 18.04 then you will not need to upgrade the software until
+    2023.<br>
     <ul>
     </ul>
     <br>
