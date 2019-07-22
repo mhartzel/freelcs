@@ -68,7 +68,10 @@
       <li>Get root permissions with the following terminal command (asks for
         root password):</li>
     </ul>
-    <div style="margin-left: 40px;"><strong>su root</strong></div>
+    <div style="margin-left: 40px;"><strong>su -</strong>&nbsp;&nbsp;&nbsp;
+      (Starting with Debian 10 you need to get root permissions by: <strong>su
+        -</strong>&nbsp; or root-users path definitions may not be accessible
+      and some commands might not be found)</div>
     <ul>
       <li>Install the sudo package:</li>
     </ul>
@@ -145,45 +148,10 @@
       # deb-src http://ftp.debian.org/debian/ jessie-updates main contrib<br>
     </div>
     <br>
-    <h2>Load kernel module brd</h2>
-    <p><strong>Note !!!!!!!</strong> <strong>FreeLCS version 3.4</strong> and
-      newer handles loading of the <strong>brd module automatically</strong>
-      for you. The instructions below apply only to FreeLCS 3.3 and earlier.</p>
-    <ul>
-      <li>This step assumes that you have the '<strong>sudo</strong>' - program
-        installed (installation steps described above).</li>
-      <li>FreeLCS writes every 5 seconds a html file to the disk. This html -
-        file stores information about what the server is currently doing. Users
-        can view this file with a web browser like Firefox. This file is written
-        to a ram - disk that is automatically created when FreeLCS software
-        starts up. Ram - disk speeds up reading and writing this file when the
-        server is under heavy load. The ram disk is created using a kernel
-        module named <strong>brd</strong>. This module is built into Ubuntu
-        kernel, but on Debian the user must load it before FreeLCS - software
-        starts.</li>
-      <li>First load the brd module with the following terminal command (will
-        ask for password):</li>
-    </ul>
-    <p style="margin-left: 40px;"><strong>sudo modprobe brd</strong></p>
-    <ul>
-      <li>Now the&nbsp; brd module is running and can be used. The module must
-        be added to the text file&nbsp;&nbsp;<strong> /etc/modules</strong>&nbsp;&nbsp;
-        for it to be automatically loaded during the next boot. Open
-        the&nbsp;&nbsp; <strong>/etc/modules</strong> - file in a text editor
-        with the following terminal command (will ask for password):</li>
-    </ul>
-    <p style="margin-left: 40px;"><strong>sudo nano -w /etc/modules</strong></p>
-    <ul>
-      <li>Add text:&nbsp;&nbsp; <strong>brd</strong>&nbsp;&nbsp; on its own
-        line at the end of the file.</li>
-      <li>Save the modified file using the keyboard command: <strong>ctrl + o</strong></li>
-      <li>Exit the nano - editor with keyboard command: <strong>ctrl + x</strong></li>
-    </ul>
-    If you did not install a graphical desktop during Debian install, then you
-    need to do two more modifications described below. If you did install a
-    graphical desktop then you can go ahead with the <a href="FreeLCS_User_Manual.html#Installation">normal
-      FreeLCS install procedure described in the user manual</a> :)<br>
-    <br>
+    <p>If you did not install a graphical desktop during Debian install, then
+      you need to do two more modifications described below. If you did install
+      a graphical desktop then you can go ahead with the <a href="FreeLCS_User_Manual.html#Installation">normal
+        FreeLCS install procedure described in the user manual</a> :)</p>
     <br>
     <h2><a name="Fixing_Debian_locale">Fixing Debian locale</a></h2>
     Ubuntu 16.04 and newer locale can also be fixed by using the method
@@ -197,7 +165,13 @@
     <ul>
       <li>Run the command:</li>
     </ul>
-    <div style="margin-left: 40px;"><strong>sudo dpkg-reconfigure locales</strong></div>
+    <p style="margin-left: 40px;"><strong>su -</strong>&nbsp;&nbsp;&nbsp;
+      (Starting with Debian 10 you need to get root permissions by: su -&nbsp;
+      or root-users path definitions may not be accessible and some commands
+      might not be found)</p>
+    <ul>
+    </ul>
+    <div style="margin-left: 40px;"><strong>dpkg-reconfigure locales</strong></div>
     <br>
     <ul>
       <li>Select your locale from the list. Search for your language and the

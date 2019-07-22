@@ -27,8 +27,8 @@ import email.mime.multipart
 import tempfile
 import copy
 
-version = '122'
-freelcs_version = '3.5'
+version = '123'
+freelcs_version = '3.6'
 
 ###################################
 # Function definitions start here #
@@ -5416,7 +5416,7 @@ os_name = ''
 os_version = ''
 
 # Define supported operating systems and versions
-supported_platforms = {'debian': ['8','9'], 'ubuntu': ['16.04', '18.04']}
+supported_platforms = {'debian': ['9','10'], 'ubuntu': ['16.04', '18.04']}
 
 # Parse commandline arguments.
 for item in sys.argv[1:]:
@@ -5711,7 +5711,7 @@ sox_download_make_build_and_install_commands = []
 sox_simplified_build_and_install_commands_displayed_to_user = []
 libebur128_archive_name = 'libebur128_fork_for_freelcs_3.4.tar.xz'
 libebur128_patch_name = 'libebur128-patch-2018.05.05-2.diff'
-libebur128_required_commit = '118f14a6fbba3ec08d423bd8f44bb79844c24176'
+libebur128_required_commit = '6be99482058e176df49916eeb0ebe0aaf7674c11'
 path_to_libebur128_source_archive = find_program_in_current_dir(libebur128_archive_name)
 brd_module_loads_at_os_startup = False
 brd_module_built_into_kernel = False
@@ -7587,7 +7587,7 @@ seventh_window_separator_1 = tkinter.ttk.Separator(seventh_frame_child_frame_1, 
 seventh_window_separator_1.grid(column=0, row=1, padx=10, pady=10, columnspan=5, sticky=(tkinter.W, tkinter.E))
 
 # sox
-seventh_window_label_4 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='Sox          (version 14.4.0 required)')
+seventh_window_label_4 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='Sox')
 seventh_window_label_4.grid(column=0, row=2, columnspan=1, padx=10, sticky=(tkinter.W, tkinter.N))
 seventh_window_label_5 = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, textvariable=sox_is_installed)
 seventh_window_label_5.grid(column=3, row=2, columnspan=1, padx=10, sticky=(tkinter.N))
