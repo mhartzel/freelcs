@@ -27,7 +27,7 @@ import email.mime.multipart
 import tempfile
 import copy
 
-version = '123'
+version = '124'
 freelcs_version = '3.6'
 
 ###################################
@@ -1475,7 +1475,8 @@ def install_init_scripts_and_config_files(*args):
 	'enable_nonfree_mpeg_wrappers' : true_false_string[enable_nonfree_mpeg_wrappers.get()], \
 	'os_name' : os_name, \
 	'os_version' : os_version, \
-	'os_init_system_name' : os_init_system_name \
+	'os_init_system_name' : os_init_system_name, \
+	'target_loudness' : target_loudness.get() \
 	}
 
 	# Get the total number of items in settings dictionary and save the number in the dictionary. The number can be used for debugging settings.
@@ -3824,7 +3825,12 @@ def define_program_installation_commands():
 	libebur128_repository_directory_name = os.path.splitext(os.path.split(libebur128_repository_url)[1])[0]
 	
 	# Check if we need to install some programs that LoudnessCorrection needs and add install commands to lists.
-	apt_get_commands = ['apt-get', '-q=2', '-y', '--reinstall', 'install']
+	if (os_name == 'debian') and (os_version_float == 10):
+		# On Debian 10 samba-common always prompts user about WINS settings stopping installation, setting the environment variable prevents any prompting while installing with apt-get
+		apt_get_commands = ['DEBIAN_FRONTEND=noninteractive', 'apt-get', '-q=2', '-y', '--reinstall', 'install']
+	else:
+		apt_get_commands = ['apt-get', '-q=2', '-y', '--reinstall', 'install']
+
 	needed_packages_install_commands = []
 	libebur128_dependencies_install_commands = []
 	libebur128_git_commands = []
@@ -5637,6 +5643,8 @@ if debug == True:
 		print()
 
 # Define some normal python variables
+target_loudness = tkinter.StringVar()
+target_loudness.set('-23')
 gnu_gpl_3 = ''
 english = 1
 finnish = 0
@@ -5999,6 +6007,10 @@ if int(config_file_created_by_installer_version) >= 39:
 			number_of_processor_cores.set(previously_saved_settings_dict['number_of_processor_cores'])
 			if debug == True:
 				print('number_of_processor_cores =', previously_saved_settings_dict['number_of_processor_cores'])
+	if 'target_loudness' in previously_saved_settings_dict:
+			target_loudness.set(previously_saved_settings_dict['target_loudness'])
+			if debug == True:
+				print('target_loudness', previously_saved_settings_dict['target_loudness'])
 	if 'file_expiry_time' in previously_saved_settings_dict:
 			file_expiry_time = previously_saved_settings_dict['file_expiry_time']
 			if debug == True:

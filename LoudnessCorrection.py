@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '291'
+loudnesscorrection_version = '292'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -387,6 +387,11 @@ ip_address_acquirement_error_has_already_been_reported = False
 # FFmpeg 2.8.6 on Ubuntu 16.04 tries to use libmodplug with FFmpeg to create a wav from midi files, but the result is total garbage, prevent this.
 unsupported_formats_list = ['libmodplug']
 
+#####################################################################################
+# Set default target loudness = -23 LUFS. The user can change this in the installer #
+#####################################################################################
+target_loudness = '-23'
+
 ###############################################################################################################################################################################
 # Default value definitions end here :)																	      #
 ###############################################################################################################################################################################
@@ -569,7 +574,7 @@ def calculate_integrated_loudness(event_for_integrated_loudness_calculation, fil
 					integrated_loudness_calculation_error_message = 'Error: ' + '\'' + str(reason_for_error) + '\'' + ' trying to convert libebur128 sample / truepeak value to decibels: ' * english + 'Virhe: ' + '\'' + str(reason_for_error) + '\'' + ' muutettaessa libebur128:n huippuarvoa desibeleiksi: ' * finnish  + str(highest_peak_float)
 
 
-				difference_from_target_loudness = round(integrated_loudness - float('-23'), 1)
+				difference_from_target_loudness = round(integrated_loudness - float(target_loudness), 1)
 
 
 				# If integrated loudness measurement is below -70 LUFS, then libebur128 says the measurement is '-inf', which means roughly 'not possible to measure'. Generate error since '-inf' can not be used in calculations.
@@ -889,7 +894,7 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 
 		if create_loudness_history_graphics_files == True:
 
-			# If calculated loudness difference from target -23 LUFS loudness is a positive number, create a string with a plus sign and the difference number in it.
+			# If calculated loudness difference from target loudness is a positive number, create a string with a plus sign and the difference number in it.
 			if difference_from_target_loudness > 0:
 				difference_from_target_loudness_string = '+' + str(difference_from_target_loudness)
 			else:
@@ -1050,13 +1055,13 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 				if number_of_files_in_this_mix > 1:
 				
 					for counter in range(1, channel_count + 1):
-						split_channel_targetfile_name = filename_and_extension[0] + '-Channel-' * english + '-Kanava-' * finnish + str(counter) + '_-23_LUFS.' + output_format_for_final_file
+						split_channel_targetfile_name = filename_and_extension[0] + '-Channel-' * english + '-Kanava-' * finnish + str(counter) + '_' + target_loudness + '_LUFS.' + output_format_for_final_file
 						list_of_filenames.append(split_channel_targetfile_name)
 
 				else:
 					# In this case the output file will be a single file.
 					# Create output filename for the machine readable readable results file.
-					list_of_filenames.append(str(filename_and_extension[0] + '_-23_LUFS.' + output_format_for_final_file))
+					list_of_filenames.append(str(filename_and_extension[0] + '_' + target_loudness + '_LUFS.' + output_format_for_final_file))
 
 				# Get values stored for machine readable results file, and complete loudness result information for the file.
 				if filename in temp_loudness_results_for_automation:
@@ -1185,11 +1190,11 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 				'set output ' + '\"' + gnuplot_temporary_output_graphicsfile.replace('"','\\"') + '\"', \
 				gnuplot_y_axis_commands, \
 				'set grid', \
-				'set title ' + '\"\'' + filename.replace('_', ' ').replace('"','\\"') + '\'\\n' + 'Integrated Loudness ' * english + 'Keskimääräinen Äänekkyystaso ' * finnish + str(integrated_loudness) + ' LUFS\\n ' + difference_from_target_loudness_string + ' LU from target loudness (-23 LUFS)\\nLoudness Range (LRA) ' * english + ' LU:ta tavoitetasosta (-23 LUFS)\\nÄänekkyyden vaihteluväli (LRA) '  * finnish + str(loudness_range) + ' LU' + peak_measurement_string_english * english + peak_measurement_string_finnish * finnish + highest_peak_db_string + ' ' + peak_measurement_unit + warning_message + '\"', \
+				'set title ' + '\"\'' + filename.replace('_', ' ').replace('"','\\"') + '\'\\n' + 'Integrated Loudness ' * english + 'Keskimääräinen Äänekkyystaso ' * finnish + str(integrated_loudness) + ' LUFS\\n ' + difference_from_target_loudness_string + ' LU from target loudness (' * english + target_loudness * english + ' LUFS)\\nLoudness Range (LRA) ' * english + ' LU:ta tavoitetasosta (' * finnish + target_loudness * finnish + ' LUFS)\\nÄänekkyyden vaihteluväli (LRA) '  * finnish + str(loudness_range) + ' LU' + peak_measurement_string_english * english + peak_measurement_string_finnish * finnish + highest_peak_db_string + ' ' + peak_measurement_unit + warning_message + '\"', \
 				'set ylabel ' + '\"Loudness (LUFS)\"' * english + '\"Äänekkyystaso (LUFS)\"' *finnish, \
 				plotfile_x_axis_time_information, \
 				'set xlabel \"' + plotfile_x_axis_name + '\"', \
-				'plot ' + '-23 title \'0 LU (Target Level)\' lw 6 lc rgb \'#99ff00\', ' * english + '-23 title \'0 LU (Tavoitetaso)\' lw 6 lc rgb \'#99ff00\', ' * finnish + '\"' + loudness_calculation_table.replace('"','\\"') + '\"' + ' with lines lw 1 lc rgb \'#c4a45a\' title \'Short-term Loudness\', ' * english + ' with lines lw 1 lc rgb \'#c4a45a\' title \'Tiedoston lyhytaikainen äänekkyystaso\', ' * finnish + str(integrated_loudness) + ' title \'Integrated Loudness\' lw 2 lc rgb \'#008327\'' * english + ' title \'Tiedoston keskimääräinen äänekkyystaso\' lw 2 lc rgb \'#008327\'' * finnish]
+				'plot ' + target_loudness * english + ' title \'0 LU (Target Level)\' lw 6 lc rgb \'#99ff00\', ' * english + target_loudness * finnish + ' title \'0 LU (Tavoitetaso)\' lw 6 lc rgb \'#99ff00\', ' * finnish + '\"' + loudness_calculation_table.replace('"','\\"') + '\"' + ' with lines lw 1 lc rgb \'#c4a45a\' title \'Short-term Loudness\', ' * english + ' with lines lw 1 lc rgb \'#c4a45a\' title \'Tiedoston lyhytaikainen äänekkyystaso\', ' * finnish + str(integrated_loudness) + ' title \'Integrated Loudness\' lw 2 lc rgb \'#008327\'' * english + ' title \'Tiedoston keskimääräinen äänekkyystaso\' lw 2 lc rgb \'#008327\'' * finnish]
 
 				# Write loudness time slice calculation results in a file, gnuplot uses this file for plotting graphics.
 				try:
@@ -1517,7 +1522,7 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 			
 			# Assing some values to variables.
 			# Output format for files has been already been decided in subroutine: get_audiofile_info_with_sox_and_determine_output_format. Output format is wav for files of 4 GB or less and flac for very large files that can't be split to separate wav files.
-			combined_channels_targetfile_name = filename_and_extension[0] + '_-23_LUFS.' + output_format_for_final_file
+			combined_channels_targetfile_name = filename_and_extension[0] + '_' + target_loudness + '_LUFS.' + output_format_for_final_file
 			temporary_peak_limited_targetfile = filename_and_extension[0] + '-Peak_Limited.' + output_format_for_intermediate_files
 			difference_from_target_loudness_sign_inverted = difference_from_target_loudness * -1 # The sign (+/-) of the difference from target loudness needs to be flipped for sox. Plus becomes minus and vice versa.
 			
@@ -1550,9 +1555,9 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 
 			if difference_from_target_loudness >= 0:
 				
-				#############################################################################################################################################
-				# Create loudness corrected file. In this case volume is adjusted down or it is not adjusted (already at -23 LUFS) so no limiting is needed #
-				#############################################################################################################################################
+				####################################################################################################################################################
+				# Create loudness corrected file. In this case volume is adjusted down or it is not adjusted (already at target loudness) so no limiting is needed #
+				####################################################################################################################################################
 					
 				# Loudness correction requires decreasing volume, no peak limiting is needed. Run sox without limiter.
 				sox_commandline = []
@@ -1586,7 +1591,7 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 					# Create commandlines for extracting each channel to its own file.
 					
 					for counter in range(1, channel_count + 1):
-						split_channel_targetfile_name = filename_and_extension[0] + '-Channel-' * english + '-Kanava-' * finnish + str(counter) + '_-23_LUFS.' + output_format_for_final_file
+						split_channel_targetfile_name = filename_and_extension[0] + '-Channel-' * english + '-Kanava-' * finnish + str(counter) + '_' + target_loudness + '_LUFS.' + output_format_for_final_file
 						sox_commandline = []
 						sox_commandline.extend(start_of_sox_commandline)
 						sox_commandline.extend([file_to_process, directory_for_temporary_files + os.sep + split_channel_targetfile_name, 'remix', str(counter), 'gain', str(difference_from_target_loudness_sign_inverted)])
@@ -1672,9 +1677,9 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 						calculate_integrated_loudness(event_for_integrated_loudness_calculation, temporary_peak_limited_targetfile, directory_for_temporary_files, libebur128_commands_for_integrated_loudness_calculation, english, finnish)
 					
 					
-						##################################################################################################
-						# After calculating loudness of the peak limited file, adjust the volume of the file to -23 LUFS #
-						##################################################################################################
+						#########################################################################################################
+						# After calculating loudness of the peak limited file, adjust the volume of the file to target loudness #
+						#########################################################################################################
 						
 						# Get loudness calculation results from the integrated loudness calculation process. Results are in list format in dictionary 'integrated_loudness_calculation_results', assing results to variables.
 						integrated_loudness_calculation_results_list = integrated_loudness_calculation_results.pop(temporary_peak_limited_targetfile)# Get loudness results for the file and remove this information from dictionary.
@@ -1755,7 +1760,7 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 							# Create commandlines for extracting each channel to its own file.
 							
 							for counter in range(1, channel_count + 1):
-								split_channel_targetfile_name = filename_and_extension[0] + '-Channel-' * english + '-Kanava-' * finnish + str(counter) + '_-23_LUFS.' + output_format_for_final_file
+								split_channel_targetfile_name = filename_and_extension[0] + '-Channel-' * english + '-Kanava-' * finnish + str(counter) + '_' + target_loudness + '_LUFS.' + output_format_for_final_file
 								sox_commandline = []
 								sox_commandline.extend(start_of_sox_commandline)
 								sox_commandline.extend([directory_for_temporary_files + os.sep + temporary_peak_limited_targetfile, directory_for_temporary_files + os.sep + split_channel_targetfile_name, 'remix', str(counter), 'gain', str(difference_from_target_loudness_sign_inverted)])
@@ -1812,7 +1817,7 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 						# Create commandlines for extracting each channel to its own file.
 						
 						for counter in range(1, channel_count + 1):
-							split_channel_targetfile_name = filename_and_extension[0] + '-Channel-' * english + '-Kanava-' * finnish + str(counter) + '_-23_LUFS.' + output_format_for_final_file
+							split_channel_targetfile_name = filename_and_extension[0] + '-Channel-' * english + '-Kanava-' * finnish + str(counter) + '_' + target_loudness + '_LUFS.' + output_format_for_final_file
 							sox_commandline = []
 							sox_commandline.extend(start_of_sox_commandline)
 							sox_commandline.extend([file_to_process, directory_for_temporary_files + os.sep + split_channel_targetfile_name, 'remix', str(counter), 'gain', str(difference_from_target_loudness_sign_inverted)])
@@ -2970,6 +2975,7 @@ def debug_lists_and_dictionaries_thread():
 	global libebur128_path
 	global delay_between_directory_reads
 	global number_of_processor_cores
+	global target_loudness
 	global file_expiry_time
 	global natively_supported_file_formats
 	global ffmpeg_output_wrapper_format
@@ -3050,6 +3056,7 @@ def debug_lists_and_dictionaries_thread():
 		values_read_from_configfile.append('')
 		values_read_from_configfile.append('delay_between_directory_reads = ' + str(delay_between_directory_reads))	
 		values_read_from_configfile.append('number_of_processor_cores = ' + str(number_of_processor_cores))
+		values_read_from_configfile.append('target_loudness = ' + target_loudness)
 		values_read_from_configfile.append('file_expiry_time = ' + str(file_expiry_time))
 		values_read_from_configfile.append('')
 		values_read_from_configfile.append('natively_supported_file_formats = ' + ', '.join(natively_supported_file_formats))
@@ -5323,6 +5330,7 @@ def write_user_defined_configuration_settings_to_logfile():
 	user_defined_configuration_options.append('directory_for_error_logs = ' + all_settings_dict['directory_for_error_logs'])
 	user_defined_configuration_options.append('delay_between_directory_reads = ' + str(all_settings_dict['delay_between_directory_reads']))
 	user_defined_configuration_options.append('number_of_processor_cores = ' + str(all_settings_dict['number_of_processor_cores']))
+	user_defined_configuration_options.append('target_loudness = ' + all_settings_dict['target_loudness'])
 	user_defined_configuration_options.append('file_expiry_time = ' + str(all_settings_dict['file_expiry_time']))
 	user_defined_configuration_options.append('----------------------------------------------------------------------------------------------------')
 	user_defined_configuration_options.append('')
@@ -5647,6 +5655,8 @@ try:
 			delay_between_directory_reads = all_settings_dict['delay_between_directory_reads']		
 		if 'number_of_processor_cores' in all_settings_dict:
 			number_of_processor_cores = all_settings_dict['number_of_processor_cores']
+		if 'target_loudness' in all_settings_dict:
+			target_loudness = all_settings_dict['target_loudness']
 		if 'file_expiry_time' in all_settings_dict:
 			file_expiry_time = all_settings_dict['file_expiry_time']
 
