@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '292'
+loudnesscorrection_version = '293'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -1500,6 +1500,7 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 		global silent
 		global temp_loudness_results_for_automation
 		global write_loudness_calculation_results_to_a_machine_readable_file
+		global target_loudness
 		
 		error_message = ''
 		
@@ -1537,6 +1538,16 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 			
 			# Calculate the level where absolute peaks must be limited to before gain correction, to get the resulting max peak level we want.
 			hard_limiter_level = difference_from_target_loudness + audio_peaks_absolute_ceiling
+
+			# When using higher than -23 LUFS loudness target level, then the limiter level must be lowered incrementally to prevent clipping when processing files with sox
+			if int(target_loudness) > -21:
+				hard_limiter_level = hard_limiter_level - 0.5
+			if int(target_loudness) > -19:
+				hard_limiter_level = hard_limiter_level - 0.5
+			if int(target_loudness) > -17:
+				hard_limiter_level = hard_limiter_level - 0.5
+			if int(target_loudness) > -15:
+				hard_limiter_level = hard_limiter_level - 0.5
 			
 			# Save some debug information.
 			if debug_file_processing == True:
