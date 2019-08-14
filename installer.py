@@ -27,7 +27,7 @@ import email.mime.multipart
 import tempfile
 import copy
 
-version = '124'
+version = '125'
 freelcs_version = '3.6'
 
 ###################################
@@ -530,6 +530,17 @@ def print_number_of_processors_cores_to_use(*args):
 	if debug == True:
 		print()
 		print('number_of_processor_cores =', number_of_processor_cores.get())
+
+def print_target_loudness(*args):
+
+	if int(target_loudness.get()) <= -23:
+		second_window_label_9['foreground'] = 'dark gray'
+	else:
+		second_window_label_9['foreground'] = 'red'
+
+	if debug == True:
+		print()
+		print('target loudness =', target_loudness.get())
 
 def print_use_tls(*args):
 	if debug == True:
@@ -4786,6 +4797,16 @@ def change_state_of_license_agreement_button():
 	else:
 		license_info_window_next_button['state'] = 'disabled'
 
+def change_state_of_target_loudness_combobox():
+
+	if allow_non_standard_target_loudness.get() == 0:
+		target_loudness_combobox.state(['disabled'])
+		target_loudness_combobox.set(-23)
+		print_target_loudness()
+	else:
+		target_loudness_combobox.state(['!disabled'])
+		print_target_loudness()
+
 def find_os_name_and_version():
 
 	path_to_os_release_file = '/etc/os-release'
@@ -5546,6 +5567,8 @@ accept_license = tkinter.IntVar()
 accept_license.set(0)
 ram_disk_text = tkinter.StringVar()
 ram_disk_text_color = tkinter.StringVar()
+allow_non_standard_target_loudness = tkinter.BooleanVar()
+
 
 # Define variables that will be used as the text content on seventh window. The variables can hold one of two values: 'Installed' / 'Not Installed'.
 sox_is_installed = tkinter.StringVar()
@@ -5689,6 +5712,7 @@ libebur128_repository_url = "http://github.com/mhartzel/libebur128_fork_for_free
 current_time = time.time()
 installation_logfile_name = 'freelcs_installation_log_' + str(parse_time(current_time)).replace(' ','_').replace(':','.') + '.txt'
 installation_logfile_path = '/var/log'
+non_standard_target_loudness_button_state = 'disabled'
 
 # Get the directory the os uses for storing temporary files.
 directory_for_os_temporary_files = tempfile.gettempdir()
@@ -6166,6 +6190,11 @@ second_frame_child_frame_4['borderwidth'] = 2
 second_frame_child_frame_4['relief'] = 'sunken'
 second_frame_child_frame_4.grid(column=0, row=3, columnspan=4, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E))
 
+second_frame_child_frame_5=tkinter.ttk.Frame(second_frame)
+second_frame_child_frame_5['borderwidth'] = 2
+second_frame_child_frame_5['relief'] = 'sunken'
+second_frame_child_frame_5.grid(column=0, row=4, columnspan=4, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E))
+
 ##########################################################################################################################
 
 third_frame=tkinter.ttk.Frame(root_window)
@@ -6444,7 +6473,45 @@ else:
 	file_expiry_time_in_minutes_combobox.set(480)
 	
 file_expiry_time_in_minutes_combobox.bind('<<ComboboxSelected>>', convert_file_expiry_time_to_seconds)
-file_expiry_time_in_minutes_combobox.grid(column=3, row=0, pady=10, padx=10, sticky=(tkinter.N))
+file_expiry_time_in_minutes_combobox.grid(column=3, row=0, pady=10, padx=10, sticky=(tkinter.N, tkinter.E))
+
+#################
+# Child Frame 5 #
+#################
+
+# Enable / disable non-standard target loudness
+allow_non_standard_target_loudness.set('false')
+non_standard_target_loudness_button_state = 'disabled'
+
+if target_loudness.get() != '-23':
+	allow_non_standard_target_loudness.set('true')
+	non_standard_target_loudness_button_state = 'normal'
+
+# Target Loudness
+second_window_label_7 = tkinter.ttk.Label(second_frame_child_frame_5, text='Target loudness level:')
+second_window_label_7.grid(column=0, row=0, columnspan=1, pady=10, padx=10, sticky=(tkinter.W, tkinter.N))
+
+target_loudness_checkbutton = tkinter.ttk.Checkbutton(second_frame_child_frame_5, variable=allow_non_standard_target_loudness, command=change_state_of_target_loudness_combobox)
+target_loudness_checkbutton.grid(column=2, row=0, padx=10, pady=10)
+
+target_loudness_combobox = tkinter.ttk.Combobox(second_frame_child_frame_5, justify=tkinter.CENTER, width=4, textvariable=target_loudness, state=non_standard_target_loudness_button_state)
+target_loudness_combobox['values'] = (-12,-13,-14,-15,-16,-17,-18,-19,-20,-21,-22,-23,-24,-25,-26,-27,-28,-29,-30,-31)
+
+# If a previously saved setting can be found then use it.
+if target_loudness.get() != '':
+	target_loudness_combobox.set(target_loudness.get())
+else:
+	target_loudness_combobox.set(-23)
+	
+target_loudness_combobox.bind('<<ComboboxSelected>>', print_target_loudness)
+target_loudness_combobox.grid(column=3, row=0, pady=10, padx=10, sticky=(tkinter.N, tkinter.E))
+
+second_window_label_8 = tkinter.ttk.Label(second_frame_child_frame_5, wraplength=text_wrap_length_in_pixels, text='EBU standard target loudness level is -23 LUFS. Media sites on the internet use the following levels according to info found on the net: \n\nApple Music (sound check on): -16 LUFS\nSpotify, Amazon, Music and Tidal: -14 LUFS\nYoutube: -13 LUFS')
+second_window_label_8.grid(column=0, row=1, columnspan=4, pady=10, padx=10, sticky=(tkinter.W, tkinter.N))
+
+second_window_label_9 = tkinter.ttk.Label(second_frame_child_frame_5, wraplength=text_wrap_length_in_pixels, text='Warning: Using target loudness higher than -23 LUFS (-22 <---> -12 LUFS) can sometimes result in clipping if audio files are not prepared with reduced dynamic range or if audio has very high peaks compared to its average loudness level.')
+second_window_label_9.grid(column=0, row=2, columnspan=4, pady=10, padx=10, sticky=(tkinter.W, tkinter.N))
+print_target_loudness()
 
 # Create the buttons under childframes
 second_window_back_button = tkinter.Button(second_frame, text = "Back", command = call_sixth_frame_on_top)
