@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '293'
+loudnesscorrection_version = '294'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -1540,13 +1540,13 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 			hard_limiter_level = difference_from_target_loudness + audio_peaks_absolute_ceiling
 
 			# When using higher than -23 LUFS loudness target level, then the limiter level must be lowered incrementally to prevent clipping when processing files with sox
-			if int(target_loudness) > -21:
+			if int(target_loudness) >= -20:
 				hard_limiter_level = hard_limiter_level - 0.5
-			if int(target_loudness) > -19:
+			if int(target_loudness) >= -18:
 				hard_limiter_level = hard_limiter_level - 0.5
-			if int(target_loudness) > -17:
+			if int(target_loudness) >= -16:
 				hard_limiter_level = hard_limiter_level - 0.5
-			if int(target_loudness) > -15:
+			if int(target_loudness) >= -14:
 				hard_limiter_level = hard_limiter_level - 0.5
 			
 			# Save some debug information.
