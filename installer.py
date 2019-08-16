@@ -27,7 +27,7 @@ import email.mime.multipart
 import tempfile
 import copy
 
-version = '125'
+version = '127'
 freelcs_version = '3.6'
 
 ###################################
@@ -3855,6 +3855,10 @@ def define_program_installation_commands():
 		needed_packages_install_commands.append('samba')
 	if mediainfo_path == '':
 		needed_packages_install_commands.append('mediainfo')
+
+	# Always install fonts-liberation as gnuplot uses LiberationSans-Regular from it.
+	needed_packages_install_commands.append('fonts-liberation')
+
 	if loudness_path == '':
 		libebur128_dependencies_install_commands = ['build-essential', 'git', 'cmake', 'libsndfile-dev', 'libmpg123-dev', 'libmpcdec-dev', \
 		'libglib2.0-dev', 'libfreetype6-dev', 'librsvg2-dev', 'libavcodec-dev', 'libavformat-dev', 'libtag1-dev', \

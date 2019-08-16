@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '295'
+loudnesscorrection_version = '297'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -1196,7 +1196,8 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 					if int(os_version) >= 9:
 						gnuplot_y_axis_commands = 'set yrange [ -60 : 0 ] nowriteback'
 
-				gnuplot_commands=['set terminal jpeg size 1280,960 medium font \'arial\'', \
+				gnuplot_commands=['set terminal jpeg size 1280,960 medium font \'LiberationSans-Regular\' 12', \
+				'set encoding utf8', \
 				'set output ' + '\"' + gnuplot_temporary_output_graphicsfile.replace('"','\\"') + '\"', \
 				gnuplot_y_axis_commands, \
 				'set grid', \
@@ -1320,7 +1321,8 @@ def create_gnuplot_commands_for_error_message(error_message, filename, directory
 				send_error_messages_to_screen_logfile_email(error_message, [])
 
 			# Create gnuplot commands and put them in  a list.
-			gnuplot_commands=['set terminal jpeg size 1280,960 medium font \'arial\'', \
+			gnuplot_commands=['set terminal jpeg size 1280,960 medium font \'LiberationSans-Regular\' 12', \
+			'set encoding utf8', \
 			'set output ' + '\"' + gnuplot_temporary_output_graphicsfile.replace('"','\\"') + '\"', \
 			'set yrange [ 1 : 10 ]', \
 			'set title ' + '\"\'' + filename.replace('_', ' ').replace('"','\\"') + '\'\\n' + 'Loudness calculation encountered an error\\n\\n' * english + 'Äänekkyyden mittaamisessa tapahtui virhe:\\n\\n' * finnish + 'Error Message: ' * english + 'Virheilmoitus: ' * finnish + str(error_message), \
@@ -2800,7 +2802,7 @@ def write_html_progress_report_thread(english, finnish):
 
 			html_code_part_1 = ['<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">', \
 			'<html><head>', \
-			'<meta content="text/html; charset=ISO-8859-15" http-equiv="content-type">', \
+			'<meta content="text/html; charset=UTF-8" http-equiv="content-type">', \
 			'<meta http-equiv="refresh" content="' + str(html_progress_report_write_interval) + '">', \
 			'<META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">', \
 			'<title>' + 'LoudnessCorrection_Process_Queue' * english + 'AanekkyysKorjauksen laskentajono' * finnish + '</title>', \
@@ -2818,7 +2820,6 @@ def write_html_progress_report_thread(english, finnish):
 				filename = ''
 				if (len(first_ten_files_queued_to_loudness_calculation) > 0) and (counter <= len(first_ten_files_queued_to_loudness_calculation)):
 					filename = first_ten_files_queued_to_loudness_calculation[counter - 1]
-					filename = filename.replace('ä', '&auml;').replace('Ä', '&Auml;').replace('ö', '&ouml;').replace('Ö', '&Ouml;').replace('å', '&aring;').replace('Å', '&Aring;') # Special Finnish characters in filename won't print correctly unless they are replaced with proper html-codes.
 				position_in_queue = str(counter) # This variable holds the queue number we print in html for each file in the queue.
 				if len(position_in_queue) == 1: # If queue number is only one digit long (1, 2, 3, etc), use two digits instead (01, 02, 03, etc).
 					position_in_queue = '0' + position_in_queue
@@ -2873,7 +2874,6 @@ def write_html_progress_report_thread(english, finnish):
 			for filename in copy_of_completed_files_list:
 				# Append information generated above to the html-code.
 				completion_time = completed_files_dict[filename]
-				filename = filename.replace('ä', '&auml;').replace('Ä', '&Auml;').replace('ö', '&ouml;').replace('Ö', '&Ouml;').replace('å', '&aring;').replace('Å', '&Aring;') # Special Finnish characters in filename won't print correctly unless they are replaced with proper html-codes.
 				html_code_part_3.append(completion_time + ':&nbsp;&nbsp;&nbsp;' + str(filename + '<br>'))
 			
 			# Create the last static part of html-code.		
