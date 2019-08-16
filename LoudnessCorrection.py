@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '294'
+loudnesscorrection_version = '295'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -857,6 +857,7 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 		global temp_loudness_results_for_automation
 		global os_name
 		global os_version 
+		global target_loudness
 
 		error_message = ''
 		gnuplot_commands = []
@@ -1169,6 +1170,14 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 					peak_measurement_string_finnish = peak_measurement_string_english
 					peak_measurement_unit = 'dBTP'
 
+				# Set target level color on graphics based on if target loudness is lower, equal or higher than -23 LUFS.
+				if int(target_loudness) < -23:
+					target_level = " title \'" + target_loudness + " LUFS (Target Level)\'" * english + " LUFS (Tavoitetaso)\'" * finnish +  " lw 6 lc rgb \'#0d59d6\', " # Color: Blue
+				elif target_loudness == '-23':
+					target_level = " title \'0 LU (Target Level)\'" * english + " title \'0 LU (Tavoitetaso)\'" * finnish + " lw 6 lc rgb \'#99ff00\', " # Color: Green                                                               
+				else:
+					target_level = " title \'" + target_loudness + " LUFS (Target Level)\'" * english + " LUFS (Tavoitetaso)\'" * finnish +" lw 6 lc rgb \'#d60d43\', " # Color: Red
+
 				# Generate gnuplot commands for plotting the graphics. Put all gnuplot commands in a list.
 				# Gnuplot 5 in Ubuntu 16.04 and Debian 9 reverses y axis. Detect os version and adjust y axis cordinates accordingly
 
@@ -1195,7 +1204,7 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 				'set ylabel ' + '\"Loudness (LUFS)\"' * english + '\"Äänekkyystaso (LUFS)\"' *finnish, \
 				plotfile_x_axis_time_information, \
 				'set xlabel \"' + plotfile_x_axis_name + '\"', \
-				'plot ' + target_loudness * english + ' title \'0 LU (Target Level)\' lw 6 lc rgb \'#99ff00\', ' * english + target_loudness * finnish + ' title \'0 LU (Tavoitetaso)\' lw 6 lc rgb \'#99ff00\', ' * finnish + '\"' + loudness_calculation_table.replace('"','\\"') + '\"' + ' with lines lw 1 lc rgb \'#c4a45a\' title \'Short-term Loudness\', ' * english + ' with lines lw 1 lc rgb \'#c4a45a\' title \'Tiedoston lyhytaikainen äänekkyystaso\', ' * finnish + str(integrated_loudness) + ' title \'Integrated Loudness\' lw 2 lc rgb \'#008327\'' * english + ' title \'Tiedoston keskimääräinen äänekkyystaso\' lw 2 lc rgb \'#008327\'' * finnish]
+				'plot ' + target_loudness + target_level + '\"' + loudness_calculation_table.replace('"','\\"') + '\"' + ' with lines lw 1 lc rgb \'#c4a45a\' title \'Short-term Loudness\', ' * english + ' with lines lw 1 lc rgb \'#c4a45a\' title \'Tiedoston lyhytaikainen äänekkyystaso\', ' * finnish + str(integrated_loudness) + ' title \'Integrated Loudness\' lw 2 lc rgb \'#008327\'' * english + ' title \'Tiedoston keskimääräinen äänekkyystaso\' lw 2 lc rgb \'#008327\'' * finnish]
 
 				# Write loudness time slice calculation results in a file, gnuplot uses this file for plotting graphics.
 				try:
