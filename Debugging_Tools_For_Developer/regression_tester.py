@@ -384,7 +384,7 @@ def print_info_about_usage():
 	print('This program is used to automatically test a set of known test files with all relevant LoudnessCorrection.py settings.')
 	print('This means the program runs through the same test files with and without FFmpeg and using sample peak and truepeak measurement.')
 	print('Test results are compared agains a known good set of results created using a previous stable version of LoudnessCorrection.py')
-	print('Test results a written to a file and optionally sent to the admin by email.')
+	print('Test results are written to a file and optionally sent to the admin by email.')
 	print()
 	print('Note !!!!!! The test files MUST be on the same physical partition as the LoudnessCorrection HotFolder because test files are not copied but linked to the HotFolder !!!!!!!')
 	print()
@@ -440,9 +440,11 @@ def read_loudnesscorrection_config_file():
 		os_name = all_settings_dict['os_name']
 	if 'os_version' in all_settings_dict:
 		os_version = all_settings_dict['os_version']
+	if 'target_loudness' in all_settings_dict:
+		target_loudness = all_settings_dict['target_loudness']
 
 
-	return(hotfolder_path, directory_for_results, directory_for_error_logs, email_sending_details, os_name, os_version)
+	return(hotfolder_path, directory_for_results, directory_for_error_logs, email_sending_details, os_name, os_version, target_loudness)
 
 def run_external_program(commands_to_run):
 
@@ -776,7 +778,6 @@ list_of_testfile_paths = []
 
 # There will be 20 source result filenames, initialize the list.
 for counter in range(0,4):
-
 	previous_results_filenames.append(['','','','',''])
 
 # There will be 20 target result filenames, initialize the list.
@@ -943,7 +944,7 @@ for line in list_of_command_output:
 
 			list_of_command_output, error_happened, list_of_errors = run_external_program(['/bin/kill', pid_of_program_to_stop])
 
-#  We need to know if we running on the desktop or server version of the os, so that we can create the foldername for results dir accordingly
+# We need to know if we running on the desktop or server version of the os, so that we can create the foldername for results dir accordingly
 # Here we try to find if package  'pulseaudio'  is installed, if it is then the we are running on a 'Desktop' - version of the os.
 os_is_server_or_desktop_version = 'desktop'
 commands_to_run = ['dpkg', '-l', 'pulseaudio']
@@ -961,7 +962,7 @@ if error_happened == False:
 			os_is_server_or_desktop_version = 'server'
 
 # Read in settings from LoudnessCorrection settings file.
-hotfolder_path, directory_for_results, directory_for_error_logs, email_sending_details, os_name, os_version = read_loudnesscorrection_config_file()
+hotfolder_path, directory_for_results, directory_for_error_logs, email_sending_details, os_name, os_version, target_loudness = read_loudnesscorrection_config_file()
 directory_for_old_error_logs = directory_for_error_logs + os.sep + '00-Old_Error_Logs'
 
 # Check if path defined in LoudnessCorrection settings file exist, if not create
@@ -1037,6 +1038,10 @@ if '-no-result-comparison' not in sys.argv:
 	regression_test_results_target_dir = os.path.split(path_to_known_good_results_dir)[0] + os.sep + loudness_correction_version + '-'  + os_name + '_' + os_version + '_' + os_is_server_or_desktop_version
 else:
 	regression_test_results_target_dir = path_to_known_good_results_dir + os.sep + loudness_correction_version + '-'  + os_name + '_' + os_version + '_' + os_is_server_or_desktop_version
+
+# Add target loudness to the end of path if target is not at standard -23 LUFS
+if target_loudness != '-23':
+	 regression_test_results_target_dir = regression_test_results_target_dir + '_' + target_loudness + '_LUFS'
 
 if os.path.exists(regression_test_results_target_dir) == True:
 	shutil.rmtree(regression_test_results_target_dir)

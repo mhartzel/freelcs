@@ -390,6 +390,7 @@ unsupported_formats_list = ['libmodplug']
 #####################################################################################
 # Set default target loudness = -23 LUFS. The user can change this in the installer #
 #####################################################################################
+# This value will be overwritten by value that comes from the installer program through the file Loudness_Correction_Settings.pickle
 target_loudness = '-23'
 
 ###############################################################################################################################################################################
