@@ -711,7 +711,7 @@ cd $LIBEBUR128_DIR_NAME
 
 # Get the git commit number of current version of libebur128
 echo
-LIBEBUR128_REQUIRED_GIT_COMMIT_VERSION="118f14a6fbba3ec08d423bd8f44bb79844c24176"
+LIBEBUR128_REQUIRED_GIT_COMMIT_VERSION="6be99482058e176df49916eeb0ebe0aaf7674c11"
 LIBEBUR128_CURRENT_COMMIT=`git rev-parse HEAD`
 
 # If libebur128 commit number does not match, check out the correct version from git
