@@ -20,51 +20,10 @@
     that FreeLCS uses when printing the loudness history graphics file is not
     installed by default. These problems can be easily corrected.<br>
     <br>
-    <h2>Fixing Ubuntu 12.04 and 14.04 Server locale</h2>
+    <h2>Fixing Ubuntu Server locale</h2>
     For <strong>Ubuntu 16.04 and newer</strong> use the <a href="Debian_modifications_needed_before_FreeLCS_installation.html#Fixing_Debian_locale">Debian
       method described here</a>.<br>
     <p> </p>
-    <br>
-    Ubuntu Server locale is not configured correctly by default, this produces
-    error messages during program package installation and stops the FreeLCS
-    installer.<br>
-    <br>
-    All following commands must be executed as root.<br>
-    <br>
-    These next instructions fixes your locale if your language is Finnish (code:
-    <strong>fi</strong>). You can find language code for you language in the
-    file:&nbsp;&nbsp; <strong>/usr/share/i18n/SUPPORTED</strong> <br>
-    Find the line that mentions you language code and <strong>UTF-8</strong>.
-    In my case the line is (my language is Finnish):<br>
-    <br>
-    <div style="margin-left: 40px;"><strong>fi_FI.UTF-8&nbsp;&nbsp; UTF-8</strong></div>
-    <br>
-    Copy the line and put it as the last line of the textfile:&nbsp;&nbsp; <strong>/var/lib/locales/supported.d/local</strong><br>
-    <br>
-    Next you need to take first part of the line above and compose two lines
-    text with it and add these lines at the end of the file: &nbsp; <strong>/etc/environment</strong><br>
-    In the case of Finnish language the two lines are:<br>
-    <br>
-    <div style="margin-left: 40px;"><strong>LC_ALL=fi_FI.UTF-8</strong><br>
-      <strong>LANG=fi_FI.UTF-8</strong></div>
-    <br>
-    Next run the command: <strong>dpkg-reconfigure locales</strong><br>
-    <br>
-    You need to log out and back in for the changes to take effect.<br>
-    <br>
-    <h2>Fixing history graphics file fonts</h2>
-    <br>
-    Install liberation fonts:&nbsp; <strong>sudo apt-get install
-      fonts-liberation<br>
-    </strong><br>
-    Next create a link to the font that is used when FreeLCS creates history
-    graphics files:<br>
-    <br>
-    <strong>sudo&nbsp;&nbsp; ln&nbsp;&nbsp;
-      /usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf&nbsp;&nbsp;
-      /usr/share/fonts/truetype/arial.ttf</strong><br>
-    <br>
-    <br>
     <br>
     <h2><a name="Installing FreeLCS on a computer without a graphical user interface"></a>Installing
       FreeLCS on a computer without a graphical user interface</h2>
@@ -101,11 +60,19 @@
     FreeLCS installation requires either a connection to the internet or access
     to a local Debian / Ubuntu package repository.<br>
     <br>
-    This method requires two computers: one Linux or OS X machine with the X
-    windowing system installed (<strong>Desktop computer</strong>) and the
-    target server (<strong>server computer</strong>). When using this method the
-    installer runs on the "headless" <strong>server</strong>, but its windows
-    will appear on the <strong> Desktop</strong> computer. <br>
+    <p> This method requires two computers: one Linux or OS X machine with the X
+      windowing system installed (<strong>Desktop computer</strong>) and the
+      target server (<strong>server computer</strong>). When using this method
+      the installer runs on the "headless" <strong>server</strong>, but its
+      windows will appear on the <strong> Desktop</strong> computer. </p>
+    <p><br>
+    </p>
+    <p>Note: On Ubuntu Server 16.04 and Debian 9 and newer XForwarding is
+      enabled by default so you don't need to edit <strong>/etc/ssh/ssh_config</strong>
+      anymore, just jump to the part: <strong>ssh&nbsp; -Y&nbsp; -C&nbsp;
+        -l&nbsp;&nbsp; username &nbsp; 192.168.1.1</strong>.</p>
+    <p><br>
+    </p>
     <ul>
       <li>First make an ssh - connection from the <strong>Desktop</strong>
         computer to the <strong>server</strong> with the following command

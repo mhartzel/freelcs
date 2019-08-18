@@ -101,6 +101,23 @@
         make changes to the package repository settings so that the database for
         available packages gets updated.</li>
     </ul>
+    <h3 style="margin-left: 40px;">Debian 10:</h3>
+    <p></p>
+    <p style="margin-left: 40px;"># deb cdrom:[Debian GNU/Linux 10.0.0 _Buster_
+      - Official amd64 DVD Binary-1 20190706-10:24]/ buster contrib main<br>
+      <br>
+      deb http://deb.debian.org/debian/ buster main<br>
+      deb-src http://deb.debian.org/debian/ buster main<br>
+      <br>
+      deb http://security.debian.org/debian-security buster/updates main contrib<br>
+      deb-src http://security.debian.org/debian-security buster/updates main
+      contrib<br>
+      <br>
+      # buster-updates, previously known as 'volatile'<br>
+      deb http://deb.debian.org/debian/ buster-updates main contrib<br>
+      deb-src http://deb.debian.org/debian/ buster-updates main contrib</p>
+    <ul>
+    </ul>
     <h3 style="margin-left: 40px;">Debian 9:</h3>
     <div style="margin-left: 40px;"># deb cdrom:[Debian GNU/Linux 9.4.0
       _Stretch_ - Official amd64 DVD Binary-1 20180310-11:21]/ stretch contrib
@@ -126,34 +143,13 @@
       #<br>
       # deb http://deb.debian.org/debian/ stretch-updates main contrib<br>
       # deb-src http://deb.debian.org/debian/ stretch-updates main contrib</div>
-    <h3 style="margin-left: 40px;">Debian 8:</h3>
-    <div style="margin-left: 40px;"># deb cdrom:[Debian GNU/Linux 8.0.0 _Jessie_
-      - Official amd64 DVD Binary-1 20150425-12:54]/ jessie contrib main<br>
-      <br>
-      deb http://security.debian.org/ jessie/updates main contrib<br>
-      deb-src http://security.debian.org/ jessie/updates main contrib<br>
-      <br>
-      deb http://ftp.fi.debian.org/debian/ jessie main<br>
-      deb-src http://ftp.fi.debian.org/debian/ jessie main<br>
-      deb http://ftp.fi.debian.org/debian/ jessie-updates main contrib<br>
-      deb-src http://ftp.fi.debian.org/debian/ jessie-updates main contrib<br>
-      <br>
-      # jessie-updates, previously known as 'volatile'<br>
-      # A network mirror was not selected during install.&nbsp; The following
-      entries<br>
-      # are provided as examples, but you should amend them as appropriate<br>
-      # for your mirror of choice.<br>
-      #<br>
-      # deb http://ftp.debian.org/debian/ jessie-updates main contrib<br>
-      # deb-src http://ftp.debian.org/debian/ jessie-updates main contrib<br>
-    </div>
     <br>
     <p>If you did not install a graphical desktop during Debian install, then
       you need to do two more modifications described below. If you did install
       a graphical desktop then you can go ahead with the <a href="FreeLCS_User_Manual.html#Installation">normal
         FreeLCS install procedure described in the user manual</a> :)</p>
     <br>
-    <h2><a name="Fixing_Debian_locale">Fixing Debian locale</a></h2>
+    <h2><a name="Fixing_Debian_locale">Fixing Debian / Ubuntu locale</a></h2>
     Ubuntu 16.04 and newer locale can also be fixed by using the method
     described below.<br>
     &nbsp;<br>
@@ -165,10 +161,9 @@
     <ul>
       <li>Run the command:</li>
     </ul>
-    <p style="margin-left: 40px;"><strong>su -</strong>&nbsp;&nbsp;&nbsp;
-      (Starting with Debian 10 you need to get root permissions by: su -&nbsp;
-      or root-users path definitions may not be accessible and some commands
-      might not be found)</p>
+    <p style="margin-left: 40px;"><strong>su -</strong>&nbsp;&nbsp;&nbsp; (On
+      debian)</p>
+    <p style="margin-left: 40px;"><strong>sudo su</strong> (On Ubuntu)</p>
     <ul>
     </ul>
     <div style="margin-left: 40px;"><strong>dpkg-reconfigure locales</strong></div>
@@ -192,28 +187,17 @@
     <br>
     <br>
     Now you need to log out and back in for the locale changes to take effect.<br>
+    <p><br>
+    </p>
+    <p>If you installed Debian graphical desktop then continue with <a href="FreeLCS_User_Manual.html#Installation"
+        title="Installation">normal install instructions here</a>. If you didn't
+      install a graphical desktop then follow the <a href="Ubuntu_Server_modifications_needed_before_FreeLCS_installation.html"
+        title="Headless installation instruction">headless installation
+        instructions here</a>.</p>
+    <p><br>
+    </p>
     <br>
     <br>
-    <br>
-    <h2>Fixing history graphics file fonts</h2>
-    If you did not install a graphical desktop during Debian install, then the
-    font used to create text on FreeLCS history graphics files is missing. When
-    the font is missing gnuplot uses an ugly default font which includes only
-    english characters and not any special characters used in other European
-    languages.<br>
-    <br>
-    Install liberation fonts:&nbsp; <strong>sudo apt-get install
-      fonts-liberation</strong><br>
-    <br>
-    Next create a link to the font that is used when FreeLCS creates history
-    graphics files:<br>
-    <br>
-    <strong>sudo&nbsp; ln&nbsp;&nbsp;
-      /usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf&nbsp;&nbsp;
-      /usr/share/fonts/truetype/arial.ttf<br>
-      <br>
-      <br>
-      <br>
-    </strong>
+    <strong> </strong>
   </body>
 </html>

@@ -27,7 +27,7 @@ import email.mime.multipart
 import tempfile
 import copy
 
-version = '127'
+version = '128'
 freelcs_version = '3.6'
 
 ###################################
@@ -417,6 +417,10 @@ def set_directory_names_according_to_language():
 	
 	if language.get() == 'english':
 		hotfolder_name_to_use = 'LoudnessCorrection'
+
+		if target_loudness.get() != '-23':
+			hotfolder_name_to_use = hotfolder_name_to_use + '_' + target_loudness.get() + '_LUFS'
+	
 		english = 1
 		finnish = 0
 		hotfolder_path.set(os.path.normpath(path + os.sep + hotfolder_name_to_use))
@@ -429,6 +433,10 @@ def set_directory_names_according_to_language():
 		web_page_path_truncated_for_display.set('Target Directory ' + os.sep + ' ' + hotfolder_name_to_use + ' ' + os.sep + ' 00-Calculation_Queue_Information')
 	else:
 		hotfolder_name_to_use = 'AanekkyysKorjaus'
+
+		if target_loudness.get() != '-23':
+			hotfolder_name_to_use = hotfolder_name_to_use + '_' + target_loudness.get() + '_LUFS'
+	
 		english = 0
 		finnish = 1
 		hotfolder_path.set(os.path.normpath(path + os.sep + hotfolder_name_to_use))
@@ -439,7 +447,7 @@ def set_directory_names_according_to_language():
 		hotfolder_path_truncated_for_display.set('Target Directory '  + os.sep + ' ' + hotfolder_name_to_use)
 		directory_for_results_truncated_for_display.set('Target Directory ' + os.sep + ' ' + hotfolder_name_to_use + ' ' + os.sep + ' 00-Korjatut_Tiedostot')
 		web_page_path_truncated_for_display.set('Target Directory ' + os.sep + ' ' + hotfolder_name_to_use + ' ' + os.sep + ' 00-Laskentajonon_Tiedot')
-	
+
 	directory_for_temporary_files_truncated_for_display.set('Target Directory ' + os.sep + ' 00-Loudness_Calculation_Temporary_Files')
 	directory_for_error_logs.set(path + os.sep + '00-Error_Logs')
 	directory_for_error_logs_truncated_for_display.set('Target Directory ' + os.sep + ' 00-Error_Logs')
@@ -541,6 +549,13 @@ def print_target_loudness(*args):
 	if debug == True:
 		print()
 		print('target loudness =', target_loudness.get())
+
+	# If this is the first time this subroutine is called then don't update samba share names since they have not been created yet.
+	if first_target_loudness_window_update.get() == 1:
+		first_target_loudness_window_update.set(0)
+	else:
+		# Update Folder names and samba share names
+		set_directory_names_according_to_language()
 
 def print_use_tls(*args):
 	if debug == True:
@@ -5572,6 +5587,8 @@ accept_license.set(0)
 ram_disk_text = tkinter.StringVar()
 ram_disk_text_color = tkinter.StringVar()
 allow_non_standard_target_loudness = tkinter.BooleanVar()
+first_target_loudness_window_update = tkinter.BooleanVar()
+first_target_loudness_window_update.set(1)
 
 
 # Define variables that will be used as the text content on seventh window. The variables can hold one of two values: 'Installed' / 'Not Installed'.
