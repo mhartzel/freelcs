@@ -1,5 +1,28 @@
 
 #####################################
+# Released FreeLCS 3.6 with:        #
+# ----------------------------      #
+# - LoudnessCorrection version 297  #
+# - HeartBeat_Checker version 022   #
+# - Installer version 128           #
+# - Latest Documentation            #
+#####################################
+
+- 00-backup_freelcs_configuration.sh: Checkout correct version of libebur128 source.
+- Installer versio 128: Append target loudness level (for example -16 LUFS) to the hotfolder name but only if target loudness is different from -23 LUFS.
+- 00-backup_freelcs_configuration.sh: Fix unattended install on debian 10. Always install package fonts-liberation as gnuplot uses Liberation-Sans from it.
+- LoudnessCorrection version 297: Gnuplot now uses Liberations-Sans font and UTF-8 encoding when creating loudness history graphics. Html progress report now uses UTF-8 encoding.
+- Installer version 127: Always install package fonts-liberation as gnuplot uses Liberation-Sans from it.
+- LoudnessCorrection 295: Set target level color on graphics based on if target loudness is lower, equal or higher than -23 LUFS.
+- LoudnessCorrection version 294. Made code little clearer for where limiter hard_limit is when user uses loudness target level higher than -23 LUFS.
+- Installer version 125. Allow user to change target loudness level in the range of -31 to -12 LUFS.
+- LoudnessCorrection version 293. If target loudness is higher than -23 LUFS then lower sox limiter gradually depending on the target loudness. This helps reduce cases where processing with sox causes clipping.
+- LoudnessCorrection 292: Preliminary support for changing the target_loudness to a number different from -23 LUFS.
+- Installer 124: Debian 10 samba-common package has a bug that makes it always prompt the user for WINS configuration. Disable prompting. Preliminary support for changing the target_loudness to a number different from -23 LUFS.
+- Debian 10 compatibility modifications.
+
+
+#####################################
 # Released FreeLCS 3.5 with:        #
 # ----------------------------      #
 # - LoudnessCorrection version 291  #

@@ -64,8 +64,12 @@
     <a href="#Will%20FreeLCS%20remux%20loudness%20corrected%20audio%20back%20to%20the%20video%20it%20was%20extracted%20from%20?">Will
       FreeLCS remux loudness corrected audio back to the video it was extracted
       from ?</a><br>
-    <a href="#Is%20MXF%20supported%20?"></a><br>
+    <br>
     <a href="#Is%20MXF%20supported%20?">Is MXF supported ?</a><br>
+    <br>
+    <a href="#Considerations%20for%20using%20a%20target%20loudness%20higher%20than%20-23%20LUFS"><span
+        style="color: #0000ee;">Considerations for using a target loudness
+        higher than -23 LUFS</span></a><br>
     <br>
     <a href="#Any%20suggestion%20for%20free%20tools%20to%20manipulate%20the%20Flac%20format%20?">Any
       suggestion for free tools to manipulate the Flac format ?</a><br>
@@ -76,6 +80,8 @@
     <a href="#What%20Linux%20distributions%20are%20supported%20?">What Linux
       distributions are supported ?</a><br>
     <br>
+    <a href="#AppArmor" title="AppArmor">AppArmor<br>
+    </a><br>
     <a href="#FreeLCS_error_messages">FreeLCS error messages</a><br>
     <br>
     <a href="#Critical_error_messages">Critical error messages</a><br>
@@ -84,9 +90,6 @@
     <br>
     <a href="#Errors_copying_files_from_OS_X_10.7-10.10_to_FreeLCS-Server">Errors
       copying files from OS X 10.7 - 10.10 to FreeLCS - Server</a><br>
-    <br>
-    <a href="#Ubuntu_12.04_updates_breaks_python3">Ubuntu 12.04 updates breaks
-      python3</a><br>
     <br>
     <a href="#Is_there_a_way_to_find_out_FreeLCS_options_used_during_installation">Is
       there a way to find out FreeLCS options used during installation ?</a><br>
@@ -156,17 +159,18 @@
     </p>
     <h2><a id="Libav-tools_vs_FFmpeg">Libav-tools vs. FFmpeg</a></h2>
     <ul>
-      <li>In 2011 a group of FFmpeg developers decided to take FFmpeg's source
-        code and start a new project with it. The reason for this "fork" was the
-        group was unhappy with the way the main FFmpeg developer managed the
-        project. The group named the new project Libav and renamed the video
-        and&nbsp; audio conversion program from <strong>ffmpeg</strong> to <strong>avconv</strong>.
-        This "fork" created a new project that continued development of the
-        FFmpeg source code parallel to the FFmpeg - project. Both projects have
-        slowly evolved their own way creating a puzzling situation for the user.
-        Tools that both projects develop (FFmpeg and avconv) are quite similar
-        by features, but there are differences in capabilites and usage here and
-        there. More about the FFmpeg vs. libav situation can be read <a href="http://blog.pkh.me/p/13-the-ffmpeg-libav-situation.html">here</a>.</li>
+      <li><strong>History:</strong> In 2011 a group of FFmpeg developers decided
+        to take FFmpeg's source code and start a new project with it. The reason
+        for this "fork" was the group was unhappy with the way the main FFmpeg
+        developer managed the project. The group named the new project Libav and
+        renamed the video and audio conversion program from <strong>ffmpeg</strong>
+        to <strong>avconv</strong>. This "fork" created a new project that
+        continued development of the FFmpeg source code parallel to the FFmpeg -
+        project. Both projects have slowly evolved their own way creating a
+        puzzling situation for the user. Tools that both projects develop
+        (FFmpeg and avconv) are quite similar by features, but there are
+        differences in capabilites and usage here and there. More about the
+        FFmpeg vs. libav situation can be read <a href="http://blog.pkh.me/p/13-the-ffmpeg-libav-situation.html">here</a>.</li>
       <li>This change from FFmpeg to libav-tools turned out to be a short one.
         As of 2016.07 distributions are migrating away from libav back to
         FFmpeg. Ubuntu 16.04 only has FFmpeg available in its repositories and
@@ -389,15 +393,9 @@
       <li>If audio has been compressed using a lossy codec then the audio has no
         real bit depth anymore and audio will be extracted using 16 bits.</li>
       <li>If output file size exceeds 4 GBs then FreeLCS must store the audio in
-        flac format when processing it. Bit depths bigger than 16 will be
-        converted to 16 bits on <strong>Ubuntu 12.04</strong> and <strong>Debian
-          7</strong>. This is caused by an internal limitation in libav-tools
-        version distributed with Ubuntu 12.04 and Debian 7, it always uses 16
-        bits when storing in flac format. Ubuntu 14.04 and Debian 8 both ship
-        with a new version of libav-tools that is able to store 24 bit flac
-        files. Bit depths bigger than 24 will be converted to 24 bits. 8 bit
-        audio will be converted to 16 bits on all supported platforms if output
-        file size exceeds 4 GB.</li>
+        flac format when processing it. Bit depths bigger than 24 will be
+        converted to 24 bits. 8 bit audio will be converted to 16 bits on all
+        supported platforms if output file size exceeds 4 GB.</li>
     </ul>
     <u><strong></strong></u><br>
     <h2><a id="What happens if output file size exceeds wav format 4 GB size limit ?">What
@@ -424,7 +422,6 @@
         video file, but it won't remux video and audio back together.</li>
     </ul>
     <br>
-    <br>
     <h2><a id="Is MXF supported ?">Is MXF supported ?</a></h2>
     <ul>
       <li>FFmpeg and Libav-tools both supports MXF and I've been able to extract
@@ -440,6 +437,103 @@
         workflow. More about MXF Audio Remixing can be found in the <a href="Machine_readable_results_and_MXF_audio_remix_mapping.html#MXF_audio_remixing">user
           manual</a>.</li>
     </ul>
+    <p> </p>
+    <br>
+    <h2><a name="Target loudness higher than -12 LUFS" id="Considerations for using a target loudness higher than -23 LUFS"></a>Considerations
+      for using a target loudness higher than -23 LUFS</h2>
+    <ul>
+      <li>EBU standard target loudness -23 LUFS is widely used by European
+        broadcasters in production and media distribution. Internet media sites
+        commonly use a higher target loudness than that. According to
+        information found on the internet (this info may or may not be correct)
+        the following media sites use these target loudness values:</li>
+    </ul>
+    <br>
+    <div style="margin-left: 40px;"> <span style="font-family: monospace;">Apple
+        Music (sound check on)&nbsp;&nbsp;&nbsp; -16 LUFS <br>
+        Spotify&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        -14 LUFS<br>
+        Tidal&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        -14 LUFS<br>
+        Amazon
+        Music&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        -14 LUFS<br>
+        Youtube&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        -13 LUFS <br>
+      </span></div>
+    <div style="margin-left: 40px;"><span style="font-family: monospace;"><br>
+      </span></div>
+    <ul>
+    </ul>
+    <div style="margin-left: 40px;">Infromation sources:</div>
+    <div style="margin-left: 40px;"><a href="https://www.masteringthemix.com/blogs/learn/76296773-mastering-audio-for-soundcloud-itunes-spotify-and-youtube">https://www.masteringthemix.com/blogs/learn/76296773-mastering-audio-for-soundcloud-itunes-spotify-and-youtube</a><br>
+      <a href="https://toneprints.com/media/2040040/mobile-test-paper-2013.pdf">https://toneprints.com/media/2040040/mobile-test-paper-2013.pdf</a><br>
+      <a href="http://productionadvice.co.uk/youtube-loudness/">http://productionadvice.co.uk/youtube-loudness/</a><br>
+      <a href="https://artists.spotify.com/faq/mastering-and-loudness#how-does-spotify-calculate-loudness">https://artists.spotify.com/faq/mastering-and-loudness#how-does-spotify-calculate-loudness</a></div>
+    <div style="margin-left: 40px;"><br>
+    </div>
+    <div style="margin-left: 40px;"><br>
+    </div>
+    <div style="margin-left: 40px;">FreeLCS 3.6 and later will let you select
+      any target loudness in the range of -31 LUFS to -12 LUFS. Using target
+      loudness higher than -23 LUFS requires you to master your audio using a
+      reduced loudness range or you may introduce peak clipping. High target
+      loudness levels might introduce clipping if source file loudness needs to
+      <strong>adjusted up and</strong>:</div>
+    <div style="margin-left: 40px;"><br>
+    </div>
+    <ol style="margin-left: 40px;">
+      <li>The file has very low overall loudness and peaks are already near 0
+        dbTP</li>
+      <li>The file has very low overall loudness and a relatively short part
+        that is very loud </li>
+    </ol>
+    <div style="margin-left: 40px;"><br>
+    </div>
+    <div style="margin-left: 40px;">The picture below demonstrates the latter
+      case: very low overall loudness and a relatively short part that is very
+      loud.</div>
+    <div style="margin-left: 40px;"><br>
+    </div>
+    <p> <img src="Pictures/Music.wav-Loudness_Results_Graphics_-23_LUFS.jpg" alt="">
+    </p>
+    <div style="margin-left: 40px;">Most of this audio is at about -42 LUFS and
+      the last part is at about -20 LUFS. That is 22 LUFS difference. R128 has a
+      relative gate that discards measurements 10 LU below calculated loudness.
+      In this case it means that loudness is only calculated from the last
+      loudest part of the audio and measurements from all other parts are
+      discarded. If loudness is now adjusted up to -12 LUFS then limiting is
+      needed or peaks will overshoot. Limiting the last part of the audio lowers
+      total loudness because only the last part affects overall loudness.
+      FreeLCS limiting works like this:</div>
+    <div style="margin-left: 40px;">
+      <ol>
+        <li>Measure loudness and absolute peak</li>
+        <li>Decide if limiting is needed and calculate where peaks needs to be
+          after loudness adjustment. Limiting is only used if file loudness is
+          adjusted up and peaks would overshoot.</li>
+        <li>Limit peaks</li>
+        <li>Measure loudness again</li>
+        <li>Adjust loudness to target level</li>
+      </ol>
+      <p>This process works very well with -23 LUFS target level. But in case of
+        this example loudness variations are too wide to handle if one chooses a
+        very high target loudness, for example -12 LUFS. Limiting lowers the
+        files loudness and this causes a too big change between the processing
+        steps and clipping might occur.</p>
+      <p>Files like these needs to be prepared for a high target loudness by
+        eliminating too wide loudness variations. FreeLCS is not a multi purpose
+        compressor and it will not handle gracefully extreme cases like this.</p>
+    </div>
+    <div style="margin-left: 40px;">So to cut a long story short you need to be
+      aware that when using high target loudness levels (-16, -14, -12 LUFS)
+      files might need to be mixed with a reduced loudness range, one that is
+      suitable for that target level. If you are getting this error message on
+      your loudness history graphics "<strong>sox WARN gain: gain clipped 27
+        samples; decrease volume?</strong>" then the audio probably has a
+      problem like described above. You probably can't hear if a few samples
+      overshoot, and depending on the purpose it might not matter, for example
+      if the file is distributed in the social media.</div>
     <br>
     <h2><a id="Any suggestion for free tools to manipulate the Flac format ?">Any
         suggestion for free tools to manipulate the Flac format ?</a></h2>
@@ -465,6 +559,14 @@
     <h2><a id="What Linux distributions are supported ?">What Linux
         distributions are supported ?</a></h2>
     <ul>
+    </ul>
+    <p><br>
+      <strong>FreeLCS 3.6 Supports:</strong> </p>
+    <ul>
+      <li>Debian 10 with and without a GUI</li>
+      <li>Debian 9 with and without a GUI</li>
+      <li>Ubuntu 18.04 LTS Desktop and Server</li>
+      <li>Ubuntu 16.04 LTS Desktop and Server</li>
     </ul>
     <p><strong>FreeLCS 3.5 Supports:</strong></p>
     <ul>
@@ -523,7 +625,26 @@
     2023.<br>
     <ul>
     </ul>
-    <br>
+    <p> </p>
+    <p><br>
+    </p>
+    <h2><a name="AppArmour " id="AppArmor"></a>AppArmor </h2>
+    <p>AppArmor is a Linux kernel security module that protects system files and
+      directories by maintaining access right lists. Only applications that has
+      rights to read / write / execute/ access system directories or files in a
+      AppArmor profile will be granted access. Any other application can not
+      access protected files / directories.</p>
+    <p><br>
+    </p>
+    <p>Debian 10 ships with AppArmor turned on by default. AppArmor does not
+      affect FreeLCS installation or operation in any way as long as you create
+      FreeLCS hotfolder to the root "/" directory or /mnt or /media or to a
+      users home directory. Debian 10 ships with an automatic script that grants
+      network shares defined in /etc/samba/smb.conf automatically access rights
+      in AppArmor so that users can drop files in FreeLCS hotfolder. This script
+      runs automatically each time samba is started.</p>
+    <p><br>
+    </p>
     <h2><a id="FreeLCS_error_messages" name="FreeLCS_error_messages"></a>FreeLCS
       error messages</h2>
     <p>If you enable FreeLCS to send error messages by email, then you probably
@@ -544,20 +665,9 @@
       the commandline:</p>
     <p><br>
     </p>
-    <p>On systemd based distros (Debian 8 and Ubuntu 16.04):</p>
+    <p>On systemd based distros (Debian 8 and Ubuntu 16.04and later):</p>
     <p><strong>systemctl restart freelcs</strong></p>
-    <p><br>
-    </p>
-    <p>On init based distros (Debian 7, Ubuntu 12.04 and 14.04):</p>
-    <p><strong>/etc/init.d/loudnesscorrection_init_script restart</strong></p>
-    <p><strong><br>
-      </strong></p>
-    Note that it takes about 2 minutes for the service to start on init based
-    systems (Ubuntu 12.04, 14.04, Debian 7). This delay has been put in because
-    it takes some time before all Linux services are available when the computer
-    starts up.<strong><br>
-      <br>
-    </strong><br>
+    <strong> </strong><br>
     I have worked very hard to make FreeLCS solid as a rock. My goal is to keep
     it 100% reliable, so that it can be used in business environments. So you
     should never see this message :) but with computers anything is possible :)
@@ -903,68 +1013,6 @@
         ~/Library/Preferences/nsmb.conf&nbsp;&nbsp;&nbsp; ;&nbsp;&nbsp; echo
         "smb_neg=smb1_only" &nbsp;&nbsp; &gt;&gt;&nbsp;&nbsp;&nbsp;
         ~/Library/Preferences/nsmb.conf</strong></p>
-    <p><br>
-    </p>
-    <p> </p>
-    <h1><a id="Ubuntu_12.04_updates_breaks_python3">Ubuntu 12.04 updates breaks
-        python3</a></h1>
-    <p>While running regression tests prior to FreeLCS 3.2 release (September
-      2015), I noticed that FreeLCS installation breaks on Ubuntu 12.04. It used
-      to work flawlessly on this os version. The cause for the problem seems to
-      be Ubuntu updates bringing in a broken version of python3. The bug crashes
-      python code when HeartBeat_Checker.py and LoudnessCorrection.py are trying
-      to send email to the admin. This bug has been fixed on a newer version of
-      python3. If you still get email from FreeLCS when the computer starts up,
-      then you are not affected by this problem.&nbsp;</p>
-    <h2>Possible solutions:</h2>
-    <ol>
-      <li>Install python3.4 from an external python repository. The author of
-        this repository says he takes no responsibility for possible security
-        flaws that exist in the python3 code he releases. If you can not accept
-        this then the only option is to migrate away from Ubuntu 12.04.</li>
-      <li>Upgrade to Ubuntu 14.04 or Debian 8. FreeLCS must be installed again
-        after the os upgrade, since there are some differences between Ubuntu
-        12.04 and these oses. For example Ubuntu 14.04 uses a newer version of
-        Samba and the configuration file that works on Ubuntu 12.04 doesn't work
-        on 14.04. Installing FreeLCS again takes care of the configuration
-        changes needed.</li>
-    </ol>
-    <h2>Upgrading python3 with an external python repository</h2>
-    If you already installed python3 and FreeLCS, then give these commands as
-    root at the terminal:<br>
-    <strong><br>
-    </strong>
-    <div style="margin-left: 40px;"><strong>sudo apt-get purge python3 idle3</strong><br>
-      <strong> </strong><br>
-      <strong> sudo apt-get install python-software-properties</strong><br>
-      <strong> sudo add-apt-repository ppa:fkrull/deadsnakes</strong><br>
-      <br>
-      <strong> sudo apt-get update</strong><br>
-      <strong> sudo apt-get install python3.4 idle-python3.4</strong><br>
-      <strong> </strong><br>
-      <strong> sudo rm /usr/bin/python3</strong><strong></strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      (This removes a symbolic link that starts up python3)<br>
-      <strong> sudo ln -s /usr/bin/python3.4 /usr/bin/python3</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      (This creates a new symbolic link for python3 and makes it point to the
-      newly installed python3.4)<br>
-      <br>
-      Now reboot the computer</div>
-    <br>
-    <br>
-    If you haven't installed FreeLCS and python3, then give these commands as
-    root at the terminal:<br>
-    <br>
-    <br>
-    <div style="margin-left: 40px;"><strong>sudo apt-get install
-        python-software-properties<br>
-        sudo add-apt-repository ppa:fkrull/deadsnakes<br>
-        <br>
-        sudo apt-get update<br>
-        sudo apt-get install python3.4 idle-python3.4<br>
-        <br>
-        sudo ln -s /usr/bin/python3.4 /usr/bin/python3<br>
-        <br>
-      </strong>Now reboot the computer</div>
     <br>
     <h2><a id="Is_there_a_way_to_find_out_FreeLCS_options_used_during_installation">Is
         there a way to find out FreeLCS options used during installation ?</a></h2>

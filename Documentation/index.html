@@ -18,7 +18,8 @@
     <br>
     FreeLCS stands for <strong>Free Loudness Correction Server</strong>.
     FreeLCS lets you automatically correct audio files to EBU R128 target
-    loudness level.<br>
+    loudness level -23 LUFS. Beginning from version 3.6 it is also possible to
+    change the target loudness in range of -31 LUFS to -12 LUFS.<br>
     <br>
     The software lets you easily set up a server that shares one of it's folders
     to the network. Users of your network can then drop audio files to the
@@ -28,7 +29,7 @@
     <br>
     The software is very fast even on modest hardware giving 15 times faster
     than realtime processing (16 bit stereo files, TruePeak measurement turned
-    on) on a server with one Intel Core 2 Duo processor, 2 GB Ram, 3 internal
+    on) on a server with one Intel Core 2 Duo processor, 4 GB Ram, 3 internal
     Sata disks in software RAID 0.<br>
     <br>
     FreeLCS uses other open source programs to get the job done (Linux,
@@ -39,6 +40,28 @@
     <a href="#Features">Features</a> and <a href="FreeLCS_User_Manual.html">User
       Manual</a>.<br>
     <h1><strong>Latest news:</strong></h1>
+    <h4>2019.08.24 FreeLCS 3.6 released.</h4>
+    <ul>
+      <li>This release supports Ubuntu 16.04, 18.04 and Debian 9 and 10.</li>
+      <li>It is now possible to change target loudness in the range of -31 LUFS
+        to -12 LUFS. This makes it possible to adjust loudness to a level that
+        is more compatible with internet media sites (Youtube, Spotify, mobile
+        devices, social media, etc). There are some things to be aware of when
+        using higher than -23 LUFS target loudness levels. They are discussed <a
+          href="FreeLCS_FAQ.html#Considerations%20for%20using%20a%20target%20loudness%20higher%20than%20-23%20LUFS"
+          title="Considerations for using a target loudness higher than -23 LUFS">here</a>.
+        Target loudness graphics is drawn using <a href="FreeLCS_User_Manual.html#Loudness%20history%20graphics%20when%20target%20loudness%20is%20set%20to%20-16,%20-23%20and%20-31%20LUFS"
+          title="Loudness history graphics when target loudness is set to -16, -23 and -31 LUFS">different
+          colors depending on if target is set lower, equal or higher than -23
+          LUFS</a>. Hotfolder name also changes depending on the <a href="FreeLCS_User_Manual.html#Hotfolder_Name"
+          title="Hotfolder_Name">selected target loudness.</a></li>
+      <li>Loudness history graphics and html progress report now uses UTF-8
+        character encoding.</li>
+      <li>Debian 10 has AppArmor turned on by default but this does not seem to
+        affect FreeLCS installation in any way. This is further discussed in the
+        FAQ <a href="FreeLCS_FAQ.html#AppArmor">here</a>.</li>
+    </ul>
+    <p></p>
     <h4>2018.05.25 FreeLCS 3.5 released.</h4>
     <ul>
       <li>This release supports Ubuntu 16.04, 18.04 and Debian 8 and 9.</li>
@@ -48,13 +71,13 @@
         the Opus - format) are now enabled if you enable free formats during
         FreeLCS installation. Extracting audio from these formats still require
         installation of FFmpeg / Libav-tools.</li>
-      <li>Libebur128 upgraded to the latest version 1.2.4. Libebur128
-        by default builds taglib into the 'loudness' executable. Taglib does not
-        build cleanly anymore on older distros probably due to old gcc -
-        versions. Because of this building taglib with libebur128 is disabled on
-        Debian 8 and Ubuntu 16.04. Taglib is used to read and write metadata
-        into files (For Example ID3 - data in mp3 files), so you probably don't
-        need it for anything anyway. <a href="https://en.wikipedia.org/wiki/TagLib">https://en.wikipedia.org/wiki/TagLib</a></li>
+      <li>Libebur128 upgraded to the latest version 1.2.4. Libebur128 by default
+        builds taglib into the 'loudness' executable. Taglib does not build
+        cleanly anymore on older distros probably due to old gcc - versions.
+        Because of this building taglib with libebur128 is disabled on Debian 8
+        and Ubuntu 16.04. Taglib is used to read and write metadata into files
+        (For Example ID3 - data in mp3 files), so you probably don't need it for
+        anything anyway. <a href="https://en.wikipedia.org/wiki/TagLib">https://en.wikipedia.org/wiki/TagLib</a></li>
     </ul>
     <p></p>
     <h4>2017.08.30 FreeLCS 3.4 released.</h4>
@@ -78,11 +101,6 @@
         automatically if the module is not loaded or built into kernel.</li>
       <li>If you need to disable the smb protocol version1 then remove the
         character # from smb.conf in front of line: # server min protocol = SMB2</li>
-    </ul>
-    <h4>2016.07.01 FreeLCS 3.3 released.</h4>
-    <ul>
-      <li>This release supports Ubuntu 14.04 and 16.04 and Debian 8. Support for
-        Ubuntu 12.04 and Debian 7 is dropped.</li>
     </ul>
     <h4>2013.03.11 <span style="font-weight: normal;">Released introductory
         material about EBU R128 recommendation and FreeLCS. This version is in
@@ -111,10 +129,14 @@
         bandwidth.</li>
       <li>Supports writing loudness measurement results to a machine readable
         file.</li>
-      <li>Modest hardware requirements, runs fine with only 2 GB of ram.</li>
+      <li>Modest hardware requirements, runs fine with only 4 GB of ram.</li>
       <li>Can be run inside a virtual machine, no need for physical hardware.</li>
       <li>Fast processing. On typical hardware you can expect processing to be
         10 - 20 faster than realtime.</li>
+      <li>It is possible to chabge target loudness in the range of -31 LUFS to
+        -12 LUFS making it possible to adjust loudness to a level that is more
+        compatible with internet media sites (Youtube, Spotify, etc) and mobile
+        devices.</li>
       <li>Cleans up automatically by deleting all files after a set time delay.</li>
       <li>Sends possible error messages to the admin by email.</li>
       <li>If user installs <strong>FFmpeg </strong>or <strong>libav-tools</strong>

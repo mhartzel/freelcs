@@ -26,6 +26,8 @@
         that FreeLCS creates in your system</a></h3>
     <h3> <a href="#Usage">Usage</a></h3>
     <h3> <a href="#Loudness%20History%20Graphics">Loudness History Graphics</a></h3>
+    <h3><a href="#Loudness%20history%20graphics%20when%20target%20loudness%20is%20set%20to%20-16,%20-23%20and%20-31%20LUFS">Loudness
+        history graphics when target loudness is set to -16, -23 and -31 LUFS </a></h3>
     <h3><a href="Machine_readable_results_and_MXF_audio_remix_mapping.html#Machine_readable_results"><span
           style="text-decoration: underline;"><strong>Machine readable results</strong></span></a></h3>
     <h3><a href="Machine_readable_results_and_MXF_audio_remix_mapping.html#MXF_audio_remixing">MXF
@@ -34,10 +36,8 @@
         the server HotFolder from OS X</a></h3>
     <h3><a href="#Making%20an%20permanent%20alias%20to%20the%20HotFolder%20in%20OS%20X">
         Making an permanent alias to the mount from OS X</a></h3>
-    <h3><a href="#Mounting%20the%20server%20HotFolder%20from%20windows%207">
-        Mounting the server HotFolder from windows 7</a></h3>
-    <h3> <a href="#Making%20the%20mount%20permanent%20in%20windows%207">Making
-        the mount permanent in windows 7</a></h3>
+    <h3><a href="FreeLCS_User_Manual.html#Mounting%20the%20server%20HotFolder%20from%20windows%2010">Mounting
+        the server HotFolder from windows 10</a></h3>
     <h3><a href="#Making%20a%20mount%20permanent%20in%20windows%2010">Making a
         mount permanent in windows 10</a></h3>
     <h3> <a href="#Html%20Progress%20report">Html Progress Report</a></h3>
@@ -96,7 +96,7 @@
     <br>
     The software is very fast even on modest hardware giving 15 times faster
     than realtime processing (16 bit stereo files, TruePeak measurement turned
-    on) on a server with one Intel Core 2 Duo processor, 2 GB Ram, 3 internal
+    on) on a server with one Intel Core 2 Duo processor, 4 GB Ram, 3 internal
     Sata disks in software RAID 0. <br>
     <br>
     FreeLCS uses other open source programs to get the job done (Linux,
@@ -123,7 +123,7 @@
         bandwidth.</li>
       <li>Supports writing loudness measurement results to a machine readable
         file.</li>
-      <li>Modest hardware requirements, runs fine with only 2 GB of ram.</li>
+      <li>Modest hardware requirements, runs fine with only 4 GB of ram.</li>
       <li>Can be run inside a virtual machine, no need for physical hardware.</li>
       <li>Fast processing. On typical hardware you can expect processing to be
         10 - 20 faster than realtime.</li>
@@ -154,9 +154,9 @@
     <h2> <a id="Requirements">Requirements</a></h2>
     <ul>
       <li>You need a computer with at least 2 processor cores.</li>
-      <li>2 GB of RAM&nbsp; (there probably is not much advantage in having
+      <li>4 GB of RAM&nbsp; (there probably is not much advantage in having
         more).</li>
-      <li> Ubuntu Linux 18.04 LTS, 16.04 LTS, Debian 9 or 8.</li>
+      <li> Ubuntu Linux 18.04 LTS, 16.04 LTS, Debian 10 or 9.</li>
       <li>A person that is able to set up and update an Linux server.</li>
       <li>1 Gbit ethernet is recommended.</li>
       <li>&nbsp;The <a href="FreeLCS_FAQ.html">FAQ</a> discusses things like
@@ -188,15 +188,12 @@
     <br>
     <p><strong></strong></p>
     <ul>
-      <li>If you don't know whether to choose 32 or 64 bit Linux version, always
-        use 64 bit. FreeLCS uses external helper programs and one of those
-        (mediainfo) in it's 32 bit version is not able to handle big audio
-        files. The 64 bit version of mediainfo works fine with big files. The
-        only reason to use a 32 bit operating system is if you have less than 4
-        GB of ram and you don't plan to process big audio files (4 GB or
-        larger).</li>
+      <li>Always use a 64 bit Linux distro. FreeLCS uses external helper
+        programs and one of those (mediainfo) in it's 32 bit version is not able
+        to handle big audio files. The 64 bit version of mediainfo works fine
+        with big files.</li>
       <li>A good starting point for a company server running in a virtual
-        machine might be assigning 2 GB of ram and 6 processor cores for the
+        machine might be assigning 4 GB of ram and 6 processor cores for the
         virtual machine running FreeLCS. All cores will only be used when there
         are 3 files to process simultaneously. When FreeLCS virtual server is
         idle, the cores are available to other virtual machines running on the
@@ -216,11 +213,6 @@
         function, write: <strong>term</strong><br>
         You should now see an icon for "Terminal", start it up by clicking on
         it.</li>
-      <li><strong>(Debian Gnome Classic:</strong> You can start Terminal by
-        clicking the "Applications" - menu on the upper left corner of the
-        desktop. Terminal can be found in: <strong>
-          /Applications/Accessories/Terminal</strong> )<strong><br>
-        </strong></li>
     </ul>
     <p><br>
     </p>
@@ -396,7 +388,8 @@
         directory, the most important of these is the '<strong>HotFolder</strong>'.
         HotFolder is the folder where users can drop in files for processing.
         HotFolder is by default located in: '<strong>Target Directory /
-          LoudnessCorrection</strong>'.</li>
+          LoudnessCorrection</strong>'. Hotfolder name depends on your selected
+        target loudness, this if further discussed below.</li>
       <li>The second section allows you to select English or Finnish as the
         language for directories and text in loudness history graphics files.</li>
       <li>'<strong>Number of processor cores to use</strong>' lets you define
@@ -406,21 +399,50 @@
         raw speed of disks. If your HotFolder is on an fast disk for example a
         Raid device, then it often speeds up processing if you select here more
         processor cores than you actually have. For example for our test server
-        that has one Intel Core 2 Duo (dual core) processor, 2 GB of Ram, 3 x 1
+        that has one Intel Core 2 Duo (dual core) processor, 4 GB of Ram, 3 x 1
         TB Sata - disks in Raid 0 for HotFolder, the sweet spot for speed is six
         cores even though we only have two. See: <a href="#%20Optimizing%20processing%20speed">Optimizing
           processing speed.</a><br>
       </li>
-      <li>The last section of the window lets you define the time files are
+      <li>The next section of the window lets you define the time files are
         allowed to stay on the server before they are automatically deleted. The
-        default value here is 8 hours (480 minutes).<br>
-      </li>
+        default value here is 8 hours (480 minutes).</li>
+      <li>The last section lets you define the target loudness level. Files
+        processed with FreeLCS will be at this loudness level. EBU R128 standard
+        target loudness is -23 LUFS and the installer defaults to this value. If
+        you tick the box on this section you can change target loudness in range
+        of <strong>-31 LUFS to -12 LUFS</strong>. Note that using high target
+        loudness levels puts some additional requirements for the source files,
+        these must be mixed with reduced loudness range or you might introduce
+        clipping. <a href="FreeLCS_FAQ.html#Considerations%20for%20using%20a%20target%20loudness%20higher%20than%20-23%20LUFS"
+          title="Considerations for using a target loudness higher than -23 LUFS">This
+          is further discussed here</a>. Hotfolder name will be just "<strong>LoudnessCorrection</strong>"
+        when using EBU target level -23 LUFS, but if you change it then the
+        target level is added to the hotfolder name, for example "<strong>LoudnessCorrection_-16_LUFS</strong>".
+        Hotfolder name is part of the mount command and this will help users to
+        see which target level service they are using in case you have one
+        instance processing files with -23 LUFS and another instance processing
+        with -16 LUFS.</li>
     </ul>
     <p><br>
     </p>
-    <p><img src="Pictures/Installation-04.jpg"><br>
-    </p>
-    <br>
+    <p> <img src="Pictures/Installation-04-01.png" alt=""> </p>
+    <ul>
+      <li>If you tick the box on this section you can change target loudness in
+        range of <strong>-31 LUFS to -12 LUFS</strong>. </li>
+    </ul>
+    <p><img src="Pictures/Installation-04-02.png" alt=""></p>
+    <ul>
+      <li><a name="Hotfolder_Name" id="Hotfolder_Name"></a>Hotfolder name will
+        be just "<strong>LoudnessCorrection</strong>" when using EBU target
+        level -23 LUFS, but if you change it then the target level is added to
+        the hotfolder name, for example "<strong>LoudnessCorrection_-16_LUFS</strong>".
+        Hotfolder name is part of the mount command and this will help users to
+        see which target level service they are using in case you have one
+        instance processing files with -23 LUFS and another instance processing
+        with -16 LUFS.</li>
+    </ul>
+    <img src="Pictures/Installation-04-03.png" alt=""><br>
     <br>
     <ul>
       <li>The next window lets you select if you want to email possible error
@@ -659,22 +681,8 @@
     </ul>
     <br>
     <img alt="" src="Pictures/Installation-14-systemd.jpg"><br>
-    <p><br>
-    </p>
     <ul>
-      <li>The picture below shows the last window on a <strong>init</strong>
-        based operating system (Ubuntu 12.04, Ubuntu 14.04, Debian 7).</li>
-      <li>The easiest way to start loudness correction however is to restart the
-        computer.</li>
-      <li>Note that on on these systems there is a deliberate delay for starting
-        up FreeLCS after computer has booted up. This makes sure all needed
-        system services are up when FreeLCS starts.</li>
     </ul>
-    <br>
-    <br>
-    <img alt="" src="Pictures/Installation-14.jpg"><br>
-    <br>
-    <br>
     <br>
     <h2><a id="Files that FreeLCS creates in your system">Files that FreeLCS
         creates on your system</a></h2>
@@ -712,11 +720,7 @@
     <br>
     <br>
     FreeLCS needs to start every time the computer starts up, so some start up
-    scripts are created on your system. There are two different init systems
-    used on the currently supported operating systems. "<strong>Init</strong>"
-    is the traditional operating system start up system and "<strong>systemd</strong>"
-    is a new one that got introduced in Debian 8. Ubuntu will also move to using
-    systemd as their startup system. <br>
+    scripts are created on your system.<br>
     <br>
     <h2>Files created on a systemd based os (Debian 8, Ubuntu 16.04 and newer):</h2>
     <strong>/usr/bin/LoudnessCorrection.py<br>
@@ -764,8 +768,7 @@
         stored in this file. LoudnessCorrection.py and HeartBeat_Checker.py both
         read their settings from this file when they start up.</li>
     </ul>
-    <strong>/etc/init.d/loudnesscorrection_init_script</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    (on systemd based oses the path is: <strong>/etc/systemd/system/loudnesscorrection_init_script</strong>)<br>
+    <strong></strong><strong>/etc/systemd/system/loudnesscorrection_init_script</strong><br>
     <ul>
       <li> This script is resposible for first setting up things FreeLCS needs
         and then starting up FreeLCS. When this program starts it first creates
@@ -773,22 +776,9 @@
         permissions correctly. Then it starts up LoudnessCorrection.py and
         HeartBeat_Checker.py - programs.</li>
     </ul>
-    <br>
-    <strong>/etc/rc2.d/S99loudnesscorrection_init_script</strong><br>
-    <ul>
-      <li> Only on init based oses (Ubuntu 12.04, 14.04 and Debian 7). This file
-        is a link that points to "<strong>/etc/init.d/loudnesscorrection_init_script</strong>".
-        This link starts up <strong>/etc/init.d/loudnesscorrection_init_script</strong><strong>&nbsp;
-          </strong>(<strong>Debian</strong>: The operating system assigns
-        automatically the number in the beginning of the link name, so the name
-        can be different, for example S21loudnesscorrection_init_script ).&nbsp;<strong></strong>
-      </li>
-    </ul>
-    <strong> </strong><br>
     <strong>/etc/systemd/system/freelcs.service</strong><br>
     <ul>
-      <li>Only on systemd based oses (Debian 8, and Ubuntu 16.04 and newer).
-        This file describes what systemd needs to do to start up FreeLCS and
+      <li>This file describes what systemd needs to do to start up FreeLCS and
         what services needs to be up before starting it. Based on this
         information systemd starts: <strong>/etc/systemd/system/loudnesscorrection_init_script</strong></li>
     </ul>
@@ -884,25 +874,33 @@
     <h2><a id="Loudness History Graphics">Loudness History Graphics</a><br>
     </h2>
     <ul>
-      <li>A loudness history graphics file shows loudness variations and other
-        loudness calculation results for the original uncorrected file.</li>
-      <li>The brown line shows the short-term loudness, it shows how loudness
-        varies across time in the file.<br>
-      </li>
-      <li>The bright green horizontal line shows the EBU R128 target level that
-        is -23 on the LUFS scale (0 LU also means -23 LUFS).</li>
-      <li>The dark green horizontal line shows the integrated loudness of your
-        file. It averages the loudness across the length of your whole file into
-        a single number. This is the loudness of the file and it must be at -23
-        LUFS to be at the target level according to the EBU R128 recommendation.</li>
-      <li>All files will be loudness corrected to have integrated loudness of
-        -23 LUFS.<br>
-      </li>
+      <li>Source file loudness variations and loudness calculation results are
+        shown on the loudness history graphics file.</li>
+      <li>Short term loudness variations over time are shown on the picture as a
+        brown line.</li>
+      <li>The bright green line represents the target loudness when it is set to
+        EBU R128 standard -23 LUFS. Color of this line is blue if target
+        loudness is set to a value lower that -23 LUFS and red if it is set
+        higher than -23 LUFS.</li>
+      <li>The dark green horizontal line shows the integrated loudness of the
+        source file. Integrated loudness averages loudness across the length of
+        your whole file into a single number.</li>
     </ul>
     <p><br>
     </p>
-    <img alt="" src="Pictures/Beethoven-Coriolan_Overture_Op_62.wav-Loudness_Results_Graphics-small.png">
-    <br>
+    <p> <img alt="" src="Pictures/Beethoven-Coriolan_Overture_Op_62.wav-Loudness_Results_Graphics-small.png">
+    </p>
+    <h2><a name="Loudness history graphics when target loudness is set to -16, -23 and -31 LUFS "
+        id="Loudness history graphics when target loudness is set to -16, -23 and -31 LUFS"></a>Loudness
+      history graphics when target loudness is set to -16, -23 and -31 LUFS
+      (from top to bottom)</h2>
+    <p>The color for the line for target loudness is:</p>
+    <ul>
+      <li>red when target loudness is higher than -23 LUFS</li>
+      <li>light green when target loudness is EBU R128 standard -23 LUFS (0 LU)</li>
+      <li>blue when target loudness is lower than -23 LUFS</li>
+    </ul>
+    <img src="Pictures/Loudness_Graphics.png" alt=""><br>
     <br>
     <h2> <a id="Mounting the server HotFolder from OS X">Mounting the server
         HotFolder from OS X</a></h2>
@@ -988,33 +986,23 @@
     </p>
     <p><br>
     </p>
-    <h2><a id="Mounting the server HotFolder from windows 7">Mounting the server
-        HotFolder from windows 7</a><br>
+    <h2><a id="Mounting the server HotFolder from windows 10">Mounting the
+        server HotFolder from windows 10</a><br>
     </h2>
     <ul>
-      <li>Click on the "<strong>Start</strong>" - button and click on the
-        entrybox on the bottom of the window.<br>
+      <li>Click on the "Windows" - button and click on the entrybox on the
+        bottom of the window. If your installation has a target loudness
+        different from standard -23 LUFS then the target loudness is part of the
+        mount path. For example if your FreeLCS installation has a target
+        loudness of -16 LUFS, then the mount path is something like: <strong>\\192.168.100.109\LoudnessCorrection_-16_LUFS</strong><br>
       </li>
     </ul>
     <p><br>
     </p>
-    <p><img src="Pictures/Mounting_From_windows-01.jpg"><br>
-    </p>
+    <img src="Pictures/win10_mount-01.png" alt=""> <br>
     <br>
     <ul>
-      <li>Write the address of the server into the entrybox. The address
-        must&nbsp; have two backward slashes at the begging of it and the
-        address must end with the mount name "\LoudnessCorrection" (See picture
-        below). Press enter.<br>
-      </li>
-    </ul>
-    <p><br>
-    </p>
-    <p><img src="Pictures/Mounting_From_windows-02.jpg"><br>
-    </p>
-    <br>
-    <ul>
-      <li>Windows mounts the HotFolder of the server and opens it in a file
+      <li>Windows mounts the HotFolder on the server and opens it in a file
         explorer window. Now you can start using the server :) </li>
     </ul>
     <p><br>
@@ -1022,52 +1010,6 @@
     <p><img src="Pictures/Mounting_From_windows-03.jpg"><br>
     </p>
     <br>
-    <br>
-    <br>
-    <h2><a id="Making the mount permanent in windows 7">Making the mount
-        permanent in windows 7</a><br>
-    </h2>
-    You can tell windows that you want the HotFolder always to be mounted when
-    the computer starts up.<br>
-    <br>
-    <ul>
-      <li>Open windows file explorer,&nbsp; click on "Computer". Now some new
-        options appear on the upper part of the window. Click "<strong>Map
-          network drive</strong>".<br>
-      </li>
-    </ul>
-    <p><br>
-    </p>
-    <p><img src="Pictures/Mounting_From_windows-05.jpg"><br>
-    </p>
-    <br>
-    <ul>
-      <li>The next window offers a free drive letter to assign permanently to
-        the drive. In our example windows offered the letter Z:</li>
-      <li>Write the address of the server in the window. The address must start
-        with two backward slashes and end with "\LoudnessCorrection". Make sure
-        that the option "<strong>Reconnect at logon</strong>" is tagged, without
-        it windows won't make the mount when windows starts up. Click "Finnish".<br>
-      </li>
-    </ul>
-    <p><br>
-    </p>
-    <p><img src="Pictures/Mounting_From_windows-07.jpg"><br>
-    </p>
-    <br>
-    <br>
-    <ul>
-      <li>Windows mounts the HotFolder of the server and opens it in a file
-        explorer window.<br>
-      </li>
-    </ul>
-    <p><br>
-    </p>
-    <p><img src="Pictures/Mounting_From_windows-08.jpg"><br>
-    </p>
-    <p> </p>
-    <p><br>
-    </p>
     <h2><a id="Making a mount permanent in windows 10">Making the mount
         permanent in windows 10</a></h2>
     <ul>
@@ -1080,10 +1022,14 @@
     <p><br>
     </p>
     <ul>
-      <li>Write the address of the server in the window. The address must start
-        with two backward slashes and end with "\LoudnessCorrection". Make sure
-        that the option "Reconnect at sign-in" is tagged, without it windows
-        won't make the mount when windows starts up. Click "Finnish".</li>
+      <li>Write the address of the server in the window.&nbsp;If your
+        installation has a target loudness different from standard -23 LUFS then
+        the target loudness is part of the mount path. For example if your
+        FreeLCS installation has a target loudness of -16 LUFS, then the mount
+        path is something like: <strong>\\192.168.100.109\LoudnessCorrection_-16_LUFS</strong>.
+        Make sure that the option "<strong>Reconnect at sign-in</strong>" is
+        tagged, without it windows won't make the mount when windows starts up.
+        Click "<strong>Finnish</strong>".</li>
     </ul>
     <p><br>
     </p>
@@ -1746,9 +1692,9 @@
         a FreeLCS installation to another machine (without a display)</a></h2>
     The 2.3 release of FreeLCS introduces a tool that can be used to backup and
     restore a FreeLCS installation. This functionality can be used to clone a
-    installation to any number of Ubuntu machines. Neither the backup nor the
-    restore scripts requires a graphical desktop and both can be run over a ssh
-    - connection on a 'headless machine' .<br>
+    installation to any number of machines. Neither the backup nor the restore
+    scripts requires a graphical desktop and both can be run over a ssh -
+    connection on a 'headless machine' .<br>
     <br>
     This functionality is targeted at advanced users who know their way around
     Linux and the Terminal.<br>
@@ -1845,8 +1791,8 @@
     program can however be manually started in the Terminal.<br>
     <ul>
       <li>Open the Terminal and stop all FreeLCS programs with the command (asks
-        for root password): <strong>sudo
-          /etc/init.d/loudnesscorrection_init_script stop</strong></li>
+        for root password): <strong>sudo systemctl stop freelcs<br>
+        </strong></li>
     </ul>
     <p>Now there are two ways to run LoudnessCorrection.py, the first one
       discards all settings user defined in the installer and runs with default
@@ -1879,8 +1825,7 @@
     <h3>HeartBeat_Checker.py</h3>
     <ul>
       <li>If you have not already done so open the Terminal and stop all FreeLCS
-        programs (asks for root password): <strong>sudo
-          /etc/init.d/loudnesscorrection_init_script stop</strong><br>
+        programs (asks for root password): <strong>sudo systemctl stop freelcs</strong><br>
       </li>
       <li>Run HeartBeat_Checker manually in Terminal: <strong>/usr/bin/HeartBeat_Checker.py
           -configfile /etc/Loudness_Correction_Settings.pickle</strong></li>
