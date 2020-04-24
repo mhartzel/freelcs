@@ -27,8 +27,8 @@ import email.mime.multipart
 import tempfile
 import copy
 
-version = '128'
-freelcs_version = '3.6'
+version = '129'
+freelcs_version = '3.7'
 
 ###################################
 # Function definitions start here #
@@ -5462,7 +5462,7 @@ os_name = ''
 os_version = ''
 
 # Define supported operating systems and versions
-supported_platforms = {'debian': ['9','10'], 'ubuntu': ['16.04', '18.04']}
+supported_platforms = {'debian': ['9','10'], 'ubuntu': ['18.04', '20.04']}
 
 # Parse commandline arguments.
 for item in sys.argv[1:]:
