@@ -27,7 +27,7 @@ import email.mime.multipart
 import tempfile
 import copy
 
-version = '129'
+version = '130'
 freelcs_version = '3.7'
 
 ###################################
@@ -1127,7 +1127,12 @@ def get_list_of_ram_devices_from_os():
 			error_message = 'Error getting list of os ram devices: ' + str(reason_for_error)
 
 		if error_happened == False:
+
 			for item in list_of_files:
+
+				if 'nvram' in item:
+					continue
+
 				if ('ram' in item) and (int(item.strip('ram')) < 10) and (item != 'ram0'):
 					list_of_ram_devices.append('/dev/' + item)
 
@@ -3864,8 +3869,14 @@ def define_program_installation_commands():
 	if sox_path == '':
 		needed_packages_install_commands.append('sox')
 		check_sox_version_and_add_git_commands_to_checkout_specific_commit()
+
 	if gnuplot_path == '':
 		needed_packages_install_commands.append('gnuplot')
+		# Package gnuplot-nox must be installed on Ubuntu 20.4 otherwise gnuplot installation installs default dependency gnuplut-qt that drags in gnome GUI and a lot of packages.
+		# NOX = No X11.
+		if (os_name == 'ubuntu') and (os_version_float >= 20.04):
+			needed_packages_install_commands.append('gnuplot-nox')
+
 	if samba_path == '':
 		needed_packages_install_commands.append('samba')
 	if mediainfo_path == '':
@@ -3876,8 +3887,7 @@ def define_program_installation_commands():
 
 	if loudness_path == '':
 		libebur128_dependencies_install_commands = ['build-essential', 'git', 'cmake', 'libsndfile-dev', 'libmpg123-dev', 'libmpcdec-dev', \
-		'libglib2.0-dev', 'libfreetype6-dev', 'librsvg2-dev', 'libavcodec-dev', 'libavformat-dev', 'libtag1-dev', \
-		'libxml2-dev', 'libqt4-dev']
+		'libglib2.0-dev', 'libavcodec-dev', 'libavformat-dev']
 	if loudness_path == '':
 		# Store commands of downloading and building libebur128 sourcecode to lists.
 		libebur128_git_commands = [ '', \
@@ -3897,13 +3907,8 @@ def define_program_installation_commands():
 		
 		# Check if libebur128 is at version we need and add commands to get the version we want.
 		# Version 1.2.4 of libebur128 does not build cleanly on ubuntu 16.04, it probably misses some c++11 headers. The problem lies in TAGLIB so I just disable building it because we don't need it for anything.
-		cmake_commandline = 'cmake .. -DCMAKE_BUILD_TYPE=Release -Wno-dev   -DCMAKE_INSTALL_PREFIX:PATH=/usr'
-
-		if (os_name == 'ubuntu') and (os_version_float < 18.04):
-			cmake_commandline = 'cmake .. -DCMAKE_BUILD_TYPE=Release -Wno-dev   -DCMAKE_INSTALL_PREFIX:PATH=/usr -DDISABLE_TAGLIB=true'
-
-		if (os_name == 'debian') and (os_version_float < 9):
-			cmake_commandline = 'cmake .. -DCMAKE_BUILD_TYPE=Release -Wno-dev   -DCMAKE_INSTALL_PREFIX:PATH=/usr -DDISABLE_TAGLIB=true'
+		# libqt4-dev is not avaible on ubuntu 20.04 anymore, disable building with qtlibs since it is unnecessary anyway since we don't want the GUI version of the loudness - executable.
+		cmake_commandline = 'cmake .. -DCMAKE_BUILD_TYPE=Release -Wno-dev   -DCMAKE_INSTALL_PREFIX:PATH=/usr -DDISABLE_TAGLIB=true -DDISABLE_GTK2=true -DDISABLE_QT4=true -DDISABLE_QT5=true -DDISABLE_GSTREAMER=true -DDISABLE_RSVG2=true'
 
 		libebur128_simplified_build_and_install_commands_displayed_to_user = ['mkdir build', \
 		'cd build', \
@@ -3993,13 +3998,7 @@ def check_libebur128_version_and_add_git_commands_to_checkout_specific_commit():
 		all_needed_external_programs_are_installed = False
 
 		# Version 1.2.4 of libebur128 does not build cleanly on ubuntu 16.04, it probably misses some c++11 headers. The problem lies in TAGLIB so I just disable building it because we don't need it for anything.
-		cmake_commandline = 'cmake .. -DCMAKE_BUILD_TYPE=Release -Wno-dev   -DCMAKE_INSTALL_PREFIX:PATH=/usr'
-
-		if (os_name == 'ubuntu') and (os_version_float < 18.04):
-			cmake_commandline = 'cmake .. -DCMAKE_BUILD_TYPE=Release -Wno-dev   -DCMAKE_INSTALL_PREFIX:PATH=/usr -DDISABLE_TAGLIB=true'
-
-		if (os_name == 'debian') and (os_version_float < 9):
-			cmake_commandline = 'cmake .. -DCMAKE_BUILD_TYPE=Release -Wno-dev   -DCMAKE_INSTALL_PREFIX:PATH=/usr -DDISABLE_TAGLIB=true'
+		cmake_commandline = 'cmake .. -DCMAKE_BUILD_TYPE=Release -Wno-dev   -DCMAKE_INSTALL_PREFIX:PATH=/usr -DDISABLE_TAGLIB=true -DDISABLE_GTK2=true -DDISABLE_QT4=true -DDISABLE_QT5=true  -DDISABLE_GSTREAMER=true -DDISABLE_RSVG2=true'
 
 		libebur128_simplified_build_and_install_commands_displayed_to_user = ['mkdir build', \
 		'cd build', \
