@@ -96,8 +96,8 @@ def read_values_in_machine_readable_results_files_to_dictionary(directory_for_ma
 				if '-Kanava-' in output_stream_filename:
 					output_stream_filename = output_stream_filename[:output_stream_filename.find('-Kanava-')]
 
-				if '_-23_LUFS' in output_stream_filename:
-					output_stream_filename = output_stream_filename[:output_stream_filename.rfind('_-23_LUFS')]
+				if '_LUFS' in output_stream_filename:
+					output_stream_filename = output_stream_filename[:output_stream_filename.rfind('_LUFS') - 4]
 
 				# Only add information to the results dictionary, if the error code indicates there hasn't been any serious errors when processing the file.
 				if (int(error_code) == 0) or (int(error_code) == 9):
