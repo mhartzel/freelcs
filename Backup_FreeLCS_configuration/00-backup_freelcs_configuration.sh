@@ -528,7 +528,12 @@ if [ "$OS_NAME" == "ubuntu" ] && [ "$OS_VERSION" == "12.04" ] ; then
 
 fi
 
-APT_PACKAGE_LIST="python3 idle3 automake autoconf libtool gnuplot fonts-liberation mediainfo build-essential git cmake libsndfile-dev libmpg123-dev libmpcdec-dev libglib2.0-dev libfreetype6-dev librsvg2-dev libavcodec-dev libavformat-dev libtag1-dev libxml2-dev libqt4-dev"
+APT_PACKAGE_LIST="python3 idle3 automake autoconf libtool fonts-liberation mediainfo gnuplot build-essential git cmake libsndfile-dev libmpg123-dev libmpcdec-dev libglib2.0-dev libavcodec-dev libavformat-dev"
+
+# Ubuntu versions 20.04 and newer needs to install gnuplot-nox in addition to gnuplot, otherwise gnuplot-qt gets installed and the whole Gnome3 with it.
+if [ "$OS_NAME" == "ubuntu" ] && [  "$OS_VERSION_MAJOR_NUMBER" -ge "20" ] ; then 
+	APT_PACKAGE_LIST="$APT_PACKAGE_LIST"" gnuplot-nox"
+fi
 
 if [ "$OS_NAME" == "debian" ] && [ "$OS_VERSION" == "10" ] ; then 
 
@@ -768,16 +773,8 @@ cd build
 
 END_OF_FILE
 
-# Libebur128 does not build cleanly anymore on old distros when TAGLIB is enabled, disable it for those distros.
-CMAKE_COMMANLINE="cmake .. -DCMAKE_BUILD_TYPE=Release -Wno-dev   -DCMAKE_INSTALL_PREFIX:PATH=/usr"
-
-if [ "$OS_NAME" == "ubuntu" ] && [ "$OS_VERSION_MAJOR_NUMBER" -lt "18" ] ; then
-	CMAKE_COMMANLINE="cmake .. -DCMAKE_BUILD_TYPE=Release -Wno-dev   -DCMAKE_INSTALL_PREFIX:PATH=/usr -DDISABLE_TAGLIB=true"
-fi
-
-if [ "$OS_NAME" == "debian" ] && [ "$OS_VERSION_MAJOR_NUMBER" -lt "9" ] ; then
-	CMAKE_COMMANLINE="cmake .. -DCMAKE_BUILD_TYPE=Release -Wno-dev   -DCMAKE_INSTALL_PREFIX:PATH=/usr -DDISABLE_TAGLIB=true"
-fi
+# Disable building unnecessary features (GUI versions of loudness executable and taglib).
+CMAKE_COMMANLINE="cmake .. -DCMAKE_BUILD_TYPE=Release -Wno-dev   -DCMAKE_INSTALL_PREFIX:PATH=/usr -DDISABLE_TAGLIB=true -DDISABLE_GTK2=true -DDISABLE_QT4=true -DDISABLE_QT5=true -DDISABLE_GSTREAMER=true -DDISABLE_RSVG2=true"
 
 echo $CMAKE_COMMANLINE >> "00-restore_freelcs_configuration.sh"
 
