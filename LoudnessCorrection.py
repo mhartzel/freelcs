@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '298'
+loudnesscorrection_version = '299'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -2162,15 +2162,19 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 			debug_information_list.append('Subprocess Name')
 			debug_information_list.append('get_audiofile_info_with_sox_and_determine_output_format')
 			debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
-		
+
+		# Define filename for the temporary file that we are going to use as stdout for the external command.
+		stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_sox_read_audio_info_stdout.txt'
+
+		#####################
+		# Get channel count #
+		#####################
 		try:
-			# Define filename for the temporary file that we are going to use as stdout for the external command.
-			stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_sox_read_audio_info_stdout.txt'
 			# Open the stdout temporary file in binary write mode.
 			with open(stdout_for_external_command, 'wb') as stdout_commandfile_handler:
 				
-				# Get technical info from audio file using sox.
-				subprocess.Popen(['sox', '--i', file_to_process], stdout=stdout_commandfile_handler, stderr=stdout_commandfile_handler, stdin=None, close_fds=True).communicate()[0]
+				# Get audio file channel count using sox.
+				subprocess.Popen(['sox', '--i', '-c', file_to_process], stdout=stdout_commandfile_handler, stderr=stdout_commandfile_handler, stdin=None, close_fds=True).communicate()[0]
 			
 				# Make sure all data written to temporary stdout and stderr - files is flushed from the os cache and written to disk.
 				stdout_commandfile_handler.flush() # Flushes written data to os cache
@@ -2188,15 +2192,13 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 			with open(stdout_for_external_command, 'rb') as stdout_commandfile_handler:
 				results_from_sox_run = stdout_commandfile_handler.read(None)
 		except IOError as reason_for_error:
-			error_message = 'Error reading from  (audio file info reading)sox stdout - file ' * english + 'Soxin (audiotiedoston teknisten tietojen luku) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+			error_message = 'Error reading from  (audio file info reading) sox stdout - file ' * english + 'Soxin (audiotiedoston teknisten tietojen luku) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
 			send_error_messages_to_screen_logfile_email(error_message, [])
 		except OSError as reason_for_error:
-			error_message = 'Error reading from  (audio file info reading)sox stdout - file ' * english + 'Soxin (audiotiedoston teknisten tietojen luku) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+			error_message = 'Error reading from  (audio file info reading) sox stdout - file ' * english + 'Soxin (audiotiedoston teknisten tietojen luku) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
 			send_error_messages_to_screen_logfile_email(error_message, [])	
 
-		# Convert sox output from binary to UTF-8 text and split text lines to a list.
-
-		audio_file_technical_info_list = results_from_sox_run.decode('UTF-8').split('\n')
+		channel_count_string = results_from_sox_run.decode('UTF-8').strip()
 
 		# Delete the temporary stdout - file.
 		try:
@@ -2208,16 +2210,137 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 			error_message = 'Error deleting (audio file info reading) sox stdout - file ' * english + 'Soxin (audiotiedoston teknisten tietojen luku) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
 			send_error_messages_to_screen_logfile_email(error_message, [])
 
-		# Assign audio file technical data to variables
-		for text_line in audio_file_technical_info_list:
-			if 'Channels' in text_line:
-				channel_count_string = text_line.split(':')[1].strip()
-			if 'Sample Rate' in text_line:
-				sample_rate_string = text_line.split(':')[1].strip()
-			if 'Precision' in text_line:
-				bit_depth_string = text_line.split(':')[1].strip().split('-')[0]
-			if 'Duration' in text_line:
-				sample_count_string = text_line.split('=')[1].strip().split(' ')[0]
+		###################
+		# Get sample rate #
+		###################
+		try:
+			# Open the stdout temporary file in binary write mode.
+			with open(stdout_for_external_command, 'wb') as stdout_commandfile_handler:
+				
+				# Get audio file sample rate using sox.
+				subprocess.Popen(['sox', '--i', '-r', file_to_process], stdout=stdout_commandfile_handler, stderr=stdout_commandfile_handler, stdin=None, close_fds=True).communicate()[0]
+			
+				# Make sure all data written to temporary stdout and stderr - files is flushed from the os cache and written to disk.
+				stdout_commandfile_handler.flush() # Flushes written data to os cache
+				os.fsync(stdout_commandfile_handler.fileno()) # Flushes os cache to disk
+				
+		except IOError as reason_for_error:
+			error_message = 'Error writing to (audio file info reading) sox stdout - file ' * english + 'Soxin (audiotiedoston teknisten tietojen luku) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message, [])
+		except OSError as reason_for_error:
+			error_message = 'Error writing to (audio file info reading) sox stdout - file ' * english + 'Soxin (audiotiedoston teknisten tietojen luku) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message, [])
+
+		# Open the file we used as stdout for the external program and read in what the external program wrote to it.
+		try:
+			with open(stdout_for_external_command, 'rb') as stdout_commandfile_handler:
+				results_from_sox_run = stdout_commandfile_handler.read(None)
+		except IOError as reason_for_error:
+			error_message = 'Error reading from  (audio file info reading) sox stdout - file ' * english + 'Soxin (audiotiedoston teknisten tietojen luku) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message, [])
+		except OSError as reason_for_error:
+			error_message = 'Error reading from  (audio file info reading) sox stdout - file ' * english + 'Soxin (audiotiedoston teknisten tietojen luku) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message, [])	
+
+		sample_rate_string = results_from_sox_run.decode('UTF-8').strip()
+
+		# Delete the temporary stdout - file.
+		try:
+			os.remove(stdout_for_external_command)
+		except IOError as reason_for_error:
+			error_message = 'Error deleting (audio file info reading) sox stdout - file ' * english + 'Soxin (audiotiedoston teknisten tietojen luku) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message, [])
+		except OSError as reason_for_error:
+			error_message = 'Error deleting (audio file info reading) sox stdout - file ' * english + 'Soxin (audiotiedoston teknisten tietojen luku) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message, [])
+
+		#################
+		# Get bit depth #
+		#################
+		try:
+			# Open the stdout temporary file in binary write mode.
+			with open(stdout_for_external_command, 'wb') as stdout_commandfile_handler:
+				
+				# Get audio file bit depth using sox.
+				subprocess.Popen(['sox', '--i', '-b', file_to_process], stdout=stdout_commandfile_handler, stderr=stdout_commandfile_handler, stdin=None, close_fds=True).communicate()[0]
+			
+				# Make sure all data written to temporary stdout and stderr - files is flushed from the os cache and written to disk.
+				stdout_commandfile_handler.flush() # Flushes written data to os cache
+				os.fsync(stdout_commandfile_handler.fileno()) # Flushes os cache to disk
+				
+		except IOError as reason_for_error:
+			error_message = 'Error writing to (audio file info reading) sox stdout - file ' * english + 'Soxin (audiotiedoston teknisten tietojen luku) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message, [])
+		except OSError as reason_for_error:
+			error_message = 'Error writing to (audio file info reading) sox stdout - file ' * english + 'Soxin (audiotiedoston teknisten tietojen luku) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message, [])
+
+		# Open the file we used as stdout for the external program and read in what the external program wrote to it.
+		try:
+			with open(stdout_for_external_command, 'rb') as stdout_commandfile_handler:
+				results_from_sox_run = stdout_commandfile_handler.read(None)
+		except IOError as reason_for_error:
+			error_message = 'Error reading from  (audio file info reading) sox stdout - file ' * english + 'Soxin (audiotiedoston teknisten tietojen luku) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message, [])
+		except OSError as reason_for_error:
+			error_message = 'Error reading from  (audio file info reading) sox stdout - file ' * english + 'Soxin (audiotiedoston teknisten tietojen luku) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message, [])	
+
+		bit_depth_string = results_from_sox_run.decode('UTF-8').strip()
+
+		# Delete the temporary stdout - file.
+		try:
+			os.remove(stdout_for_external_command)
+		except IOError as reason_for_error:
+			error_message = 'Error deleting (audio file info reading) sox stdout - file ' * english + 'Soxin (audiotiedoston teknisten tietojen luku) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message, [])
+		except OSError as reason_for_error:
+			error_message = 'Error deleting (audio file info reading) sox stdout - file ' * english + 'Soxin (audiotiedoston teknisten tietojen luku) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message, [])
+
+		####################
+		# Get sample count #
+		####################
+		try:
+			# Open the stdout temporary file in binary write mode.
+			with open(stdout_for_external_command, 'wb') as stdout_commandfile_handler:
+				
+				# Get audio file sample count using sox.
+				subprocess.Popen(['sox', '--i', '-s', file_to_process], stdout=stdout_commandfile_handler, stderr=stdout_commandfile_handler, stdin=None, close_fds=True).communicate()[0]
+			
+				# Make sure all data written to temporary stdout and stderr - files is flushed from the os cache and written to disk.
+				stdout_commandfile_handler.flush() # Flushes written data to os cache
+				os.fsync(stdout_commandfile_handler.fileno()) # Flushes os cache to disk
+				
+		except IOError as reason_for_error:
+			error_message = 'Error writing to (audio file info reading) sox stdout - file ' * english + 'Soxin (audiotiedoston teknisten tietojen luku) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message, [])
+		except OSError as reason_for_error:
+			error_message = 'Error writing to (audio file info reading) sox stdout - file ' * english + 'Soxin (audiotiedoston teknisten tietojen luku) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message, [])
+
+		# Open the file we used as stdout for the external program and read in what the external program wrote to it.
+		try:
+			with open(stdout_for_external_command, 'rb') as stdout_commandfile_handler:
+				results_from_sox_run = stdout_commandfile_handler.read(None)
+		except IOError as reason_for_error:
+			error_message = 'Error reading from  (audio file info reading) sox stdout - file ' * english + 'Soxin (audiotiedoston teknisten tietojen luku) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message, [])
+		except OSError as reason_for_error:
+			error_message = 'Error reading from  (audio file info reading) sox stdout - file ' * english + 'Soxin (audiotiedoston teknisten tietojen luku) stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message, [])	
+
+		sample_count_string = results_from_sox_run.decode('UTF-8').strip()
+
+		# Delete the temporary stdout - file.
+		try:
+			os.remove(stdout_for_external_command)
+		except IOError as reason_for_error:
+			error_message = 'Error deleting (audio file info reading) sox stdout - file ' * english + 'Soxin (audiotiedoston teknisten tietojen luku) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message, [])
+		except OSError as reason_for_error:
+			error_message = 'Error deleting (audio file info reading) sox stdout - file ' * english + 'Soxin (audiotiedoston teknisten tietojen luku) stdout - tiedoston deletoiminen epäonnistui ' * finnish  + str(reason_for_error)
+			send_error_messages_to_screen_logfile_email(error_message, [])
 
 		# Convert audio technical information from string to integer and assign to variables.
 		channel_count = 0
