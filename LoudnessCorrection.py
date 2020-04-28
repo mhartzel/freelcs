@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '299'
+loudnesscorrection_version = '300'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -2261,8 +2261,8 @@ def get_audiofile_info_with_sox_and_determine_output_format(directory_for_tempor
 			# Open the stdout temporary file in binary write mode.
 			with open(stdout_for_external_command, 'wb') as stdout_commandfile_handler:
 				
-				# Get audio file bit depth using sox.
-				subprocess.Popen(['sox', '--i', '-b', file_to_process], stdout=stdout_commandfile_handler, stderr=stdout_commandfile_handler, stdin=None, close_fds=True).communicate()[0]
+				# Get audio file bit depth using sox. This is sox value "Precision" and it shows the exact bit depth for PCM files and estimated bit depth for audio compressed with bit reduction compression.
+				subprocess.Popen(['sox', '--i', '-p', file_to_process], stdout=stdout_commandfile_handler, stderr=stdout_commandfile_handler, stdin=None, close_fds=True).communicate()[0]
 			
 				# Make sure all data written to temporary stdout and stderr - files is flushed from the os cache and written to disk.
 				stdout_commandfile_handler.flush() # Flushes written data to os cache
