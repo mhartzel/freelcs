@@ -1,5 +1,20 @@
 
 #####################################
+# Released FreeLCS 3.7 with:        #
+# ----------------------------      #
+# - LoudnessCorrection version 300  #
+# - HeartBeat_Checker version 022   #
+# - Installer version 131           #
+# - Latest Documentation            #
+#####################################
+
+- installer.py version 131: Dropped support for debian 9 since it has an old version of sox (14.4.1) which does not support --i -p option that is now needed since FreeLCS 3.7.
+- LoudnessCorrection.py version 300: Get bit depth from sox with option -p not -b. -p is sox value "Precision" and it gets the exact bit depth for PCM files and estimated bit depth for audio compressed with bit reduction compression.
+- LoudnessCorrection.py version 299. Fixed a crash caused by BWF or mp2 having user added metadata in other than UTF-8 encoding. Sox is used to get file info and it prints user metadata since version 14.4.2 (starting from ubuntu 18.04 and debian 10). Now only channel count, bit depth, sample rate and sample count are asked from sox one by one and user metadata is ignored.
+- Updated 00-backup_freelcs_configuration.sh to handle ubuntu 20.04 installation.
+- Installer 130: ubuntu 20.04 added /dev/nvram and this new entry prevented discovering /dev/ram devices correctly. Package libqt4-dev is not available in ubuntu 20.04, disabled qt4, qt5, gtk2, gstreamer, rsvg2 build options and removed these packages from installation also. On ubuntu 20.04 gnuplot installation installs by default also package gnuplot-qt which depends on Gnome3 and brings dosens of unneeded packages with it. Gnuplot needs to be installed with package gnuplot-nox to avoid this. All issues fixed and FreelCS 3.7 seems to install cleanly now on ubuntu 20.04
+
+#####################################
 # Released FreeLCS 3.6 with:        #
 # ----------------------------      #
 # - LoudnessCorrection version 297  #

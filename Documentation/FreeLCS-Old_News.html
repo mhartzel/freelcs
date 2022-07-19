@@ -7,34 +7,61 @@
   </head>
   <body>
     <h2><strong>Old news:</strong></h2>
-    <p>2016.07.01 FreeLCS 3.3 released.</p>
+    2017.08.30 FreeLCS 3.4 released.<br>
+    <ul>
+      <li>This release supports Ubuntu 14.04, 16.04 and Debian 8 and 9.</li>
+      <li>Libebur128 is upgraded to the latest version 1.2.2. The new version
+        uses a new method to calculate true peak values. I'm testing each new
+        FreeLCS release with the same set of&nbsp; 214 files (35 GB). 192 of
+        them measure the same truepeak value as with the previous version of
+        libebur128. The rest of them get mostly a lower truepeak value than
+        before. Loudness measurement&nbsp; with the new version of libebur128
+        gives the same results as before.</li>
+      <li>Libebur128 version 1.2.2 source archive is included in the FreeLCS
+        installation package. So now you don't have to have an internet
+        connection while you install FreeLCS as long as you have access to a
+        local Debian / Ubuntu package repository.</li>
+      <li>Ubuntu 14.04 and 16.04 dropped the ram disk driver (brd module) from
+        the kernel in the middle of the support cycle. Updated kernel does no
+        longer include the brd module built in. Debian also does not load brd by
+        default, so FreeLCS 3.4 now handles loading of the brd module
+        automatically if the module is not loaded or built into kernel.</li>
+      <li>If you need to disable the smb protocol version1 then remove the
+        character # from smb.conf in front of line: # server min protocol = SMB2</li>
+    </ul>
+    <span style="font-weight: normal;"></span>
+    <p></p>
+    2016.07.01 FreeLCS 3.3 released. 2016.07.01 FreeLCS 3.3 released.<br>
     <ul>
       <li>This release supports Ubuntu 14.04 and 16.04 and Debian 8. Support for
         Ubuntu 12.04 and Debian 7 is dropped.</li>
     </ul>
-    <p></p>
-    <p> 2015.10.05 FreeLCS 3.2 released.</p>
+    2015.10.05 FreeLCS 3.2 released.
     <ul>
-      <li>This release adds support for Debian 8 that introduces a new os
+    </ul>
+    <ul>
+      <li> This release adds support for Debian 8 that introduces a new os
         startup system called systemd. Systemd introduces some changes to how
         the operating system is started up, so FreeLCS needed to adjust to these
-        changes.</li>
-      <li>FreeLCS 3.2 supports Ubuntu 12.04, Ubuntu 14.04, Debian 7 and Debian
+        changes. </li>
+      <li> FreeLCS 3.2 supports Ubuntu 12.04, Ubuntu 14.04, Debian 7 and Debian
         8. IMPORTANT !!!!!!! Ubuntu 12.04 updates brings in a broken version of
         python3. <a href="FreeLCS_FAQ.html#Ubuntu_12.04_updates_breaks_python3">Here
-          are two possible solutions to the problem</a>.</li>
-      <li>Fixed a small bug: the HeartBeat_Checker program crashed if the
+          are two possible solutions to the problem</a>. </li>
+      <li> Fixed a small bug: the HeartBeat_Checker program crashed if the
         computer started up and could not get an ip - address. What
         HeartBeat_Checker does is <a href="FreeLCS_User_Manual.html#HeartBeat_Checker_Explained">explained
-          here</a>.</li>
-      <li>I stumbled upon a&nbsp; problem with OS X versions 10.7 - 10.10 and
+          here</a>. </li>
+      <li> I stumbled upon a&nbsp; problem with OS X versions 10.7 - 10.10 and
         their smb - protocol implementation. This causes problems when files are
         copied over from these OS X versions to the FreeLCS - server. I also
         found two workarounds, <a href="FreeLCS_FAQ.html#Errors_copying_files_from_OS_X_10.7-10.10_to_FreeLCS-Server">read
-          more about it here</a>.</li>
-      <li>Ubuntu 12.04 updates brings in a broken version of python3. <a href="FreeLCS_FAQ.html#Ubuntu_12.04_updates_breaks_python3">Here
-          are two possible solutions to the problem</a>.</li>
-      <li>No changes to the processing of audio files.</li>
+          more about it here</a>. </li>
+      <li> Ubuntu 12.04 updates brings in a broken version of python3. <a href="FreeLCS_FAQ.html#Ubuntu_12.04_updates_breaks_python3">Here
+          are two possible solutions to the problem</a>. </li>
+      <li> No changes to the processing of audio files. </li>
+    </ul>
+    <ul>
     </ul>
     <p></p>
     2014.09.11 FreeLCS 3.1 released
@@ -94,6 +121,14 @@
         released.</li>
       <li>There is no new functionality in this release (though some new
         features are under development :)</li>
+    </ul>
+    2013.03.11 <span style="font-weight: normal;">Released introductory
+      material about EBU R128 recommendation and FreeLCS. This version is in
+      Finnish language only. The material tries to explain R128 concepts and
+      FreeLCS usage in the point of view of a common user.&nbsp; Read it here: <a
+        href="file:///mounttipiste/Sailytettava_Tavara-Digiboxi/00-Yhteinen_Kotidirri/01-ecryptfs-auki/Koodaus/freelcs/Documentation/Introduction_To_Loudness_Correction/html/Aanekkyyden%20Hallinta.html">Äänekkyyden
+        Hallinta</a>.</span>
+    <ul>
     </ul>
     <strong>2013.03.29</strong> FreeLCS 2.3 released.
     <h4> </h4>

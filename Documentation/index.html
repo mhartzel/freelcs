@@ -40,6 +40,13 @@
     <a href="#Features">Features</a> and <a href="FreeLCS_User_Manual.html">User
       Manual</a>.<br>
     <h1><strong>Latest news:</strong></h1>
+    <h4>2020.04.30 FreeLCS 3.7 released.</h4>
+    <ul>
+      <li>This release supports Ubuntu 18.04, 20.04 and Debian 10.</li>
+      <li>Fixed a bug that might have caused a crash when a BWF or MP2 file had
+        user entered metadata (text) in some other encoding than UTF-8.</li>
+    </ul>
+    <h4></h4>
     <h4>2019.08.24 FreeLCS 3.6 released.</h4>
     <ul>
       <li>This release supports Ubuntu 16.04, 18.04 and Debian 9 and 10.</li>
@@ -80,34 +87,6 @@
         anything anyway. <a href="https://en.wikipedia.org/wiki/TagLib">https://en.wikipedia.org/wiki/TagLib</a></li>
     </ul>
     <p></p>
-    <h4>2017.08.30 FreeLCS 3.4 released.</h4>
-    <ul>
-      <li>This release supports Ubuntu 14.04, 16.04 and Debian 8 and 9.</li>
-      <li>Libebur128 is upgraded to the latest version 1.2.2. The new version
-        uses a new method to calculate true peak values. I'm testing each new
-        FreeLCS release with the same set of&nbsp; 214 files (35 GB). 192 of
-        them measure the same truepeak value as with the previous version of
-        libebur128. The rest of them get mostly a lower truepeak value than
-        before. Loudness measurement&nbsp; with the new version of libebur128
-        gives the same results as before.</li>
-      <li>Libebur128 version 1.2.2 source archive is included in the FreeLCS
-        installation package. So now you don't have to have an internet
-        connection while you install FreeLCS as long as you have access to a
-        local Debian / Ubuntu package repository.</li>
-      <li>Ubuntu 14.04 and 16.04 dropped the ram disk driver (brd module) from
-        the kernel in the middle of the support cycle. Updated kernel does no
-        longer include the brd module built in. Debian also does not load brd by
-        default, so FreeLCS 3.4 now handles loading of the brd module
-        automatically if the module is not loaded or built into kernel.</li>
-      <li>If you need to disable the smb protocol version1 then remove the
-        character # from smb.conf in front of line: # server min protocol = SMB2</li>
-    </ul>
-    <h4>2013.03.11 <span style="font-weight: normal;">Released introductory
-        material about EBU R128 recommendation and FreeLCS. This version is in
-        Finnish language only. The material tries to explain R128 concepts and
-        FreeLCS usage in the point of view of a common user.&nbsp; Read it here:
-        <a href="Introduction_To_Loudness_Correction/html/Aanekkyyden%20Hallinta.html">Äänekkyyden
-          Hallinta</a>.</span></h4>
     Older news can be found <a href="FreeLCS-Old_News.html">here</a>.<br>
     <br>
     <h1> <a id="Features">Features</a></h1>
