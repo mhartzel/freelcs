@@ -40,6 +40,17 @@
     <a href="#Features">Features</a> and <a href="FreeLCS_User_Manual.html">User
       Manual</a>.<br>
     <h1><strong>Latest news:</strong></h1>
+    <h4>2022.07.xx FreeLCS 3.8 released.</h4>
+    <ul>
+      <li>This release supports Ubuntu 20.04, 22.04 and Debian 11.</li>
+      <li>Libebur128 upgraded to latest version 1.2.6.</li>
+      <li>Libebur128 no longer natively supports 8 bit audio so these files are
+        first converted to 16 bits if FFmpeg is installed.</li>
+      <li>Ubuntu 22.04 ships with broken mediainfo (version 21.09) that hangs
+        reading some 32 bit files.&nbsp; FreeLCS installs fixed version 22.06
+        from official mediainfo site.</li>
+    </ul>
+    <h4></h4>
     <h4>2020.04.30 FreeLCS 3.7 released.</h4>
     <ul>
       <li>This release supports Ubuntu 18.04, 20.04 and Debian 10.</li>
@@ -69,23 +80,7 @@
         FAQ <a href="FreeLCS_FAQ.html#AppArmor">here</a>.</li>
     </ul>
     <p></p>
-    <h4>2018.05.25 FreeLCS 3.5 released.</h4>
-    <ul>
-      <li>This release supports Ubuntu 16.04, 18.04 and Debian 8 and 9.</li>
-      <li>Patents for Dolby AC3, Mpeg 1 Layers 1, 2 and 3 (mp1, mp2, mp3 ) have
-        expired all over the world. These formats are now patent free and can be
-        used legally without paying anybody for a license. These formats (and
-        the Opus - format) are now enabled if you enable free formats during
-        FreeLCS installation. Extracting audio from these formats still require
-        installation of FFmpeg / Libav-tools.</li>
-      <li>Libebur128 upgraded to the latest version 1.2.4. Libebur128 by default
-        builds taglib into the 'loudness' executable. Taglib does not build
-        cleanly anymore on older distros probably due to old gcc - versions.
-        Because of this building taglib with libebur128 is disabled on Debian 8
-        and Ubuntu 16.04. Taglib is used to read and write metadata into files
-        (For Example ID3 - data in mp3 files), so you probably don't need it for
-        anything anyway. <a href="https://en.wikipedia.org/wiki/TagLib">https://en.wikipedia.org/wiki/TagLib</a></li>
-    </ul>
+    <br>
     <p></p>
     Older news can be found <a href="FreeLCS-Old_News.html">here</a>.<br>
     <br>

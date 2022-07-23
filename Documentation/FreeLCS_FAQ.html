@@ -374,7 +374,7 @@
     <u><strong>When </strong></u><u><strong>FFmpeg and libav-tools are not
         installed:</strong></u><br>
     <ul>
-      <li>64 bit audio is not supported.</li>
+      <li>8 bit and 64 bit audio is not supported.</li>
       <li>If audio is in uncompressed PCM - format, then bit depth is preserved.<br>
       </li>
       <li>If audio has been compressed with ogg then the audio has no real bit
@@ -387,6 +387,7 @@
     </ul>
     <u><strong>When </strong></u><u><strong>FFmpeg or libav-tools is installed:</strong></u><br>
     <ul>
+      <li>8 bit audio is always converted to 16 bits.</li>
       <li>If audio is in uncompressed PCM - format, then bit depth is preserved
         except that 64 bit audio will be converted to 32 bits because sox
         supports bit depths only up to 32 bits.</li>
@@ -559,6 +560,13 @@
     <h2><a id="What Linux distributions are supported ?">What Linux
         distributions are supported ?</a></h2>
     <ul>
+    </ul>
+    <p><br>
+      <strong>FreeLCS 3.8 Supports:</strong> </p>
+    <ul>
+      <li>Debian 11 with and without a GUI</li>
+      <li>Ubuntu 22.04 LTS Desktop and Server</li>
+      <li>Ubuntu 20.04 LTS Desktop and Server</li>
     </ul>
     <p><strong>FreeLCS 3.7 Supports:</strong> </p>
     <ul>

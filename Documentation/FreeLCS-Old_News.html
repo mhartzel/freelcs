@@ -7,7 +7,25 @@
   </head>
   <body>
     <h2><strong>Old news:</strong></h2>
-    2017.08.30 FreeLCS 3.4 released.<br>
+    <p>2018.05.25 FreeLCS 3.5 released.</p>
+    <ul>
+      <li>This release supports Ubuntu 16.04, 18.04 and Debian 8 and 9.</li>
+      <li>Patents for Dolby AC3, Mpeg 1 Layers 1, 2 and 3 (mp1, mp2, mp3 ) have
+        expired all over the world. These formats are now patent free and can be
+        used legally without paying anybody for a license. These formats (and
+        the Opus - format) are now enabled if you enable free formats during
+        FreeLCS installation. Extracting audio from these formats still require
+        installation of FFmpeg / Libav-tools.</li>
+      <li>Libebur128 upgraded to the latest version 1.2.4. Libebur128 by default
+        builds taglib into the 'loudness' executable. Taglib does not build
+        cleanly anymore on older distros probably due to old gcc - versions.
+        Because of this building taglib with libebur128 is disabled on Debian 8
+        and Ubuntu 16.04. Taglib is used to read and write metadata into files
+        (For Example ID3 - data in mp3 files), so you probably don't need it for
+        anything anyway. <a href="https://en.wikipedia.org/wiki/TagLib">https://en.wikipedia.org/wiki/TagLib</a></li>
+    </ul>
+    <p></p>
+    <p> 2017.08.30 FreeLCS 3.4 released.</p>
     <ul>
       <li>This release supports Ubuntu 14.04, 16.04 and Debian 8 and 9.</li>
       <li>Libebur128 is upgraded to the latest version 1.2.2. The new version

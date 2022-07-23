@@ -744,6 +744,20 @@ def shutdown_computer(password):
 
 	return()
 
+def find_program_in_os_path(program_name_to_find):
+
+	global os_name
+
+	# Find a program in the operating system path. Returns the full path to the program (search for python3 returns: '/usr/bin/python3').
+	program_path = ''
+	os_environment_list = os.environ["PATH"].split(os.pathsep)
+
+	for os_path in os_environment_list:
+		true_or_false = os.path.exists(os_path + os.sep + program_name_to_find) and os.access(os_path + os.sep + program_name_to_find, os.X_OK) # True if program can be found in the path and it has executable permissions on.
+		if true_or_false == True: # Program was found and is executable
+			program_path = os_path + os.sep + program_name_to_find
+
+	return(program_path)
 
 ########
 # Main #
@@ -862,28 +876,28 @@ if loudness_correction_version == 0:
 	sys.exit(1)
 
 # Check if libebur128 scanner is installed.
-libebur128_scanner_path = '/usr/bin/loudness-freelcs'
+libebur128_scanner_path = find_program_in_os_path('loudness-freelcs') 
 
-if os.path.exists(libebur128_scanner_path) == False:
+if libebur128_scanner_path == "":
 	print()
 	print("Error: '" + libebur128_scanner_path + "' can not be found")
 	print()
 	sys.exit(1)
 
 # Check if mediainfo is installed.
-mediainfo_path = '/usr/bin/mediainfo'
+mediainfo_path = find_program_in_os_path('mediainfo') 
 
-if os.path.exists(mediainfo_path) == False:
+if mediainfo_path == "":
 	print()
 	print("Error: '" + mediainfo_path + "' can not be found")
 	print()
 	sys.exit(1)
 
 # Check that either avconv or ffmpeg is installed. Otherwise we can not run the tests.
-avconv_path = '/usr/bin/avconv'
-ffmpeg_path = '/usr/bin/ffmpeg'
+avconv_path = find_program_in_os_path('avconv')
+ffmpeg_path = find_program_in_os_path('ffmpeg')
 
-if (os.path.exists(avconv_path) == False) and (os.path.exists(ffmpeg_path) == False):
+if (avconv_path == "") and (ffmpeg_path == ""):
 	print()
 	print("Error: Neither '" + avconv_path + "' or '" + ffmpeg_path  + "' can be found")
 	print()

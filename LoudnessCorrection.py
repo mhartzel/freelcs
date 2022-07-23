@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '300'
+loudnesscorrection_version = '301'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -743,7 +743,7 @@ def calculate_loudness_timeslices(filename, hotfolder_path, libebur128_commands_
 
 			if abs(number_of_timeslices - expected_number_of_time_slices) > 1:
 				timeslice_calculation_error = True
-				timeslice_calculation_error_message = 'Number of time slices from loudness calculation: ' * english + 'Äänekkyyslaskennasta saatujen aikaviipaleiden määrä: ' * finnish + str(number_of_timeslices) + ' differs from the number that was expected: ' * english + ' eroaa ennakoidusta lukumäärästä: ' * finnish + str(expected_number_of_time_slices) 
+				timeslice_calculation_error_message = 'Number of audio blocks from loudness calculation: ' * english + 'Äänekkyyslaskennasta saatujen audioblokkien määrä: ' * finnish + str(number_of_timeslices) + ' differs from the number that was expected: ' * english + ' eroaa ennakoidusta lukumäärästä: ' * finnish + str(expected_number_of_time_slices) 
 
 			# Save some debug information.
 			if debug_file_processing == True:
@@ -3793,8 +3793,9 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 
 				# Check if the stream format is a supported PCM - format and assign output format and bit depth according to input bit depth.
 				if input_audiostream_codec_format in pcm_8_bit_formats:
-					output_audiostream_codec_format = 'pcm_u8'
-					bit_depth = 8
+					# libebur128 doesn't support 8 bit audio anymore since December 2021. Convert 8 - bit audio to 16 bits.
+					output_audiostream_codec_format = 'pcm_s16le'
+					bit_depth = 16
 					
 				if input_audiostream_codec_format in pcm_16_bit_formats:
 					output_audiostream_codec_format = 'pcm_s16le'
@@ -3978,8 +3979,6 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 
 			# Flac can not be used as the FFmpeg output format in the following cases since these would result in bit depth conversion
 			# Flac supports only bit depths 16 and 24.
-			if (estimated_uncompressed_size_for_combined_channels < wav_format_maximum_file_size) and (bit_depth == 8):
-				ffmpeg_output_wrapper_format = 'wav'
 			if (estimated_uncompressed_size_for_combined_channels < wav_format_maximum_file_size) and (bit_depth == 32):
 				ffmpeg_output_wrapper_format = 'wav'
 			# Ubuntu 12.04 and Debian 7 ships with a FFmpeg version that always converts bit depths bigger than 16 to 16 when storing output to Flac.
@@ -4201,6 +4200,10 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			# Wav container might contain other data than uncompressed pcm, if this is the case then first decompress audio / convert streams with FFmpeg.
 			natively_supported_file_format = False
 		
+		if input_audiostream_codec_format in pcm_8_bit_formats:
+			# Bit depth is 8 bits and the file must be converted before processing because libebur128 does not support 8 bit files anymore (since december 2021).
+			natively_supported_file_format = False
+		
 		if input_audiostream_codec_format in pcm_64_bit_formats:
 			# Bit depth is bigger than 32 bits the file must be converted before processing because sox only supports up to 32 bits.
 			natively_supported_file_format = False
@@ -4388,7 +4391,7 @@ def get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, h
 			error_message = 'Error writing to mediainfo (audiostream_count) stdout - file ' * english + 'Mediainfon (audiostreamien lukumäärän selvitys) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
 			send_error_messages_to_screen_logfile_email(error_message, [])
 		except OSError as reason_for_error:
-			error_message = 'Error writing to mediainfo  (audiostream_count) stdout - file ' * english + 'Mediainfonn (audiostreamien lukumäärän selvitys) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+			error_message = 'Error writing to mediainfo  (audiostream_count) stdout - file ' * english + 'Mediainfon (audiostreamien lukumäärän selvitys) stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
 			send_error_messages_to_screen_logfile_email(error_message, [])
 			
 		# Open the file we used as stdout for the external program and read in what the external program wrote to it.
@@ -4689,7 +4692,7 @@ def get_audiofile_info_with_mediainfo(directory_for_temporary_files, filename, h
 			natively_supported_file_format = False
 			mediainfo_error_message =  'Format: \'' * english + 'Formaatti: \'' * finnish + str(sample_format) + '\' is not supported in wav container' * english + '\' wav - paketissa ei ole tuettu' * finnish
 		
-		if (bit_depth < 8) or (bit_depth > 32):
+		if (bit_depth < 16) or (bit_depth > 32):
 			natively_supported_file_format = False
 			mediainfo_error_message =  'Audio bit depth: ' * english + 'Tiedoston bittisyvyys: ' * finnish + str(bit_depth) + ' bits is not supported' * english + ' bittiä ei ole tuettu' * finnish
 			
