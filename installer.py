@@ -27,7 +27,7 @@ import email.mime.multipart
 import tempfile
 import copy
 
-version = '132'
+version = '133'
 freelcs_version = '3.8'
 
 ###################################
@@ -2893,7 +2893,124 @@ def install_missing_programs(*args):
 			if apt_error_string in sudo_stderr_string.lower():
 				show_error_message_on_seventh_window(sudo_stderr_string)
 				an_error_has_happened = True
-	
+
+	if an_error_has_happened == False:
+
+		if install_fixed_mediainfo == True:
+
+			##################################################
+			# Install mediainfo from official mediainfo site #
+			##################################################
+			all_installation_messages = ''
+			possible_dpkg_error_messages = [ 'error', 'fail', 'cannot', 'unable', 'does not support', 'locked the database for writing', 'invalid', 'try again' ]
+				
+			set_button_and_label_states_on_window_seven()
+			call_seventh_frame_on_top()
+		
+			#########################################
+			# Run dpkg as root to install mediainfo #
+			#########################################
+			
+			# Create the commandline we need to run as root.
+			commands_to_run = [ 'sudo', '-k', '-p', ' ', '-S' ]
+			commands_to_run.extend(mediainfo_install_commands)
+
+			seventh_window_label_16['foreground'] = 'dark green'
+			seventh_window_label_17['foreground'] = 'dark green'
+			seventh_window_message_1.set('Note: The GUI freezes while I run some external commands.\nPlease wait patiently :)')
+			seventh_window_message_2.set('Installing official mediainfo package...')
+			
+			# The user might come to this window again after an error message, resize the window again.
+			seventh_frame.update() # Update the frame that has possibly changed, this triggers updating all child objects.
+			
+			# Get Frame dimensions and resize root_window to fit the whole frame.
+			root_window.geometry(str(seventh_frame.winfo_reqwidth()+40) +'x'+ str(seventh_frame.winfo_reqheight()))
+			
+			# Get root window geometry and center it on screen.
+			root_window.update()
+			x_position = (root_window.winfo_screenwidth() / 2) - (root_window.winfo_width() / 2) - 8
+			y_position = (root_window.winfo_screenheight() / 2) - (root_window.winfo_height() / 2) - 20
+			root_window.geometry(str(root_window.winfo_width()) + 'x' +str(root_window.winfo_height()) + '+' + str(int(x_position)) + '+' + str(int(y_position)))
+			
+			if debug == True:
+				print()
+				print('Running commands:', commands_to_run)
+
+			# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
+			sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
+			sudo_stdout_string = str(sudo_stdout.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
+			sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
+			all_installation_messages = all_installation_messages + '-' * 80 + '\n' + sudo_stdout_string + sudo_stderr_string
+			
+			if debug == True:
+				print()
+				print('sudo_stdout: ', sudo_stdout)
+				print('sudo_stderr: ', sudo_stderr)
+			
+			# Check if some error keywords can be found in apt-get output.
+			for apt_error_string in possible_apt_get_error_messages:
+				if apt_error_string in sudo_stderr_string.lower():
+					show_error_message_on_seventh_window(sudo_stderr_string)
+					an_error_has_happened = True
+
+	if an_error_has_happened == False:
+
+		if install_fixed_mediainfo == True:
+
+			################################################
+			# Prevent downgrading of the mediainfo package #
+			################################################
+			all_installation_messages = ''
+			possible_dpkg_error_messages = [ 'can not be marked', 'was already', 'deprecated', 'failed', 'does not take any arguments' ]
+				
+			set_button_and_label_states_on_window_seven()
+			call_seventh_frame_on_top()
+		
+			###############################################
+			# Run apt-mark as root hold package mediainfo #
+			###############################################
+			
+			# Create the commandline we need to run as root.
+			commands_to_run = [ 'sudo', '-k', '-p', ' ', '-S', 'apt-mark', 'hold', 'mediainfo' ]
+
+			seventh_window_label_16['foreground'] = 'dark green'
+			seventh_window_label_17['foreground'] = 'dark green'
+			seventh_window_message_1.set('Note: The GUI freezes while I run some external commands.\nPlease wait patiently :)')
+			seventh_window_message_2.set('Prevent downgrading of the mediainfo package...')
+			
+			# The user might come to this window again after an error message, resize the window again.
+			seventh_frame.update() # Update the frame that has possibly changed, this triggers updating all child objects.
+			
+			# Get Frame dimensions and resize root_window to fit the whole frame.
+			root_window.geometry(str(seventh_frame.winfo_reqwidth()+40) +'x'+ str(seventh_frame.winfo_reqheight()))
+			
+			# Get root window geometry and center it on screen.
+			root_window.update()
+			x_position = (root_window.winfo_screenwidth() / 2) - (root_window.winfo_width() / 2) - 8
+			y_position = (root_window.winfo_screenheight() / 2) - (root_window.winfo_height() / 2) - 20
+			root_window.geometry(str(root_window.winfo_width()) + 'x' +str(root_window.winfo_height()) + '+' + str(int(x_position)) + '+' + str(int(y_position)))
+			
+			if debug == True:
+				print()
+				print('Running commands:', commands_to_run)
+
+			# Run our commands as root. The root password is piped to sudo stdin by the '.communicate(input=password)' method.
+			sudo_stdout, sudo_stderr = subprocess.Popen(commands_to_run, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate(input=password)
+			sudo_stdout_string = str(sudo_stdout.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
+			sudo_stderr_string = str(sudo_stderr.decode('UTF-8')).strip()  # Convert sudo possible error output from binary to UTF-8 text.
+			all_installation_messages = all_installation_messages + '-' * 80 + '\n' + sudo_stdout_string + sudo_stderr_string
+			
+			if debug == True:
+				print()
+				print('sudo_stdout: ', sudo_stdout)
+				print('sudo_stderr: ', sudo_stderr)
+			
+			# Check if some error keywords can be found in apt-get output.
+			for apt_error_string in possible_apt_get_error_messages:
+				if apt_error_string in sudo_stderr_string.lower():
+					show_error_message_on_seventh_window(sudo_stderr_string)
+					an_error_has_happened = True
+
 	if an_error_has_happened == False:
 		
 		find_paths_to_all_external_programs_we_need()
@@ -3852,6 +3969,8 @@ def define_program_installation_commands():
 	global os_name
 	global os_version
 	global os_version_float
+	global install_fixed_mediainfo
+	global mediainfo_install_commands
 
 	libebur128_repository_directory_name = os.path.splitext(os.path.split(libebur128_repository_url)[1])[0]
 	
@@ -3879,8 +3998,28 @@ def define_program_installation_commands():
 
 	if samba_path == '':
 		needed_packages_install_commands.append('samba')
-	if mediainfo_path == '':
-		needed_packages_install_commands.append('mediainfo')
+
+	# Ubuntu 22.04 and Debian 11 ships with broken mediainfo that hangs reading some 32 bit audio files.
+	# Install fixed mediainfo version 22.06 from mediainfo official site: https://mediaarea.net/en/MediaInfo
+	install_fixed_mediainfo = False
+
+	if (os_name == 'ubuntu') and (os_version_float == 22.04):
+		install_fixed_mediainfo = True
+	if (os_name == 'debian') and (os_version_float == 11):
+		install_fixed_mediainfo = True
+	
+	if install_fixed_mediainfo == True:
+		# Install fixed mediainfo packages instead of the version in repo
+		if (os_name == 'ubuntu') and (os_version_float == 22.04):
+			needed_packages_install_commands.append('libmms0') # This library is required by mediainfo
+			mediainfo_install_commands = [ 'dpkg', '-i', 'mediainfo/ubuntu_22.04/mediainfo_22.06-1_amd64.xUbuntu_22.04.deb', 'mediainfo/ubuntu_22.04/libmediainfo0v5_22.06-1_amd64.xUbuntu_22.04.deb', 'mediainfo/ubuntu_22.04/libzen0v5_0.4.39-1_amd64.xUbuntu_22.04.deb' ]
+		if (os_name == 'debian') and (os_version_float == 11):
+			needed_packages_install_commands.append('libmms0') # This library is required by mediainfo
+			mediainfo_install_commands = [ 'dpkg', '-i', 'mediainfo/debian_11/mediainfo_22.06-1_amd64.Debian_11.deb', 'mediainfo/debian_11/libmediainfo0v5_22.06-1_amd64.Debian_11.deb', 'mediainfo/debian_11/libzen0v5_0.4.39-1_amd64.Debian_11.deb' ]
+	else:
+		# Install regular mediainfo from distro repo
+		if mediainfo_path == '':
+			needed_packages_install_commands.append('mediainfo')
 
 	# Always install fonts-liberation as gnuplot uses LiberationSans-Regular from it.
 	needed_packages_install_commands.append('fonts-liberation')
