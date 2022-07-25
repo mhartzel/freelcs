@@ -2,7 +2,7 @@
 #####################################
 # Released FreeLCS 3.8 with:        #
 # ----------------------------      #
-# - LoudnessCorrection version 302  #
+# - LoudnessCorrection version 301  #
 # - HeartBeat_Checker version 022   #
 # - Installer version 133           #
 # - Latest Documentation            #
@@ -10,7 +10,6 @@
 
 - Libebur128 does not support 8 - bit audio anymore (since December 2021). Convert 8 - bit files to 16 bits if FFmpeg is installed.
 - Ubuntu 22.04 and Debian 11 ships with broken mediainfo that hangs reading some 32 bit audio files. Install fixed mediainfo version 22.06 from mediainfo official site: https://mediaarea.net/en/MediaInfo
-- Machine readable results: filename was missing if a sox warning message was added to machine_readble_results before it. Fixed.
 
 #####################################
 # Released FreeLCS 3.7 with:        #

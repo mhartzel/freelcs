@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '302'
+loudnesscorrection_version = '301'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -2060,7 +2060,7 @@ def run_sox(directory_for_temporary_files, directory_for_results, filename, sox_
 					temp_loudness_results_for_automation[filename][1][4] = 0 # number_of_files_in_this_mix
 					temp_loudness_results_for_automation[filename][1][12] = error_code
 					temp_loudness_results_for_automation[filename][1][13] = error_message
-					temp_loudness_results_for_automation[filename][1][14] = [filename]
+					temp_loudness_results_for_automation[filename][1][14] = []
 
 				
 		# If we recieved an event from the calling routine, then we need to set that event.
@@ -5336,7 +5336,7 @@ def create_sox_commands_to_remix_audio(directory_for_temporary_files, original_i
 def write_loudness_results_and_file_info_to_a_machine_readable_file(filename, data_for_machine_readable_results_file):
 
 	try:
-		# This subroutine is used to write loudness calculation data and technical data about processed files into a machine readable file.
+		# This subroutine can be used to write loudness calculation data and techinal data about processed files into a machine readable file.
 
 		global silent
 		global english
