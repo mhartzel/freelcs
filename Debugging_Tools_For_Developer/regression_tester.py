@@ -1801,6 +1801,10 @@ for test_counter in range(0,4):
 		list_of_test_result_text_lines.append(text_marginal_1_tabs + '#' * len(title_string))
 		list_of_test_result_text_lines.append(text_marginal_1_tabs + title_string)
 		list_of_test_result_text_lines.append(text_marginal_1_tabs + '#' * len(title_string))
+		list_of_test_result_text_lines.append(text_marginal_1_tabs + '')
+		list_of_test_result_text_lines.append(text_marginal_1_tabs + 'HUOM !!!!!!! Sox - käsittelyn virhe poistaa failinimen machine readable resulteista, eli nämä failit listautuu ainoastaan sarakkeeseen: Filenames only in loudness calculation log.')
+		list_of_test_result_text_lines.append(text_marginal_1_tabs + 'Äänen klippaaminen sox:issa -16 LUFS kohdetasolla tekee tämän aina neljälle failille. Eli niiden olemassaolosta ei tartte hermostua, kunhan ovat samat kuin edellisenä julkaisuvuotena.')
+		list_of_test_result_text_lines.append(text_marginal_1_tabs + 'Failit ovat: m_111328_RMYLER1-AudioStream-1-ChannelCount-2, short-file-TNG-Processing-1, test-7-channels_5.1_-23_LUFS, YLE_HAHKIOM_Tauno_Tukeva_drama_st+MCA51+st2_XDCAMHD50-AudioStream-2-ChannelCount-6')
 
 		previous_loudness_calculation_log_name = find_matching_filename(regression_test_results_target_dir + os.sep + new_results_directory, list_of_result_file_names[4])
 		previous_loudness_calculation_log = regression_test_results_target_dir + os.sep + new_results_directory + os.sep + previous_loudness_calculation_log_name
