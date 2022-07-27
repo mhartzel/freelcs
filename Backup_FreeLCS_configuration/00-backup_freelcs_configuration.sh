@@ -151,6 +151,35 @@ if [ "$INIT_SYSTEM_NAME" == "systemd" ] ; then
 	SYSTEMD_SERVICE_FILE_PATH="/etc/systemd/system/freelcs.service"
 fi
 
+# Handle distro versions with broken mediainfo. Get names of the fixed packages to install.
+INSTALL_MEDIAINFO_DEBS=false
+
+if [ "$OS_NAME" == "ubuntu" ] ; then
+        if [ "$OS_VERSION_MAJOR_NUMBER" == "22" ] && [ "$OS_VERSION_MINOR_NUMBER" == "04" ] ; then
+		INSTALL_MEDIAINFO_DEBS=true
+
+		LIBMEDIAINFO_NAME="libmediainfo0v5_22.06-1_amd64.xUbuntu_22.04.deb"
+		LIBZEN_NAME="libzen0v5_0.4.39-1_amd64.xUbuntu_22.04.deb"
+		MEDIAINFO_NAME="mediainfo_22.06-1_amd64.xUbuntu_22.04.deb"
+
+		LIBMEDIAINFO_PATH="../../mediainfo/ubuntu_22.04/$LIBMEDIAINFO_NAME"
+		LIBZEN_PATH="../../mediainfo/ubuntu_22.04/$LIBZEN_NAME"
+		MEDIAINFO_PATH="../../mediainfo/ubuntu_22.04/$MEDIAINFO_NAME"
+        fi
+fi
+
+if [ "$OS_NAME" == "debian" ] && [ "$OS_VERSION_MAJOR_NUMBER" == "11" ] ; then
+	INSTALL_MEDIAINFO_DEBS=true
+
+	LIBMEDIAINFO_NAME="libmediainfo0v5_22.06-1_amd64.Debian_11.deb"
+	LIBZEN_NAME="libzen0v5_0.4.39-1_amd64.Debian_11.deb"
+	MEDIAINFO_NAME="mediainfo_22.06-1_amd64.Debian_11.deb"
+
+	LIBMEDIAINFO_PATH="../../mediainfo/debian_11/$LIBMEDIAINFO_NAME"
+	LIBZEN_PATH="../../mediainfo/debian_11/$LIBZEN_NAME"
+	MEDIAINFO_PATH="../../mediainfo/debian_11/$MEDIAINFO_NAME"
+fi
+
 # Check if user has Samba installed
 SAMBA_PATH=`which smbd`
 
@@ -181,6 +210,30 @@ if [ ! -e "$SETTINGS_FILE_PATH" ] ; then
         echo "ERROR: Can not find FreeLCS file: "$SETTINGS_FILE_PATH", can not continue."
         echo
         exit
+fi
+
+if [ "$INSTALL_MEDIAINFO_DEBS" == true ] ; then
+
+	if [ ! -e "$LIBMEDIAINFO_PATH" ] ; then
+		echo
+		echo "ERROR: Can not find mediainfo install package: "$LIBMEDIAINFO_PATH", can not continue."
+		echo
+		exit
+	fi
+
+	if [ ! -e "$LIBZEN_PATH" ] ; then
+		echo
+		echo "ERROR: Can not find mediainfo install package: "$LIBZEN_PATH", can not continue."
+		echo
+		exit
+	fi
+
+	if [ ! -e "$MEDIAINFO_PATH" ] ; then
+		echo
+		echo "ERROR: Can not find mediainfo install package: "$MEDIAINFO_PATH", can not continue."
+		echo
+		exit
+	fi
 fi
 
 # Only search for samba conf - file if Samba is installed.
@@ -245,6 +298,36 @@ if [ "$?" -ne "0"  ] ; then
 	echo "Error, could not copy: "$SETTINGS_FILE_PATH
 	echo
 	exit
+fi
+
+if [ "$INSTALL_MEDIAINFO_DEBS" == true ] ; then
+
+	cp $LIBMEDIAINFO_PATH .
+
+	if [ "$?" -ne "0"  ] ; then
+		echo
+		echo "Error, could not copy: "$LIBMEDIAINFO_PATH
+		echo
+		exit
+	fi
+
+	cp $LIBZEN_PATH .
+
+	if [ "$?" -ne "0"  ] ; then
+		echo
+		echo "Error, could not copy: "$LIBZEN_PATH
+		echo
+		exit
+	fi
+
+	cp $MEDIAINFO_PATH .
+
+	if [ "$?" -ne "0"  ] ; then
+		echo
+		echo "Error, could not copy: "$MEDIAINFO_PATH
+		echo
+		exit
+	fi
 fi
 
 # Only copy samba conf - file if Samba is installed.
@@ -327,6 +410,15 @@ echo 'OS_VERSION="'$OS_VERSION'"' >> "00-restore_freelcs_configuration.sh"
 echo 'OS_VERSION_MAJOR_NUMBER="'$OS_VERSION_MAJOR_NUMBER'"' >> "00-restore_freelcs_configuration.sh"
 echo 'OS_VERSION_MINOR_NUMBER="'$OS_VERSION_MINOR_NUMBER'"' >> "00-restore_freelcs_configuration.sh"
 
+if [ "$INSTALL_MEDIAINFO_DEBS" == true ] ; then
+	echo 'INSTALL_MEDIAINFO_DEBS=true' >> "00-restore_freelcs_configuration.sh"
+
+	echo 'LIBMEDIAINFO_NAME="'$LIBMEDIAINFO_NAME'"' >> "00-restore_freelcs_configuration.sh"
+	echo 'LIBZEN_NAME="'$LIBZEN_NAME'"' >> "00-restore_freelcs_configuration.sh"
+	echo 'MEDIAINFO_NAME="'$MEDIAINFO_NAME'"' >> "00-restore_freelcs_configuration.sh"
+else
+	echo 'INSTALL_MEDIAINFO_DEBS=false' >> "00-restore_freelcs_configuration.sh"
+fi
 
 cat >> "00-restore_freelcs_configuration.sh" << 'END_OF_FILE'
 
@@ -434,6 +526,30 @@ if [ "$INIT_SYSTEM_NAME" == "systemd" ] ; then
 	fi
 fi
 
+if [ "$INSTALL_MEDIAINFO_DEBS" == true ] ; then
+
+	if [ ! -e "$LIBMEDIAINFO_NAME" ] ; then
+		echo
+		echo "ERROR: Can not find mediainfo install package: "$LIBMEDIAINFO_NAME", can not continue."
+		echo
+		exit
+	fi
+
+	if [ ! -e "$LIBZEN_NAME" ] ; then
+		echo
+		echo "ERROR: Can not find mediainfo install package: "$LIBZEN_NAME", can not continue."
+		echo
+		exit
+	fi
+
+	if [ ! -e "$MEDIAINFO_NAME" ] ; then
+		echo
+		echo "ERROR: Can not find mediainfo install package: "$MEDIAINFO_NAME", can not continue."
+		echo
+		exit
+	fi
+fi
+
 SAMBA_INSTALLATION_COMMAND=""
 
 # Check if Samba samba configuration must be restored.
@@ -535,6 +651,11 @@ if [ "$OS_NAME" == "ubuntu" ] && [  "$OS_VERSION_MAJOR_NUMBER" -ge "20" ] ; then
 	APT_PACKAGE_LIST="$APT_PACKAGE_LIST"" gnuplot-nox"
 fi
 
+# If installing mediainfo debs from mediainfo official site the package libmms0 needs to be installed from distro repo.
+if [ "$INSTALL_MEDIAINFO_DEBS" == true ] ; then
+	APT_PACKAGE_LIST="$APT_PACKAGE_LIST"" libmms0"
+fi
+
 if [ "$OS_NAME" == "debian" ] && [ "$OS_VERSION" == "10" ] ; then 
 
 	DEBIAN_FRONTEND=noninteractive apt-get -q=2 -y --reinstall install $APT_PACKAGE_LIST $SAMBA_INSTALLATION_COMMAND $SOX_INSTALLATION_COMMAND $ADDITIONAL_PACKAGE_INSTALLATION_COMMANDS 
@@ -549,6 +670,23 @@ if [ "$?" -ne "0"  ] ; then
 	exit
 fi
 
+# Install mediainfo from deb - packages from official mediainfo site
+if [ "$INSTALL_MEDIAINFO_DEBS" == true ] ; then
+	echo
+	echo "###############################################"
+	echo "# Installing mediainfo from official packages #"
+	echo "###############################################"
+	echo
+
+	dpkg -i $LIBMEDIAINFO_NAME $LIBZEN_NAME $MEDIAINFO_NAME
+fi
+
+if [ "$?" -ne "0"  ] ; then
+	echo
+	echo "Error installing mediainfo packages with dpkg, can not continue."
+	echo
+	exit
+fi
 
 echo
 echo "##############################"
@@ -716,7 +854,7 @@ cd $LIBEBUR128_DIR_NAME
 
 # Get the git commit number of current version of libebur128
 echo
-LIBEBUR128_REQUIRED_GIT_COMMIT_VERSION="6be99482058e176df49916eeb0ebe0aaf7674c11"
+LIBEBUR128_REQUIRED_GIT_COMMIT_VERSION="2e87fb63e166ae3766cd87c6f0be72af56c093e0"
 LIBEBUR128_CURRENT_COMMIT=`git rev-parse HEAD`
 
 # If libebur128 commit number does not match, check out the correct version from git
@@ -746,7 +884,7 @@ echo "# Applying libebur128 4.0 and 5.0 - channel patch to libebur128 source #"
 echo "########################################################################"
 echo
 
-PATCH_NAME=`ls -1 libebur128-patch-*.diff`
+PATCH_NAME=`ls -1 libebur128*patch-*.diff`
 
 OUTPUT_FROM_PATCHING=`patch -s -p1 < "$PATCH_NAME"`
 
@@ -774,7 +912,7 @@ cd build
 END_OF_FILE
 
 # Disable building unnecessary features (GUI versions of loudness executable and taglib).
-CMAKE_COMMANLINE="cmake .. -DCMAKE_BUILD_TYPE=Release -Wno-dev   -DCMAKE_INSTALL_PREFIX:PATH=/usr -DDISABLE_TAGLIB=true -DDISABLE_GTK2=true -DDISABLE_QT4=true -DDISABLE_QT5=true -DDISABLE_GSTREAMER=true -DDISABLE_RSVG2=true"
+CMAKE_COMMANLINE="cmake .. -DCMAKE_BUILD_TYPE=Release -Wno-dev   -DCMAKE_INSTALL_PREFIX:PATH=/usr -DDISABLE_TAGLIB=true -DDISABLE_GTK2=true -DDISABLE_QT5=true -DDISABLE_RSVG2=true"
 
 echo $CMAKE_COMMANLINE >> "00-restore_freelcs_configuration.sh"
 
@@ -808,20 +946,14 @@ echo
 cp loudness-freelcs             /usr/bin/
 cp libinput_sndfile-freelcs.so  /usr/lib/
 cp libinput_ffmpeg-freelcs.so   /usr/lib/
-cp libinput_mpg123-freelcs.so   /usr/lib/
-cp libinput_musepack-freelcs.so /usr/lib/
 
 chmod 755 /usr/bin/loudness-freelcs
 chmod 644 /usr/lib/libinput_sndfile-freelcs.so
 chmod 644 /usr/lib/libinput_ffmpeg-freelcs.so
-chmod 644 /usr/lib/libinput_mpg123-freelcs.so
-chmod 644 /usr/lib/libinput_musepack-freelcs.so
 
 chown root:root /usr/bin/loudness-freelcs
 chown root:root /usr/lib/libinput_sndfile-freelcs.so
 chown root:root /usr/lib/libinput_ffmpeg-freelcs.so
-chown root:root /usr/lib/libinput_mpg123-freelcs.so
-chown root:root /usr/lib/libinput_musepack-freelcs.so
 
 ldconfig
 
