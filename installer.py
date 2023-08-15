@@ -27,8 +27,8 @@ import email.mime.multipart
 import tempfile
 import copy
 
-version = '133'
-freelcs_version = '3.8'
+version = '134'
+freelcs_version = '3.9'
 
 ###################################
 # Function definitions start here #
@@ -4025,7 +4025,7 @@ def define_program_installation_commands():
 	needed_packages_install_commands.append('fonts-liberation')
 
 	if loudness_path == '':
-		libebur128_dependencies_install_commands = ['build-essential', 'git', 'cmake', 'libsndfile-dev', 'libglib2.0-dev', 'libavcodec-dev', 'libavformat-dev']
+		libebur128_dependencies_install_commands = ['build-essential', 'git', 'cmake', 'libsndfile-dev', 'libglib2.0-dev']
 	if loudness_path == '':
 		# Store commands of downloading and building libebur128 sourcecode to lists.
 		libebur128_git_commands = [ '', \
@@ -4046,7 +4046,7 @@ def define_program_installation_commands():
 		# Check if libebur128 is at version we need and add commands to get the version we want.
 		# Version 1.2.4 of libebur128 does not build cleanly on ubuntu 16.04, it probably misses some c++11 headers. The problem lies in TAGLIB so I just disable building it because we don't need it for anything.
 		# libqt4-dev is not avaible on ubuntu 20.04 anymore, disable building with qtlibs since it is unnecessary anyway since we don't want the GUI version of the loudness - executable.
-		cmake_commandline = 'cmake .. -DCMAKE_BUILD_TYPE=Release -Wno-dev   -DCMAKE_INSTALL_PREFIX:PATH=/usr -DDISABLE_TAGLIB=true -DDISABLE_GTK2=true -DDISABLE_QT5=true -DDISABLE_RSVG2=true'
+		cmake_commandline = 'cmake .. -DCMAKE_BUILD_TYPE=Release -Wno-dev   -DCMAKE_INSTALL_PREFIX:PATH=/usr -DDISABLE_TAGLIB=true -DDISABLE_GTK2=true -DDISABLE_QT5=true -DDISABLE_RSVG2=true -DDISABLE_FFMPEG=true'
 
 		libebur128_simplified_build_and_install_commands_displayed_to_user = ['mkdir build', \
 		'cd build', \
@@ -4055,15 +4055,12 @@ def define_program_installation_commands():
 		'make install'
 		'cp loudness-freelcs /usr/bin/', \
 		'cp libinput_sndfile-freelcs.so  /usr/lib/', \
-		'cp libinput_ffmpeg-freelcs.so   /usr/lib/', \
 		'', \
 		'chmod 755 /usr/bin/loudness-freelcs', \
 		'chmod 644 /usr/lib/libinput_sndfile-freelcs.so', \
-		'chmod 644 /usr/lib/libinput_ffmpeg-freelcs.so', \
 		'', \
 		'chown root:root /usr/bin/loudness-freelcs', \
 		'chown root:root /usr/lib/libinput_sndfile-freelcs.so', \
-		'chown root:root /usr/lib/libinput_ffmpeg-freelcs.so', \
 		'', \
 		'ldconfig']
 
@@ -4076,15 +4073,12 @@ def define_program_installation_commands():
 		'', \
 		'cp loudness-freelcs             /usr/bin/', \
 		'cp libinput_sndfile-freelcs.so  /usr/lib/', \
-		'cp libinput_ffmpeg-freelcs.so   /usr/lib/', \
 		'', \
 		'chmod 755 /usr/bin/loudness-freelcs', \
 		'chmod 644 /usr/lib/libinput_sndfile-freelcs.so', \
-		'chmod 644 /usr/lib/libinput_ffmpeg-freelcs.so', \
 		'', \
 		'chown root:root /usr/bin/loudness-freelcs', \
 		'chown root:root /usr/lib/libinput_sndfile-freelcs.so', \
-		'chown root:root /usr/lib/libinput_ffmpeg-freelcs.so', \
 		'', \
 		'ldconfig']
 
@@ -4124,7 +4118,7 @@ def check_libebur128_version_and_add_git_commands_to_checkout_specific_commit():
 		all_needed_external_programs_are_installed = False
 
 		# Version 1.2.4 of libebur128 does not build cleanly on ubuntu 16.04, it probably misses some c++11 headers. The problem lies in TAGLIB so I just disable building it because we don't need it for anything.
-		cmake_commandline = 'cmake .. -DCMAKE_BUILD_TYPE=Release -Wno-dev   -DCMAKE_INSTALL_PREFIX:PATH=/usr -DDISABLE_TAGLIB=true -DDISABLE_GTK2=true -DDISABLE_QT4=true -DDISABLE_QT5=true  -DDISABLE_GSTREAMER=true -DDISABLE_RSVG2=true'
+		cmake_commandline = 'cmake .. -DCMAKE_BUILD_TYPE=Release -Wno-dev   -DCMAKE_INSTALL_PREFIX:PATH=/usr -DDISABLE_TAGLIB=true -DDISABLE_GTK2=true -DDISABLE_QT4=true -DDISABLE_QT5=true  -DDISABLE_GSTREAMER=true -DDISABLE_RSVG2=true -DDISABLE_FFMPEG=true'
 
 		libebur128_simplified_build_and_install_commands_displayed_to_user = ['mkdir build', \
 		'cd build', \
@@ -4133,7 +4127,7 @@ def check_libebur128_version_and_add_git_commands_to_checkout_specific_commit():
 		'make install'
 		'cp loudness-freelcs /usr/bin/', \
 		'cp libinput_sndfile-freelcs.so  /usr/lib/', \
-		'cp libinput_ffmpeg-freelcs.so   /usr/lib/']
+		]
 	
 	if (libebur128_version_is_the_one_we_require == False) and (libebur128_git_commands != []):
 	
@@ -5585,7 +5579,7 @@ os_name = ''
 os_version = ''
 
 # Define supported operating systems and versions
-supported_platforms = {'debian': ['11'], 'ubuntu': ['20.04','22.04']}
+supported_platforms = {'debian': ['12'], 'ubuntu': ['22.04']}
 
 # Parse commandline arguments.
 for item in sys.argv[1:]:
