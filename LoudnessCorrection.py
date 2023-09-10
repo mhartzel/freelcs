@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '302'
+loudnesscorrection_version = '303'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -1986,7 +1986,16 @@ def run_sox(directory_for_temporary_files, directory_for_results, filename, sox_
 		
 		# If there are other sox threads processing this same file, then our stdout filename must be unique.
 		if we_are_part_of_a_multithread_sox_command == True:
-			stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '-event-' + str(event_for_sox_processing).split(' ')[3].strip('>') + '_sox_stdout.txt'
+
+			# Find event number in string created by: str(event). The position of the number changes in different versions of Python3.
+			event_number = "event_number_unknown"
+			temp_event_list = str(event_for_sox_processing).split(" ")
+
+			for str_text in temp_event_list:
+				if str_text.startswith("0x"):
+					event_number = str_text.strip(">:")
+
+			stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '-event-' + event_number + '_sox_stdout.txt'
 			
 		# Open the stdout temporary file in binary write mode.
 		try:
