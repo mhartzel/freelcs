@@ -644,7 +644,7 @@ if [ "$OS_NAME" == "ubuntu" ] && [ "$OS_VERSION" == "12.04" ] ; then
 
 fi
 
-APT_PACKAGE_LIST="python3 idle3 automake autoconf libtool fonts-liberation mediainfo gnuplot build-essential git cmake libsndfile-dev libmpg123-dev libmpcdec-dev libglib2.0-dev libavcodec-dev libavformat-dev"
+APT_PACKAGE_LIST="python3 idle3 automake autoconf libtool fonts-liberation mediainfo gnuplot build-essential git cmake libsndfile-dev libglib2.0-dev"
 
 # Ubuntu versions 20.04 and newer needs to install gnuplot-nox in addition to gnuplot, otherwise gnuplot-qt gets installed and the whole Gnome3 with it.
 if [ "$OS_NAME" == "ubuntu" ] && [  "$OS_VERSION_MAJOR_NUMBER" -ge "20" ] ; then 
