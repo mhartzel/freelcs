@@ -945,15 +945,12 @@ echo
 
 cp loudness-freelcs             /usr/bin/
 cp libinput_sndfile-freelcs.so  /usr/lib/
-cp libinput_ffmpeg-freelcs.so   /usr/lib/
 
 chmod 755 /usr/bin/loudness-freelcs
 chmod 644 /usr/lib/libinput_sndfile-freelcs.so
-chmod 644 /usr/lib/libinput_ffmpeg-freelcs.so
 
 chown root:root /usr/bin/loudness-freelcs
 chown root:root /usr/lib/libinput_sndfile-freelcs.so
-chown root:root /usr/lib/libinput_ffmpeg-freelcs.so
 
 ldconfig
 
