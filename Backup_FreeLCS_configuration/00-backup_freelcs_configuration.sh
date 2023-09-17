@@ -912,7 +912,7 @@ cd build
 END_OF_FILE
 
 # Disable building unnecessary features (GUI versions of loudness executable and taglib).
-CMAKE_COMMANLINE="cmake .. -DCMAKE_BUILD_TYPE=Release -Wno-dev   -DCMAKE_INSTALL_PREFIX:PATH=/usr -DDISABLE_TAGLIB=true -DDISABLE_GTK2=true -DDISABLE_QT5=true -DDISABLE_RSVG2=true"
+CMAKE_COMMANLINE="cmake .. -DCMAKE_BUILD_TYPE=Release -Wno-dev   -DCMAKE_INSTALL_PREFIX:PATH=/usr -DDISABLE_TAGLIB=true -DDISABLE_GTK2=true -DDISABLE_QT5=true -DDISABLE_RSVG2=true -DDISABLE_FFMPEG=true"
 
 echo $CMAKE_COMMANLINE >> "00-restore_freelcs_configuration.sh"
 
