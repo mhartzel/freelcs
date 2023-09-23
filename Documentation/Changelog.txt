@@ -1,5 +1,16 @@
 
 #####################################
+# Released FreeLCS 3.9 with:        #
+# ----------------------------      #
+# - LoudnessCorrection version 303  #
+# - HeartBeat_Checker version 022   #
+# - Installer version 134           #
+# - Latest Documentation            #
+#####################################
+- Installer version 134. Disabled ffmpeg dependencies from libebur128 loudness - executable since they wont build anymore. It seems FFmpeg API has changed and libebur128 loudness_scanner has not kept up with the changes. However ffmpeg bindings are not needed for anything in FreeLCS, because it uses the FFmpeg - executable installed in the os.
+- LoudnessCorrection version 303. Getting event number with: str(event) produces a diffrently formatted string than before. Changed to find the event number in the new format.
+
+#####################################
 # Released FreeLCS 3.8 with:        #
 # ----------------------------      #
 # - LoudnessCorrection version 301  #
