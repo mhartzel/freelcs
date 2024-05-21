@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '303'
+loudnesscorrection_version = '304'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################

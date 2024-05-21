@@ -41,15 +41,15 @@
         This disables the line.</li>
       <li>Example: the following line:</li>
     </ul>
-    <p style="margin-left: 40px;"><strong>deb cdrom:[Debian GNU/Linux 9.4.0
-        _Stretch_ - Official amd64 DVD Binary-1 20180310-11:21]/ stretch contrib
-        main</strong></p>
+    <p style="margin-left: 40px;"><strong>deb cdrom:[Debian GNU/Linux 12.1.0
+        _Bookworm_ - Official amd64 DVD Binary-1 with firmware 20230722-10:49]/
+        bookworm main non-free-firmware</strong></p>
     <ul>
       <li>becomes:</li>
     </ul>
-    <p style="margin-left: 40px;"><strong># deb cdrom:[Debian GNU/Linux 9.4.0
-        _Stretch_ - Official amd64 DVD Binary-1 20180310-11:21]/ stretch contrib
-        main</strong></p>
+    <p style="margin-left: 40px;"><strong># deb cdrom:[Debian GNU/Linux 12.1.0
+        _Bookworm_ - Official amd64 DVD Binary-1 with firmware 20230722-10:49]/
+        bookworm main non-free-firmware</strong></p>
     <ul>
       <li>Save the modified file using the keyboard command: <strong>ctrl + o</strong></li>
       <li>Exit the nano - editor with keyboard command: <strong>ctrl + x</strong></li>
@@ -101,25 +101,26 @@
         make changes to the package repository settings so that the database for
         available packages gets updated.</li>
     </ul>
-    <h3 style="margin-left: 40px;">Debian 11:</h3>
+    <h3 style="margin-left: 40px;">Debian 12:</h3>
     <p></p>
-    <p style="margin-left: 40px;"># deb cdrom:[Debian GNU/Linux 11.3.0
-      _Bullseye_ - Official amd64 DVD Binary-1 20220326-11:23]/ bullseye contrib
-      main<br>
+    <p style="margin-left: 40px;"># deb cdrom:[Debian GNU/Linux 12.1.0
+      _Bookworm_ - Official amd64 DVD Binary-1 with firmware 20230722-10:49]/
+      bookworm main non-free-firmware<br>
       <br>
-      deb http://deb.debian.org/debian/ bullseye main<br>
-      deb-src http://deb.debian.org/debian/ bullseye main<br>
+      deb http://deb.debian.org/debian/ bookworm main non-free-firmware<br>
+      deb-src http://deb.debian.org/debian/ bookworm main non-free-firmware<br>
       <br>
-      deb http://security.debian.org/debian-security bullseye-security main
-      contrib<br>
-      deb-src http://security.debian.org/debian-security bullseye-security main
-      contrib<br>
+      deb http://security.debian.org/debian-security bookworm-security main
+      non-free-firmware<br>
+      deb-src http://security.debian.org/debian-security bookworm-security main
+      non-free-firmware<br>
       <br>
-      # bullseye-updates, to get updates before a point release is made;<br>
+      # bookworm-updates, to get updates before a point release is made;<br>
       # see
-https://www.debian.org/doc/manuals/debian-reference/ch02.en.html#_updates_and_backports<br>deb
-      http://deb.debian.org/debian/ bullseye-updates main contrib<br>
-      deb-src http://deb.debian.org/debian/ bullseye-updates main contrib</p>
+https://www.debian.org/doc/manuals/debian-reference/ch02.en.html#_updates_and_backports<br>
+      deb http://deb.debian.org/debian/ bookworm-updates main non-free-firmware<br>
+      deb-src http://deb.debian.org/debian/ bookworm-updates main
+      non-free-firmware</p>
     <ul>
     </ul>
     <br>
