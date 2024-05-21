@@ -1,5 +1,17 @@
 
 #####################################
+# Released FreeLCS 3.10 with:       #
+# ----------------------------      #
+# - LoudnessCorrection version 304  #
+# - HeartBeat_Checker version 022   #
+# - Installer version 135           #
+# - Latest Documentation            #
+#####################################
+- Installer version 135. Enabled installing on Ubuntu 24.04.
+- LoudnessCorrection version 304. Updated version number, no other changes.
+- This is basically same release as 3.9 since no changes in the code were required other than enabling installation on Ubuntu 24.04.
+
+#####################################
 # Released FreeLCS 3.9 with:        #
 # ----------------------------      #
 # - LoudnessCorrection version 303  #
