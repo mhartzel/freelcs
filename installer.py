@@ -27,8 +27,8 @@ import email.mime.multipart
 import tempfile
 import copy
 
-version = '135'
-freelcs_version = '3.10'
+version = '137'
+freelcs_version = '3.11'
 
 ###################################
 # Function definitions start here #
@@ -468,6 +468,12 @@ def set_directory_names_according_to_language():
 	if smb_conf_version == 1:
 		samba_configuration_file_content = ['# Samba Configuration File', \
 		'', \
+		'# Note: This will create a passwordless share and may not work', \
+		'# anymore for windows 10 and windows 11 24H2. These operating system', \
+		'# versions require smb - mounts with user and password authentication.', \
+		'# See more details for a workaround and alternative Samba', \
+		'# configuration in FreeLCS user manual.', \
+		'', \
 		'[global]', \
 		'workgroup = WORKGROUP', \
 		'server string = %h server (Samba, ' + hotfolder_name_to_use + ')', \
@@ -491,6 +497,12 @@ def set_directory_names_according_to_language():
 	# Define samba version 4.1.x configuration
 	if smb_conf_version == 2:
 		samba_configuration_file_content = ['# Samba Configuration File', \
+		'', \
+		'# Note: This will create a passwordless share and may not work', \
+		'# anymore for windows 10 and windows 11 24H2. These operating system', \
+		'# versions require smb - mounts with user and password authentication.', \
+		'# See more details for a workaround and alternative Samba', \
+		'# configuration in FreeLCS user manual.', \
 		'', \
 		'[global]', \
 		'workgroup = WORKGROUP', \
@@ -5579,7 +5591,7 @@ os_name = ''
 os_version = ''
 
 # Define supported operating systems and versions
-supported_platforms = {'debian': ['12'], 'ubuntu': ['24.04']}
+supported_platforms = {'debian': ['13'], 'ubuntu': ['24.04']}
 
 # Parse commandline arguments.
 for item in sys.argv[1:]:
@@ -6073,6 +6085,12 @@ if (os_name == 'debian') and (os_version_float >= 8):
 if smb_conf_version == 1:
 	samba_configuration_file_content = ['# Samba Configuration File', \
 	'', \
+	'# Note: This will create a passwordless share and may not work', \
+	'# anymore for windows 10 and windows 11 24H2. These operating system', \
+	'# versions require smb - mounts with user and password authentication.', \
+	'# See more details for a workaround and alternative Samba', \
+	'# configuration in FreeLCS user manual.', \
+	'', \
 	'[global]', \
 	'workgroup = WORKGROUP', \
 	'server string = %h server (Samba, LoudnessCorrection)', \
@@ -6096,6 +6114,12 @@ if smb_conf_version == 1:
 # Define samba version 4.1.x configuration
 if smb_conf_version == 2:
 	samba_configuration_file_content = ['# Samba Configuration File', \
+	'', \
+	'# Note: This will create a passwordless share and may not work', \
+	'# anymore for windows 10 and windows 11 24H2. These operating system', \
+	'# versions require smb - mounts with user and password authentication.', \
+	'# See more details for a workaround and alternative Samba', \
+	'# configuration in FreeLCS user manual.', \
 	'', \
 	'[global]', \
 	'workgroup = WORKGROUP', \

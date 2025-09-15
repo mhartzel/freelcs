@@ -1,5 +1,17 @@
 
 #####################################
+# Released FreeLCS 3.11 with:       #
+# ----------------------------      #
+# - LoudnessCorrection version 305  #
+# - HeartBeat_Checker version 022   #
+# - Installer version 137           #
+# - Latest Documentation            #
+#####################################
+- Installer version 137. Enabled installing on Debian 13.
+- LoudnessCorrection version 305. Debian 13 comes with FFmpeg 7.1.1 which has a new behaviour for showing channel counts for each audio stream in a file.  FFmpeg replaces some channel counts with a guess of the channel layot and this broke funciotnality in FreeLCS. Adding option -guess_layout_max 0 reverts the behaviour back to only showing channel counts. Fixed.
+- Windows 11 24H2 and windows 10 does not allow smb - mounts without a password anymore. You can either configure windows to allow it again or start to use a username and password with the FreelCS - mount. Created a page discussing what the user can do about this.
+
+#####################################
 # Released FreeLCS 3.10 with:       #
 # ----------------------------      #
 # - LoudnessCorrection version 304  #

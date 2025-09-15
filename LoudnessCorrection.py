@@ -36,7 +36,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '304'
+loudnesscorrection_version = '305'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -3578,7 +3578,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			with open(stdout_for_external_command, 'wb') as stdout_commandfile_handler:
 		
 				# Examine the file in HotFolder with ffmpeg.
-				subprocess.Popen([ffmpeg_executable_name, '-i', file_to_process], stdout=stdout_commandfile_handler, stderr=stdout_commandfile_handler, stdin=None, close_fds=True).communicate()[0] # Run ffmpeg.
+				subprocess.Popen([ffmpeg_executable_name, '-guess_layout_max', '0', '-i', file_to_process], stdout=stdout_commandfile_handler, stderr=stdout_commandfile_handler, stdin=None, close_fds=True).communicate()[0] # Run ffmpeg.
 		
 				# Make sure all data written to temporary stdout - file is flushed from the os cache and written to disk.
 				stdout_commandfile_handler.flush() # Flushes written data to os cache

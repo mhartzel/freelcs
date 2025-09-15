@@ -40,6 +40,9 @@
         the server HotFolder from windows 10</a></h3>
     <h3><a href="#Making%20a%20mount%20permanent%20in%20windows%2010">Making a
         mount permanent in windows 10</a></h3>
+    <h3><a href="#Mounting%20the%20server%20HotFolder%20from%20windows%2011%20making%20it%20permanent">Mounting
+        the server HotFolder from windows 11 making it permanent</a><br>
+    </h3>
     <h3> <a href="#Html%20Progress%20report">Html Progress Report</a></h3>
     <h3><a href="#Static%20ip%20-%20address%20for%20the%20server">Static ip -
         address for the server</a></h3>
@@ -156,7 +159,7 @@
       <li>You need a computer with at least 2 processor cores.</li>
       <li>4 GB of RAM&nbsp; (there probably is not much advantage in having
         more).</li>
-      <li> Ubuntu Linux 18.04 LTS, 16.04 LTS, Debian 10 or 9.</li>
+      <li> Ubuntu Linux 18.04 LTS, 16.04 LTS or later, Debian 10 or 9 or later.</li>
       <li>A person that is able to set up and update an Linux server.</li>
       <li>1 Gbit ethernet is recommended.</li>
       <li>&nbsp;The <a href="FreeLCS_FAQ.html">FAQ</a> discusses things like
@@ -990,6 +993,12 @@
         server HotFolder from windows 10</a><br>
     </h2>
     <ul>
+      <li><strong>Note FreeLCS samba configuration will create a passwordless
+          share and may not work anymore for windows 10 and windows 11 24H2</strong>.
+        These operating system versions require smb - mounts with username and
+        password authentication. See more details for a workaround and
+        alternative Samba configuration <a href="Username%20and%20Password%20authentication%20for%20windows%2010%20and%2011.html">in
+          this section of the FreeLCS user manual.</a></li>
       <li>Click on the "Windows" - button and click on the entrybox on the
         bottom of the window. If your installation has a target loudness
         different from standard -23 LUFS then the target loudness is part of the
@@ -1036,6 +1045,41 @@
     <img src="Pictures/win10-02.jpg" alt=""><br>
     <p><br>
     </p>
+    <h2><a id="Mounting the server HotFolder from windows 11 making it permanent">Mounting
+        the server HotFolder from windows 11 making it permanent</a></h2>
+    <p></p>
+    <br>
+    <strong>Note FreeLCS samba configuration will create a passwordless share
+      and may not work anymore for windows 10 and windows 11 24H2</strong>.
+    These operating system versions require smb - mounts with username and
+    password authentication. See more details for a workaround and alternative
+    Samba configuration in this section of the manual: <a href="Username%20and%20Password%20authentication%20for%20windows%2010%20and%2011.html">Username
+      and Password authentication for windows 10 and 11</a><span style="color: #0000ee;">
+    </span><br>
+    <p><br>
+    </p>
+    <ul>
+      <li>Open windows file explorer and right - click on "<strong>This PC</strong>"
+        Select "<strong>Map Network Drive</strong>" from the menu.</li>
+    </ul>
+    <p><br>
+    </p>
+    <img src="Pictures/win11_map_network_drive-01.png" alt="">
+    <p><br>
+    </p>
+    <ul>
+      <li>Write the address of the server in the window.&nbsp;If your
+        installation has a target loudness different from standard -23 LUFS then
+        the target loudness is part of the mount path. For example if your
+        FreeLCS installation has a target loudness of -16 LUFS, then the mount
+        path is something like: <strong>\\192.168.100.109\LoudnessCorrection_-16_LUFS</strong>.
+        Make sure that the option "<strong>Reconnect at sign-in</strong>" is
+        tagged, without it windows won't make the mount when windows starts up.
+        Click "<strong>Finnish</strong>".</li>
+    </ul>
+    <p><br>
+    </p>
+    <img src="Pictures/win11_map_network_drive-01-no_authentication.png" alt="">
     <h2> <a id="Html Progress report">Html Progress Report</a><br>
     </h2>
     If you selected "<strong>Write html progress report</strong>" = "<strong>yes</strong>"

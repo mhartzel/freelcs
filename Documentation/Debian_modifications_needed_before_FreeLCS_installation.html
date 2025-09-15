@@ -41,15 +41,17 @@
         This disables the line.</li>
       <li>Example: the following line:</li>
     </ul>
-    <p style="margin-left: 40px;"><strong>deb cdrom:[Debian GNU/Linux 12.1.0
-        _Bookworm_ - Official amd64 DVD Binary-1 with firmware 20230722-10:49]/
-        bookworm main non-free-firmware</strong></p>
+    <p style="margin-left: 40px;"><strong>deb cdrom:[Debian GNU/Linux 13.0.0
+        _Trixie_ - Official amd64 NETINST with firmware 20250809-11:20]/ trixie
+        contrib main non-free-firmware<br>
+      </strong></p>
     <ul>
       <li>becomes:</li>
     </ul>
-    <p style="margin-left: 40px;"><strong># deb cdrom:[Debian GNU/Linux 12.1.0
-        _Bookworm_ - Official amd64 DVD Binary-1 with firmware 20230722-10:49]/
-        bookworm main non-free-firmware</strong></p>
+    <p style="margin-left: 40px;"><strong>#deb cdrom:[Debian GNU/Linux 13.0.0
+        _Trixie_ - Official amd64 NETINST with firmware 20250809-11:20]/ trixie
+        contrib main non-free-firmware<br>
+      </strong></p>
     <ul>
       <li>Save the modified file using the keyboard command: <strong>ctrl + o</strong></li>
       <li>Exit the nano - editor with keyboard command: <strong>ctrl + x</strong></li>
@@ -101,26 +103,32 @@
         make changes to the package repository settings so that the database for
         available packages gets updated.</li>
     </ul>
-    <h3 style="margin-left: 40px;">Debian 12:</h3>
+    <h3 style="margin-left: 40px;">Debian 13:</h3>
     <p></p>
-    <p style="margin-left: 40px;"># deb cdrom:[Debian GNU/Linux 12.1.0
-      _Bookworm_ - Official amd64 DVD Binary-1 with firmware 20230722-10:49]/
-      bookworm main non-free-firmware<br>
-      <br>
-      deb http://deb.debian.org/debian/ bookworm main non-free-firmware<br>
-      deb-src http://deb.debian.org/debian/ bookworm main non-free-firmware<br>
-      <br>
-      deb http://security.debian.org/debian-security bookworm-security main
-      non-free-firmware<br>
-      deb-src http://security.debian.org/debian-security bookworm-security main
+    <p style="margin-left: 40px;">#deb cdrom:[Debian GNU/Linux 13.0.0 _Trixie_ -
+      Official amd64 NETINST with firmware 20250809-11:20]/ trixie contrib main
       non-free-firmware<br>
       <br>
-      # bookworm-updates, to get updates before a point release is made;<br>
+      deb http://deb.debian.org/debian/ trixie main non-free-firmware<br>
+      deb-src http://deb.debian.org/debian/ trixie main non-free-firmware<br>
+      <br>
+      deb http://security.debian.org/debian-security trixie-security main
+      non-free-firmware<br>
+      deb-src http://security.debian.org/debian-security trixie-security main
+      non-free-firmware<br>
+      <br>
+      # trixie-updates, to get updates before a point release is made;<br>
       # see
-https://www.debian.org/doc/manuals/debian-reference/ch02.en.html#_updates_and_backports<br>
-      deb http://deb.debian.org/debian/ bookworm-updates main non-free-firmware<br>
-      deb-src http://deb.debian.org/debian/ bookworm-updates main
-      non-free-firmware</p>
+https://www.debian.org/doc/manuals/debian-reference/ch02.en.html#_updates_and_backports<br>deb
+      http://deb.debian.org/debian/ trixie-updates main non-free-firmware<br>
+      deb-src http://deb.debian.org/debian/ trixie-updates main
+      non-free-firmware<br>
+      <br>
+      # This system was installed using small removable media<br>
+      # (e.g. netinst, live or single CD). The matching "deb cdrom"<br>
+      # entries were disabled at the end of the installation process.<br>
+      # For information about how to configure apt package sources,<br>
+      # see the sources.list(5) manual.</p>
     <ul>
     </ul>
     <br>
