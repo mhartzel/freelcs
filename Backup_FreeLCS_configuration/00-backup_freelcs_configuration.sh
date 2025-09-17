@@ -136,7 +136,7 @@ cd "$BACKUP_DIR_NAME"
 if [ "$INIT_SYSTEM_NAME" == "init" ] ; then
 	LOUDNESSCORRECTION_PATH="/usr/bin/LoudnessCorrection.py"
 	HEARTBEAT_CHECKER_PATH="/usr/bin/HeartBeat_Checker.py"
-	SETTINGS_FILE_PATH="/etc/Loudness_Correction_Settings.pickle"
+	SETTINGS_FILE_PATH="/etc/Loudness_Correction_Settings.json"
 	SAMBA_CONF_PATH="/etc/samba/smb.conf"
 	INIT_SCRIPT_PATH="/etc/init.d/loudnesscorrection_init_script"
 	SYSTEMD_SERVICE_FILE_PATH=""
@@ -145,7 +145,7 @@ fi
 if [ "$INIT_SYSTEM_NAME" == "systemd" ] ; then
 	LOUDNESSCORRECTION_PATH="/usr/bin/LoudnessCorrection.py"
 	HEARTBEAT_CHECKER_PATH="/usr/bin/HeartBeat_Checker.py"
-	SETTINGS_FILE_PATH="/etc/Loudness_Correction_Settings.pickle"
+	SETTINGS_FILE_PATH="/etc/Loudness_Correction_Settings.json"
 	SAMBA_CONF_PATH="/etc/samba/smb.conf"
 	INIT_SCRIPT_PATH="/etc/systemd/system/loudnesscorrection_init_script"
 	SYSTEMD_SERVICE_FILE_PATH="/etc/systemd/system/freelcs.service"
@@ -455,7 +455,7 @@ fi
 if [ "$INIT_SYSTEM_NAME" == "init" ] ; then
 	LOUDNESSCORRECTION_NAME="LoudnessCorrection.py"
 	HEARTBEAT_CHECKER_NAME="HeartBeat_Checker.py"
-	SETTINGS_FILE_NAME="Loudness_Correction_Settings.pickle"
+	SETTINGS_FILE_NAME="Loudness_Correction_Settings.json"
 	SAMBA_CONF_NAME="smb.conf"
 	INIT_SCRIPT_NAME="loudnesscorrection_init_script"
 	SYSTEMD_SERVICE_FILE_NAME=""
@@ -463,7 +463,7 @@ if [ "$INIT_SYSTEM_NAME" == "init" ] ; then
 	# Define paths for copy targets.
 	LOUDNESSCORRECTION_PATH="/usr/bin/LoudnessCorrection.py"
 	HEARTBEAT_CHECKER_PATH="/usr/bin/HeartBeat_Checker.py"
-	SETTINGS_FILE_PATH="/etc/Loudness_Correction_Settings.pickle"
+	SETTINGS_FILE_PATH="/etc/Loudness_Correction_Settings.json"
 	SAMBA_CONF_PATH="/etc/samba/smb.conf"
 	INIT_SCRIPT_PATH="/etc/init.d/loudnesscorrection_init_script"
 	INIT_SCRIPT_LINK_PATH="/etc/rc2.d/S99loudnesscorrection_init_script"
@@ -473,7 +473,7 @@ fi
 if [ "$INIT_SYSTEM_NAME" == "systemd" ] ; then
 	LOUDNESSCORRECTION_NAME="LoudnessCorrection.py"
 	HEARTBEAT_CHECKER_NAME="HeartBeat_Checker.py"
-	SETTINGS_FILE_NAME="Loudness_Correction_Settings.pickle"
+	SETTINGS_FILE_NAME="Loudness_Correction_Settings.json"
 	SAMBA_CONF_NAME="smb.conf"
 	INIT_SCRIPT_NAME="loudnesscorrection_init_script"
 	SYSTEMD_SERVICE_FILE_NAME="freelcs.service"
@@ -481,7 +481,7 @@ if [ "$INIT_SYSTEM_NAME" == "systemd" ] ; then
 	# Define paths for copy targets.
 	LOUDNESSCORRECTION_PATH="/usr/bin/LoudnessCorrection.py"
 	HEARTBEAT_CHECKER_PATH="/usr/bin/HeartBeat_Checker.py"
-	SETTINGS_FILE_PATH="/etc/Loudness_Correction_Settings.pickle"
+	SETTINGS_FILE_PATH="/etc/Loudness_Correction_Settings.json"
 	SAMBA_CONF_PATH="/etc/samba/smb.conf"
 	INIT_SCRIPT_PATH="/etc/systemd/system/loudnesscorrection_init_script"
 	SYSTEMD_SERVICE_FILE_PATH="/etc/systemd/system/freelcs.service"

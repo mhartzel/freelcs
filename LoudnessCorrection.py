@@ -32,11 +32,12 @@ import email.mime
 import email.mime.text
 import email.mime.multipart
 import pickle
+import json
 import math
 import signal
 import traceback
 
-loudnesscorrection_version = '305'
+loudnesscorrection_version = '307'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -275,7 +276,7 @@ send_error_messages_to_logfile = True
 
 # Heartbeat writes timestamp periodically to a file so that a outside program can monitor if this program has stopped.
 heartbeat = True # This variable controls if this program periodically writes the current time in to a file. This file can be externally monitored to see if this program is still alive or if it has stopped due to an unexpected error.
-heartbeat_file_name = '00-HeartBeat.pickle' # This variable defines the name of the file where the heartbeat timestamp will be written. The files 'modification date' reflects the last heartbeat. The time strings produced by python3 function int(time.time()) is written in to the file. 
+heartbeat_file_name = '00-HeartBeat.json' # This variable defines the name of the file where the heartbeat timestamp will be written. The files 'modification date' reflects the last heartbeat. The time strings produced by python3 function int(time.time()) is written in to the file. 
 heartbeat_write_interval = 30 # This variable defines how many seconds there approximately will be between writing the current time to the heartbeat - file. The real delay between writes gets considerably longer when the machine is under heavy disk IO. Writing the timestamp to the file can get delayed by a factor of 2 - 4. So use a longer value when determining if this program is still running. The delay during high disk IO can be avoided if the directory the heartbeat-file is written to is on a ram-disk.
 # Collect error messages and send them periodically by email to the administrator.
 email_sending_details = {} # All information needed to send email is gathered to this dictionary.
@@ -368,7 +369,7 @@ if debug_all == True:
 # Set defaults for 'Machine Reabable Results' settings #
 ########################################################
 
-# These values will be overwritten by values that come from the installer program through the file Loudness_Correction_Settings.pickle
+# These values will be overwritten by values that come from the installer program through the file Loudness_Correction_Settings.json
 write_loudness_calculation_results_to_a_machine_readable_file = False
 create_loudness_corrected_files = True
 create_loudness_history_graphics_files = True
@@ -390,7 +391,7 @@ unsupported_formats_list = ['libmodplug']
 #####################################################################################
 # Set default target loudness = -23 LUFS. The user can change this in the installer #
 #####################################################################################
-# This value will be overwritten by value that comes from the installer program through the file Loudness_Correction_Settings.pickle
+# This value will be overwritten by value that comes from the installer program through the file Loudness_Correction_Settings.json
 target_loudness = '-23'
 
 ###############################################################################################################################################################################
@@ -3073,8 +3074,8 @@ def write_to_heartbeat_file_thread():
 			# Write timestamp to the heartbeat file, indicating that we are still alive :)
 			# Create the file in temp - directory and then move to the target location.
 			try:
-				with open(web_page_path + os.sep + '.temporary_files' + os.sep + heartbeat_file_name, 'wb') as heartbeat_commandfile_handler:
-					pickle.dump(loudness_correction_program_info_and_timestamps, heartbeat_commandfile_handler)
+				with open(web_page_path + os.sep + '.temporary_files' + os.sep + heartbeat_file_name, 'w') as heartbeat_commandfile_handler:
+					json.dump(loudness_correction_program_info_and_timestamps, heartbeat_commandfile_handler, ensure_ascii=False)
 					heartbeat_commandfile_handler.flush() # Flushes written data to os cache
 					os.fsync(heartbeat_commandfile_handler.fileno()) # Flushes os cache to disk
 					shutil.move(web_page_path + os.sep + '.temporary_files' + os.sep + heartbeat_file_name, web_page_path + os.sep + heartbeat_file_name)
@@ -5767,8 +5768,8 @@ try:
 		# Read the config variables from a file. The file contains a dictionary with the needed values.
 		
 		try:
-			with open(configfile_path, 'rb') as configfile_handler:
-				all_settings_dict = pickle.load(configfile_handler)
+			with open(configfile_path, 'r') as configfile_handler:
+				all_settings_dict = json.load(configfile_handler)
 		except KeyboardInterrupt:
 			if silent == False:
 				print('\n\nUser cancelled operation.\n')

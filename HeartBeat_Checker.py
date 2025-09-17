@@ -19,9 +19,9 @@ import email
 import email.mime
 import email.mime.text
 import email.mime.multipart
-import pickle
+import json
 
-version = '022'
+version = '023'
 
 # User can set some defaults here that are used if the program is started without giving it the path to a configfile.
 silent = False # Use True if you don't want this program to output anything to screen.
@@ -165,7 +165,7 @@ all_ip_addresses_of_the_machine = ['Not known yet'] # This variable stores in a 
 freelcs_version = 'Not known yet'
 loudnesscorrection_version = 'Not known yet'
 
-heartbeat_file_name = '00-HeartBeat.pickle'
+heartbeat_file_name = '00-HeartBeat.json'
 heartbeat_file_was_found = False
 
 # If the user did not give enough arguments on the commandline print an error message.
@@ -173,7 +173,7 @@ if (len(sys.argv) < 2) or (len(sys.argv) > 3):
 	print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n')
 	sys.exit(1)
 
-# If there was only one argument on the commandline, it is full or partial path to the HeartBeat.pickle - file, check that the path exists.
+# If there was only one argument on the commandline, it is full or partial path to the HeartBeat.json - file, check that the path exists.
 if len(sys.argv) == 2:
 	# Test if the user given target path exists.
 	heartbeat_file_path = os.path.normpath(sys.argv[1])
@@ -189,7 +189,7 @@ if len(sys.argv) == 2:
 	if (os.path.basename(heartbeat_file_path) == heartbeat_file_name) and (os.path.isfile(heartbeat_file_path)):
 		heartbeat_file_was_found = True
 
-	# If the path user gave us is a path to a directory, we need to search it to find where the file '00-HeartBeat.pickle' is located.
+	# If the path user gave us is a path to a directory, we need to search it to find where the file '00-HeartBeat.json' is located.
 	if heartbeat_file_was_found == False:
 		if os.path.isdir(heartbeat_file_path):
 			if os.path.exists(heartbeat_file_path + os.sep + heartbeat_file_name):
@@ -235,8 +235,8 @@ if configfile_path != '':
 	email_sending_details =  {}
 	
 	try:
-		with open(configfile_path, 'rb') as configfile_handler:
-			all_settings_dict = pickle.load(configfile_handler)
+		with open(configfile_path, 'r') as configfile_handler:
+			all_settings_dict = json.load(configfile_handler)
 	except KeyboardInterrupt:
 		print('\n\nUser cancelled operation.\n')
 		sys.exit(0)
@@ -289,8 +289,8 @@ while True:
 	time_string = parse_time(time.time()) # Parse current time to a nicely formatted string.
 	
 	try:
-		with open(heartbeat_file_path, 'rb') as heartbeat_file_handler:
-			loudness_correction_program_info_and_timestamps = pickle.load(heartbeat_file_handler)
+		with open(heartbeat_file_path, 'r') as heartbeat_file_handler:
+			loudness_correction_program_info_and_timestamps = json.load(heartbeat_file_handler)
 	except KeyboardInterrupt:
 		print('\n\nUser cancelled operation.\n')
 		sys.exit(0)
@@ -325,7 +325,7 @@ while True:
 		if (heartbeat_file_read_error == False) and (heartbeat_file_read_error_message_has_been_sent == True):
 			heartbeat_file_read_error_message_has_been_sent = False
 			
-			# Read LoudnessCorrection pid and commandline from the heartBeat pickle.
+			# Read LoudnessCorrection pid and commandline from the heartBeat json.
 			loudness_correction_commandline = loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'][0]
 			loudness_correction_pid = loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'][1]
 			all_ip_addresses_of_the_machine = loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'][2]
@@ -345,7 +345,7 @@ while True:
 		continue
 
 	# There was no errors in reading HeartBeat - file, reset some variables.
-	# First read LoudnessCorrection pid, commandline, ip-address and version number from the heartBeat pickle.
+	# First read LoudnessCorrection pid, commandline, ip-address and version number from the heartBeat json.
 	loudness_correction_commandline = loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'][0]
 	loudness_correction_pid = loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'][1]
 	all_ip_addresses_of_the_machine = loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'][2]
