@@ -254,7 +254,11 @@ os_name = '' # Create variable to store distro information.
 os_version = '' # Create variable to store os version information.
 
 delay_between_directory_reads = 5 # HotFolder poll interval (seconds) (how ofter the directory is checked for new files).
-number_of_processor_cores = 6 # The number of processor cores to use for simultaneous file processing and loudness calculation. Only use even numbers. Slightly too big number often results in better performance. If you have 4 cores try defining 6 or 8 here and check the time it takes processing same set of files.
+number_of_processor_cores = 2 # The number of processor cores to use for simultaneous file processing and loudness calculation. Only use even numbers. Slightly too big number often results in better performance. If you have 4 cores try defining 6 or 8 here and check the time it takes processing same set of files.
+
+if len(os.sched_getaffinity(0)) > 2: # Get number of physical processor cores from the os.
+	number_of_processor_cores = len(os.sched_getaffinity(0))
+
 if number_of_processor_cores / 2 != int(number_of_processor_cores / 2): # If the number for processor cores is not an even number, force it to the next bigger even number.
 	 number_of_processor_cores = number_of_processor_cores + 1 
 file_expiry_time = 60*60*8 # This number (in seconds) defines how long the files are allowed to exist in HotFolder and results - directory. File creation time is not taken into account only the time this program first saw the file in the directory. Files are automatically deleted when they are 'expired'.
@@ -1180,23 +1184,8 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 					target_level = " title \'" + target_loudness + " LUFS (Target Level)\'" * english + " LUFS (Tavoitetaso)\'" * finnish +" lw 6 lc rgb \'#d60d43\', " # Color: Red
 
 				# Generate gnuplot commands for plotting the graphics. Put all gnuplot commands in a list.
-				# Gnuplot 5 in Ubuntu 16.04 and Debian 9 reverses y axis. Detect os version and adjust y axis cordinates accordingly
 
-				gnuplot_y_axis_commands = 'set yrange [ 0 : -60 ] noreverse nowriteback'
-
-				if os_name == 'ubuntu':
-					temp = os_version.split('.')[0]
-
-					if temp.isnumeric():
-						os_version_major_number = int(temp)
-
-					if os_version_major_number >= 16:
-						gnuplot_y_axis_commands = 'set yrange [ -60 : 0 ] nowriteback'
-
-				if os_name == 'debian':
-					if int(os_version) >= 9:
-						gnuplot_y_axis_commands = 'set yrange [ -60 : 0 ] nowriteback'
-
+				gnuplot_y_axis_commands = 'set yrange [ -60 : 0 ] nowriteback'
 				gnuplot_commands=['set terminal jpeg size 1280,960 medium font \'LiberationSans-Regular\' 12', \
 				'set encoding utf8', \
 				'set output ' + '\"' + gnuplot_temporary_output_graphicsfile.replace('"','\\"') + '\"', \
@@ -3153,7 +3142,6 @@ def debug_lists_and_dictionaries_thread():
 	global temp_loudness_results_for_automation
 	global final_loudness_results_for_automation
 	global ffmpeg_executable_found
-	global avconv_executable_found
 	global ffmpeg_executable_name
 	global peak_measurement_method
 	global quit_all_threads_now
@@ -3637,7 +3625,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				# Get the type of the file.
 				file_type = str(item).split('from')[0].split(',')[1].strip().lower()
 
-				# avconv / FFmpeg can not tell if file wrapper format is webm or matroska, it announces these all as one format with keywords:   matroska,webm.
+				# FFmpeg can not tell if file wrapper format is webm or matroska, it announces these all as one format with keywords:   matroska,webm.
 				# Get true wrapper format with mediainfo.
 				if file_type == 'matroska':
 					wrapper_format, mediainfo_error_message = get_file_wrapper_format_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish)
@@ -3714,7 +3702,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				except ValueError:
 					pass
 			
-				# FFmpeg / avconv sometimes reports some channel counts differently. Test for these cases and convert the channel count to an simple number.
+				# FFmpeg sometimes reports some channel counts differently. Test for these cases and convert the channel count to an simple number.
 				# These values are from avconv source: libavutil/channel_layout.c
 				if 'mono' in number_of_audio_channels_as_text:
 					number_of_audio_channels = '1'
@@ -3860,14 +3848,14 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 
 				# Find out what is FFmpegs map number for the audio stream.
 				# There usually is some unwanted cruft right behind the map number, so we need to find the cut point by advancing character by character.
-				# Example for a line that we are trying to parse here (ffmpeg 0.8 / avconv 0.9 and later):   Stream #0.1(eng): Audio: ac3, 48000 Hz, 5.1, s16, 448 kb/s
+				# Example for a line that we are trying to parse here (ffmpeg 0.8 and later):   Stream #0.1(eng): Audio: ac3, 48000 Hz, 5.1, s16, 448 kb/s
 				# Example for a line that we are trying to parse here (ffmpeg 2.x):   Stream #0:1: Audio: ac3, 48000 Hz, 5.1, s16, 448 kb/s
 				# The first number (0) in the map means input stream number (there can be many in a input file). The second (1) number means the stream in the file.
 				map_number = ''
 				separator_character_found = False
 
 				for map_number_counter in range(item.find('#') + 1, len(item)):
-					if (separator_character_found == False) and (item[map_number_counter] == '.'): # FFmpeg / Avconv 0.8 uses . as map number separator.
+					if (separator_character_found == False) and (item[map_number_counter] == '.'): # FFmpeg uses . as map number separator.
 						separator_character_found = True # Match separator character only once.
 						continue
 					if (separator_character_found == False) and (item[map_number_counter] == ':'): # FFmpeg 2.x uses : as map number separator.
@@ -3881,7 +3869,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				# Test if we really have found the stream map number.
 				try:
 
-					if '.' in temp_map_number_string: # FFmpeg 0.8 / Avconv 0.8 and later uses . as map number separator.
+					if '.' in temp_map_number_string: # FFmpeg 0.8 later uses . as map number separator.
 						map_number = temp_map_number_string.split('.')[1]
 					if ':' in temp_map_number_string: # FFmpeg 2.x uses : as map number separator.
 						map_number = temp_map_number_string.split(':')[1]
@@ -3991,12 +3979,6 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 			# Flac supports only bit depths 16 and 24.
 			if (estimated_uncompressed_size_for_combined_channels < wav_format_maximum_file_size) and (bit_depth == 32):
 				ffmpeg_output_wrapper_format = 'wav'
-			# Ubuntu 12.04 and Debian 7 ships with a FFmpeg version that always converts bit depths bigger than 16 to 16 when storing output to Flac.
-			# On these distros use wav when using flac would result in bit depth conversion.
-			if (estimated_uncompressed_size_for_combined_channels < wav_format_maximum_file_size) and (bit_depth == 24) and (os_name == 'ubuntu') and (os_version == '12.04'):
-				ffmpeg_output_wrapper_format = 'wav'
-			if (estimated_uncompressed_size_for_combined_channels < wav_format_maximum_file_size) and (bit_depth == 24) and (os_name == 'debian') and (os_version == '7'):
-				ffmpeg_output_wrapper_format = 'wav'
 
 			# Assign the start of FFmpeg audio extract commandline to the list.
 			if len(ffmpeg_commandline) == 0:
@@ -4009,15 +3991,6 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 					# Create start of the commandline for FFmpeg >= 2.8.6 when input file is NOT mpegts
 					ffmpeg_commandline = [ffmpeg_executable_name, '-y', '-fflags', '+nofillin', '-i', file_to_process, '-vn']
 
-
-				# If we are running on an old avconv based distro, overwrite start of the FFmpeg commandline with a suitable avconv commandline.
-				if (os_name == 'ubuntu') and (os_version == '14.04'):
-					ffmpeg_commandline = [ffmpeg_executable_name, '-y', '-i', file_to_process, '-vn']
-
-				if (os_name == 'debian') and (os_version == '8'):
-					ffmpeg_commandline = [ffmpeg_executable_name, '-y', '-i', file_to_process, '-vn']
-
-			
 			# Compile the name of output files to a list.
 			# If we are going to remix audio from a mxf - file before processing it, then the output files are temporary and needs to have names that don't conflict with the final names.
 			# Also if mxf - audio needs to be remixed, then gather file names and channel counts to a list that is needed for doing the remixes.
@@ -5944,7 +5917,6 @@ try:
 	gnuplot_executable_found = False
 	sox_executable_found = False
 	ffmpeg_executable_found = False
-	avconv_executable_found = False
 	mediainfo_executable_found = False
 	smbstatus_executable_found = False
 	libebur128_loudness_executable_found = False
@@ -5964,10 +5936,6 @@ try:
 		ffmpeg_true_or_false = os.path.exists(os_path + os.sep + 'ffmpeg') and os.access(os_path + os.sep + 'ffmpeg', os.X_OK)
 		if ffmpeg_true_or_false == True:
 			ffmpeg_executable_found = True
-			
-		avconv_true_or_false = os.path.exists(os_path + os.sep + 'avconv') and os.access(os_path + os.sep + 'avconv', os.X_OK)
-		if avconv_true_or_false == True:
-			avconv_executable_found = True
 			
 		mediainfo_true_or_false = os.path.exists(os_path + os.sep + 'mediainfo') and os.access(os_path + os.sep + 'mediainfo', os.X_OK)
 		if mediainfo_true_or_false == True:
@@ -6007,19 +5975,11 @@ try:
 			send_error_messages_to_screen_logfile_email(error_message, [])
 			sys.exit(1)
 
-	# If both FFmpeg and Avconv are found then decide which one to use.
-	# Default is = If both are found then use FFmpeg not avconv.
-	# This is because now (2016.05) all distros are transitioning from avconv back to FFmpeg. Ubuntu 16.04 already uses only FFmpeg, and Debian 9 will also.
-
 	ffmpeg_executable_name = ''
 
-	# If user has forced no_ffmpeg on the command line, don't use FFmpeg or avconv.
+	# If user has forced no_ffmpeg on the command line, don't use it.
 	if force_no_ffmpeg == True:
 		ffmpeg_executable_found = False
-		avconv_executable_found = False
-
-	if avconv_executable_found == True:
-		ffmpeg_executable_name = 'avconv'
 
 	if ffmpeg_executable_found == True:
 		ffmpeg_executable_name = 'ffmpeg'
@@ -6398,7 +6358,7 @@ try:
 						if we_have_true_read_access_to_the_file == True:
 
 							# Test if FFmpeg is installed.
-							if (ffmpeg_executable_found == True) or (avconv_executable_found == True):
+							if ffmpeg_executable_found == True:
 								
 								# Call a subroutine to inspect file with FFmpeg to get audio stream information.
 								ffmpeg_parsed_audio_stream_information, ffmpeg_error_message, send_ffmpeg_error_message_by_email = get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(filename, hotfolder_path, directory_for_temporary_files, ffmpeg_output_wrapper_format, english, finnish)

@@ -120,11 +120,11 @@
 !_TAG_PARSER_VERSION!SystemdUnit	0.0	/current.age/
 !_TAG_PARSER_VERSION!XML	0.0	/current.age/
 !_TAG_PATTERN_LENGTH_LIMIT	96	/0 for no limit/
-!_TAG_PROC_CWD	/tavara/01-ecryptfs-auki/Koodaus/freelcs/	//
+!_TAG_PROC_CWD	/omat/arkisto/00-Yhteinen_Kotidirri/01-ecryptfs-auki/Koodaus/freelcs/	//
 !_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
 !_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
 !_TAG_PROGRAM_URL	https://ctags.io/	/official site/
-!_TAG_PROGRAM_VERSION	6.2.0	/v6.2.0/
+!_TAG_PROGRAM_VERSION	6.2.0	/46d78a217/
 !_TAG_ROLE_DESCRIPTION!C!function	foreigndecl	/declared in foreign languages/
 !_TAG_ROLE_DESCRIPTION!C!header	local	/local header/
 !_TAG_ROLE_DESCRIPTION!C!header	system	/system header/
@@ -1175,6 +1175,8 @@ ENABLE_TESTS	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-20
 ENABLE_TESTS	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/00-siirra_vanhoihin_tai_delli/libebur128_fork_for_freelcs_3.4/ebur128/test/CMakeLists.txt	/^set(ENABLE_TESTS OFF CACHE BOOL "Build test binaries, needs libsndfile")$/;"	v
 ENABLE_TESTS	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/libebur128_fork_for_freelcs_3.4/ebur128/test/CMakeLists.txt	/^set(ENABLE_TESTS OFF CACHE BOOL "Build test binaries, needs libsndfile")$/;"	v
 END_OF_FILE	temp/backup_restore_toiminnon_tekeminen/00-backup_freelcs_configuration.sh	/^cat > "00-restore_freelcs_configuration.sh" << 'END_OF_FILE'$/;"	h
+END_OF_FILE	temp/docker_muistiinpanot/00-vanhat/Backup_FreeLCS_configuration/00-backup_freelcs_configuration.sh	/^cat > "00-restore_freelcs_configuration.sh" << 'END_OF_FILE'$/;"	h
+END_OF_FILE	temp/docker_muistiinpanot/00-vanhat/Backup_FreeLCS_configuration/00-backup_freelcs_configuration.sh	/^cat >> "00-restore_freelcs_configuration.sh" << 'END_OF_FILE'$/;"	h
 EXECUTABLE_OUTPUT_PATH	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/00-siirra_vanhoihin_tai_delli/libebur128_fork_for_freelcs_3.4-patched/CMakeLists.txt	/^set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})$/;"	v
 EXECUTABLE_OUTPUT_PATH	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/00-siirra_vanhoihin_tai_delli/libebur128_fork_for_freelcs_3.4-patched/ebur128/CMakeLists.txt	/^set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR})$/;"	v
 EXECUTABLE_OUTPUT_PATH	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/00-siirra_vanhoihin_tai_delli/libebur128_fork_for_freelcs_3.4/CMakeLists.txt	/^set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})$/;"	v
@@ -1447,6 +1449,7 @@ Loudness history graphics when target loudness is set to -16, -23 and -31 LUFS	D
 Loudness history graphics when target loudness is set to -16, -23 and -31 LUFS	Documentation/FreeLCS_User_Manual.html	/^        id="Loudness history graphics when target loudness is set to -16, -23 and -31 LUFS"><\/a/;"	I
 Loudness history graphics when target loudness is set to -16, -23 and -31 LUFS 	Documentation/FreeLCS_User_Manual.html	/^    <h2><a name="Loudness history graphics when target loudness is set to -16, -23 and -31 LUFS /;"	a
 Loudness history graphics when target loudness is set to -16, -23 and -31 LUFS (from top to bottom)	Documentation/FreeLCS_User_Manual.html	/^      (from top to bottom)<\/h2>$/;"	i
+LoudnessCorrection	smb.conf	/^[LoudnessCorrection]$/;"	s
 LoudnessCorrection	temp/libebur128/libebur128_sourcet_ja_patchit/00-vanhat/freelcs_3.4_debian_9_ja_libebur128_ja_ubuntu_16.04_hankaluudet/samba_debian_9_debuggaus/freelcs_3.4_asennuksen_ilmoitukset_backup_ja_failit/freelcs_backup/smb.conf	/^[LoudnessCorrection]$/;"	s
 LoudnessCorrection has stopped updating timestamps	Documentation/FreeLCS_FAQ.html	/^      timestamps<\/h3>$/;"	j
 LoudnessCorrection.py	Documentation/FreeLCS_User_Manual.html	/^    <h3>LoudnessCorrection.py<\/h3>$/;"	j
@@ -2353,9 +2356,6 @@ available_source_channels_list	temp/mxf_tiedostojen_ja_niiden_aanien_uudelleen_p
 available_source_channels_list	temp/mxf_tiedostojen_ja_niiden_aanien_uudelleen_paketointi/mxf_tiedostojen_sox_komentojen_algoritmitesti/mxf_tiedostojen_sox_komentojen_algoritmitesti-08.py	/^available_source_channels_list = []$/;"	v
 available_source_channels_list	temp/mxf_tiedostojen_ja_niiden_aanien_uudelleen_paketointi/mxf_tiedostojen_sox_komentojen_algoritmitesti/mxf_tiedostojen_sox_komentojen_algoritmitesti-09.py	/^available_source_channels_list = []$/;"	v
 available_source_channels_list	temp/mxf_tiedostojen_ja_niiden_aanien_uudelleen_paketointi/mxf_tiedostojen_sox_komentojen_algoritmitesti/mxf_tiedostojen_sox_komentojen_algoritmitesti-10.py	/^available_source_channels_list = []$/;"	v
-avconv_executable_found	LoudnessCorrection.py	/^			avconv_executable_found = True$/;"	v
-avconv_executable_found	LoudnessCorrection.py	/^		avconv_executable_found = False$/;"	v
-avconv_executable_found	LoudnessCorrection.py	/^	avconv_executable_found = False$/;"	v
 avconv_executable_found	temp/docker_muistiinpanot/00-vanhat/freelcs-docker/source_files/LoudnessCorrection.py	/^			avconv_executable_found = True$/;"	v
 avconv_executable_found	temp/docker_muistiinpanot/00-vanhat/freelcs-docker/source_files/LoudnessCorrection.py	/^		avconv_executable_found = False$/;"	v
 avconv_executable_found	temp/docker_muistiinpanot/00-vanhat/freelcs-docker/source_files/LoudnessCorrection.py	/^	avconv_executable_found = False$/;"	v
@@ -2363,7 +2363,6 @@ avconv_executable_found	temp/libebur128/libebur128_sourcet_ja_patchit/00-vanhat/
 avconv_executable_found	temp/libebur128/libebur128_sourcet_ja_patchit/00-vanhat/freelcs_3.4_debian_9_ja_libebur128_ja_ubuntu_16.04_hankaluudet/samba_debian_9_debuggaus/freelcs_3.4_asennuksen_ilmoitukset_backup_ja_failit/freelcs_backup/LoudnessCorrection.py	/^		avconv_executable_found = False$/;"	v
 avconv_executable_found	temp/libebur128/libebur128_sourcet_ja_patchit/00-vanhat/freelcs_3.4_debian_9_ja_libebur128_ja_ubuntu_16.04_hankaluudet/samba_debian_9_debuggaus/freelcs_3.4_asennuksen_ilmoitukset_backup_ja_failit/freelcs_backup/LoudnessCorrection.py	/^	avconv_executable_found = False$/;"	v
 avconv_path	Debugging_Tools_For_Developer/regression_tester.py	/^avconv_path = find_program_in_os_path('avconv')$/;"	v
-avconv_true_or_false	LoudnessCorrection.py	/^		avconv_true_or_false = os.path.exists(os_path + os.sep + 'avconv') and os.access(os_path + os./;"	v
 avconv_true_or_false	temp/docker_muistiinpanot/00-vanhat/freelcs-docker/source_files/LoudnessCorrection.py	/^		avconv_true_or_false = os.path.exists(os_path + os.sep + 'avconv') and os.access(os_path + os./;"	v
 avconv_true_or_false	temp/libebur128/libebur128_sourcet_ja_patchit/00-vanhat/freelcs_3.4_debian_9_ja_libebur128_ja_ubuntu_16.04_hankaluudet/samba_debian_9_debuggaus/freelcs_3.4_asennuksen_ilmoitukset_backup_ja_failit/freelcs_backup/LoudnessCorrection.py	/^		avconv_true_or_false = os.path.exists(os_path + os.sep + 'avconv') and os.access(os_path + os./;"	v
 b	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/00-siirra_vanhoihin_tai_delli/libebur128_fork_for_freelcs_3.4-patched/ebur128/ebur128/ebur128.c	/^  double b[5];$/;"	m	struct:ebur128_state_internal	typeref:typename:double[5]	file:
@@ -2411,6 +2410,7 @@ body	Documentation/Stylesheets/freelcs_stylesheet.css	/^body       { color: #fff
 brd_module_built_into_kernel	temp/docker_muistiinpanot/00-vanhat/installer.py	/^brd_module_built_into_kernel = False$/;"	v
 brd_module_loaded_as_kernel_module	temp/docker_muistiinpanot/00-vanhat/installer.py	/^brd_module_loaded_as_kernel_module = False$/;"	v
 brd_module_loads_at_os_startup	temp/docker_muistiinpanot/00-vanhat/installer.py	/^brd_module_loads_at_os_startup = False$/;"	v
+browseable	smb.conf	/^browseable = yes$/;"	k	section:LoudnessCorrection
 browseable	temp/libebur128/libebur128_sourcet_ja_patchit/00-vanhat/freelcs_3.4_debian_9_ja_libebur128_ja_ubuntu_16.04_hankaluudet/samba_debian_9_debuggaus/freelcs_3.4_asennuksen_ilmoitukset_backup_ja_failit/freelcs_backup/smb.conf	/^browseable = yes$/;"	k	section:LoudnessCorrection
 buffer	temp/Ladspa/Steve_Harris_Fast_Lookahead_Limiter/Mono_Versio_Plugarista_Soxin_Kayttoon/00-vanhaa_tietoa/fast_lookahead_limiter_mono_4621.c	/^	LADSPA_Data *buffer;$/;"	m	struct:__anon3b05f7e60108	typeref:typename:LADSPA_Data *	file:
 buffer	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/00-siirra_vanhoihin_tai_delli/libebur128_fork_for_freelcs_3.4-patched/scanner/inputaudio/ffmpeg/input_ffmpeg.c	/^	float buffer[BUFFER_SIZE \/ 2 + 1];$/;"	m	struct:input_handle	typeref:typename:float[]	file:
@@ -2743,6 +2743,7 @@ commandline_of_program_to_stop	Debugging_Tools_For_Developer/regression_tester.p
 commands_to_run	Debugging_Tools_For_Developer/regression_tester.py	/^			commands_to_run = [path_to_results_comparison_script, previous_loudness_calculation_log, new_/;"	v
 commands_to_run	Debugging_Tools_For_Developer/regression_tester.py	/^		commands_to_run = [path_to_results_comparison_script, previous_loudness_calculation_log, new_l/;"	v
 commands_to_run	Debugging_Tools_For_Developer/regression_tester.py	/^commands_to_run = ['dpkg', '-l', 'pulseaudio']$/;"	v
+comment	smb.conf	/^comment = LoudnessCorrection$/;"	k	section:LoudnessCorrection
 comment	temp/libebur128/libebur128_sourcet_ja_patchit/00-vanhat/freelcs_3.4_debian_9_ja_libebur128_ja_ubuntu_16.04_hankaluudet/samba_debian_9_debuggaus/freelcs_3.4_asennuksen_ilmoitukset_backup_ja_failit/freelcs_backup/smb.conf	/^comment = LoudnessCorrection$/;"	k	section:LoudnessCorrection
 common_filenames_list	temp/BackupParanoia-version-1.71.py	/^	common_filenames_list=sorted(common_filenames_set, key=str.lower)$/;"	v
 common_filenames_list	temp/BackupParanoia-version-1.71.py	/^common_filenames_list=[] # This list is only used for sorting filesnames in alphabetical order f/;"	v
@@ -4640,7 +4641,6 @@ ffmpeg_executable_found	temp/docker_muistiinpanot/00-vanhat/freelcs-docker/sourc
 ffmpeg_executable_found	temp/libebur128/libebur128_sourcet_ja_patchit/00-vanhat/freelcs_3.4_debian_9_ja_libebur128_ja_ubuntu_16.04_hankaluudet/samba_debian_9_debuggaus/freelcs_3.4_asennuksen_ilmoitukset_backup_ja_failit/freelcs_backup/LoudnessCorrection.py	/^			ffmpeg_executable_found = True$/;"	v
 ffmpeg_executable_found	temp/libebur128/libebur128_sourcet_ja_patchit/00-vanhat/freelcs_3.4_debian_9_ja_libebur128_ja_ubuntu_16.04_hankaluudet/samba_debian_9_debuggaus/freelcs_3.4_asennuksen_ilmoitukset_backup_ja_failit/freelcs_backup/LoudnessCorrection.py	/^		ffmpeg_executable_found = False$/;"	v
 ffmpeg_executable_found	temp/libebur128/libebur128_sourcet_ja_patchit/00-vanhat/freelcs_3.4_debian_9_ja_libebur128_ja_ubuntu_16.04_hankaluudet/samba_debian_9_debuggaus/freelcs_3.4_asennuksen_ilmoitukset_backup_ja_failit/freelcs_backup/LoudnessCorrection.py	/^	ffmpeg_executable_found = False$/;"	v
-ffmpeg_executable_name	LoudnessCorrection.py	/^		ffmpeg_executable_name = 'avconv'$/;"	v
 ffmpeg_executable_name	LoudnessCorrection.py	/^		ffmpeg_executable_name = 'ffmpeg'$/;"	v
 ffmpeg_executable_name	LoudnessCorrection.py	/^	ffmpeg_executable_name = ''$/;"	v
 ffmpeg_executable_name	temp/docker_muistiinpanot/00-vanhat/freelcs-docker/source_files/LoudnessCorrection.py	/^		ffmpeg_executable_name = 'avconv'$/;"	v
@@ -5752,6 +5752,7 @@ follow_symlinks	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128
 follow_symlinks	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/00-siirra_vanhoihin_tai_delli/libebur128_fork_for_freelcs_3.4/scanner/scanner.c	/^static gboolean follow_symlinks = FALSE;$/;"	v	typeref:typename:gboolean	file:
 follow_symlinks	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/libebur128_fork_for_freelcs_3.4/scanner/filetree/main.c	/^static gboolean follow_symlinks = FALSE;$/;"	v	typeref:typename:gboolean	file:
 follow_symlinks	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/libebur128_fork_for_freelcs_3.4/scanner/scanner.c	/^static gboolean follow_symlinks = FALSE;$/;"	v	typeref:typename:gboolean	file:
+force create mode	smb.conf	/^force create mode = 0777$/;"	k	section:global
 force create mode	temp/libebur128/libebur128_sourcet_ja_patchit/00-vanhat/freelcs_3.4_debian_9_ja_libebur128_ja_ubuntu_16.04_hankaluudet/samba_debian_9_debuggaus/freelcs_3.4_asennuksen_ilmoitukset_backup_ja_failit/freelcs_backup/smb.conf	/^force create mode = 0777$/;"	k	section:global
 force_as_album	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/00-siirra_vanhoihin_tai_delli/libebur128_fork_for_freelcs_3.4-patched/scanner/scanner-tag/scanner-tag.c	/^static gboolean force_as_album = FALSE;$/;"	v	typeref:typename:gboolean	file:
 force_as_album	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/00-siirra_vanhoihin_tai_delli/libebur128_fork_for_freelcs_3.4/scanner/scanner-tag/scanner-tag.c	/^static gboolean force_as_album = FALSE;$/;"	v	typeref:typename:gboolean	file:
@@ -5997,6 +5998,7 @@ get_total_frames	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur12
 get_total_frames	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/00-siirra_vanhoihin_tai_delli/libebur128_fork_for_freelcs_3.4/scanner/inputaudio/input.h	/^	size_t (*get_total_frames)(struct input_handle *ih);$/;"	m	struct:input_ops	typeref:typename:size_t (*)(struct input_handle * ih)
 get_total_frames	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/libebur128_fork_for_freelcs_3.4/scanner/inputaudio/input.h	/^	size_t (*get_total_frames)(struct input_handle *ih);$/;"	m	struct:input_ops	typeref:typename:size_t (*)(struct input_handle * ih)
 get_version_of_loudnesscorrection_script	Debugging_Tools_For_Developer/regression_tester.py	/^def get_version_of_loudnesscorrection_script(path_to_loudnesscorrection_script):$/;"	f
+global	smb.conf	/^[global]$/;"	s
 global	temp/libebur128/libebur128_sourcet_ja_patchit/00-vanhat/freelcs_3.4_debian_9_ja_libebur128_ja_ubuntu_16.04_hankaluudet/samba_debian_9_debuggaus/freelcs_3.4_asennuksen_ilmoitukset_backup_ja_failit/freelcs_backup/smb.conf	/^[global]$/;"	s
 global_mxf_audio_remix_channel_map	LoudnessCorrection.py	/^			global_mxf_audio_remix_channel_map = all_settings_dict['global_mxf_audio_remix_channel_map']$/;"	v
 global_mxf_audio_remix_channel_map	LoudnessCorrection.py	/^global_mxf_audio_remix_channel_map = [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2] # Example [2, 6, 2, 2]	 C/;"	v
@@ -6138,6 +6140,7 @@ gstreamer_read_frames	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libe
 gstreamer_set_channel_map	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/00-siirra_vanhoihin_tai_delli/libebur128_fork_for_freelcs_3.4-patched/scanner/inputaudio/gstreamer/input_gstreamer.c	/^static int gstreamer_set_channel_map(struct input_handle* ih, int* st) {$/;"	f	typeref:typename:int	file:
 gstreamer_set_channel_map	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/00-siirra_vanhoihin_tai_delli/libebur128_fork_for_freelcs_3.4/scanner/inputaudio/gstreamer/input_gstreamer.c	/^static int gstreamer_set_channel_map(struct input_handle* ih, int* st) {$/;"	f	typeref:typename:int	file:
 gstreamer_set_channel_map	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/libebur128_fork_for_freelcs_3.4/scanner/inputaudio/gstreamer/input_gstreamer.c	/^static int gstreamer_set_channel_map(struct input_handle* ih, int* st) {$/;"	f	typeref:typename:int	file:
+guest ok	smb.conf	/^guest ok = no$/;"	k	section:LoudnessCorrection
 guest ok	temp/libebur128/libebur128_sourcet_ja_patchit/00-vanhat/freelcs_3.4_debian_9_ja_libebur128_ja_ubuntu_16.04_hankaluudet/samba_debian_9_debuggaus/freelcs_3.4_asennuksen_ilmoitukset_backup_ja_failit/freelcs_backup/smb.conf	/^guest ok = yes$/;"	k	section:LoudnessCorrection
 gui	temp/BackupParanoia-version-1.71.py	/^gui = False # If true user wants to use the graphical user interface.$/;"	v
 gui	temp/BackupParanoia-version-1.72.py	/^gui = False # If true user wants to use the graphical user interface.$/;"	v
@@ -7307,11 +7310,14 @@ list_of_testfile_paths	Debugging_Tools_For_Developer/regression_tester.py	/^list
 list_of_testfile_paths	Debugging_Tools_For_Developer/regression_tester.py	/^list_of_testfile_paths = read_in_file_names(dir_of_test_files)$/;"	v
 lista_eventeille	temp/threads.py	/^lista_eventeille = [] # Tyhjennä eventtilista$/;"	v
 lista_eventeille	temp/threads.py	/^lista_eventeille = []$/;"	v
+load printers	smb.conf	/^load printers = no$/;"	k	section:global
+locking	smb.conf	/^locking = no$/;"	k	section:LoudnessCorrection
 locking	temp/libebur128/libebur128_sourcet_ja_patchit/00-vanhat/freelcs_3.4_debian_9_ja_libebur128_ja_ubuntu_16.04_hankaluudet/samba_debian_9_debuggaus/freelcs_3.4_asennuksen_ilmoitukset_backup_ja_failit/freelcs_backup/smb.conf	/^locking = no$/;"	k	section:LoudnessCorrection
 log	temp/BackupParanoia-version-1.71.py	/^	log = True$/;"	v
 log	temp/BackupParanoia-version-1.71.py	/^log = False # If True write a summary of operations to logfile '00-BackupParanoia-log.txt' in th/;"	v
 log	temp/BackupParanoia-version-1.72.py	/^	log = True$/;"	v
 log	temp/BackupParanoia-version-1.72.py	/^log = False # If True write a summary of operations to logfile '00-BackupParanoia-log.txt' in th/;"	v
+log file	smb.conf	/^log file = \/var\/log\/samba\/log.%m$/;"	k	section:global
 log file	temp/libebur128/libebur128_sourcet_ja_patchit/00-vanhat/freelcs_3.4_debian_9_ja_libebur128_ja_ubuntu_16.04_hankaluudet/samba_debian_9_debuggaus/freelcs_3.4_asennuksen_ilmoitukset_backup_ja_failit/freelcs_backup/smb.conf	/^log file = \/var\/log\/samba\/log.%m$/;"	k	section:global
 logo_rotation_timer	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/00-siirra_vanhoihin_tai_delli/libebur128_fork_for_freelcs_3.4-patched/scanner/scanner-drop-qt/scanner-drop-qt.h	/^	QTimer *logo_rotation_timer;$/;"	m	class:MainWindow	typeref:typename:QTimer *
 logo_rotation_timer	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/00-siirra_vanhoihin_tai_delli/libebur128_fork_for_freelcs_3.4/scanner/scanner-drop-qt/scanner-drop-qt.h	/^	QTimer *logo_rotation_timer;$/;"	m	class:MainWindow	typeref:typename:QTimer *
@@ -7717,7 +7723,9 @@ malloc_fail_percentage	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_lib
 malloc_fail_rate	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/00-siirra_vanhoihin_tai_delli/libebur128_fork_for_freelcs_3.4-patched/ebur128/test/fuzzer.cpp	/^static double malloc_fail_rate = 100.0;$/;"	v	typeref:typename:double	file:
 malloc_fail_rate	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/00-siirra_vanhoihin_tai_delli/libebur128_fork_for_freelcs_3.4/ebur128/test/fuzzer.cpp	/^static double malloc_fail_rate = 100.0;$/;"	v	typeref:typename:double	file:
 malloc_fail_rate	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/libebur128_fork_for_freelcs_3.4/ebur128/test/fuzzer.cpp	/^static double malloc_fail_rate = 100.0;$/;"	v	typeref:typename:double	file:
+map to guest	smb.conf	/^map to guest = never$/;"	k	section:global
 map to guest	temp/libebur128/libebur128_sourcet_ja_patchit/00-vanhat/freelcs_3.4_debian_9_ja_libebur128_ja_ubuntu_16.04_hankaluudet/samba_debian_9_debuggaus/freelcs_3.4_asennuksen_ilmoitukset_backup_ja_failit/freelcs_backup/smb.conf	/^map to guest = Bad Password$/;"	k	section:global
+max log size	smb.conf	/^max log size = 1000$/;"	k	section:global
 max log size	temp/libebur128/libebur128_sourcet_ja_patchit/00-vanhat/freelcs_3.4_debian_9_ja_libebur128_ja_ubuntu_16.04_hankaluudet/samba_debian_9_debuggaus/freelcs_3.4_asennuksen_ilmoitukset_backup_ja_failit/freelcs_backup/smb.conf	/^max log size = 1000$/;"	k	section:global
 md5hash	temp/md5-checksum-test.py	/^	md5hash=hash.hexdigest()$/;"	v
 media_converter_name	temp/docker_muistiinpanot/00-vanhat/installer.py	/^	media_converter_name = 'libav-tools'$/;"	v
@@ -8320,7 +8328,8 @@ number_of_mixes_ready	temp/docker_muistiinpanot/00-vanhat/freelcs-docker/source_
 number_of_mixes_ready	temp/libebur128/libebur128_sourcet_ja_patchit/00-vanhat/freelcs_3.4_debian_9_ja_libebur128_ja_ubuntu_16.04_hankaluudet/samba_debian_9_debuggaus/freelcs_3.4_asennuksen_ilmoitukset_backup_ja_failit/freelcs_backup/LoudnessCorrection.py	/^						number_of_mixes_ready = len(final_loudness_results_for_automation[original_file_name])$/;"	v
 number_of_processor_cores	LoudnessCorrection.py	/^			number_of_processor_cores = all_settings_dict['number_of_processor_cores']$/;"	v
 number_of_processor_cores	LoudnessCorrection.py	/^	 number_of_processor_cores = number_of_processor_cores + 1 $/;"	v
-number_of_processor_cores	LoudnessCorrection.py	/^number_of_processor_cores = 6 # The number of processor cores to use for simultaneous file proce/;"	v
+number_of_processor_cores	LoudnessCorrection.py	/^	number_of_processor_cores = len(os.sched_getaffinity(0))$/;"	v
+number_of_processor_cores	LoudnessCorrection.py	/^number_of_processor_cores = 2 # The number of processor cores to use for simultaneous file proce/;"	v
 number_of_processor_cores	Loudness_Correction_Settings.json	/^{"language": "english", "english": 1, "finnish": 0, "target_path": "\/mountpoint", "hotfolder_pa/;"	n
 number_of_processor_cores	temp/LoudnessCorrection-153-threading.Lock-Koe-tread_objekteilla_omat_nimet.py	/^		number_of_processor_cores = all_settings_dict['number_of_processor_cores']$/;"	v
 number_of_processor_cores	temp/LoudnessCorrection-153-threading.Lock-Koe-tread_objekteilla_omat_nimet.py	/^	 number_of_processor_cores = number_of_processor_cores + 1 $/;"	v
@@ -8585,6 +8594,7 @@ paint	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/l
 paintEvent	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/00-siirra_vanhoihin_tai_delli/libebur128_fork_for_freelcs_3.4-patched/scanner/scanner-drop-qt/scanner-drop-qt.cpp	/^RenderArea::paintEvent(QPaintEvent *)$/;"	f	class:RenderArea	typeref:typename:void
 paintEvent	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/00-siirra_vanhoihin_tai_delli/libebur128_fork_for_freelcs_3.4/scanner/scanner-drop-qt/scanner-drop-qt.cpp	/^RenderArea::paintEvent(QPaintEvent *)$/;"	f	class:RenderArea	typeref:typename:void
 paintEvent	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/libebur128_fork_for_freelcs_3.4/scanner/scanner-drop-qt/scanner-drop-qt.cpp	/^RenderArea::paintEvent(QPaintEvent *)$/;"	f	class:RenderArea	typeref:typename:void
+panic action	smb.conf	/^panic action = \/usr\/share\/samba\/panic-action %d$/;"	k	section:global
 panic action	temp/libebur128/libebur128_sourcet_ja_patchit/00-vanhat/freelcs_3.4_debian_9_ja_libebur128_ja_ubuntu_16.04_hankaluudet/samba_debian_9_debuggaus/freelcs_3.4_asennuksen_ilmoitukset_backup_ja_failit/freelcs_backup/smb.conf	/^panic action = \/usr\/share\/samba\/panic-action %d$/;"	k	section:global
 parse_global_args	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/00-siirra_vanhoihin_tai_delli/libebur128_fork_for_freelcs_3.4-patched/scanner/scanner-common/parse_args.c	/^parse_global_args(int *argc, char ***argv, GOptionEntry *entries,$/;"	f	typeref:typename:int
 parse_global_args	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/00-siirra_vanhoihin_tai_delli/libebur128_fork_for_freelcs_3.4/scanner/scanner-common/parse_args.c	/^parse_global_args(int *argc, char ***argv, GOptionEntry *entries,$/;"	f	typeref:typename:int
@@ -8626,6 +8636,7 @@ partial_path	temp/libebur128/libebur128_sourcet_ja_patchit/00-vanhat/freelcs_3.4
 password	Debugging_Tools_For_Developer/regression_tester.py	/^	password = ask_for_root_password()$/;"	v
 password	temp/run_command_with_root_password.py	/^password = ask_for_root_password()$/;"	v
 path	LoudnessCorrection.py	/^	path=''$/;"	v
+path	smb.conf	/^path = \/mountpoint\/LoudnessCorrection$/;"	k	section:LoudnessCorrection
 path	temp/BackupParanoia-version-1.71.py	/^					path = str(os.path.split(filename)[0]) # Get path from the filename$/;"	v
 path	temp/BackupParanoia-version-1.72.py	/^					path = str(os.path.split(filename)[0]) # Get path from the filename$/;"	v
 path	temp/LoudnessCorrection-153-threading.Lock-Koe-tread_objekteilla_omat_nimet.py	/^path=''$/;"	v
@@ -9082,6 +9093,7 @@ ram_disk_text_color	temp/docker_muistiinpanot/00-vanhat/installer.py	/^ram_disk_
 raw	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/00-siirra_vanhoihin_tai_delli/libebur128_fork_for_freelcs_3.4-patched/scanner/filetree/filetree.h	/^    char *raw;$/;"	m	struct:filename_representations	typeref:typename:char *
 raw	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/00-siirra_vanhoihin_tai_delli/libebur128_fork_for_freelcs_3.4/scanner/filetree/filetree.h	/^    char *raw;$/;"	m	struct:filename_representations	typeref:typename:char *
 raw	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/libebur128_fork_for_freelcs_3.4/scanner/filetree/filetree.h	/^    char *raw;$/;"	m	struct:filename_representations	typeref:typename:char *
+read only	smb.conf	/^read only = no$/;"	k	section:LoudnessCorrection
 read only	temp/libebur128/libebur128_sourcet_ja_patchit/00-vanhat/freelcs_3.4_debian_9_ja_libebur128_ja_ubuntu_16.04_hankaluudet/samba_debian_9_debuggaus/freelcs_3.4_asennuksen_ilmoitukset_backup_ja_failit/freelcs_backup/smb.conf	/^read only = no$/;"	k	section:LoudnessCorrection
 read_a_text_file	Debugging_Tools_For_Developer/regression_tester.py	/^def read_a_text_file(file_name):$/;"	f
 read_audio_remix_map_file	LoudnessCorrection.py	/^def read_audio_remix_map_file(hotfolder_path, audio_file_name, english, finnish):$/;"	f
@@ -9674,6 +9686,7 @@ seconds_until_next_copy	temp/stressitestien_tekeminen/hardlinkkaa_testitiedostot
 seconds_until_next_copy	temp/stressitestien_tekeminen/hardlinkkaa_testitiedostot_vahitellen_laskentaan.py	/^seconds_until_next_copy = Tkinter.StringVar()$/;"	v
 seconds_until_next_copy	temp/stressitestien_tekeminen/kopioi_testitiedostot_vahitellen_laskentaan-001.py	/^seconds_until_next_copy = Tkinter.StringVar()$/;"	v
 seconds_until_next_copy	temp/stressitestien_tekeminen/kopioi_testitiedostot_vahitellen_laskentaan-002.py	/^seconds_until_next_copy = Tkinter.StringVar()$/;"	v
+security	smb.conf	/^security = user$/;"	k	section:global
 security	temp/libebur128/libebur128_sourcet_ja_patchit/00-vanhat/freelcs_3.4_debian_9_ja_libebur128_ja_ubuntu_16.04_hankaluudet/samba_debian_9_debuggaus/freelcs_3.4_asennuksen_ilmoitukset_backup_ja_failit/freelcs_backup/smb.conf	/^security = user$/;"	k	section:global
 send_email	Debugging_Tools_For_Developer/regression_tester.py	/^def send_email(message_title, message_text_string, message_attachment_path, email_sending_detail/;"	f
 send_email	HeartBeat_Checker.py	/^def send_email(message_recipients, message_title, message_text_string, message_attachment_path):$/;"	f
@@ -9811,6 +9824,8 @@ send_ffmpeg_error_message_by_email	temp/libebur128/libebur128_sourcet_ja_patchit
 send_ffmpeg_error_message_by_email	temp/libebur128/libebur128_sourcet_ja_patchit/00-vanhat/freelcs_3.4_debian_9_ja_libebur128_ja_ubuntu_16.04_hankaluudet/samba_debian_9_debuggaus/freelcs_3.4_asennuksen_ilmoitukset_backup_ja_failit/freelcs_backup/LoudnessCorrection.py	/^								send_ffmpeg_error_message_by_email = False$/;"	v
 send_test_email	temp/docker_muistiinpanot/00-vanhat/installer.py	/^def send_test_email(*args):$/;"	f
 send_test_email	temp/installer-055-keskenerainen_backup.py	/^def send_test_email(*args):$/;"	f
+server min protocol	smb.conf	/^server min protocol = SMB2$/;"	k	section:global
+server string	smb.conf	/^server string = %h server (Samba, LoudnessCorrection)$/;"	k	section:global
 server string	temp/libebur128/libebur128_sourcet_ja_patchit/00-vanhat/freelcs_3.4_debian_9_ja_libebur128_ja_ubuntu_16.04_hankaluudet/samba_debian_9_debuggaus/freelcs_3.4_asennuksen_ilmoitukset_backup_ja_failit/freelcs_backup/smb.conf	/^server string = %h server (Samba, LoudnessCorrection)$/;"	k	section:global
 setProgressBar	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/00-siirra_vanhoihin_tai_delli/libebur128_fork_for_freelcs_3.4-patched/scanner/scanner-drop-qt/scanner-drop-qt.cpp	/^MainWindow::setProgressBar(int value)$/;"	f	class:MainWindow	typeref:typename:void
 setProgressBar	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/00-siirra_vanhoihin_tai_delli/libebur128_fork_for_freelcs_3.4/scanner/scanner-drop-qt/scanner-drop-qt.cpp	/^MainWindow::setProgressBar(int value)$/;"	f	class:MainWindow	typeref:typename:void
@@ -10152,6 +10167,7 @@ sndfile_read_frames	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebu
 sndfile_read_frames	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/libebur128_fork_for_freelcs_3.4/scanner/inputaudio/sndfile/input_sndfile.c	/^sndfile_read_frames(struct input_handle *ih)$/;"	f	typeref:typename:size_t	file:
 sndfile_set_channel_map	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/00-siirra_vanhoihin_tai_delli/libebur128_fork_for_freelcs_3.4/scanner/inputaudio/sndfile/input_sndfile.c	/^sndfile_set_channel_map(struct input_handle *ih, int *st)$/;"	f	typeref:typename:int	file:
 sndfile_set_channel_map	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/libebur128_fork_for_freelcs_3.4/scanner/inputaudio/sndfile/input_sndfile.c	/^sndfile_set_channel_map(struct input_handle *ih, int *st)$/;"	f	typeref:typename:int	file:
+socket options	smb.conf	/^socket options = TCP_NODELAY$/;"	k	section:global
 socket options	temp/libebur128/libebur128_sourcet_ja_patchit/00-vanhat/freelcs_3.4_debian_9_ja_libebur128_ja_ubuntu_16.04_hankaluudet/samba_debian_9_debuggaus/freelcs_3.4_asennuksen_ilmoitukset_backup_ja_failit/freelcs_backup/smb.conf	/^socket options = TCP_NODELAY$/;"	k	section:global
 source_and_target_are_on_same_disk	Debugging_Tools_For_Developer/regression_tester.py	/^source_and_target_are_on_same_disk = False$/;"	v
 source_and_target_are_on_same_disk	Debugging_Tools_For_Developer/regression_tester.py	/^source_and_target_are_on_same_disk = test_that_hotfolder_and_test_files_are_on_the_same_partitio/;"	v
@@ -10477,6 +10493,7 @@ swh-plugins-0.4.15/configure	temp/Ladspa/Steve_Harris_Fast_Lookahead_Limiter/Mon
 swh-plugins-0.4.15/configure.in	temp/Ladspa/Steve_Harris_Fast_Lookahead_Limiter/Mono_Versio_Plugarista_Soxin_Kayttoon/00-vanhaa_tietoa/swh-plugins-fast_lookahead_limiter_mono.patch	/^--- swh-plugins-0.4.15\/configure.in	2006-08-08 11:47:16.000000000 -0400$/;"	m
 swh-plugins-0.4.15/metadata/swh-plugins.rdf	temp/Ladspa/Steve_Harris_Fast_Lookahead_Limiter/Mono_Versio_Plugarista_Soxin_Kayttoon/00-vanhaa_tietoa/swh-plugins-fast_lookahead_limiter_mono.patch	/^--- swh-plugins-0.4.15\/metadata\/swh-plugins.rdf	2006-08-08 11:48:33.000000000 -0400$/;"	m
 swh-plugins-0.4.15/po/POTFILES.in	temp/Ladspa/Steve_Harris_Fast_Lookahead_Limiter/Mono_Versio_Plugarista_Soxin_Kayttoon/00-vanhaa_tietoa/swh-plugins-fast_lookahead_limiter_mono.patch	/^--- swh-plugins-0.4.15\/po\/POTFILES.in	2004-10-26 09:31:28.000000000 -0400$/;"	m
+syslog	smb.conf	/^syslog = 0$/;"	k	section:global
 syslog	temp/libebur128/libebur128_sourcet_ja_patchit/00-vanhat/freelcs_3.4_debian_9_ja_libebur128_ja_ubuntu_16.04_hankaluudet/samba_debian_9_debuggaus/freelcs_3.4_asennuksen_ilmoitukset_backup_ja_failit/freelcs_backup/smb.conf	/^syslog = 0$/;"	k	section:global
 systemd_service_file_content	temp/docker_muistiinpanot/00-vanhat/installer.py	/^systemd_service_file_content = ['[Unit]', \\$/;"	v
 systemd_service_file_name	temp/docker_muistiinpanot/00-vanhat/installer.py	/^systemd_service_file_name = 'freelcs.service'$/;"	v
@@ -11275,6 +11292,7 @@ unit_separator_combobox_1	temp/docker_muistiinpanot/00-vanhat/installer.py	/^uni
 unit_separator_combobox_2	temp/docker_muistiinpanot/00-vanhat/installer.py	/^unit_separator_combobox_2 = tkinter.ttk.Combobox(tenth_frame_child_frame_1, justify=tkinter.CENT/;"	v
 unit_separator_value_1	temp/docker_muistiinpanot/00-vanhat/installer.py	/^unit_separator_value_1 = tkinter.StringVar()$/;"	v
 unit_separator_value_2	temp/docker_muistiinpanot/00-vanhat/installer.py	/^unit_separator_value_2 = tkinter.StringVar()$/;"	v
+unix extensions	smb.conf	/^unix extensions = no$/;"	k	section:global
 unix extensions	temp/libebur128/libebur128_sourcet_ja_patchit/00-vanhat/freelcs_3.4_debian_9_ja_libebur128_ja_ubuntu_16.04_hankaluudet/samba_debian_9_debuggaus/freelcs_3.4_asennuksen_ilmoitukset_backup_ja_failit/freelcs_backup/smb.conf	/^unix extensions = no$/;"	k	section:global
 unix_time_in_ticks	Debugging_Tools_For_Developer/regression_tester.py	/^	unix_time_in_ticks, realtime = get_realtime()                                                  /;"	v
 unix_time_in_ticks	temp/SIGUSR1_handlays.py	/^	unix_time_in_ticks, realtime = get_realtime(english, finnish)$/;"	v
@@ -11617,6 +11635,7 @@ worker_thread	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2
 worker_thread_	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/00-siirra_vanhoihin_tai_delli/libebur128_fork_for_freelcs_3.4-patched/scanner/scanner-drop-qt/scanner-drop-qt.h	/^	WorkerThread *worker_thread_;$/;"	m	class:MainWindow	typeref:typename:WorkerThread *
 worker_thread_	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/00-siirra_vanhoihin_tai_delli/libebur128_fork_for_freelcs_3.4/scanner/scanner-drop-qt/scanner-drop-qt.h	/^	WorkerThread *worker_thread_;$/;"	m	class:MainWindow	typeref:typename:WorkerThread *
 worker_thread_	temp/libebur128/libebur128_sourcet_ja_patchit/FreeLCS_libebur128-2022.06/libebur128_fork_for_freelcs_3.4/scanner/scanner-drop-qt/scanner-drop-qt.h	/^	WorkerThread *worker_thread_;$/;"	m	class:MainWindow	typeref:typename:WorkerThread *
+workgroup	smb.conf	/^workgroup = WORKGROUP$/;"	k	section:global
 workgroup	temp/libebur128/libebur128_sourcet_ja_patchit/00-vanhat/freelcs_3.4_debian_9_ja_libebur128_ja_ubuntu_16.04_hankaluudet/samba_debian_9_debuggaus/freelcs_3.4_asennuksen_ilmoitukset_backup_ja_failit/freelcs_backup/smb.conf	/^workgroup = WORKGROUP$/;"	k	section:global
 wrapper_format_list	temp/ffprobe_parseri-01.py	/^		wrapper_format_list = ''.join(item.split('format_name=')[1:]).split(',')$/;"	v
 wrapper_format_list	temp/ffprobe_parseri-01.py	/^wrapper_format_list = []$/;"	v
