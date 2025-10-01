@@ -19,8 +19,8 @@ if configfile_path == '':
 	sys.exit(0)
 
 all_settings_dict = {}
-configfile_path_json = os.path.splitext(os.path.splitext(configfile_path)) + ".json"
-configfile_path_pickle = os.path.splitext(os.path.splitext(configfile_path)) + ".pickle"
+configfile_path_json = str(os.path.splitext(configfile_path)[0]) + ".json"
+configfile_path_pickle = str(os.path.splitext(configfile_path)[0]) + ".pickle"
 
 # Read the config variables from a file. The file contains a dictionary with the needed values.
 try:
