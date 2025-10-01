@@ -14,7 +14,7 @@
 import sys
 import os
 import subprocess
-import pickle
+import json
 import tkinter
 import tkinter.ttk
 import tkinter.filedialog
@@ -1241,7 +1241,7 @@ def print_use_samba_variable_and_toggle_text_widget(*args):
 def install_init_scripts_and_config_files(*args):
 	
 	# Create init scripts.
-	# Also gather all varible values that the LoudnessCorrection scripts need and save them as a config data file: '/etc/Loudness_Correction_Settings.pickle'.
+	# Also gather all varible values that the LoudnessCorrection scripts need and save them as a config data file: '/etc/Loudness_Correction_Settings.json'.
 	# Copy LoudessCorrection.py and HeartBeat_Checker.py to /usr/bin
 	# Write possible samba configuration file to /etc/samba/smb.conf
 	# Write an init script that:
@@ -1757,14 +1757,14 @@ def install_init_scripts_and_config_files(*args):
 	root_password_was_not_accepted_message.set('') # Remove possible error message from the screen.	
 
 	###############################################################################################################################
-	# Write all configuration variables in the config dictionary to the config file in '/tmp/Loudness_Correction_Settings.pickle' #
+	# Write all configuration variables in the config dictionary to the config file in '/tmp/Loudness_Correction_Settings.json' #
 	###############################################################################################################################
 
 	path_for_configfile_in_temp_directory = directory_for_os_temporary_files + os.sep + os.path.basename(configfile_path)
 
 	try:
-		with open(path_for_configfile_in_temp_directory, 'wb') as configfile_handler:
-			pickle.dump(all_settings_dict, configfile_handler)
+		with open(path_for_configfile_in_temp_directory, 'w') as configfile_handler:
+			json.dump(all_settings_dict, configfile_handler)
 			configfile_handler.flush() # Flushes written data to os cache
 			os.fsync(configfile_handler.fileno()) # Flushes os cache to disk
 	except IOError as reason_for_error:
@@ -1777,7 +1777,7 @@ def install_init_scripts_and_config_files(*args):
 		return(True) # There was an error, exit this subprogram.
 
 	#########################################################################################################################
-	# Move configfile from '/tmp/Loudness_Correction_Settings.pickle' to '/etc/Loudness_Correction_Settings.pickle' as root #
+	# Move configfile from '/tmp/Loudness_Correction_Settings.json' to '/etc/Loudness_Correction_Settings.json' as root #
 	#########################################################################################################################
 
 	commands_to_run = ['sudo', '-k', '-p', ' ', '-S', 'mv', '-f', path_for_configfile_in_temp_directory, configfile_path] # Create the commandline we need to run as root.
@@ -5834,10 +5834,10 @@ ffmpeg_output_wrapper_format = 'wav'
 silent = True
 html_progress_report_write_interval = 5
 send_error_messages_to_logfile = True
-heartbeat_file_name = '00-HeartBeat.pickle'
+heartbeat_file_name = '00-HeartBeat.json'
 heartbeat_write_interval = 30
 where_to_send_error_messages = ['logfile'] # Tells where to print / send the error messages. The list can have any or all of these values: screen, logfile, email.
-configfile_path = '/etc/Loudness_Correction_Settings.pickle'
+configfile_path = '/etc/Loudness_Correction_Settings.json'
 loudnesscorrection_init_script_name = 'loudnesscorrection_init_script'
 
 systemd_service_file_path = ''
@@ -6153,8 +6153,8 @@ previously_saved_email_sending_details = {}
 
 if (os.path.exists(configfile_path) == True) or (os.access(configfile_path, os.R_OK) == True):
 	try:
-		with open(configfile_path, 'rb') as configfile_handler:
-			previously_saved_settings_dict = pickle.load(configfile_handler)
+		with open(configfile_path, 'r') as configfile_handler:
+			previously_saved_settings_dict = json.load(configfile_handler)
 	except KeyboardInterrupt:
 		print('\n\nUser cancelled operation.\n')
 		sys.exit(0)

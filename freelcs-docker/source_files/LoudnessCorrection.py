@@ -37,7 +37,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '308'
+loudnesscorrection_version = '307'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -1656,32 +1656,22 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 					# There are three limiting - stages each 1 dB above previous and with 'tighter' attack and release values than the previous one.
 					# These stages limit the peaks while rounding the peaks.
 					# Still some very fast peaks escape these three stages and the final hard-limiter stage deals with those.
-
-					# FIXME
-					# ffmpeg -i 'Engel_lopullinen mixdown_-29.5_LUFS_Huipputaso_0dBTP.flac' -filter 'aresample=192000,alimiter=level_in=20dB:level_out=1:limit=-2dB:attack=10:release=500:level=disabled:latency=1,aresample=48000' koe.flac
-					# compander_1 = ['compand', '0.005,0.3', '1:' + str(hard_limiter_level + -3) + ',' + str(hard_limiter_level + -3) + ',0,' + str(hard_limiter_level +  -2)]
-					# compander_2 = ['compand', '0.002,0.15', '1:' + str(hard_limiter_level + -2) + ',' + str(hard_limiter_level + -2) + ',0,' + str(hard_limiter_level +  -1)]
-					# compander_3 = ['compand', '0.001,0.075', '1:' + str(hard_limiter_level + -1) + ',' + str(hard_limiter_level + -1) + ',0,' + str(hard_limiter_level +  -0)]
-					# hard_limiter = ['compand', '0,0', '3:' + str(hard_limiter_level + -3) + ',' + str(hard_limiter_level + -3) + ',0,'+ str(hard_limiter_level + 0)]
+					compander_1 = ['compand', '0.005,0.3', '1:' + str(hard_limiter_level + -3) + ',' + str(hard_limiter_level + -3) + ',0,' + str(hard_limiter_level +  -2)]
+					compander_2 = ['compand', '0.002,0.15', '1:' + str(hard_limiter_level + -2) + ',' + str(hard_limiter_level + -2) + ',0,' + str(hard_limiter_level +  -1)]
+					compander_3 = ['compand', '0.001,0.075', '1:' + str(hard_limiter_level + -1) + ',' + str(hard_limiter_level + -1) + ',0,' + str(hard_limiter_level +  -0)]
+					hard_limiter = ['compand', '0,0', '3:' + str(hard_limiter_level + -3) + ',' + str(hard_limiter_level + -3) + ',0,'+ str(hard_limiter_level + 0)]
 					
 					# Combine all sox commands into one list.
-					start_of_ffmpeg_commandline = ["ffmpeg", "-loglevel", "level+error", "-hide_banner", "-i"]
-					sox_commandline.extend(start_of_ffmpeg_commandline)
+					sox_commandline.extend(start_of_sox_commandline)
 					sox_commandline.append(file_to_process)
-
-					# FIXME
-					# # If output format is flac add flac compression level commands right after the input file name.
-					# if output_format_for_intermediate_files == 'flac':
-					# 	sox_commandline.extend(flac_compression_level)
-					ffmpeg_alimiter_options = ["-filter", "alimiter=level_in=" + str(difference_from_target_loudness_sign_inverted) + "dB:level_out=1:limit=" + str(audio_peaks_absolute_ceiling) + "dB:attack=10:release=500:level=disabled:latency=1" ]
-					sox_commandline.extend(ffmpeg_alimiter_options)
+					# If output format is flac add flac compression level commands right after the input file name.
+					if output_format_for_intermediate_files == 'flac':
+						sox_commandline.extend(flac_compression_level)
 					sox_commandline.extend([directory_for_temporary_files + os.sep + temporary_peak_limited_targetfile])
-
-					# FIXME
-					# sox_commandline.extend(compander_1)
-					# sox_commandline.extend(compander_2)
-					# sox_commandline.extend(compander_3)
-					# sox_commandline.extend(hard_limiter)
+					sox_commandline.extend(compander_1)
+					sox_commandline.extend(compander_2)
+					sox_commandline.extend(compander_3)
+					sox_commandline.extend(hard_limiter)
 					
 					# Save some debug information.
 					if debug_file_processing == True:
@@ -2058,7 +2048,7 @@ def run_sox(directory_for_temporary_files, directory_for_results, filename, sox_
 			error_message = 'Error deleting sox stdout - file ' * english + 'Soxin stdout - tiedoston deletoiminen epäonnistui ' * finnish	+ str(reason_for_error)
 			send_error_messages_to_screen_logfile_email(error_message, [])
 		
-		# If sox did output something, there was an error. Print message to user.
+		# If sox did output something, there was and error. Print message to user.
 		if not len(results_from_sox_run_list) == 0:
 			sox_encountered_an_error = True
 
@@ -3085,7 +3075,7 @@ def write_to_heartbeat_file_thread():
 			# Create the file in temp - directory and then move to the target location.
 			try:
 				with open(web_page_path + os.sep + '.temporary_files' + os.sep + heartbeat_file_name, 'w') as heartbeat_commandfile_handler:
-					json.dump(loudness_correction_program_info_and_timestamps, heartbeat_commandfile_handler)
+					json.dump(loudness_correction_program_info_and_timestamps, heartbeat_commandfile_handler, ensure_ascii=False)
 					heartbeat_commandfile_handler.flush() # Flushes written data to os cache
 					os.fsync(heartbeat_commandfile_handler.fileno()) # Flushes os cache to disk
 					shutil.move(web_page_path + os.sep + '.temporary_files' + os.sep + heartbeat_file_name, web_page_path + os.sep + heartbeat_file_name)
@@ -5774,22 +5764,12 @@ try:
 	all_settings_dict = {}
 
 	if configfile_path != '':
-
-		# Test if the configfile exists as json or pickle and read settings from it
-		configfile_path_json = os.path.splitext(os.path.splitext(configfile_path))[0] + ".json"
-		configfile_path_pickle = os.path.splitext(os.path.splitext(configfile_path))[0] + ".pickle"
-
+		
 		# Read the config variables from a file. The file contains a dictionary with the needed values.
+		
 		try:
-
-			if (os.path.exists(configfile_path_json)):
-
-				with open(configfile_path_json, 'r') as configfile_handler:
-					all_settings_dict = json.load(configfile_handler)
-			else:
-				with open(configfile_path_pickle, 'rb') as configfile_handler:
-					all_settings_dict = pickle.load(configfile_handler)
-
+			with open(configfile_path, 'r') as configfile_handler:
+				all_settings_dict = json.load(configfile_handler)
 		except KeyboardInterrupt:
 			if silent == False:
 				print('\n\nUser cancelled operation.\n')
