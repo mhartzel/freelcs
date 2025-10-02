@@ -5776,8 +5776,8 @@ try:
 	if configfile_path != '':
 
 		# Test if the configfile exists as json or pickle and read settings from it
-		configfile_path_json = os.path.splitext(os.path.splitext(configfile_path))[0] + ".json"
-		configfile_path_pickle = os.path.splitext(os.path.splitext(configfile_path))[0] + ".pickle"
+		configfile_path_json = os.path.splitext(configfile_path)[0] + ".json"
+		configfile_path_pickle = os.path.splitext(configfile_path)[0] + ".pickle"
 
 		# Read the config variables from a file. The file contains a dictionary with the needed values.
 		try:
