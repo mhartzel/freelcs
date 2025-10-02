@@ -236,8 +236,8 @@ if configfile_path != '':
 	email_sending_details =  {}
 	
 	# Test if the configfile exists as json or pickle and read settings from it
-	configfile_path_json = os.path.splitext(os.path.splitext(configfile_path))[0] + ".json"
-	configfile_path_pickle = os.path.splitext(os.path.splitext(configfile_path))[0] + ".pickle"
+	configfile_path_json = os.path.splitext(configfile_path)[0] + ".json"
+	configfile_path_pickle = os.path.splitext(configfile_path)[0] + ".pickle"
 
 	try:
 		if (os.path.exists(configfile_path_json)):
