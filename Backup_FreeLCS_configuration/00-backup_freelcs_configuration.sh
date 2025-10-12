@@ -644,7 +644,7 @@ if [ "$OS_NAME" == "ubuntu" ] && [ "$OS_VERSION" == "12.04" ] ; then
 
 fi
 
-APT_PACKAGE_LIST="python3 automake autoconf libtool fonts-liberation mediainfo gnuplot build-essential git cmake libsndfile-dev libglib2.0-dev"
+APT_PACKAGE_LIST="python3 automake autoconf libtool fonts-liberation mediainfo gnuplot build-essential git cmake libsndfile-dev libglib2.0-dev ffmpeg"
 
 # Debian 13 changed package idle3 name to idle
 if [ "$OS_NAME" == "debian" ] && [ "$OS_VERSION" -ge "13" ] ; then 

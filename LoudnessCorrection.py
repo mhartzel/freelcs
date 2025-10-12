@@ -1549,19 +1549,6 @@ def create_commands_for_loudness_adjusting_a_file(integrated_loudness_calculatio
 			if peak_measurement_method == '--peak=true':
 				audio_peaks_absolute_ceiling = -2
 			
-			# Calculate the level where absolute peaks must be limited to before gain correction, to get the resulting max peak level we want.
-			hard_limiter_level = difference_from_target_loudness + audio_peaks_absolute_ceiling
-
-			# When using higher than -23 LUFS loudness target level, then the limiter level must be lowered incrementally to prevent clipping when processing files with sox
-			if int(target_loudness) >= -20:
-				hard_limiter_level = hard_limiter_level - 0.5
-			if int(target_loudness) >= -18:
-				hard_limiter_level = hard_limiter_level - 0.5
-			if int(target_loudness) >= -16:
-				hard_limiter_level = hard_limiter_level - 0.5
-			if int(target_loudness) >= -14:
-				hard_limiter_level = hard_limiter_level - 0.5
-			
 			# Save some debug information.
 			if debug_file_processing == True:
 				debug_information_list.append('combined_channels_targetfile_name')
@@ -1574,8 +1561,6 @@ def create_commands_for_loudness_adjusting_a_file(integrated_loudness_calculatio
 				debug_information_list.append(difference_from_target_loudness_sign_inverted)
 				debug_information_list.append('audio_peaks_absolute_ceiling')
 				debug_information_list.append(audio_peaks_absolute_ceiling)
-				debug_information_list.append('hard_limiter_level')
-				debug_information_list.append(hard_limiter_level)
 
 			if difference_from_target_loudness >= 0:
 				
@@ -1656,16 +1641,18 @@ def create_commands_for_loudness_adjusting_a_file(integrated_loudness_calculatio
 					ffmpeg_commandline.append(file_to_process)
 
 					# FFmpeg alimiter can amplify at most 20 dB at a time, so if we need more we need to use multiple runs of alimiter.
+					alimiter_peak_limit = "-3.1"
 					amplify_now = 0
 					amplification_done = 0
 
 					if difference_from_target_loudness_sign_inverted > 20:
 						amplify_now = 20
-						amplification_done = amplification_done + 20
+						amplification_done = 20
 					else:
 						amplify_now = difference_from_target_loudness_sign_inverted
+						amplification_done = difference_from_target_loudness_sign_inverted
 
-					ffmpeg_alimiter_options = ["-filter", "alimiter=level_in=" + str(amplify_now) + "dB:level_out=1:limit=" + str(audio_peaks_absolute_ceiling) + "dB:attack=10:release=500:level=disabled:latency=1" ]
+					ffmpeg_alimiter_options = "alimiter=level_in=" + str(amplify_now) + "dB:level_out=1:limit=" + alimiter_peak_limit + "dB:attack=10:release=500:level=disabled:latency=1"
 
 					while amplification_done < difference_from_target_loudness_sign_inverted:
 
@@ -1676,15 +1663,19 @@ def create_commands_for_loudness_adjusting_a_file(integrated_loudness_calculatio
 							amplify_now = difference_from_target_loudness_sign_inverted - amplification_done
 							amplification_done = amplification_done + (difference_from_target_loudness_sign_inverted - amplification_done)
 
-						ffmpeg_alimiter_options = [",alimiter=level_in=" + str(amplify_now) + "dB:level_out=1:limit=" + str(audio_peaks_absolute_ceiling) + "dB:attack=10:release=500:level=disabled:latency=1" ]
+						ffmpeg_alimiter_options = ffmpeg_alimiter_options + ",alimiter=level_in=" + str(amplify_now) + "dB:level_out=1:limit=" + alimiter_peak_limit + "dB:attack=10:release=500:level=disabled:latency=1"
 
-					ffmpeg_commandline.extend(ffmpeg_alimiter_options)
+					ffmpeg_commandline.append("-filter")
+					ffmpeg_commandline.append(ffmpeg_alimiter_options)
 					ffmpeg_commandline.extend([directory_for_temporary_files + os.sep + temporary_peak_limited_targetfile])
 
 					# Save some debug information.
 					if debug_file_processing == True:
 						debug_information_list.append('ffmpeg_commandline')
 						debug_information_list.append(ffmpeg_commandline)
+						debug_information_list.append('alimiter_peak_limit')
+						debug_information_list.append(alimiter_peak_limit)
+
 
 					# Run FFmpeg with the commandline compiled in the lines above.
 					file_processing_encountered_an_error = process_files(directory_for_temporary_files, directory_for_results, filename, ffmpeg_commandline, english, finnish, 0, 0)
