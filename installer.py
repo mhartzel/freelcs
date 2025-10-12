@@ -27,8 +27,8 @@ import email.mime.multipart
 import tempfile
 import copy
 
-version = '137'
-freelcs_version = '3.11'
+version = '138'
+freelcs_version = '3.12'
 
 ###################################
 # Function definitions start here #
@@ -4010,6 +4010,9 @@ def define_program_installation_commands():
 
 	if samba_path == '':
 		needed_packages_install_commands.append('samba')
+
+	# FFmpeg is now used for peak limiting so always install it.
+	needed_packages_install_commands.append('ffmpeg')
 
 	# Ubuntu 22.04 and Debian 11 ships with broken mediainfo that hangs reading some 32 bit audio files.
 	# Install fixed mediainfo version 22.06 from mediainfo official site: https://mediaarea.net/en/MediaInfo
