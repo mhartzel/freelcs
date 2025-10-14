@@ -1265,7 +1265,7 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 
 			# Call a subprocess to create the loudness corrected audio file.
 			if create_loudness_corrected_files == True:
-				create_commands_for_loudness_adjusting_a_file(integrated_loudness_calculation_error, difference_from_target_loudness, filename, english, finnish, hotfolder_path, directory_for_results, directory_for_temporary_files, highest_peak_db, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, channel_count, audio_channels_will_be_split_to_separate_mono_files, output_file_too_big_to_split_to_separate_wav_channels)
+				create_commands_for_loudness_adjusting_a_file(integrated_loudness_calculation_error, difference_from_target_loudness, filename, english, finnish, hotfolder_path, directory_for_results, directory_for_temporary_files, highest_peak_db, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, channel_count, audio_channels_will_be_split_to_separate_mono_files, output_file_too_big_to_split_to_separate_wav_channels, bit_depth)
 
 	except Exception:
 		exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -1491,7 +1491,7 @@ def run_gnuplot(filename, directory_for_temporary_files, directory_for_results, 
 		subroutine_name = 'run_gnuplot'
 		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 
-def create_commands_for_loudness_adjusting_a_file(integrated_loudness_calculation_error, difference_from_target_loudness, filename, english, finnish, hotfolder_path, directory_for_results, directory_for_temporary_files, highest_peak_db, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, channel_count, audio_channels_will_be_split_to_separate_mono_files, output_file_too_big_to_split_to_separate_wav_channels):
+def create_commands_for_loudness_adjusting_a_file(integrated_loudness_calculation_error, difference_from_target_loudness, filename, english, finnish, hotfolder_path, directory_for_results, directory_for_temporary_files, highest_peak_db, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, channel_count, audio_channels_will_be_split_to_separate_mono_files, output_file_too_big_to_split_to_separate_wav_channels, bit_depth):
 
 	'''This subroutine creates sox commands that are used to create a loudness corrected file'''
 
@@ -1665,8 +1665,20 @@ def create_commands_for_loudness_adjusting_a_file(integrated_loudness_calculatio
 
 						ffmpeg_alimiter_options = ffmpeg_alimiter_options + ",alimiter=level_in=" + str(amplify_now) + "dB:level_out=1:limit=" + alimiter_peak_limit + "dB:attack=10:release=500:level=disabled:latency=1"
 
+					# When -filter is used and output format is flac FFmpeg alaways defaults to using 24 bit bit depth.
+					# Force FFmpeg to use 16 bits if input file bit depth is 16.
+					if (bit_depth == 16) and (output_format_for_intermediate_files) == "flac":
+						ffmpeg_alimiter_options = ffmpeg_alimiter_options + ",aformat=sample_fmts=s16"
+
 					ffmpeg_commandline.append("-filter")
 					ffmpeg_commandline.append(ffmpeg_alimiter_options)
+
+					# FFmpeg defaults to bit depth of 16 bits when target file format is wav.
+					# Force FFmpeg to use 24 bits if source file bit depth is 24.
+					if (bit_depth == 24) and (output_format_for_intermediate_files) == "wav":
+						ffmpeg_commandline.append("-acodec")
+						ffmpeg_commandline.append("pcm_s24le")
+
 					ffmpeg_commandline.extend([directory_for_temporary_files + os.sep + temporary_peak_limited_targetfile])
 
 					# Save some debug information.
@@ -1675,7 +1687,6 @@ def create_commands_for_loudness_adjusting_a_file(integrated_loudness_calculatio
 						debug_information_list.append(ffmpeg_commandline)
 						debug_information_list.append('alimiter_peak_limit')
 						debug_information_list.append(alimiter_peak_limit)
-
 
 					# Run FFmpeg with the commandline compiled in the lines above.
 					file_processing_encountered_an_error = process_files(directory_for_temporary_files, directory_for_results, filename, ffmpeg_commandline, english, finnish, 0, 0)
@@ -1698,7 +1709,6 @@ def create_commands_for_loudness_adjusting_a_file(integrated_loudness_calculatio
 						event_for_integrated_loudness_calculation = threading.Event() # Create a dummy event for loudness calculation subroutine. This is needed by the subroutine, but not used anywhere else, since we do not start loudness calculation as a thread.
 						libebur128_commands_for_integrated_loudness_calculation=[libebur128_path, 'scan', '-l', peak_measurement_method] # Put libebur128 commands in a list.
 						calculate_integrated_loudness(event_for_integrated_loudness_calculation, temporary_peak_limited_targetfile, directory_for_temporary_files, libebur128_commands_for_integrated_loudness_calculation, english, finnish)
-					
 					
 						#########################################################################################################
 						# After calculating loudness of the peak limited file, adjust the volume of the file to target loudness #
@@ -1757,25 +1767,40 @@ def create_commands_for_loudness_adjusting_a_file(integrated_loudness_calculatio
 
 						if audio_channels_will_be_split_to_separate_mono_files == False:
 						
-							# Gather sox commandline to a list.
-							sox_commandline.extend(start_of_sox_commandline)
-							sox_commandline.extend([directory_for_temporary_files + os.sep + temporary_peak_limited_targetfile])
-							
-							# If output format is flac add flac compression level commands right after the input file name.
-							if output_format_for_final_file == 'flac':
-								sox_commandline.extend(flac_compression_level)
-							sox_commandline.extend([directory_for_temporary_files + os.sep + combined_channels_targetfile_name, 'gain', str(difference_from_target_loudness_sign_inverted)])
+							# Gather FFmpeg commandline to a list.
+							ffmpeg_commandline = []
+							alimiter_peak_limit = "-2"
+							start_of_ffmpeg_commandline = ["ffmpeg", "-loglevel", "level+error", "-hide_banner", "-i"]
+							ffmpeg_commandline.extend(start_of_ffmpeg_commandline)
+							ffmpeg_commandline.extend([directory_for_temporary_files + os.sep + temporary_peak_limited_targetfile])
+							ffmpeg_alimiter_options = "alimiter=level_in=" + str(difference_from_target_loudness_sign_inverted) + "dB:level_out=1:limit=" + alimiter_peak_limit + "dB:attack=10:release=500:level=disabled:latency=1"
+
+							# When -filter is used and output format is flac FFmpeg alaways defaults to using 24 bit bit depth.
+							# Force FFmpeg to use 16 bits if input file bit depth is 16.
+							if (bit_depth == 16) and (output_format_for_intermediate_files) == "flac":
+								ffmpeg_alimiter_options = ffmpeg_alimiter_options + ",aformat=sample_fmts=s16"
+
+							ffmpeg_commandline.append("-filter")
+							ffmpeg_commandline.append(ffmpeg_alimiter_options)
+
+							# FFmpeg defaults to bit depth of 16 bits when target file format is wav.
+							# Force FFmpeg to use 24 bits if source file bit depth is 24.
+							if (bit_depth == 24) and (output_format_for_final_file) == "wav":
+								ffmpeg_commandline.append("-acodec")
+								ffmpeg_commandline.append("pcm_s24le")
+
+							ffmpeg_commandline.extend([directory_for_temporary_files + os.sep + combined_channels_targetfile_name])
 							
 							# Save some debug information.
 							if debug_file_processing == True:
-								debug_information_list.append('sox_commandline')
-								debug_information_list.append(sox_commandline)
+								debug_information_list.append('ffmpeg_commandline')
+								debug_information_list.append(ffmpeg_commandline)
 							
-							#Gather all names of processed files to a list.
+							# Gather all names of processed files to a list.
 							list_of_filenames = [combined_channels_targetfile_name]
 							
-							# Run sox with the commandline compiled in the lines above.
-							file_processing_encountered_an_error = process_files(directory_for_temporary_files, directory_for_results, filename, sox_commandline, english, finnish, 0, 0)
+							# Run FFmpeg with the commandline compiled in the lines above.
+							file_processing_encountered_an_error = process_files(directory_for_temporary_files, directory_for_results, filename, ffmpeg_commandline, english, finnish, 0, 0)
 						
 						else:
 					
@@ -1788,7 +1813,7 @@ def create_commands_for_loudness_adjusting_a_file(integrated_loudness_calculatio
 								sox_commandline.extend(start_of_sox_commandline)
 								sox_commandline.extend([directory_for_temporary_files + os.sep + temporary_peak_limited_targetfile, directory_for_temporary_files + os.sep + split_channel_targetfile_name, 'remix', str(counter), 'gain', str(difference_from_target_loudness_sign_inverted)])
 						
-								#Gather all commands needed to process a file to a list of sox commandlines.
+								# Gather all commands needed to process a file to a list of sox commandlines.
 								list_of_sox_commandlines.append(sox_commandline)
 								list_of_filenames.append(split_channel_targetfile_name)
 								

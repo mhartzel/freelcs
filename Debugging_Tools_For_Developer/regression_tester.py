@@ -15,7 +15,7 @@ import os
 import sys
 import shutil
 import subprocess
-import pickle
+import json
 import smtplib
 import email
 import email.mime
@@ -405,15 +405,15 @@ def print_info_about_usage():
 
 def read_loudnesscorrection_config_file():
 
-	configfile_path = '/etc/Loudness_Correction_Settings.pickle'
+	configfile_path = '/etc/Loudness_Correction_Settings.json'
 
 	# Read the config variables from a file. The file contains a dictionary with the needed values.
 	all_settings_dict = {}
 	global email_sending_details
 
 	try:
-		with open(configfile_path, 'rb') as configfile_handler:
-			all_settings_dict = pickle.load(configfile_handler)
+		with open(configfile_path, 'r') as configfile_handler:
+			all_settings_dict = json.load(configfile_handler)
 	except KeyboardInterrupt:
 		print('\n\nUser cancelled operation.\n')
 		sys.exit(0)
@@ -782,7 +782,7 @@ email_sending_details =  {}
 home_directory_for_the_current_user = os.path.expanduser('~')
 
 path_to_loudnesscorrection_script = '/usr/bin/LoudnessCorrection.py'
-path_to_loudnesscorrection_config_file = '/etc/Loudness_Correction_Settings.pickle'
+path_to_loudnesscorrection_config_file = '/etc/Loudness_Correction_Settings.json'
 list_of_loudnesscorrection_commands_to_run = [[path_to_loudnesscorrection_script, '-configfile', path_to_loudnesscorrection_config_file,'-debug_all' , '-force-truepeak', '-force-quit-when-idle']]
 list_of_loudnesscorrection_commands_to_run.append([path_to_loudnesscorrection_script, '-configfile', path_to_loudnesscorrection_config_file,'-debug_all' , '-force-samplepeak', '-force-quit-when-idle'])
 list_of_loudnesscorrection_commands_to_run.append([path_to_loudnesscorrection_script, '-configfile', path_to_loudnesscorrection_config_file,'-debug_all' , '-force-truepeak', '-force-quit-when-idle','-force-no-ffmpeg'])
