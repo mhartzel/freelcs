@@ -1805,26 +1805,41 @@ def create_commands_for_loudness_adjusting_a_file(integrated_loudness_calculatio
 						else:
 					
 							# The combined channels in final output file exceeds the max file size and the file needs to be split to separate mono files.
-							# Create commandlines for extracting each channel to its own file.
-							
+							# Create the commandline for extracting each channel to its own file.
+							ffmpeg_commandline = []
+							start_of_ffmpeg_commandline = ["ffmpeg", "-loglevel", "level+error", "-hide_banner", "-i"]
+							ffmpeg_commandline.extend(start_of_ffmpeg_commandline)
+							ffmpeg_commandline.extend([directory_for_temporary_files + os.sep + temporary_peak_limited_targetfile])
+							ffmpeg_commandline.append("-filter_complex")
+							alimiter_peak_limit = "-2"
+							filter_complex_options = "alimiter=level_in=" + str(difference_from_target_loudness_sign_inverted) + "dB:level_out=1:limit=" + alimiter_peak_limit + "dB:attack=10:release=500:level=disabled:latency=1,channelsplit=channel_layout=" + str(channel_count) + "C"
+
+							for counter in range(1, channel_count + 1):
+								filter_complex_options = filter_complex_options + "[" + str(counter) + "]"
+
+							ffmpeg_commandline.append(filter_complex_options)
+
 							for counter in range(1, channel_count + 1):
 								split_channel_targetfile_name = filename_and_extension[0] + '-Channel-' * english + '-Kanava-' * finnish + str(counter) + '_' + target_loudness + '_LUFS.' + output_format_for_final_file
-								sox_commandline = []
-								sox_commandline.extend(start_of_sox_commandline)
-								sox_commandline.extend([directory_for_temporary_files + os.sep + temporary_peak_limited_targetfile, directory_for_temporary_files + os.sep + split_channel_targetfile_name, 'remix', str(counter), 'gain', str(difference_from_target_loudness_sign_inverted)])
-						
-								# Gather all commands needed to process a file to a list of sox commandlines.
-								list_of_sox_commandlines.append(sox_commandline)
+
+								# FFmpeg defaults to bit depth of 16 bits when target file format is wav.
+								# Force FFmpeg to use 24 bits if source file bit depth is 24.
+								if (bit_depth == 24) and (output_format_for_final_file) == "wav":
+									ffmpeg_commandline.append("-acodec")
+									ffmpeg_commandline.append("pcm_s24le")
+
+								ffmpeg_commandline.append("-map")
+								ffmpeg_commandline.append("[" + str(counter) + "]") 
+								ffmpeg_commandline.append(directory_for_temporary_files + os.sep + split_channel_targetfile_name)
 								list_of_filenames.append(split_channel_targetfile_name)
-								
+
+							file_processing_encountered_an_error = process_files(directory_for_temporary_files, directory_for_results, filename, ffmpeg_commandline, english, finnish, 0, 0)
+
 							# Save some debug information.
 							if debug_file_processing == True:
-								debug_information_list.append('list_of_sox_commandlines')
-								debug_information_list.append(''.join(str(list_of_sox_commandlines)))
+								debug_information_list.append('ffmpeg_commandline')
+								debug_information_list.append(ffmpeg_commandline)
 
-							# Run several sox commands in parallel threads, this speeds up splitting the file to separate mono files.	
-							file_processing_encountered_an_error = run_file_processing_in_parallel_threads(directory_for_temporary_files, directory_for_results, filename, list_of_sox_commandlines, english, finnish)
-						
 						# Processing is ready move audio files to target directory.
 						move_processed_audio_files_to_target_directory(directory_for_temporary_files, directory_for_results, list_of_filenames, english, finnish)
 				
@@ -6016,6 +6031,10 @@ try:
 			libebur128_loudness_executable_found = True
 			libebur128_path = os_path + os.sep + loudness_executable_name
 		
+	if ffmpeg_executable_found == False:
+		error_message = '\n!!!!!!! FFmpeg - can not be found or it does not have \'executable\' permissions on !!!!!!!' * english + '\n!!!!!!! FFmpeg - ohjelmaa ei löydy tai sillä ei ole käynnistyksen mahdollistava \'executable\' oikeudet päällä !!!!!!!' * finnish
+		send_error_messages_to_screen_logfile_email(error_message, [])
+		sys.exit(1)
 	if gnuplot_executable_found == False:
 		error_message = '\n!!!!!!! gnuplot - can not be found or it does not have \'executable\' permissions on !!!!!!!' * english + '\n!!!!!!! gnuplot - ohjelmaa ei löydy tai sillä ei ole käynnistyksen mahdollistava \'executable\' oikeudet päällä !!!!!!!' * finnish
 		send_error_messages_to_screen_logfile_email(error_message, [])
