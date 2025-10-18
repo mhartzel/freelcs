@@ -1265,7 +1265,7 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 
 			# Call a subprocess to create the loudness corrected audio file.
 			if create_loudness_corrected_files == True:
-				create_commands_for_loudness_adjusting_a_file(integrated_loudness_calculation_error, difference_from_target_loudness, filename, english, finnish, hotfolder_path, directory_for_results, directory_for_temporary_files, highest_peak_db, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, channel_count, audio_channels_will_be_split_to_separate_mono_files, output_file_too_big_to_split_to_separate_wav_channels, bit_depth)
+				create_commands_for_loudness_adjusting_a_file(integrated_loudness_calculation_error, difference_from_target_loudness, filename, english, finnish, hotfolder_path, directory_for_results, directory_for_temporary_files, highest_peak_db, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, channel_count, audio_channels_will_be_split_to_separate_mono_files, output_file_too_big_to_split_to_separate_wav_channels, bit_depth, sample_rate)
 
 	except Exception:
 		exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -1491,7 +1491,7 @@ def run_gnuplot(filename, directory_for_temporary_files, directory_for_results, 
 		subroutine_name = 'run_gnuplot'
 		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 
-def create_commands_for_loudness_adjusting_a_file(integrated_loudness_calculation_error, difference_from_target_loudness, filename, english, finnish, hotfolder_path, directory_for_results, directory_for_temporary_files, highest_peak_db, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, channel_count, audio_channels_will_be_split_to_separate_mono_files, output_file_too_big_to_split_to_separate_wav_channels, bit_depth):
+def create_commands_for_loudness_adjusting_a_file(integrated_loudness_calculation_error, difference_from_target_loudness, filename, english, finnish, hotfolder_path, directory_for_results, directory_for_temporary_files, highest_peak_db, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, channel_count, audio_channels_will_be_split_to_separate_mono_files, output_file_too_big_to_split_to_separate_wav_channels, bit_depth, sample_rate):
 
 	'''This subroutine creates sox commands that are used to create a loudness corrected file'''
 
@@ -1508,6 +1508,8 @@ def create_commands_for_loudness_adjusting_a_file(integrated_loudness_calculatio
 		file_to_process = hotfolder_path + os.sep + filename
 		filename_and_extension = os.path.splitext(filename)
 		file_processing_encountered_an_error = False
+		sample_rate_str = str(sample_rate)
+		sample_ratex4_str = str(sample_rate * 4)
 		global integrated_loudness_calculation_results
 		global libebur128_path
 		global silent
@@ -1641,7 +1643,7 @@ def create_commands_for_loudness_adjusting_a_file(integrated_loudness_calculatio
 					ffmpeg_commandline.append(file_to_process)
 
 					# FFmpeg alimiter can amplify at most 20 dB at a time, so if we need more we need to use multiple runs of alimiter.
-					alimiter_peak_limit = "-3.1"
+					alimiter_peak_limit = "-1"
 					amplify_now = 0
 					amplification_done = 0
 
@@ -1652,7 +1654,8 @@ def create_commands_for_loudness_adjusting_a_file(integrated_loudness_calculatio
 						amplify_now = difference_from_target_loudness_sign_inverted
 						amplification_done = difference_from_target_loudness_sign_inverted
 
-					ffmpeg_alimiter_options = "alimiter=level_in=" + str(amplify_now) + "dB:level_out=1:limit=" + alimiter_peak_limit + "dB:attack=10:release=500:level=disabled:latency=1"
+					# Use x 4 sample rate (TruePeak) for lookahead peak limiting.
+					ffmpeg_alimiter_options = "aresample=" + sample_ratex4_str + ":resampler=soxr:precision=28:dither_method=triangular"  + ",alimiter=level_in=" + str(amplify_now) + "dB:level_out=0dB:limit=" + alimiter_peak_limit + "dB:attack=10:release=500:level=disabled:latency=1"
 
 					while amplification_done < difference_from_target_loudness_sign_inverted:
 
@@ -1663,7 +1666,10 @@ def create_commands_for_loudness_adjusting_a_file(integrated_loudness_calculatio
 							amplify_now = difference_from_target_loudness_sign_inverted - amplification_done
 							amplification_done = amplification_done + (difference_from_target_loudness_sign_inverted - amplification_done)
 
-						ffmpeg_alimiter_options = ffmpeg_alimiter_options + ",alimiter=level_in=" + str(amplify_now) + "dB:level_out=1:limit=" + alimiter_peak_limit + "dB:attack=10:release=500:level=disabled:latency=1"
+						ffmpeg_alimiter_options = ffmpeg_alimiter_options + ",alimiter=level_in=" + str(amplify_now) + "dB:level_out=0dB:limit=" + alimiter_peak_limit + "dB:attack=10:release=500:level=disabled:latency=1"
+
+					# Downsample 4 x sample rate back to original.
+					ffmpeg_alimiter_options = ffmpeg_alimiter_options + ",aresample=" + sample_rate_str + ":resampler=soxr:precision=28:dither_method=triangular"
 
 					# When -filter is used and output format is flac FFmpeg alaways defaults to using 24 bit bit depth.
 					# Force FFmpeg to use 16 bits if input file bit depth is 16.
@@ -1769,11 +1775,13 @@ def create_commands_for_loudness_adjusting_a_file(integrated_loudness_calculatio
 						
 							# Gather FFmpeg commandline to a list.
 							ffmpeg_commandline = []
-							alimiter_peak_limit = "-2"
 							start_of_ffmpeg_commandline = ["ffmpeg", "-loglevel", "level+error", "-hide_banner", "-i"]
 							ffmpeg_commandline.extend(start_of_ffmpeg_commandline)
 							ffmpeg_commandline.extend([directory_for_temporary_files + os.sep + temporary_peak_limited_targetfile])
-							ffmpeg_alimiter_options = "alimiter=level_in=" + str(difference_from_target_loudness_sign_inverted) + "dB:level_out=1:limit=" + alimiter_peak_limit + "dB:attack=10:release=500:level=disabled:latency=1"
+
+
+							# Use x 4 sample rate (TruePeak) for lookahead peak limiting.
+							ffmpeg_alimiter_options = "aresample=" + sample_ratex4_str + ":resampler=soxr:precision=28:dither_method=triangular" + ",alimiter=level_in=" + str(difference_from_target_loudness_sign_inverted) + "dB:level_out=0dB:limit=0dB:attack=10:release=500:level=disabled:latency=1" + ",aresample=" + sample_rate_str + ":resampler=soxr:precision=28:dither_method=triangular"
 
 							# When -filter is used and output format is flac FFmpeg alaways defaults to using 24 bit bit depth.
 							# Force FFmpeg to use 16 bits if input file bit depth is 16.
@@ -1811,8 +1819,9 @@ def create_commands_for_loudness_adjusting_a_file(integrated_loudness_calculatio
 							ffmpeg_commandline.extend(start_of_ffmpeg_commandline)
 							ffmpeg_commandline.extend([directory_for_temporary_files + os.sep + temporary_peak_limited_targetfile])
 							ffmpeg_commandline.append("-filter_complex")
-							alimiter_peak_limit = "-2"
-							filter_complex_options = "alimiter=level_in=" + str(difference_from_target_loudness_sign_inverted) + "dB:level_out=1:limit=" + alimiter_peak_limit + "dB:attack=10:release=500:level=disabled:latency=1,channelsplit=channel_layout=" + str(channel_count) + "C"
+
+							# Use x 4 sample rate (TruePeak) for lookahead peak limiting.
+							filter_complex_options = "aresample=" + sample_ratex4_str + ":resampler=soxr:precision=28:dither_method=triangular" + ",alimiter=level_in=" + str(difference_from_target_loudness_sign_inverted) + "dB:level_out=0dB:limit=0dB:attack=10:release=500:level=disabled:latency=1" + ",aresample=" + sample_rate_str + ":resampler=soxr:precision=28:dither_method=triangular"  + ",channelsplit=channel_layout=" + str(channel_count) + "C"
 
 							for counter in range(1, channel_count + 1):
 								filter_complex_options = filter_complex_options + "[" + str(counter) + "]"
