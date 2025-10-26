@@ -206,7 +206,8 @@ def call_seventh_frame_on_top():
 	# Hide the the frames for other windows and raise the one we want.
 	sixth_frame.grid_forget()
 	eigth_frame.grid_forget()
-	ffmpeg_frame.grid_forget()
+	ninth_frame.grid_forget()
+	# ffmpeg_frame.grid_forget()
 	set_seventh_window_label_texts_and_colors()
 	seventh_frame.update() # Update the frame that has possibly changed, this triggers updating all child objects.
 	seventh_frame.grid(column=0, row=0, padx=20, pady=5, sticky=(tkinter.W, tkinter.N, tkinter.E))
@@ -6689,7 +6690,7 @@ target_loudness_combobox.grid(column=3, row=0, pady=10, padx=10, sticky=(tkinter
 second_window_label_8 = tkinter.ttk.Label(second_frame_child_frame_5, wraplength=text_wrap_length_in_pixels, text='EBU standard target loudness level is -23 LUFS. Media sites on the internet use the following levels according to info found on the net: \n\nApple Music (sound check on): -16 LUFS\nSpotify, Amazon, Music and Tidal: -14 LUFS\nYoutube: -13 LUFS')
 second_window_label_8.grid(column=0, row=1, columnspan=4, pady=10, padx=10, sticky=(tkinter.W, tkinter.N))
 
-second_window_label_9 = tkinter.ttk.Label(second_frame_child_frame_5, wraplength=text_wrap_length_in_pixels, text='Warning: Using target loudness higher than -23 LUFS (-22 <---> -12 LUFS) can sometimes result in clipping if audio files are not prepared with reduced dynamic range or if audio has very high peaks compared to its average loudness level.')
+second_window_label_9 = tkinter.ttk.Label(second_frame_child_frame_5, wraplength=text_wrap_length_in_pixels, text='Warning: Using target loudness higher than -23 LUFS (-22 <---> -12 LUFS) can sometimes result in distortion if audio files are not prepared with reduced dynamic range')
 second_window_label_9.grid(column=0, row=2, columnspan=4, pady=10, padx=10, sticky=(tkinter.W, tkinter.N))
 print_target_loudness()
 
@@ -7003,7 +7004,7 @@ sample_peak_radiobutton.grid(column=3, row=11, padx=15)
 true_peak_radiobutton.grid(column=4, row=11, padx=15)
 
 # Some explanatory texts.
-peak_measurement_label = tkinter.ttk.Label(fourth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='This options lets you choose if you want to use sample peak or TruePeak measurement. The peak value is important only in cases where file loudness is below target -23 LUFS and needs to be increased. If increasing volume would cause peaks to go over a set limit (-2 dBFS for TruePeak and -4 dB for sample peak) then a protective limiter is used. The resulting max peaks will be about 1 dB above the limit (-1 dBFS / -3 dBFS).\n\nNote that using TruePeak slows down file processing by a factor of 4. When using sample peak you still have about 3 dBs headroom for the true peaks to exist.')
+peak_measurement_label = tkinter.ttk.Label(fourth_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, text='This options lets you choose if you want to use sample peak or TruePeak measurement.')
 peak_measurement_label.grid(column=0, row=12, pady=10, padx=10, columnspan=4, sticky=(tkinter.W, tkinter.N))
 
 # Create the buttons for the frame
@@ -7888,7 +7889,7 @@ seventh_window_label_12.grid(column=0, row=8, columnspan=1, padx=10, sticky=(tki
 loudnesscorrection_scripts_are_installed.set('Not Installed')
 seventh_window_loudnesscorrection_label = tkinter.ttk.Label(seventh_frame_child_frame_1, wraplength=text_wrap_length_in_pixels, textvariable=loudnesscorrection_scripts_are_installed)
 seventh_window_loudnesscorrection_label['foreground'] = 'red'
-seventh_window_loudnesscorrection_label.grid(column=3, row=7, columnspan=1, padx=10, sticky=(tkinter.N))
+seventh_window_loudnesscorrection_label.grid(column=3, row=8, columnspan=1, padx=10, sticky=(tkinter.N))
 
 # Define a horizontal line to space out groups of rows.
 seventh_window_separator_2 = tkinter.ttk.Separator(seventh_frame_child_frame_1, orient=tkinter.HORIZONTAL)
@@ -7929,7 +7930,7 @@ seventh_window_show_button_2.grid(column=3, row=16, padx=30, pady=2, sticky=(tki
 # Create the buttons for the frame
 seventh_window_back_button = tkinter.Button(seventh_frame, text = "Back", command = call_fifth_frame_on_top)
 seventh_window_back_button.grid(column=1, row=1, padx=30, pady=10, sticky=(tkinter.E, tkinter.N))
-seventh_window_next_button = tkinter.Button(seventh_frame, text = "Next", command = call_ffmpeg_info_frame_on_top)
+seventh_window_next_button = tkinter.Button(seventh_frame, text = "Next", command = call_ninth_frame_on_top)
 seventh_window_next_button.grid(column=2, row=1, padx=30, pady=10, sticky=(tkinter.W, tkinter.N))	
 
 set_seventh_window_label_texts_and_colors()
@@ -8007,7 +8008,7 @@ ninth_window_label_2 = tkinter.ttk.Label(ninth_frame_child_frame_1, wraplength=t
 ninth_window_label_2.grid(column=0, row=2, columnspan=4, pady=10, padx=10, sticky=(tkinter.N, tkinter.W))
 
 # Create the buttons for the frame
-ninth_window_back_button = tkinter.Button(ninth_frame, text = "Back", command = call_ffmpeg_info_frame_on_top)
+ninth_window_back_button = tkinter.Button(ninth_frame, text = "Back", command = call_seventh_frame_on_top)
 ninth_window_back_button.grid(column=1, row=3, padx=30, pady=10, sticky=(tkinter.E, tkinter.N))
 ninth_window_finish_button = tkinter.Button(ninth_frame, text = "Finish", command = quit_program)
 ninth_window_finish_button.grid(column=2, row=3, padx=30, pady=10, sticky=(tkinter.W, tkinter.N))
@@ -8016,6 +8017,8 @@ ninth_window_finish_button.grid(column=2, row=3, padx=30, pady=10, sticky=(tkint
 ###########################################################################################################
 # FFmpeg installation info window                                                                         #
 ###########################################################################################################
+
+# As of FreelCS 3.12 This windows is never shown (called). FFmpeg is now required and always installed.
 
 # Create the label for the frame
 ffmpeg_info_window_label_1 = tkinter.ttk.Label(ffmpeg_frame_child_frame_1, wraplength=text_wrap_length_in_pixels + 10, text="If you want FreeLCS to be able to decompress virtually any audio format, then you need to install " + media_converter_name + ". You can do it by copy / pasting the following command in a terminal window and executing it:\n")
