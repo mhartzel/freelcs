@@ -7,6 +7,16 @@
   </head>
   <body>
     <h2><strong>Old news:</strong></h2>
+    <div>2023.09.23 FreeLCS 3.9 released.<br>
+      <ul>
+        <li>This release supports Debian 12, Ubuntu 22.04.</li>
+        <li>Disabled FFmpeg dependencies from libebur128 loudness - executable
+          since they wont build anymore. It seems FFmpeg API has changed and
+          libebur128 loudness_scanner has not kept up with the changes. However
+          ffmpeg bindings are not needed for anything in FreeLCS, because it
+          uses the FFmpeg - executable installed in the os.</li>
+      </ul>
+    </div>
     <p style="margin-left: -5px;">2022.07.27 FreeLCS 3.8 released.</p>
     <ul>
       <li>This release supports Debian 11, Ubuntu 22.04 and 20.04.</li>

@@ -25,8 +25,8 @@
     <a href="#Detailed_explanation_of_the_channel_remixing_feature">Detailed
       explanation of the channel remixing feature</a><br>
     <br>
-    <a href="#Libav-tools_allowed_wrapper_and_codec_formats">FFmpeg /
-      Libav-tools allowed wrapper and codec formats</a><br>
+    <a href="#FFmpeg_allowed_wrapper_and_codec_formats">FFmpeg allowed wrapper
+      and codec formats</a><br>
     <br>
     <br>
     <br>
@@ -37,8 +37,7 @@
       want the old behavior from FreeLCS version up to 2.4 that is: create a
       loudness corrected audio file, a history graphics file and delete
       multistream files immediately after all audiostreams have been extracted
-      to individual files (multistream extraction requires installation of
-      FFmpeg or libav-tools). This "old" behaviour is achieved by setting "<strong>Use
+      to individual files. This "old" behaviour is achieved by setting "<strong>Use
         FreeLCS file output defaults</strong>" to <strong>"Yes"</strong>.</p>
     <p>If you would like to integrate FreeLCS as a loudness measurement step in
       your automated file processing workflow, then you might want to change the
@@ -70,10 +69,9 @@
     <h2><a id="Separator_characters_in_the_machine_readable_results_file">Separator
         characters in the machine readable results file</a></h2>
     <p>There can be many audio streams in one input file, FreeLCS writes these
-      streams to individual audio files before loudness processing (multistream
-      support requires FFmpeg or libav-tools). As a single input file can result
-      in many output files, the machine readable results file may consist of
-      loudness results of many audio files. </p>
+      streams to individual audio files before loudness processing. As a single
+      input file can result in many output files, the machine readable results
+      file may consist of loudness results of many audio files. </p>
     <p>Loudness measurement results of a single file needs to be separated from
       each other by a known character or group of characters for a machine be
       able to interpret the results. If the input file resulted to many output
@@ -416,9 +414,8 @@
       recombined before loudness processing. This feature is called MXF audio
       remixing. <br>
       <strong></strong></p>
-    <p>If you want to use MXF audio remixing, then you must install FFmpeg or
-      libav-tools and allow MXF wrapper format processing during FreeLCS
-      installation. </p>
+    <p>If you want to use MXF audio remixing, then you must allow MXF wrapper
+      format processing during FreeLCS installation. </p>
     <p><strong>Important note:</strong> This function is not guaranteed to work
       !!!!!!! MXF is not one format, but a family of formats (<a href="https://en.wikipedia.org/wiki/Material_Exchange_Format#MXF_in_use">more
         info on Wikipedia</a>). Every hardware and software vendor seem to have
@@ -615,28 +612,27 @@
     </p>
     <p><br>
     </p>
-    <h2><a id="Libav-tools_allowed_wrapper_and_codec_formats">FFmpeg /
-        Libav-tools allowed wrapper and codec formats</a></h2>
-    <p>In FreeLCS 3.0 it is possible to restrict FFmpeg / libav-tools to only
-      process a small set of formats or allow it to process all formats it
-      supports. This feature is mainly designed to allow the user to restrict
-      processing only to patent free formats even when FFmpeg or libav-tools is
-      installed. Format patentability varies from country to country, see more
-      about it in <a href="FreeLCS_FAQ.html#Libav-tools%20/%20FFmpeg%20and%20patents">FAQ</a>.</p>
+    <h2><a id="FFmpeg_allowed_wrapper_and_codec_formats">FFmpeg allowed wrapper
+        and codec formats</a></h2>
+    <p>In FreeLCS 3.0 it is possible to restrict FFmpeg to only process a small
+      set of formats or allow it to process all formats it supports. This
+      feature is mainly designed to allow the user to restrict processing only
+      to patent free formats. Format patentability varies from country to
+      country, see more about it in <a href="FreeLCS_FAQ.html#Libav-tools%20/%20FFmpeg%20and%20patents">FAQ</a>.</p>
     <p><br>
     </p>
-    <p>If you enabled MXF remixing, then you must install FFmpeg or libav-tools
-      and allow MXF wrapper format processing. In the picture below libav-tools
-      is allowed to process all formats it supports (All includes MXF :)</p>
+    <p>If you enabled MXF remixing, then you must allow MXF wrapper format
+      processing. In the picture below FFmpeg is allowed to process all formats
+      it supports (All includes MXF :)</p>
     <p><br>
     </p>
     <img alt="" src="Pictures/MXF_Remixing-02.jpg"><br>
     <br>
     <br>
-    In the following picture FFmpeg / libav-tools processing has been restricted
-    to wrapper formats: <strong>Wav, Flac, Ogg, Matroska, AC-3, Mpeg 1 Layers
-      1, 2 and 3, MXF, Webm&nbsp;</strong> and codec formats: <strong>PCM,
-      Flac, Vorbis, Opus, AC-3, Mpeg 1 layers 1, 2 and 3</strong>.<br>
+    In the following picture FFmpeg processing has been restricted to wrapper
+    formats: <strong>Wav, Flac, Ogg, Matroska, AC-3, Mpeg 1 Layers 1, 2 and 3,
+      MXF, Webm&nbsp;</strong> and codec formats: <strong>PCM, Flac, Vorbis,
+      Opus, AC-3, Mpeg 1 layers 1, 2 and 3</strong>.<br>
     <br>
     <br>
     <img alt="" src="Pictures/MXF_Remixing-03.jpg"><br>

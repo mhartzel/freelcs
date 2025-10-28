@@ -21,7 +21,7 @@
     <h3><a href="Ubuntu_Server_modifications_needed_before_FreeLCS_installation.html#Installing%20FreeLCS%20on%20a%20computer%20without%20a%20graphical%20user%20interface">Installing
         FreeLCS on a computer without a graphical user interface</a></h3>
     <h3><a href="Machine_readable_results_and_MXF_audio_remix_mapping.html#Libav-tools_allowed_wrapper_and_codec_formats">FFmpeg
-        / Libav-tools allowed wrapper and codec formats</a></h3>
+        allowed wrapper and codec formats</a></h3>
     <h3> <a href="#Files%20that%20FreeLCS%20creates%20in%20your%20system">Files
         that FreeLCS creates in your system</a></h3>
     <h3> <a href="#Usage">Usage</a></h3>
@@ -103,8 +103,8 @@
     Sata disks in software RAID 0. <br>
     <br>
     FreeLCS uses other open source programs to get the job done (Linux,
-    libebur128, gnuplot, FFmpeg / libav-tools (optional), sox, mediainfo). All
-    software is free and Open Source.<br>
+    libebur128, gnuplot, FFmpeg, sox, mediainfo). All software is free and Open
+    Source.<br>
     <br>
     <br>
     <h2> <a id="Features">Features</a></h2>
@@ -117,8 +117,8 @@
         loudness varies inside a file (example picture below).</li>
       <li>Supports channel counts from mono to 5.1.</li>
       <li>Supports EBU TruePeak measurement.</li>
-      <li>Uses a protective limiter to keep peaks in the allowed range where
-        needed.</li>
+      <li>Uses a protective TruePeak lookahead limiter to keep peaks in the
+        allowed range where needed.</li>
       <li>Takes advantage of multiple processor cores to run calculations
         simultaneously.</li>
       <li>User is able to define how many audio files are processed at the same
@@ -132,16 +132,21 @@
         10 - 20 faster than realtime.</li>
       <li>Cleans up automatically by deleting all files after a set time delay.</li>
       <li>Sends possible error messages to the admin by email.</li>
-      <li>If user installs <strong>FFmpeg </strong>or<strong> libav-tools</strong>
-        then additional features becomes available:</li>
       <ul>
-        <li>The wide range of FFmpeg / libav-tools supported formats can be
-          processed.</li>
-        <li>Support for multistream files, all audio streams are extracted and
-          processed individually.</li>
-        <li>Extract audio from wrappers containing both video and audio.</li>
-        <li>Remix audio from MXF files to required mixes before loudness
-          processing.</li>
+      </ul>
+      <li>The wide range of FFmpeg supported formats can be processed.</li>
+      <ul>
+      </ul>
+      <li>Support for multistream files, all audio streams are extracted and
+        processed individually.</li>
+      <ul>
+      </ul>
+      <li>Extract audio from wrappers containing both video and audio.</li>
+      <ul>
+      </ul>
+      <li>Remix audio from MXF files to required mixes before loudness
+        processing.</li>
+      <ul>
       </ul>
       <li>All software is free and Open Source. Install in as many computers as
         you like.</li>
@@ -417,7 +422,7 @@
         of <strong>-31 LUFS to -12 LUFS</strong>. Note that using high target
         loudness levels puts some additional requirements for the source files,
         these must be mixed with reduced loudness range or you might introduce
-        clipping. <a href="FreeLCS_FAQ.html#Considerations%20for%20using%20a%20target%20loudness%20higher%20than%20-23%20LUFS"
+        limiting. <a href="FreeLCS_FAQ.html#Considerations%20for%20using%20a%20target%20loudness%20higher%20than%20-23%20LUFS"
           title="Considerations for using a target loudness higher than -23 LUFS">This
           is further discussed here</a>. Hotfolder name will be just "<strong>LoudnessCorrection</strong>"
         when using EBU target level -23 LUFS, but if you change it then the
@@ -526,16 +531,9 @@
         about four time slower than finding the highest existing audio sample in
         a file.<br>
       </li>
-      <li>FreeLCS uses peak limiting in cases where loudness is below -23 LUFS
-        and peaks are so high that distortion would be introduced when file
-        loudness is adjusted up. If highest peak value after gain correction
-        would go over a set limit (-4 dBFS for sample peaks and -2 dBFS for
-        TruePeaks), then a peak limiter is used before loudness correction. The
-        resulting peaks after gain correction will be max. -3 dBFS when using
-        sample peak measurement and -1 dBTP when using TruePeak measurement.
-        Note that if you use sample peak measurement, there will always be 3 dB
-        headroom for the invisible peaks to exist and distortion is very
-        unlikely.<br>
+      <li>FreeLCS uses TruePeak peak limiting in cases where loudness is below
+        -23 LUFS and peaks are so high that distortion would be introduced when
+        file loudness is adjusted up.<br>
       </li>
     </ul>
     <p><br>
@@ -549,9 +547,8 @@
         results. Most users will use the defaults meaning FreeLCS creates
         loudness corrected audio files, history graphics files and deletes
         multistream files immediately after audiostreams have been extracted
-        from them (multistream extraction requires you to install FFmpeg or
-        libav-tools). This is how FreeLCS versions up to 2.4 worked by default.
-        If you want FreeLCS to work just like it did in versions up to 2.4, then
+        from them. This is how FreeLCS versions up to 2.4 worked by default. If
+        you want FreeLCS to work just like it did in versions up to 2.4, then
         make sure "<strong>Use FreeLCS file output defaults</strong>" is "<strong>Yes</strong>"
         and go to the next screen.</li>
       <li>If you however would like to integrate FreeLCS as a loudness
@@ -571,21 +568,19 @@
         processing. <a href="Machine_readable_results_and_MXF_audio_remix_mapping.html#MXF_audio_remixing">Read
           more about it here</a>. Most users will leave "<strong>Enable MXF
           Audio Remixing</strong>" to "<strong>No</strong>".</li>
-      <li>Starting from FreeLCS 3.0 it is possible to restrict FFmpeg /
-        libav-tools to only process a small set of formats or allow it to
-        process all formats it supports. This feature is mainly designed to
-        allow the user to restrict processing only to patent free formats even
-        when FFmpeg or libav-tools is installed. Format patentability varies
-        from country to country, see more about it in <a href="FreeLCS_FAQ.html#Libav-tools%20/%20FFmpeg%20and%20patents">FAQ</a>.</li>
+      <li>Starting from FreeLCS 3.0 it is possible to restrict FFmpeg to only
+        process a small set of formats or allow it to process all formats it
+        supports. This feature is mainly designed to allow the user to restrict
+        processing only to patent free formats. Format patentability varies from
+        country to country, see more about it in <a href="FreeLCS_FAQ.html#Libav-tools%20/%20FFmpeg%20and%20patents">FAQ</a>.</li>
       <li>As of 2018 the <strong>patents for formats: Dolby AC-3, Mpeg 1 Layers
           1, 2 and 3 (mp1, mp2, mp3) have expired</strong>. These formats are
         now patent free and can be used without paying license fees. More of
         this and links to the current patent situation of these format in <a href="FreeLCS_FAQ.html#Libav-tools%20/%20FFmpeg%20and%20patents">FAQ
           here</a>. These formats are now enabled if you enable free formats in
-        this window. FFmpeg or libav-tools is required to use these formats.</li>
-      <li>Settings for allowed FFmpeg / libav-tools formats are located at the
-        bottom of this window. These settings will have no effect if you don't
-        install FFmpeg /&nbsp; libav-tools.</li>
+        this window. FFmpeg is required to use these formats.</li>
+      <li>Settings for allowed FFmpeg formats are located at the bottom of this
+        window.</li>
     </ul>
     <p><br>
     </p>
@@ -593,10 +588,10 @@
     <p><br>
     </p>
     <ul>
-      <li>In the following picture FFmpeg / libav-tools processing has been
-        restricted to wrapper formats: <strong>Wav, Flac, Ogg, Matroska, AC-3,
-          Mpeg 1 Layers 1, 2 and 3, MXF, Webm&nbsp;</strong> and codec formats:
-        <strong>PCM, Flac, Vorbis, Opus, AC-3, Mpeg 1 layers 1, 2 and 3</strong>.</li>
+      <li>In the following picture FFmpeg processing has been restricted to
+        wrapper formats: <strong>Wav, Flac, Ogg, Matroska, AC-3, Mpeg 1 Layers
+          1, 2 and 3, MXF, Webm&nbsp;</strong> and codec formats: <strong>PCM,
+          Flac, Vorbis, Opus, AC-3, Mpeg 1 layers 1, 2 and 3</strong>.</li>
     </ul>
     <p><br>
     </p>
@@ -659,18 +654,6 @@
     </p>
     <p><br>
     </p>
-    <ul>
-      <li>The next window shows how you can install FFmpeg / libav-tools if you
-        need it.</li>
-    </ul>
-    <p><br>
-    </p>
-    <p></p>
-    <ul>
-    </ul>
-    <p><img src="Pictures/Installation-12.jpg"><br>
-    </p>
-    <br>
     <ul>
       <li>The last window shows the terminal command to start LoudnessCorrection
         immediately. The picture below is from a <strong>systemd</strong> based
