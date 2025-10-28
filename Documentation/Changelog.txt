@@ -1,5 +1,16 @@
 
 #####################################
+# Released FreeLCS 3.12 with:       #
+# ----------------------------      #
+# - LoudnessCorrection version 308  #
+# - HeartBeat_Checker version 024   #
+# - Installer version 138           #
+# - Latest Documentation            #
+#####################################
+- Changed configfile format from pickle to json. Wrote small programs to convert configfile from pickle to json and vice versa.
+- LoudnessCorrection. Peak limiting is now done with FFmpeg's alimiter which does a much better job when adjusting to targets higher than -23 LUFS. Also added 4 x up and downsamplig for truepeak limiting.
+
+#####################################
 # Released FreeLCS 3.11 with:       #
 # ----------------------------      #
 # - LoudnessCorrection version 305  #

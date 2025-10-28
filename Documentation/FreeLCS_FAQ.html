@@ -16,16 +16,13 @@
     <a href="#What%20programs%20are%20used%20to%20process%20audio%20files%20?">What
       programs are used to process audio files ?</a><br>
     <br>
-    <a href="#What%20filetypes%20are%20supported%20?"></a><a href="#What%20formats%20are%20supported%20?">What
-      formats are supported ?</a><br>
+    <a href="#What%20formats%20are%20supported%20?">What formats are supported ?</a><br>
     <br>
-    <a href="#Libav-tools_vs_FFmpeg">Libav-tools vs. FFmpeg</a><br>
-    <br>
-    <a href="FreeLCS_FAQ.html#Libav-tools%20/%20FFmpeg%20and%20patents">Avconv /
-      FFmpeg and patents</a><br>
+    <a href="FreeLCS_FAQ.html#Libav-tools%20/%20FFmpeg%20and%20patents">FFmpeg
+      and patents</a><br>
     <br>
     <a href="#Can_I_restrict_avconv_/_FFmpeg_to_use_only_patent_free_formats">Can
-      I restrict avconv / FFmpeg to use only patent free formats</a><br>
+      I restrict FFmpeg to use only patent free formats</a><br>
     <br>
     <a href="#How%20many%20audio%20streams%20in%20a%20file%20are%20supported%20?">How
       many audio streams in a file are supported ?</a><br>
@@ -122,9 +119,7 @@
     <h2> <a id="What programs are used to process audio files ?">What programs
         are used to process audio files ?</a></h2>
     <ul>
-      <li>Natively supported formats are <strong>wav</strong>, <strong>flac</strong>
-        and <strong>ogg</strong>. If <strong>FFmpeg </strong>or<strong>
-          libav-tools</strong> is installed then it's used to extract and
+      <li><strong>FFmpeg</strong><strong></strong> is used to extract and
         convert audio from unsupported formats to wav and flac.<br>
       </li>
       <li><strong>Mediainfo</strong> gets duration info from mpeg transport
@@ -132,8 +127,10 @@
       </li>
       <li><strong>libebur128</strong> measures integrated and momentary loudness
         and maximum true peak value.</li>
-      <li><strong>Sox</strong> adjusts file loudness to target level and also
-        provides protective limiting in cases where it is needed.</li>
+      <li>Depending if audio needs peak limiting or not <strong>Sox</strong> or
+        <strong>FFmpeg </strong>adjusts file loudness to target level. FFmpeg
+        built-in lookahead limiter (alimiter) provides protective TruePeak
+        limiting in cases where it is needed.</li>
       <li><strong>Gnuplot</strong> creates loudness results graphics from
         momentary loudness calculations provided by libebur128.<br>
       </li>
@@ -143,13 +140,12 @@
     <ul>
       <li><strong>Wav</strong>, <strong>flac</strong> and <strong>ogg</strong>
         are natively supported.</li>
-      <li>If FFmpeg or libav-tools is installed then it is used to convert other
-        formats to supported formats before processing. FFmpeg and Libav-tools
-        both support a large number of formats: <strong>mp4</strong>, <strong>mp3</strong>,
-        <strong>mp2</strong>, <strong>avi</strong>, <strong>mov</strong>, <strong>aac</strong>,
-        <strong>h264</strong>, <strong>vob</strong>, <strong>mkv</strong> to
-        name a few. FFmpeg and Libav-tools are able to extract all audio streams
-        from supported file types including video files. <br>
+      <li>FFmpeg is used to convert other formats to supported formats before
+        processing. FFmpeg supports a large number of formats: <strong>mp4</strong>,
+        <strong>mp3</strong>, <strong>mp2</strong>, <strong>avi</strong>, <strong>mov</strong>,
+        <strong>aac</strong>, <strong>h264</strong>, <strong>vob</strong>, <strong>mkv</strong>
+        to name a few. FFmpeg is able to extract all audio streams from
+        supported file types including video files. <br>
       </li>
       <li>Note that all channels of one mix must be in the same file. If your
         5.1 mix consists of 6 files, then you must combine them before dropping
@@ -157,29 +153,7 @@
     </ul>
     <p><br>
     </p>
-    <h2><a id="Libav-tools_vs_FFmpeg">Libav-tools vs. FFmpeg</a></h2>
-    <ul>
-      <li><strong>History:</strong> In 2011 a group of FFmpeg developers decided
-        to take FFmpeg's source code and start a new project with it. The reason
-        for this "fork" was the group was unhappy with the way the main FFmpeg
-        developer managed the project. The group named the new project Libav and
-        renamed the video and audio conversion program from <strong>ffmpeg</strong>
-        to <strong>avconv</strong>. This "fork" created a new project that
-        continued development of the FFmpeg source code parallel to the FFmpeg -
-        project. Both projects have slowly evolved their own way creating a
-        puzzling situation for the user. Tools that both projects develop
-        (FFmpeg and avconv) are quite similar by features, but there are
-        differences in capabilites and usage here and there. More about the
-        FFmpeg vs. libav situation can be read <a href="http://blog.pkh.me/p/13-the-ffmpeg-libav-situation.html">here</a>.</li>
-      <li>This change from FFmpeg to libav-tools turned out to be a short one.
-        As of 2016.07 distributions are migrating away from libav back to
-        FFmpeg. Ubuntu 16.04 only has FFmpeg available in its repositories and
-        Debian 9 is going to make this change also. Ubuntu 12.04, 14.04 and
-        Debian 7 and 8 only offers libav-tools in their repositories.</li>
-    </ul>
-    <p><br>
-    </p>
-    <h2><a id="Libav-tools / FFmpeg and patents">Avconv / FFmpeg and patents</a><br>
+    <h2><a id="Libav-tools / FFmpeg and patents">FFmpeg and patents</a><br>
     </h2>
     <ul>
       <li>Most audio post production is done in <strong>Wav</strong> format
@@ -187,18 +161,15 @@
         license fees for the use of the format (source: <a href="http://www.digitalpreservation.gov/formats/fdd/fdd000025.shtml">http://www.digitalpreservation.gov/formats/fdd/fdd000025.shtml</a>,&nbsp;
         <a href="http://www.digitalpreservation.gov/formats/fdd/fdd000001.shtml">http://www.digitalpreservation.gov/formats/fdd/fdd000001.shtml</a>).
         FreeLCS supports wav and two royalty / patent free formats <strong>flac</strong>
-        and <strong>ogg </strong>(license: <a href="http://flac.sourceforge.net/license.html">http://flac.sourceforge.net/license.html</a>).
-        If your production is done in wav then you don't ever need to install
-        libav-tools or FFmpeg.</li>
-      <li>Avconv / FFmpeg is a video and audio conversion tool that can be used
-        to convert media to many different formats. Using avconv or FFmpeg to
-        decompress audio from patented formats may require a license from the
-        rights holders. However FFmpeg / avconv may also be used to process free
-        formats (MXF, MKV, WebM and others). To more complicate things some
-        patented formats may be patented in some countries but not in others.
-        Also the expiration dates for these patents may vary between countries.</li>
-      <li>FreeLCS uses avconv or FFmpeg if it's installed but works fine without
-        it with wav, flac and ogg formats.</li>
+        and <strong>ogg </strong>(license: <a href="http://flac.sourceforge.net/license.html">http://flac.sourceforge.net/license.html</a>).</li>
+      <li>FFmpeg is a video and audio conversion tool that can be used to
+        convert media to many different formats. Using FFmpeg to decompress
+        audio from patented formats may require a license from the rights
+        holders. However FFmpeg may also be used to process free formats (MXF,
+        MKV, WebM and others). To more complicate things some patented formats
+        may be patented in some countries but not in others. Also the expiration
+        dates for these patents may vary between countries.</li>
+      <li>FreeLCS can limit FFmpeg to use only wav, flac and ogg formats.</li>
       <li><strong>As of 2018 patents of some popular audio formats have expired:</strong>
         Dolby <strong>AC-3</strong>, Mpeg 1 layers 1, 2 and 3<strong> </strong>(<strong>mp1,
           mp2 and mp3</strong>). These formats are now patent free and can be
@@ -209,9 +180,9 @@
     <p><br>
     </p>
     <h2><a id="Can_I_restrict_avconv_/_FFmpeg_to_use_only_patent_free_formats">Can
-        I restrict avconv / FFmpeg to use only patent free formats</a></h2>
+        I restrict FFmpeg to use only patent free formats</a></h2>
     <ul>
-      <li>Yes, in FreeLCS 3.0 you can set avconv / FFmpeg allowed formats during
+      <li>Yes, in FreeLCS 3.0 you can set FFmpeg allowed formats during
         installation. In the following picture below allowed wrapper formats are
         restricted to:&nbsp;&nbsp; <strong>wav, flac ogg, matroska, AC-3 and
           Mpeg 1 Layers 1, 2, 3 and MXF</strong>. &nbsp; Allowed codec formats
@@ -229,12 +200,8 @@
     <h2> <a id="How many audio streams in a file are supported ?">How many
         audio streams in a file are supported ?</a></h2>
     <ul>
-      <li>When FFmpeg or libav-tools is not installed: 1 audio stream.<br>
-      </li>
-      <li>When FFmpeg or libav-tools is installed: the limit for the number of
-        audio streams in a single file has not been tested. I personally have
-        tested files with 16 streams with no problems. Upper limit is propably
-        set by a possible limit in FFmpeg / libav-tools or file format in
+      <li>I personally have tested files with 16 streams with no problems. Upper
+        limit is probably set by a possible limit in FFmpeg or file format in
         question.<br>
       </li>
     </ul>
@@ -269,15 +236,12 @@
         to the files when they are processed ?</a></h2>
     <ul>
       <li>First incoming files are searched for supported audio streams.</li>
-      <li>FreeLCS natively supports wav, flac and ogg formats and one audio
-        stream per file. If there are more streams or the audio format is
-        unsupported then FFmpeg / libav-tools is used (only if FFmpeg or
-        libav-tools is installed) to convert streams to a supported format.<br>
+      <li>FFmpeg is used to extract and convert all audio streams streams to a
+        supported format.<br>
       </li>
-      <li>FFmpeg / Libav-tools places extracted streams back to FreeLCS
-        HotFolder so that they are seen as new files coming into processing.
-        When all streams have been extracted then the original file is deleted
-        as it is no longer needed.<br>
+      <li>FFmpeg places extracted streams back to FreeLCS HotFolder so that they
+        are seen as new files coming into processing. When all streams have been
+        extracted then the original file is deleted as it is no longer needed.<br>
       </li>
       <li>Then two simultaneous loudness calculation processes are started for
         the file. One measures integrated loudness and the other momentary
@@ -297,7 +261,8 @@
     <h2><a id="Is TruePeak measurement supported ?">Is TruePeak measurement
         supported ?</a></h2>
     <p>Yes :) When you install the software you can choose which method of peak
-      measurement is used: sample peak or TruePeak.</p>
+      measurement is used: sample peak or TruePeak. Also TruePeak limting is
+      used when peak limiting is needed.</p>
     <p><br>
     </p>
     <h2><a id="Is peak limiting used when loudness correction adjusts volume up ?">Is
@@ -305,11 +270,10 @@
     <ul>
       <li>If file gain is adjusted down then no peak limiting is needed as the
         peaks also go down.</li>
-      <li>If file gain must be adjusted up then a protective limiter is used but
-        only if peaks would go over a set limit after gain correction.<br>
+      <li>If file gain must be adjusted up then a lookahead limiter is used with
+        4 x oversampling (TruePeak limiting). The limiter used is <a href="https://ffmpeg.org/ffmpeg-filters.html#alimiter">FFmpeg's
+          "alimiter"</a>.<br>
       </li>
-      <li>The max peaks after gain adjustment will be at -3 dBFS when using
-        sample peaks and -1 dBTP when using TruePeak.</li>
     </ul>
     <p><br>
     </p>
@@ -369,23 +333,7 @@
     Sample rate should be preserved in all cases. <br>
     <br>
     The following rules for bit depth conversion comes from internal limitations
-    in sox and FFmpeg / libav-tools.<br>
-    <br>
-    <u><strong>When </strong></u><u><strong>FFmpeg and libav-tools are not
-        installed:</strong></u><br>
-    <ul>
-      <li>8 bit and 64 bit audio is not supported.</li>
-      <li>If audio is in uncompressed PCM - format, then bit depth is preserved.<br>
-      </li>
-      <li>If audio has been compressed with ogg then the audio has no real bit
-        depth anymore and audio will be extracted using bit depth of 16 bits.<br>
-      </li>
-      <li>If audio is in flac format then bit depth is preserved except that 8
-        bit audio is converted to 16 bits. Flac supports bit depths up to 24
-        bits.<br>
-      </li>
-    </ul>
-    <u><strong>When </strong></u><u><strong>FFmpeg or libav-tools is installed:</strong></u><br>
+    in sox and FFmpeg.<br>
     <ul>
       <li>8 bit audio is always converted to 16 bits.</li>
       <li>If audio is in uncompressed PCM - format, then bit depth is preserved
@@ -425,17 +373,17 @@
     <br>
     <h2><a id="Is MXF supported ?">Is MXF supported ?</a></h2>
     <ul>
-      <li>FFmpeg and Libav-tools both supports MXF and I've been able to extract
-        audio from MXF - wrapped files with it. FreeLCS 3.0 allows the user to
-        define MXF audio remix maps that define how audio is to be recombined to
-        different mixes before loudness processing. However MXF is not one
-        format, but a family of formats. Every hardware and software vendor seem
-        to have their own version of it. MXF files created with one device might
-        not be compatible with a device created by another vendor. Because of
-        this there is no guarantee that FreeLCS can process every MXF - file you
-        feed it. It might be a good idea to do a thorough test with a large set
-        of different MXF files before you make this feature part of your
-        workflow. More about MXF Audio Remixing can be found in the <a href="Machine_readable_results_and_MXF_audio_remix_mapping.html#MXF_audio_remixing">user
+      <li>FFmpeg supports MXF and I've been able to extract audio from MXF -
+        wrapped files with it. FreeLCS 3.0 allows the user to define MXF audio
+        remix maps that define how audio is to be recombined to different mixes
+        before loudness processing. However MXF is not one format, but a family
+        of formats. Every hardware and software vendor seem to have their own
+        version of it. MXF files created with one device might not be compatible
+        with a device created by another vendor. Because of this there is no
+        guarantee that FreeLCS can process every MXF - file you feed it. It
+        might be a good idea to do a thorough test with a large set of different
+        MXF files before you make this feature part of your workflow. More about
+        MXF Audio Remixing can be found in the <a href="Machine_readable_results_and_MXF_audio_remix_mapping.html#MXF_audio_remixing">user
           manual</a>.</li>
     </ul>
     <p> </p>
@@ -478,9 +426,9 @@
     <div style="margin-left: 40px;">FreeLCS 3.6 and later will let you select
       any target loudness in the range of -31 LUFS to -12 LUFS. Using target
       loudness higher than -23 LUFS requires you to master your audio using a
-      reduced loudness range or you may introduce peak clipping. High target
-      loudness levels might introduce clipping if source file loudness needs to
-      <strong>adjusted up and</strong>:</div>
+      reduced loudness range or you may introduce limiting. High target loudness
+      levels might introduce heavy limiting if source file loudness needs to <strong>adjusted
+        up and</strong>:</div>
     <div style="margin-left: 40px;"><br>
     </div>
     <ol style="margin-left: 40px;">
@@ -505,36 +453,12 @@
       loudest part of the audio and measurements from all other parts are
       discarded. If loudness is now adjusted up to -12 LUFS then limiting is
       needed or peaks will overshoot. Limiting the last part of the audio lowers
-      total loudness because only the last part affects overall loudness.
-      FreeLCS limiting works like this:</div>
+      total loudness because only the last part affects overall loudness.</div>
     <div style="margin-left: 40px;">
-      <ol>
-        <li>Measure loudness and absolute peak</li>
-        <li>Decide if limiting is needed and calculate where peaks needs to be
-          after loudness adjustment. Limiting is only used if file loudness is
-          adjusted up and peaks would overshoot.</li>
-        <li>Limit peaks</li>
-        <li>Measure loudness again</li>
-        <li>Adjust loudness to target level</li>
-      </ol>
-      <p>This process works very well with -23 LUFS target level. But in case of
-        this example loudness variations are too wide to handle if one chooses a
-        very high target loudness, for example -12 LUFS. Limiting lowers the
-        files loudness and this causes a too big change between the processing
-        steps and clipping might occur.</p>
       <p>Files like these needs to be prepared for a high target loudness by
         eliminating too wide loudness variations. FreeLCS is not a multi purpose
         compressor and it will not handle gracefully extreme cases like this.</p>
     </div>
-    <div style="margin-left: 40px;">So to cut a long story short you need to be
-      aware that when using high target loudness levels (-16, -14, -12 LUFS)
-      files might need to be mixed with a reduced loudness range, one that is
-      suitable for that target level. If you are getting this error message on
-      your loudness history graphics "<strong>sox WARN gain: gain clipped 27
-        samples; decrease volume?</strong>" then the audio probably has a
-      problem like described above. You probably can't hear if a few samples
-      overshoot, and depending on the purpose it might not matter, for example
-      if the file is distributed in the social media.</div>
     <br>
     <h2><a id="Any suggestion for free tools to manipulate the Flac format ?">Any
         suggestion for free tools to manipulate the Flac format ?</a></h2>
@@ -559,6 +483,12 @@
     <br>
     <h2><a id="What Linux distributions are supported ?">What Linux
         distributions are supported ?</a></h2>
+    <p><br>
+      <strong>FreeLCS 3.12 Supports:</strong> </p>
+    <ul>
+      <li>Debian 13 with and without a GUI</li>
+      <li>Ubuntu 24.04 LTS Desktop and Server</li>
+    </ul>
     <p><strong>FreeLCS 3.11 Supports:</strong> </p>
     <ul>
       <li>Debian 13 with and without a GUI</li>

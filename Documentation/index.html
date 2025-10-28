@@ -33,13 +33,30 @@
     Sata disks in software RAID 0.<br>
     <br>
     FreeLCS uses other open source programs to get the job done (Linux,
-    libebur128, gnuplot, FFmpeg / libav-tools (optional), sox, mediainfo). All
-    software is free and Open Source.<br>
+    libebur128, gnuplot, FFmpeg, sox, mediainfo). All software is free and Open
+    Source.<br>
     <br>
     More detailed information can be found in <a href="FreeLCS_FAQ.html">FAQ</a>,
     <a href="#Features">Features</a> and <a href="FreeLCS_User_Manual.html">User
       Manual</a>.<br>
     <h1><strong>Latest news:</strong></h1>
+    <h4>2025.10.28 FreeLCS 3.12 released.</h4>
+    <div>
+      <ul>
+        <li>This release supports Debian 13, Ubuntu 24.04.</li>
+        <li>FFmpeg has a built in lookahead limiter (called <a href="https://ffmpeg.org/ffmpeg-filters.html#alimiter">alimiter</a>)
+          and since Ubuntu 24.04 it supports channel counts more than two.
+          FreeLCS 3.12 uses alimiter and 4 x oversampling for TruePeak limiting
+          where needed. It gives a much better than before protection against
+          distortion when using target loudness higher than -23 LUFS (for
+          example -16 LUFS for social media).</li>
+        <li>FFmpeg is now always installed since it is required for Truepeak
+          limiting.</li>
+        <li>Configfile format changed from pickle to json. This makes it kind of
+          human readable.</li>
+      </ul>
+    </div>
+    <h4></h4>
     <h4>2025.09.15 FreeLCS 3.11 released.</h4>
     <ul>
       <li>This release supports Debian 13, Ubuntu 24.04.</li>
@@ -60,15 +77,6 @@
         there weren't any breaking changes in any of these programs.</li>
     </ul>
     <h4></h4>
-    <h4>2023.09.23 FreeLCS 3.9 released.</h4>
-    <ul>
-      <li>This release supports Debian 12, Ubuntu 22.04.</li>
-      <li>Disabled FFmpeg dependencies from libebur128 loudness - executable
-        since they wont build anymore. It seems FFmpeg API has changed and
-        libebur128 loudness_scanner has not kept up with the changes. However
-        ffmpeg bindings are not needed for anything in FreeLCS, because it uses
-        the FFmpeg - executable installed in the os.</li>
-    </ul>
     <p></p>
     <h4></h4>
     Older news can be found <a href="FreeLCS-Old_News.html">here</a>.<br>
@@ -83,8 +91,8 @@
         loudness varies inside a file (example picture below).</li>
       <li>Supports channel counts from mono to 5.1.</li>
       <li>Supports EBU TruePeak measurement.</li>
-      <li>Uses a protective limiter to keep peaks in the allowed range where
-        needed.</li>
+      <li>Uses a protective TruePeak limiter to keep peaks in the allowed range
+        where needed.</li>
       <li>Takes advantage of multiple processor cores to run calculations
         simultaneously.</li>
       <li>User is able to define how many audio files are processed at the same
@@ -102,16 +110,21 @@
         devices.</li>
       <li>Cleans up automatically by deleting all files after a set time delay.</li>
       <li>Sends possible error messages to the admin by email.</li>
-      <li>If user installs <strong>FFmpeg </strong>or <strong>libav-tools</strong>
-        then additional features becomes available:</li>
       <ul>
-        <li>The wide range of FFmpeg / libav-tools supported formats can be
-          processed.</li>
-        <li>Support for multistream files, all audio streams are extracted and
-          processed individually.</li>
-        <li>Extract audio from wrappers containing both video and audio.</li>
-        <li>Remix audio from MXF files to required mixes before loudness
-          processing.</li>
+      </ul>
+      <li>The wide range of FFmpeg supported formats can be processed.</li>
+      <ul>
+      </ul>
+      <li>Support for multistream files, all audio streams are extracted and
+        processed individually.</li>
+      <ul>
+      </ul>
+      <li>Extract audio from wrappers containing both video and audio.</li>
+      <ul>
+      </ul>
+      <li>Remix audio from MXF files to required mixes before loudness
+        processing.</li>
+      <ul>
       </ul>
       <li>All software is free and Open Source. Install in as many computers as
         you like.</li>
