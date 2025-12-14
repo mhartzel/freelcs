@@ -37,7 +37,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '307'
+loudnesscorrection_version = '309'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -254,13 +254,16 @@ os_name = '' # Create variable to store distro information.
 os_version = '' # Create variable to store os version information.
 
 delay_between_directory_reads = 5 # HotFolder poll interval (seconds) (how ofter the directory is checked for new files).
+
+# FIXME Korjaa prossujen lukumäärän tunistus, ota mallia ffcommanderin koodista, se tuntuu toimivan.
 number_of_processor_cores = 2 # The number of processor cores to use for simultaneous file processing and loudness calculation. Only use even numbers. Slightly too big number often results in better performance. If you have 4 cores try defining 6 or 8 here and check the time it takes processing same set of files.
 
 if len(os.sched_getaffinity(0)) > 2: # Get number of physical processor cores from the os.
-	number_of_processor_cores = len(os.sched_getaffinity(0))
+       number_of_processor_cores = len(os.sched_getaffinity(0))
 
-if number_of_processor_cores / 2 != int(number_of_processor_cores / 2): # If the number for processor cores is not an even number, force it to the next bigger even number.
-	 number_of_processor_cores = number_of_processor_cores + 1 
+if number_of_processor_cores / 2 != int(number_of_processor_cores / 2): # If the number for processor cores is not an even number, force it to an even number.
+	 number_of_processor_cores = number_of_processor_cores + 1 # The number of processor cores to use for simultaneous file processing and loudness calculation. Only use even numbers. Slightly too big number often results in better performance. If you have 4 cores try defining 6 or 8 here and check the time it takes processing same set of files.
+
 file_expiry_time = 60*60*8 # This number (in seconds) defines how long the files are allowed to exist in HotFolder and results - directory. File creation time is not taken into account only the time this program first saw the file in the directory. Files are automatically deleted when they are 'expired'.
 
 natively_supported_file_formats = ['.wav', '.flac', '.ogg'] # Natively supported formats may be processed without first decoding to flac with ffmpeg, since libebur128 and sox both support these formats.
@@ -1254,7 +1257,7 @@ def create_gnuplot_commands(filename, number_of_timeslices, time_slice_duration_
 
 			# Call a subprocess to create the loudness corrected audio file.
 			if create_loudness_corrected_files == True:
-				create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calculation_error, difference_from_target_loudness, filename, english, finnish, hotfolder_path, directory_for_results, directory_for_temporary_files, highest_peak_db, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, channel_count, audio_channels_will_be_split_to_separate_mono_files, output_file_too_big_to_split_to_separate_wav_channels)
+				create_commands_for_loudness_adjusting_a_file(integrated_loudness_calculation_error, difference_from_target_loudness, filename, english, finnish, hotfolder_path, directory_for_results, directory_for_temporary_files, highest_peak_db, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, channel_count, audio_channels_will_be_split_to_separate_mono_files, output_file_too_big_to_split_to_separate_wav_channels, bit_depth, sample_rate)
 
 	except Exception:
 		exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -1480,7 +1483,7 @@ def run_gnuplot(filename, directory_for_temporary_files, directory_for_results, 
 		subroutine_name = 'run_gnuplot'
 		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 
-def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calculation_error, difference_from_target_loudness, filename, english, finnish, hotfolder_path, directory_for_results, directory_for_temporary_files, highest_peak_db, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, channel_count, audio_channels_will_be_split_to_separate_mono_files, output_file_too_big_to_split_to_separate_wav_channels):
+def create_commands_for_loudness_adjusting_a_file(integrated_loudness_calculation_error, difference_from_target_loudness, filename, english, finnish, hotfolder_path, directory_for_results, directory_for_temporary_files, highest_peak_db, flac_compression_level, output_format_for_intermediate_files, output_format_for_final_file, channel_count, audio_channels_will_be_split_to_separate_mono_files, output_file_too_big_to_split_to_separate_wav_channels, bit_depth, sample_rate):
 
 	'''This subroutine creates sox commands that are used to create a loudness corrected file'''
 
@@ -1496,7 +1499,9 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 		integrated_loudness_calculation_results_list = []
 		file_to_process = hotfolder_path + os.sep + filename
 		filename_and_extension = os.path.splitext(filename)
-		sox_encountered_an_error = False
+		file_processing_encountered_an_error = False
+		sample_rate_str = str(sample_rate)
+		sample_ratex4_str = str(sample_rate * 4)
 		global integrated_loudness_calculation_results
 		global libebur128_path
 		global silent
@@ -1517,7 +1522,7 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 			debug_information_list.append('Start Time')
 			debug_information_list.append(unix_time_in_ticks)
 			debug_information_list.append('Subprocess Name')
-			debug_information_list.append('create_sox_commands_for_loudness_adjusting_a_file')
+			debug_information_list.append('create_commands_for_loudness_adjusting_a_file')
 			debug_temporary_dict_for_all_file_processing_information[filename] = debug_information_list
 
 		# Create loudness corrected file if there were no errors in loudness calculation.
@@ -1538,19 +1543,6 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 			if peak_measurement_method == '--peak=true':
 				audio_peaks_absolute_ceiling = -2
 			
-			# Calculate the level where absolute peaks must be limited to before gain correction, to get the resulting max peak level we want.
-			hard_limiter_level = difference_from_target_loudness + audio_peaks_absolute_ceiling
-
-			# When using higher than -23 LUFS loudness target level, then the limiter level must be lowered incrementally to prevent clipping when processing files with sox
-			if int(target_loudness) >= -20:
-				hard_limiter_level = hard_limiter_level - 0.5
-			if int(target_loudness) >= -18:
-				hard_limiter_level = hard_limiter_level - 0.5
-			if int(target_loudness) >= -16:
-				hard_limiter_level = hard_limiter_level - 0.5
-			if int(target_loudness) >= -14:
-				hard_limiter_level = hard_limiter_level - 0.5
-			
 			# Save some debug information.
 			if debug_file_processing == True:
 				debug_information_list.append('combined_channels_targetfile_name')
@@ -1563,8 +1555,6 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 				debug_information_list.append(difference_from_target_loudness_sign_inverted)
 				debug_information_list.append('audio_peaks_absolute_ceiling')
 				debug_information_list.append(audio_peaks_absolute_ceiling)
-				debug_information_list.append('hard_limiter_level')
-				debug_information_list.append(hard_limiter_level)
 
 			if difference_from_target_loudness >= 0:
 				
@@ -1595,8 +1585,8 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 					#Gather all names of processed files to a list.
 					list_of_filenames = [combined_channels_targetfile_name]
 					
-					# Run sox with the commandline compiled in the lines above.
-					sox_encountered_an_error = run_sox(directory_for_temporary_files, directory_for_results, filename, sox_commandline, english, finnish, 0, 0)
+					# Run the commandline compiled in the lines above.
+					file_processing_encountered_an_error = process_files(directory_for_temporary_files, directory_for_results, filename, sox_commandline, english, finnish, 0, 0)
 				
 				else:
 				
@@ -1618,8 +1608,8 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 						debug_information_list.append('list_of_sox_commandlines')
 						debug_information_list.append(''.join(str(list_of_sox_commandlines)))
 					
-					# Run several sox commands in parallel threads, this speeds up splitting the file to separate mono files.	
-					sox_encountered_an_error = run_sox_commands_in_parallel_threads(directory_for_temporary_files, directory_for_results, filename, list_of_sox_commandlines, english, finnish)
+					# Run several commands in parallel threads, this speeds up splitting the file to separate mono files.	
+					file_processing_encountered_an_error = run_file_processing_in_parallel_threads(directory_for_temporary_files, directory_for_results, filename, list_of_sox_commandlines, english, finnish)
 				
 				# Processing is ready move audio files to target directory.
 				move_processed_audio_files_to_target_directory(directory_for_temporary_files, directory_for_results, list_of_filenames, english, finnish)
@@ -1632,46 +1622,75 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 				
 				if highest_peak_db + difference_from_target_loudness_sign_inverted > audio_peaks_absolute_ceiling:
 					
-					#########################################################################################################################
-					# Peaks will exceed our upper peak limit defined in 'audio_peaks_absolute_ceiling'. Create a peak limited file with sox #
-					# After this the loudness of the file needs to be recalculated								#
-					#########################################################################################################################
+					####################################################################################
+					# Peaks will exceed our upper peak limit defined in 'audio_peaks_absolute_ceiling' #
+					# Create a peak limited file with FFmpeg using it's alimiter                       #
+					# After this loudness of the file needs to be recalculated                         #
+					####################################################################################
 					
-					sox_commandline = []
-					list_of_sox_commandlines = []
-					
-					# Create sox commands for all four limiter stages.
-					# The limiter tries to introduce as little distortion as possible while being very effective in hard-limiting the peaks.
-					# There are three limiting - stages each 1 dB above previous and with 'tighter' attack and release values than the previous one.
-					# These stages limit the peaks while rounding the peaks.
-					# Still some very fast peaks escape these three stages and the final hard-limiter stage deals with those.
-					compander_1 = ['compand', '0.005,0.3', '1:' + str(hard_limiter_level + -3) + ',' + str(hard_limiter_level + -3) + ',0,' + str(hard_limiter_level +  -2)]
-					compander_2 = ['compand', '0.002,0.15', '1:' + str(hard_limiter_level + -2) + ',' + str(hard_limiter_level + -2) + ',0,' + str(hard_limiter_level +  -1)]
-					compander_3 = ['compand', '0.001,0.075', '1:' + str(hard_limiter_level + -1) + ',' + str(hard_limiter_level + -1) + ',0,' + str(hard_limiter_level +  -0)]
-					hard_limiter = ['compand', '0,0', '3:' + str(hard_limiter_level + -3) + ',' + str(hard_limiter_level + -3) + ',0,'+ str(hard_limiter_level + 0)]
-					
-					# Combine all sox commands into one list.
-					sox_commandline.extend(start_of_sox_commandline)
-					sox_commandline.append(file_to_process)
-					# If output format is flac add flac compression level commands right after the input file name.
-					if output_format_for_intermediate_files == 'flac':
-						sox_commandline.extend(flac_compression_level)
-					sox_commandline.extend([directory_for_temporary_files + os.sep + temporary_peak_limited_targetfile])
-					sox_commandline.extend(compander_1)
-					sox_commandline.extend(compander_2)
-					sox_commandline.extend(compander_3)
-					sox_commandline.extend(hard_limiter)
-					
+					ffmpeg_commandline = []
+					# Combine all FFmpeg commands into one list.
+					start_of_ffmpeg_commandline = ["ffmpeg", "-loglevel", "level+error", "-hide_banner", "-i"]
+					ffmpeg_commandline.extend(start_of_ffmpeg_commandline)
+					ffmpeg_commandline.append(file_to_process)
+
+					# FFmpeg alimiter can amplify at most 20 dB at a time, so if we need more we need to use multiple runs of alimiter.
+					alimiter_peak_limit = "-1"
+					amplify_now = 0
+					amplification_done = 0
+
+					if difference_from_target_loudness_sign_inverted > 20:
+						amplify_now = 20
+						amplification_done = 20
+					else:
+						amplify_now = difference_from_target_loudness_sign_inverted
+						amplification_done = difference_from_target_loudness_sign_inverted
+
+					# Use x 4 sample rate (TruePeak) for lookahead peak limiting.
+					ffmpeg_alimiter_options = "aresample=" + sample_ratex4_str + ":resampler=soxr:precision=28:dither_method=triangular"  + ",alimiter=level_in=" + str(amplify_now) + "dB:level_out=0dB:limit=" + alimiter_peak_limit + "dB:attack=10:release=500:level=disabled:latency=1"
+
+					while amplification_done < difference_from_target_loudness_sign_inverted:
+
+						if difference_from_target_loudness_sign_inverted - amplification_done > 20:
+							amplify_now = 20
+							amplification_done = amplification_done + 20
+						else:
+							amplify_now = difference_from_target_loudness_sign_inverted - amplification_done
+							amplification_done = amplification_done + (difference_from_target_loudness_sign_inverted - amplification_done)
+
+						ffmpeg_alimiter_options = ffmpeg_alimiter_options + ",alimiter=level_in=" + str(amplify_now) + "dB:level_out=0dB:limit=" + alimiter_peak_limit + "dB:attack=10:release=500:level=disabled:latency=1"
+
+					# Downsample 4 x sample rate back to original.
+					ffmpeg_alimiter_options = ffmpeg_alimiter_options + ",aresample=" + sample_rate_str + ":resampler=soxr:precision=28:dither_method=triangular"
+
+					# When -filter is used and output format is flac FFmpeg alaways defaults to using 24 bit bit depth.
+					# Force FFmpeg to use 16 bits if input file bit depth is 16.
+					if (bit_depth == 16) and (output_format_for_intermediate_files) == "flac":
+						ffmpeg_alimiter_options = ffmpeg_alimiter_options + ",aformat=sample_fmts=s16"
+
+					ffmpeg_commandline.append("-filter")
+					ffmpeg_commandline.append(ffmpeg_alimiter_options)
+
+					# FFmpeg defaults to bit depth of 16 bits when target file format is wav.
+					# Force FFmpeg to use 24 bits if source file bit depth is 24.
+					if (bit_depth == 24) and (output_format_for_intermediate_files) == "wav":
+						ffmpeg_commandline.append("-acodec")
+						ffmpeg_commandline.append("pcm_s24le")
+
+					ffmpeg_commandline.extend([directory_for_temporary_files + os.sep + temporary_peak_limited_targetfile])
+
 					# Save some debug information.
 					if debug_file_processing == True:
-						debug_information_list.append('sox_commandline')
-						debug_information_list.append(sox_commandline)
+						debug_information_list.append('ffmpeg_commandline')
+						debug_information_list.append(ffmpeg_commandline)
+						debug_information_list.append('alimiter_peak_limit')
+						debug_information_list.append(alimiter_peak_limit)
 
-					# Run sox with the commandline compiled in the lines above.
-					sox_encountered_an_error = run_sox(directory_for_temporary_files, directory_for_results, filename, sox_commandline, english, finnish, 0, 0)
+					# Run FFmpeg with the commandline compiled in the lines above.
+					file_processing_encountered_an_error = process_files(directory_for_temporary_files, directory_for_results, filename, ffmpeg_commandline, english, finnish, 0, 0)
 
-					# If there has been an error in processing the file with sox then stop processing this file.
-					if sox_encountered_an_error == False:
+					# If there has been an error in processing the file with then stop it.
+					if file_processing_encountered_an_error == False:
 					
 						########################################################################################
 						# Loudness of the peak limited file needs to be calculated again, measure the loudness #
@@ -1683,12 +1702,11 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 							debug_information_list.append('Start Time')
 							debug_information_list.append(unix_time_in_ticks)
 							debug_information_list.append('Subprocess Name')
-							debug_information_list.append('create_sox_commands_for_loudness_adjusting_a_file: integrated measurements after peak-limiting ')
+							debug_information_list.append('create_commands_for_loudness_adjusting_a_file: integrated measurements after peak-limiting ')
 						
 						event_for_integrated_loudness_calculation = threading.Event() # Create a dummy event for loudness calculation subroutine. This is needed by the subroutine, but not used anywhere else, since we do not start loudness calculation as a thread.
 						libebur128_commands_for_integrated_loudness_calculation=[libebur128_path, 'scan', '-l', peak_measurement_method] # Put libebur128 commands in a list.
 						calculate_integrated_loudness(event_for_integrated_loudness_calculation, temporary_peak_limited_targetfile, directory_for_temporary_files, libebur128_commands_for_integrated_loudness_calculation, english, finnish)
-					
 					
 						#########################################################################################################
 						# After calculating loudness of the peak limited file, adjust the volume of the file to target loudness #
@@ -1719,7 +1737,7 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 							debug_information_list.append('Stop Time')
 							debug_information_list.append(unix_time_in_ticks)
 							debug_information_list.append('Subprocess Name')
-							debug_information_list.append('create_sox_commands_for_loudness_adjusting_a_file: integrated measurements after peak-limiting ')
+							debug_information_list.append('create_commands_for_loudness_adjusting_a_file: integrated measurements after peak-limiting ')
 
 							# Remove debug data about integrated loudness measurement of temporary peak limited file since this data is already appended to debug dictionary by the lines above.
 							del debug_temporary_dict_for_integrated_loudness_calculation_information[temporary_peak_limited_targetfile]
@@ -1743,53 +1761,86 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 									temp_loudness_results_for_automation[filename][1][14] = []
 
 					# If there has been an error then stop processing this file.
-					if (sox_encountered_an_error == False) and (integrated_loudness_calculation_error == False):
+					if (file_processing_encountered_an_error == False) and (integrated_loudness_calculation_error == False):
 
 						if audio_channels_will_be_split_to_separate_mono_files == False:
 						
-							# Gather sox commandline to a list.
-							sox_commandline.extend(start_of_sox_commandline)
-							sox_commandline.extend([directory_for_temporary_files + os.sep + temporary_peak_limited_targetfile])
-							
-							# If output format is flac add flac compression level commands right after the input file name.
-							if output_format_for_final_file == 'flac':
-								sox_commandline.extend(flac_compression_level)
-							sox_commandline.extend([directory_for_temporary_files + os.sep + combined_channels_targetfile_name, 'gain', str(difference_from_target_loudness_sign_inverted)])
+							# Gather FFmpeg commandline to a list.
+							ffmpeg_commandline = []
+							start_of_ffmpeg_commandline = ["ffmpeg", "-loglevel", "level+error", "-hide_banner", "-i"]
+							ffmpeg_commandline.extend(start_of_ffmpeg_commandline)
+							ffmpeg_commandline.extend([directory_for_temporary_files + os.sep + temporary_peak_limited_targetfile])
+
+
+							# Use x 4 sample rate (TruePeak) for lookahead peak limiting.
+							ffmpeg_alimiter_options = "aresample=" + sample_ratex4_str + ":resampler=soxr:precision=28:dither_method=triangular" + ",alimiter=level_in=" + str(difference_from_target_loudness_sign_inverted) + "dB:level_out=0dB:limit=0dB:attack=10:release=500:level=disabled:latency=1" + ",aresample=" + sample_rate_str + ":resampler=soxr:precision=28:dither_method=triangular"
+
+							# When -filter is used and output format is flac FFmpeg alaways defaults to using 24 bit bit depth.
+							# Force FFmpeg to use 16 bits if input file bit depth is 16.
+							if (bit_depth == 16) and (output_format_for_intermediate_files) == "flac":
+								ffmpeg_alimiter_options = ffmpeg_alimiter_options + ",aformat=sample_fmts=s16"
+
+							ffmpeg_commandline.append("-filter")
+							ffmpeg_commandline.append(ffmpeg_alimiter_options)
+
+							# FFmpeg defaults to bit depth of 16 bits when target file format is wav.
+							# Force FFmpeg to use 24 bits if source file bit depth is 24.
+							if (bit_depth == 24) and (output_format_for_final_file) == "wav":
+								ffmpeg_commandline.append("-acodec")
+								ffmpeg_commandline.append("pcm_s24le")
+
+							ffmpeg_commandline.extend([directory_for_temporary_files + os.sep + combined_channels_targetfile_name])
 							
 							# Save some debug information.
 							if debug_file_processing == True:
-								debug_information_list.append('sox_commandline')
-								debug_information_list.append(sox_commandline)
+								debug_information_list.append('ffmpeg_commandline')
+								debug_information_list.append(ffmpeg_commandline)
 							
-							#Gather all names of processed files to a list.
+							# Gather all names of processed files to a list.
 							list_of_filenames = [combined_channels_targetfile_name]
 							
-							# Run sox with the commandline compiled in the lines above.
-							sox_encountered_an_error = run_sox(directory_for_temporary_files, directory_for_results, filename, sox_commandline, english, finnish, 0, 0)
+							# Run FFmpeg with the commandline compiled in the lines above.
+							file_processing_encountered_an_error = process_files(directory_for_temporary_files, directory_for_results, filename, ffmpeg_commandline, english, finnish, 0, 0)
 						
 						else:
 					
 							# The combined channels in final output file exceeds the max file size and the file needs to be split to separate mono files.
-							# Create commandlines for extracting each channel to its own file.
-							
+							# Create the commandline for extracting each channel to its own file.
+							ffmpeg_commandline = []
+							start_of_ffmpeg_commandline = ["ffmpeg", "-loglevel", "level+error", "-hide_banner", "-i"]
+							ffmpeg_commandline.extend(start_of_ffmpeg_commandline)
+							ffmpeg_commandline.extend([directory_for_temporary_files + os.sep + temporary_peak_limited_targetfile])
+							ffmpeg_commandline.append("-filter_complex")
+
+							# Use x 4 sample rate (TruePeak) for lookahead peak limiting.
+							filter_complex_options = "aresample=" + sample_ratex4_str + ":resampler=soxr:precision=28:dither_method=triangular" + ",alimiter=level_in=" + str(difference_from_target_loudness_sign_inverted) + "dB:level_out=0dB:limit=0dB:attack=10:release=500:level=disabled:latency=1" + ",aresample=" + sample_rate_str + ":resampler=soxr:precision=28:dither_method=triangular"  + ",channelsplit=channel_layout=" + str(channel_count) + "C"
+
+							for counter in range(1, channel_count + 1):
+								filter_complex_options = filter_complex_options + "[" + str(counter) + "]"
+
+							ffmpeg_commandline.append(filter_complex_options)
+
 							for counter in range(1, channel_count + 1):
 								split_channel_targetfile_name = filename_and_extension[0] + '-Channel-' * english + '-Kanava-' * finnish + str(counter) + '_' + target_loudness + '_LUFS.' + output_format_for_final_file
-								sox_commandline = []
-								sox_commandline.extend(start_of_sox_commandline)
-								sox_commandline.extend([directory_for_temporary_files + os.sep + temporary_peak_limited_targetfile, directory_for_temporary_files + os.sep + split_channel_targetfile_name, 'remix', str(counter), 'gain', str(difference_from_target_loudness_sign_inverted)])
-						
-								#Gather all commands needed to process a file to a list of sox commandlines.
-								list_of_sox_commandlines.append(sox_commandline)
+
+								# FFmpeg defaults to bit depth of 16 bits when target file format is wav.
+								# Force FFmpeg to use 24 bits if source file bit depth is 24.
+								if (bit_depth == 24) and (output_format_for_final_file) == "wav":
+									ffmpeg_commandline.append("-acodec")
+									ffmpeg_commandline.append("pcm_s24le")
+
+								ffmpeg_commandline.append("-map")
+								ffmpeg_commandline.append("[" + str(counter) + "]") 
+								ffmpeg_commandline.append(directory_for_temporary_files + os.sep + split_channel_targetfile_name)
 								list_of_filenames.append(split_channel_targetfile_name)
-								
+
+							file_processing_encountered_an_error = process_files(directory_for_temporary_files, directory_for_results, filename, ffmpeg_commandline, english, finnish, 0, 0)
+
 							# Save some debug information.
 							if debug_file_processing == True:
-								debug_information_list.append('list_of_sox_commandlines')
-								debug_information_list.append(''.join(str(list_of_sox_commandlines)))
+								debug_information_list.append('ffmpeg_commandline')
+								debug_information_list.append(ffmpeg_commandline)
 
-							# Run several sox commands in parallel threads, this speeds up splitting the file to separate mono files.	
-							sox_encountered_an_error = run_sox_commands_in_parallel_threads(directory_for_temporary_files, directory_for_results, filename, list_of_sox_commandlines, english, finnish)
-						
 						# Processing is ready move audio files to target directory.
 						move_processed_audio_files_to_target_directory(directory_for_temporary_files, directory_for_results, list_of_filenames, english, finnish)
 				
@@ -1822,7 +1873,7 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 						list_of_filenames = [combined_channels_targetfile_name]
 						
 						# Run sox with the commandline compiled in the lines above.
-						sox_encountered_an_error = run_sox(directory_for_temporary_files, directory_for_results, filename, sox_commandline, english, finnish, 0, 0)
+						file_processing_encountered_an_error = process_files(directory_for_temporary_files, directory_for_results, filename, sox_commandline, english, finnish, 0, 0)
 						
 					else:
 				
@@ -1845,7 +1896,7 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 							debug_information_list.append(''.join(str(list_of_sox_commandlines)))
 						
 						# Run several sox commands in parallel threads, this speeds up splitting the file to separate mono files.	
-						sox_encountered_an_error = run_sox_commands_in_parallel_threads(directory_for_temporary_files, directory_for_results, filename, list_of_sox_commandlines, english, finnish)
+						file_processing_encountered_an_error = run_file_processing_in_parallel_threads(directory_for_temporary_files, directory_for_results, filename, list_of_sox_commandlines, english, finnish)
 					
 					# Processing is ready move audio files to target directory.
 					move_processed_audio_files_to_target_directory(directory_for_temporary_files, directory_for_results, list_of_filenames, english, finnish)
@@ -1877,17 +1928,17 @@ def create_sox_commands_for_loudness_adjusting_a_file(integrated_loudness_calcul
 	except Exception:
 		exc_type, exc_value, exc_traceback = sys.exc_info()
 		error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
-		subroutine_name = 'create_sox_commands_for_loudness_adjusting_a_file'
+		subroutine_name = 'create_commands_for_loudness_adjusting_a_file'
 		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 
-def run_sox_commands_in_parallel_threads(directory_for_temporary_files, directory_for_results, filename, list_of_sox_commandlines, english, finnish):
+def run_file_processing_in_parallel_threads(directory_for_temporary_files, directory_for_results, filename, list_of_sox_commandlines, english, finnish):
 
 	try:
 		list_of_sox_commandlines.reverse()
 		number_of_allowed_simultaneous_sox_processes = 10
 		events_for_sox_commands_currently_running = {}
 		list_of_finished_processes = []
-		sox_encountered_an_error = False
+		file_processing_encountered_an_error = False
 
 		while True:
 			
@@ -1912,7 +1963,7 @@ def run_sox_commands_in_parallel_threads(directory_for_temporary_files, director
 					events_for_sox_commands_currently_running[event_for_sox_processing] = event_for_sox_processing_encountered_an_error
 					
 					# Create a thread for the sox proces.
-					sox_process = threading.Thread(target=run_sox, args=(directory_for_temporary_files, directory_for_results, filename, sox_commandline, english, finnish, event_for_sox_processing, event_for_sox_processing_encountered_an_error)) # Create a process instance.
+					sox_process = threading.Thread(target=process_files, args=(directory_for_temporary_files, directory_for_results, filename, sox_commandline, english, finnish, event_for_sox_processing, event_for_sox_processing_encountered_an_error)) # Create a process instance.
 					
 					# Start sox thread.
 					sox_process.start() # Start the calculation process in it's own thread.
@@ -1935,14 +1986,14 @@ def run_sox_commands_in_parallel_threads(directory_for_temporary_files, director
 
 					# If running sox was not succesful then the other event is not set, test for it.
 					if not sox_event_for_error.is_set():
-						sox_encountered_an_error = True
+						file_processing_encountered_an_error = True
 
 			# If a thread has finished, remove it's event from the dictionary of files being processed.
 			for item in list_of_finished_processes: # Get events who's processing threads have completed.
 				del events_for_sox_commands_currently_running[item] # Remove the events from the dictionary of files currently being calculated upon.
 			
 			# If processing with sox was not succesful, then stop all prosessing and inform the calling subroutine.
-			if sox_encountered_an_error == True:
+			if file_processing_encountered_an_error == True:
 				break
 
 			# Wait 1 second before running the loop again
@@ -1950,16 +2001,16 @@ def run_sox_commands_in_parallel_threads(directory_for_temporary_files, director
 	except Exception:
 		exc_type, exc_value, exc_traceback = sys.exc_info()
 		error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
-		subroutine_name = 'run_sox_commands_in_parallel_threads'
+		subroutine_name = 'run_file_processing_in_parallel_threads'
 		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 
-	return(sox_encountered_an_error)
+	return(file_processing_encountered_an_error)
 
-def run_sox(directory_for_temporary_files, directory_for_results, filename, sox_commandline, english, finnish, event_for_sox_processing, event_for_sox_processing_encountered_an_error):
+def process_files(directory_for_temporary_files, directory_for_results, filename, file_processing_commandline, english, finnish, event_for_sox_processing, event_for_sox_processing_encountered_an_error):
 
 	try:
 		we_are_part_of_a_multithread_sox_command = False
-		sox_encountered_an_error = False
+		file_processing_encountered_an_error = False
 		error_message = ''
 		global debug
 		global write_loudness_calculation_results_to_a_machine_readable_file
@@ -1971,8 +2022,8 @@ def run_sox(directory_for_temporary_files, directory_for_results, filename, sox_
 			we_are_part_of_a_multithread_sox_command = True
 		
 		# Define filename for the temporary file that we are going to use as stdout for the external command.
-		results_from_sox_run = b''
-		stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_sox_stdout.txt'
+		results_from_file_processing = b''
+		stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '_file_processing_stdout.txt'
 		
 		# If there are other sox threads processing this same file, then our stdout filename must be unique.
 		if we_are_part_of_a_multithread_sox_command == True:
@@ -1985,68 +2036,68 @@ def run_sox(directory_for_temporary_files, directory_for_results, filename, sox_
 				if str_text.startswith("0x"):
 					event_number = str_text.strip(">:")
 
-			stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '-event-' + event_number + '_sox_stdout.txt'
+			stdout_for_external_command = directory_for_temporary_files + os.sep + filename + '-event-' + event_number + '_file_processing_stdout.txt'
 			
 		# Open the stdout temporary file in binary write mode.
 		try:
 			
 			with open(stdout_for_external_command, 'wb') as stdout_commandfile_handler:
 
-				# Run a sox command.
-				subprocess.Popen(sox_commandline, stdout=stdout_commandfile_handler, stderr=stdout_commandfile_handler, stdin=None, close_fds=True).communicate()[0]
+				# Run a command.
+				subprocess.Popen(file_processing_commandline, stdout=stdout_commandfile_handler, stderr=stdout_commandfile_handler, stdin=None, close_fds=True).communicate()[0]
 				
 				# Make sure all data written to temporary stdout and stderr - files is flushed from the os cache and written to disk.
 				stdout_commandfile_handler.flush() # Flushes written data to os cache
 				os.fsync(stdout_commandfile_handler.fileno()) # Flushes os cache to disk
 		
 		except IOError as reason_for_error:
-			error_message = 'Error writing to sox stdout - file ' * english + 'Soxin stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+			error_message = 'Error writing to file processing stdout - file ' * english + 'Tiedoston käsittelyn stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
 			send_error_messages_to_screen_logfile_email(error_message, [])
 		except OSError as reason_for_error:
-			error_message = 'Error writing to sox stdout - file ' * english + 'Soxin stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
+			error_message = 'Error writing to file processing stdout - file ' * english + 'Tiedoston käsittelyn stdout - tiedostoon kirjoittaminen epäonnistui ' * finnish + str(reason_for_error)
 			send_error_messages_to_screen_logfile_email(error_message, [])
 			
-		# Open the file we used as stdout for sox and read in what it wrote to it.
+		# Open the file we used as stdout for file processing and read in what it wrote to it.
 		try:
 			with open(stdout_for_external_command, 'rb') as stdout_commandfile_handler:
-				results_from_sox_run = stdout_commandfile_handler.read(None)
+				results_from_file_processing = stdout_commandfile_handler.read(None)
 		except IOError as reason_for_error:
-			error_message = 'Error reading from sox stdout - file ' * english + 'Soxin stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+			error_message = 'Error reading from file processing stdout - file ' * english + 'Tiedoston käsittelyn stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
 			send_error_messages_to_screen_logfile_email(error_message, [])
 		except OSError as reason_for_error:
-			error_message = 'Error reading from sox stdout - file ' * english + 'Soxin stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
+			error_message = 'Error reading from file processing stdout - file ' * english + 'Tiedoston käsittelyn stdout - tiedoston lukeminen epäonnistui ' * finnish + str(reason_for_error)
 			send_error_messages_to_screen_logfile_email(error_message, [])	
 
-		# Convert sox output from binary to UTF-8 text.
-		results_from_sox_run_string = results_from_sox_run.decode('UTF-8').strip()
+		# Convert file processing output from binary to UTF-8 text.
+		results_from_file_processing_string = results_from_file_processing.decode('UTF-8').strip()
 		
-		# Split sox output to a list of text lines.
-		if results_from_sox_run_string != '':
-			results_from_sox_run_list = results_from_sox_run_string.split('\n')
+		# Split file processing output to a list of text lines.
+		if results_from_file_processing_string != '':
+			results_from_file_processing_list = results_from_file_processing_string.split('\n')
 		else:
-			results_from_sox_run_list = []
+			results_from_file_processing_list = []
 		
 		# Delete the temporary stdout - file.
 		try:
 			if os.path.exists(stdout_for_external_command):
 				os.remove(stdout_for_external_command)
 		except IOError as reason_for_error:
-			error_message = 'Error deleting sox stdout - file ' * english + 'Soxin stdout - tiedoston deletoiminen epäonnistui ' * finnish	+ str(reason_for_error)
+			error_message = 'Error deleting file processing stdout - file ' * english + 'Tiedoston käsittelyn stdout - tiedoston deletoiminen epäonnistui ' * finnish	+ str(reason_for_error)
 			send_error_messages_to_screen_logfile_email(error_message, [])
 		except OSError as reason_for_error:
-			error_message = 'Error deleting sox stdout - file ' * english + 'Soxin stdout - tiedoston deletoiminen epäonnistui ' * finnish	+ str(reason_for_error)
+			error_message = 'Error deleting file processing stdout - file ' * english + 'Tiedoston käsittelyn stdout - tiedoston deletoiminen epäonnistui ' * finnish	+ str(reason_for_error)
 			send_error_messages_to_screen_logfile_email(error_message, [])
 		
-		# If sox did output something, there was and error. Print message to user.
-		if not len(results_from_sox_run_list) == 0:
-			sox_encountered_an_error = True
+		# If file processing did output something, there was an error. Print message to user.
+		if not len(results_from_file_processing_list) == 0:
+			file_processing_encountered_an_error = True
 
-			for item in results_from_sox_run_list:
-				error_message = 'Sox error: ' * english + 'Sox virhe: ' * finnish + ' ' + filename + ': ' + item
+			for item in results_from_file_processing_list:
+				error_message = 'File processing error: ' * english + 'Tiedoston käsittelyn virhe: ' * finnish + ' ' + filename + ': ' + item
 				send_error_messages_to_screen_logfile_email(error_message, [])
 			
-			# Print sox error message on result graphics file
-			error_message = 'Sox error: ' * english + 'Sox virhe: ' * finnish + ' ' + item
+			# Print file processing error message on result graphics file
+			error_message = 'File processing error: ' * english + 'Tiedoston käsittelyn virhe: ' * finnish + ' ' + item
 			create_gnuplot_commands_for_error_message(error_message, filename, directory_for_temporary_files, directory_for_results, english, finnish)
 
 			if write_loudness_calculation_results_to_a_machine_readable_file == True:
@@ -2073,23 +2124,23 @@ def run_sox(directory_for_temporary_files, directory_for_results, filename, sox_
 	except Exception:
 		exc_type, exc_value, exc_traceback = sys.exc_info()
 		error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
-		subroutine_name = 'run_sox'
+		subroutine_name = 'process_files'
 		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 
-	# This subroutine can be called directly or from the subroutine 'run_sox_commands_in_parallel_threads'.
-	# The routine 'create_sox_commands_for_loudness_adjusting_a_file' calls this routine directly if loudness corrected ouput audio channels do not need to be split to separate mono files.
+	# This subroutine can be called directly or from the subroutine 'run_file_processing_in_parallel_threads'.
+	# The routine 'create_commands_for_loudness_adjusting_a_file' calls this routine directly if loudness corrected ouput audio channels do not need to be split to separate mono files.
 	#
-	# This routine is called through subroutine 'run_sox_commands_in_parallel_threads' when loudness corrected output audio must be split to separate channels, and
+	# This routine is called through subroutine 'run_file_processing_in_parallel_threads' when loudness corrected output audio must be split to separate channels, and
 	# when we remix audio files found in a mxf - file before loudness processing. In these cases a single instance of this subroutine is part of a multipart sox job running in several threads.
 	#
 	# We need to communicate back to the calling subroutine if we succeeded or not and this needs to be done differently depending on if we were called directly or are running as a thread.
-	# If we were started as a thread then we set an event if we succeeded, if we were called directly then we return True / False as the value of variable 'sox_encountered_an_error'.
+	# If we were started as a thread then we set an event if we succeeded, if we were called directly then we return True / False as the value of variable 'file_processing_encountered_an_error'.
 	if we_are_part_of_a_multithread_sox_command == True:
-		if sox_encountered_an_error == False:
+		if file_processing_encountered_an_error == False:
 			event_for_sox_processing_encountered_an_error.set()
 		return
 	else:
-		return(sox_encountered_an_error)
+		return(file_processing_encountered_an_error)
 
 def move_processed_audio_files_to_target_directory(source_directory, target_directory, list_of_filenames, english, finnish):
 
@@ -3064,7 +3115,7 @@ def write_to_heartbeat_file_thread():
 			# Create the file in temp - directory and then move to the target location.
 			try:
 				with open(web_page_path + os.sep + '.temporary_files' + os.sep + heartbeat_file_name, 'w') as heartbeat_commandfile_handler:
-					json.dump(loudness_correction_program_info_and_timestamps, heartbeat_commandfile_handler, ensure_ascii=False)
+					json.dump(loudness_correction_program_info_and_timestamps, heartbeat_commandfile_handler)
 					heartbeat_commandfile_handler.flush() # Flushes written data to os cache
 					os.fsync(heartbeat_commandfile_handler.fileno()) # Flushes os cache to disk
 					shutil.move(web_page_path + os.sep + '.temporary_files' + os.sep + heartbeat_file_name, web_page_path + os.sep + heartbeat_file_name)
@@ -3625,7 +3676,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				# Get the type of the file.
 				file_type = str(item).split('from')[0].split(',')[1].strip().lower()
 
-				# FFmpeg can not tell if file wrapper format is webm or matroska, it announces these all as one format with keywords:   matroska,webm.
+				# avconv / FFmpeg can not tell if file wrapper format is webm or matroska, it announces these all as one format with keywords:   matroska,webm.
 				# Get true wrapper format with mediainfo.
 				if file_type == 'matroska':
 					wrapper_format, mediainfo_error_message = get_file_wrapper_format_with_mediainfo(directory_for_temporary_files, filename, hotfolder_path, english, finnish)
@@ -3702,7 +3753,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				except ValueError:
 					pass
 			
-				# FFmpeg sometimes reports some channel counts differently. Test for these cases and convert the channel count to an simple number.
+				# FFmpeg / avconv sometimes reports some channel counts differently. Test for these cases and convert the channel count to an simple number.
 				# These values are from avconv source: libavutil/channel_layout.c
 				if 'mono' in number_of_audio_channels_as_text:
 					number_of_audio_channels = '1'
@@ -3848,7 +3899,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 
 				# Find out what is FFmpegs map number for the audio stream.
 				# There usually is some unwanted cruft right behind the map number, so we need to find the cut point by advancing character by character.
-				# Example for a line that we are trying to parse here (ffmpeg 0.8 and later):   Stream #0.1(eng): Audio: ac3, 48000 Hz, 5.1, s16, 448 kb/s
+				# Example for a line that we are trying to parse here (ffmpeg 0.8 / avconv 0.9 and later):   Stream #0.1(eng): Audio: ac3, 48000 Hz, 5.1, s16, 448 kb/s
 				# Example for a line that we are trying to parse here (ffmpeg 2.x):   Stream #0:1: Audio: ac3, 48000 Hz, 5.1, s16, 448 kb/s
 				# The first number (0) in the map means input stream number (there can be many in a input file). The second (1) number means the stream in the file.
 				map_number = ''
@@ -3869,7 +3920,7 @@ def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(fi
 				# Test if we really have found the stream map number.
 				try:
 
-					if '.' in temp_map_number_string: # FFmpeg 0.8 later uses . as map number separator.
+					if '.' in temp_map_number_string: # FFmpeg 0.8 and later uses . as map number separator.
 						map_number = temp_map_number_string.split('.')[1]
 					if ':' in temp_map_number_string: # FFmpeg 2.x uses : as map number separator.
 						map_number = temp_map_number_string.split(':')[1]
@@ -5159,7 +5210,7 @@ def remix_files_according_to_channel_map(directory_for_temporary_files, original
 					print(str(item) + '  ', end='')
 				print()
 
-			run_sox_commands_in_parallel_threads(directory_for_temporary_files, directory_for_results, original_input_file_name, list_of_sox_commandlines, english, finnish)
+			run_file_processing_in_parallel_threads(directory_for_temporary_files, directory_for_results, original_input_file_name, list_of_sox_commandlines, english, finnish)
 
 	except Exception:
 		exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -5644,7 +5695,7 @@ def write_user_defined_configuration_settings_to_logfile():
 #	5 = Zero channels in audio stream   (get_audio_stream_information_with_ffmpeg)
 #	6 = Channel count bigger than 6 is unsupported	 (get_audio_stream_information_with_ffmpeg, main)
 #	7 = No Audio Streams Found In File   (main)
-#	8 = Sox encountered an error   (create_sox_commands_for_loudness_adjusting_a_file)
+#	8 = Sox encountered an error   (create_commands_for_loudness_adjusting_a_file)
 #	9 = There are unsupported audio streams in input MXF - file while remix function is on. This may create unwanted results
 #	10 = File wrapper format is not supported
 #       11 = Audio Compression codec is not supported
@@ -5737,12 +5788,22 @@ try:
 	all_settings_dict = {}
 
 	if configfile_path != '':
-		
+
+		# Test if the configfile exists as json or pickle and read settings from it
+		configfile_path_json = os.path.splitext(configfile_path)[0] + ".json"
+		configfile_path_pickle = os.path.splitext(configfile_path)[0] + ".pickle"
+
 		# Read the config variables from a file. The file contains a dictionary with the needed values.
-		
 		try:
-			with open(configfile_path, 'r') as configfile_handler:
-				all_settings_dict = json.load(configfile_handler)
+
+			if (os.path.exists(configfile_path_json)):
+
+				with open(configfile_path_json, 'r') as configfile_handler:
+					all_settings_dict = json.load(configfile_handler)
+			else:
+				with open(configfile_path_pickle, 'rb') as configfile_handler:
+					all_settings_dict = pickle.load(configfile_handler)
+
 		except KeyboardInterrupt:
 			if silent == False:
 				print('\n\nUser cancelled operation.\n')
@@ -5950,6 +6011,10 @@ try:
 			libebur128_loudness_executable_found = True
 			libebur128_path = os_path + os.sep + loudness_executable_name
 		
+	if ffmpeg_executable_found == False:
+		error_message = '\n!!!!!!! FFmpeg - can not be found or it does not have \'executable\' permissions on !!!!!!!' * english + '\n!!!!!!! FFmpeg - ohjelmaa ei löydy tai sillä ei ole käynnistyksen mahdollistava \'executable\' oikeudet päällä !!!!!!!' * finnish
+		send_error_messages_to_screen_logfile_email(error_message, [])
+		sys.exit(1)
 	if gnuplot_executable_found == False:
 		error_message = '\n!!!!!!! gnuplot - can not be found or it does not have \'executable\' permissions on !!!!!!!' * english + '\n!!!!!!! gnuplot - ohjelmaa ei löydy tai sillä ei ole käynnistyksen mahdollistava \'executable\' oikeudet päällä !!!!!!!' * finnish
 		send_error_messages_to_screen_logfile_email(error_message, [])
@@ -5977,7 +6042,7 @@ try:
 
 	ffmpeg_executable_name = ''
 
-	# If user has forced no_ffmpeg on the command line, don't use it.
+	# If user has forced no_ffmpeg on the command line, don't use FFmpeg
 	if force_no_ffmpeg == True:
 		ffmpeg_executable_found = False
 

@@ -19,9 +19,10 @@ import email
 import email.mime
 import email.mime.text
 import email.mime.multipart
+import pickle
 import json
 
-version = '023'
+version = '024'
 
 # User can set some defaults here that are used if the program is started without giving it the path to a configfile.
 silent = False # Use True if you don't want this program to output anything to screen.
@@ -234,9 +235,19 @@ if configfile_path != '':
 	all_settings_dict = {}
 	email_sending_details =  {}
 	
+	# Test if the configfile exists as json or pickle and read settings from it
+	configfile_path_json = os.path.splitext(configfile_path)[0] + ".json"
+	configfile_path_pickle = os.path.splitext(configfile_path)[0] + ".pickle"
+
 	try:
-		with open(configfile_path, 'r') as configfile_handler:
-			all_settings_dict = json.load(configfile_handler)
+		if (os.path.exists(configfile_path_json)):
+
+			with open(configfile_path_json, 'r') as configfile_handler:
+				all_settings_dict = json.load(configfile_handler)
+		else:
+			with open(configfile_path_pickle, 'rb') as configfile_handler:
+				all_settings_dict = pickle.load(configfile_handler)
+
 	except KeyboardInterrupt:
 		print('\n\nUser cancelled operation.\n')
 		sys.exit(0)
@@ -289,7 +300,7 @@ while True:
 	time_string = parse_time(time.time()) # Parse current time to a nicely formatted string.
 	
 	try:
-		with open(heartbeat_file_path, 'r') as heartbeat_file_handler:
+		with open(heartbeat_file_path, 'rb') as heartbeat_file_handler:
 			loudness_correction_program_info_and_timestamps = json.load(heartbeat_file_handler)
 	except KeyboardInterrupt:
 		print('\n\nUser cancelled operation.\n')
