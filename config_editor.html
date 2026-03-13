@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FreeLCS Configuration Editor</title>
+    <style>
+        :root {
+            --bg-color: #e0e0e0;
+            --card-bg: #f4f4f4;
+            --ibm-blue: #006699;
+            --switch-red: #d32f2f;
+            --switch-actuator: #ffffff;
+            --switch-slot: #111;
+            --text-color: #333;
+            --gold: #d4af37;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            /* width: 90%; */
+	    /* max-width: 90%; */
+            padding: 25px;
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 2px solid #ddd;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+        }
+
+        h1 { margin: 0 0 5px 0; font-size: 1.8rem; color: var(--ibm-blue); }
+        .subtitle { color: #555; font-size: 0.9rem; }
+
+        /* --- MAIN LAYOUT --- */
+        .main-interface {
+            display: grid;
+            grid-template-columns: auto auto auto auto;
+        }
+
+        .drop-box {
+            background: white;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            height: fit-content;
+	    width: fit-content;
+	    margin-bottom: 8px;
+	    margin-right: 8px;
+        }
+        .drop-box-group label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--ibm-blue);
+        }
+        .drop-box-group select {
+            /* width: 100%; */
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            height: fit-content;
+	    width: fit-content;
+        }
+        .hint { font-size: 0.8rem; color: #777; margin-top: 5px; font-style: italic; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>FreeLCS Configuration Editor</h1>
+    </header>
+
+    <div class="main-interface">
+        
+        <!-- Controls -->
+	<div class="drop-box">
+		<div class="drop-box-group">
+                <label>Number Of Processor Cores To Use</label>
+                <select id="NumProcessors" onchange="applyPreset()">
+                    <option value="all">All Processors</option>
+                </select>
+            </div>
+        </div>
+	<div class="drop-box">
+		<div class="drop-box-group">
+                <label>File Expiry Time In Minutes</label>
+                <select id="FileExpiry" onchange="applyPreset()">
+                    <option value="default">480</option>
+                </select>
+            </div>
+        </div>
+	<div class="drop-box">
+		<div class="drop-box-group">
+                <label>Target Loudness Level (LUFS)</label>
+                <select id="TargetLufs" onchange="applyPreset()">
+                    <option value="default">-23</option>
+                </select>
+            </div>
+        </div>
+	<div class="drop-box">
+		<div class="drop-box-group">
+                <label>Testi</label>
+                <select id="TargetLufs" onchange="applyPreset()">
+                    <option value="default">Pudotusvalikko</option>
+                </select>
+            </div>
+        </div>
+	<div class="drop-box">
+		<div class="drop-box-group">
+                <label>Testi2</label>
+                <select id="TargetLufs" onchange="applyPreset()">
+                    <option value="default">Pudotusvalikko</option>
+                </select>
+            </div>
+        </div>
+
+<script>
+
+</script>
+</body>
+</html>
