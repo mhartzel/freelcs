@@ -95,7 +95,12 @@
 		<div class="drop-box-group">
                 <label>Number Of Processor Cores To Use</label>
                 <select id="NumProcessors" onchange="applyPreset()">
-                    <option value="all">All Processors</option>
+                    <!-- <option value="all">All Processors</option>
+                    <option value="2">2</option>
+                    <option value="4">4</option>
+                    <option value="6">6</option>
+                    <option value="8">8</option>
+		    <option value="10">10</option> -->
                 </select>
             </div>
         </div>
@@ -133,6 +138,28 @@
         </div>
 
 <script>
+	const processors = [ "All", "2", "4", "6", "8", "10", "12" ]
+
+	function populateProcessors() {
+		const selection = document.getElementById('NumProcessors');
+		/* processors.forEach((item, index) => { */
+		processors.forEach((item, index) => {
+			const option = document.createElement('option');
+			/* option.value = index ; */
+			option.value = index ;
+			/* option.innerText = item.name; */
+			option.innerText = item;
+			selection.appendChild(option);
+		});
+	}
+
+	function init() {
+		populateProcessors();
+		document.getElementById('NumProcessors').value = "0";
+		applyPreset();
+	}
+
+	init();
 
 </script>
 </body>
