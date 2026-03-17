@@ -134,114 +134,17 @@
 	<!-- https://community.latenode.com/t/how-to-send-html-form-input-to-javascript/1810 -->
 	<!-- https://teamtreehouse.com/community/get-value-of-text-input-element-store-in-variable -->
 
-
-
-
-
-<!DOCTYPE html>
 <html>
 <body>
 
-<form onsubmit="testi()">
-  Name (max 10 characters): <input type="text" id="fname" size="20" name="fname"><br>
-  Age (from 1 to 100): <input type="text" id="age" size="20" name="age"><br>
-  E-mail: <input type="text" id="email" size="20" name="mail"><br><br>
-  <input type="submit" value="Submit"> 
-</form>
 
-<script>
-
-function testi() {
-var nimi = document.getElementById('fname')
-	alert(nimi.value); 
-}
-</script>
-
-</body>
-</html>
-
-
-
-
-
-
-
-
-<!DOCTYPE html>
-<html>
-<body>
-
-<form onkeypress="testi()">
-  Name (max 10 characters): <input type="text" id="fname" size="20" name="fname"><br>
-  Age (from 1 to 100): <input type="text" id="age" size="20" name="age"><br>
-  E-mail: <input type="text" id="email" size="20" name="mail"><br><br>
-  <input type="submit" value="Submit">
-</form>
-
-<script>
-
-function testi() {
-var nimi = document.getElementById('fname')
-	alert(nimi.value);
-}
-</script>
-
-</body>
-</html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	    <div class="main-interface">
-		
-		<div class="drop-box">
-			<div class="drop-box-group">
+<div class="main-interface">
+	<div class="drop-box">
+		<div class="drop-box-group">
 			<label>Hotfolder Path</label>
-			<input id="HotfolderPath" type="text" value="" size="40"/>
-
-
-	<!--	<form action="/action_page.php" onsubmit="myFunction()">
-		  Enter name: <input type="text" name="fname">
-		  <input type="submit" value="Submit">
-	</form>
-
-	<script>
-	function myFunction() {
-	  alert("The form was submitted");
-	}
-	</script> -->
-
-	<script>
-			const input = document.querySelector("input");
-			input.addEventListener("change", updateValue);
-
-			function updateValue(e) {
-			  console.log(e);
-			}
-	</script>
-
-
-
-
-
-            </div>
-        </div>
+			<input id="HotfolderPath" type="text" value="" size="40" onkeyup="update_folder_name()"/>
+		</div>
+	</div>
 	<div class="drop-box">
 		<div class="drop-box-group">
 			<label>Language Of hotfolder paths and result graphics</label>
@@ -302,11 +205,13 @@ var nimi = document.getElementById('fname')
 	</div>
 	<!-- https://stackoverflow.com/questions/34156282/how-do-i-save-json-to-local-text-file -->
 	<div class="file-load-save">
-		<button onclick="export2txt()">Save data to LoudnessCorrection_Settings.json</button>
+		<button onclick="export_settings()">Save data to LoudnessCorrection_Settings.json</button>
 	</div>
 
 </div>
 <script>
+	var debug = true;
+
 	const default_settings_json = '{\
 	  "language": "english",\
 	  "english": 1,\
@@ -499,10 +404,6 @@ var nimi = document.getElementById('fname')
 	  "number_of_all_items_in_dictionary": 55\
 }';
 
-	// const json = '{"language": "english", "koe": "Koepa hyvinkin"}'
-	// console.log(JSON.parse({"language": "english", "koe": "Koepa hyvinkin"})); 
-	// const json = '{"result":true, "count":42}';
-	// console.log(JSON.parse(json)); 
 	const default_settings = JSON.parse(default_settings_json); 
 	console.log(default_settings);
 	console.log(default_settings.libebur128_path);
@@ -522,19 +423,9 @@ var nimi = document.getElementById('fname')
 		});
 	}
 
-	function init() {
-		populateProcessors();
-		document.getElementById('NumProcessors').value = "0";
-		applyPreset();
-		document.getElementById("HotfolderPath").value = default_settings.hotfolder_path;
-	}
-
-	init();
-
+	/* Export settings to a json - file */
 	/* https://stackoverflow.com/questions/34156282/how-do-i-save-json-to-local-text-file */
-
-
-	function export2txt() {
+	function export_settings() {
 	  const originalData = {
 	    members: [{
 		name: "cliff",
@@ -552,10 +443,8 @@ var nimi = document.getElementById('fname')
 	  };
 
 	  const a = document.createElement("a");
-	  a.href = URL.createObjectURL(new Blob([JSON.stringify(originalData, null, 2)], {
-	    type: "text/plain"
-	  }));
-	  a.setAttribute("download", "data.txt");
+	  a.href = URL.createObjectURL(new Blob([JSON.stringify(default_settings, null, 2)], { type: "text/plain" }));
+	  a.setAttribute("download", "LoudnessCorrection_Settings.json");
 	  document.body.appendChild(a);
 	  a.click();
 	  document.body.removeChild(a);
@@ -563,6 +452,23 @@ var nimi = document.getElementById('fname')
 
 	function applyPreset() {
 	}
+
+	function update_folder_name() {
+		default_settings.hotfolder_path = document.getElementById("HotfolderPath").value;
+
+			if (debug == true) {
+				console.log(default_settings.hotfolder_path);
+			}
+	}
+
+	function init() {
+		populateProcessors();
+		document.getElementById('NumProcessors').value = "0";
+		applyPreset();
+		document.getElementById("HotfolderPath").value = default_settings.hotfolder_path;
+	}
+
+	init();
 
 </script>
 </body>
