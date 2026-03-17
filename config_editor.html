@@ -130,15 +130,90 @@
 
 	<!-- https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input -->
 	<!-- https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/file -->
+	<!-- https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/change_event -->
+	<!-- https://community.latenode.com/t/how-to-send-html-form-input-to-javascript/1810 -->
+	<!-- https://teamtreehouse.com/community/get-value-of-text-input-element-store-in-variable -->
+
+
+
+
+
+<!DOCTYPE html>
+<html>
+<body>
+
+<form onsubmit="testi()">
+  Name (max 10 characters): <input type="text" id="fname" size="20" name="fname"><br>
+  Age (from 1 to 100): <input type="text" id="age" size="20" name="age"><br>
+  E-mail: <input type="text" id="email" size="20" name="mail"><br><br>
+  <input type="submit" value="Submit"> 
+</form>
+
+<script>
+
+function testi() {
+var nimi = document.getElementById('fname')
+	alert(nimi.value); 
+}
+</script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html>
+<body>
+
+<form onkeypress="testi()">
+  Name (max 10 characters): <input type="text" id="fname" size="20" name="fname"><br>
+  Age (from 1 to 100): <input type="text" id="age" size="20" name="age"><br>
+  E-mail: <input type="text" id="email" size="20" name="mail"><br><br>
+  <input type="submit" value="Submit">
+</form>
+
+<script>
+
+function testi() {
+var nimi = document.getElementById('fname')
+	alert(nimi.value);
+}
+</script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	    <div class="main-interface">
 		
 		<div class="drop-box">
 			<div class="drop-box-group">
 			<label>Hotfolder Path</label>
-			<input id="HotfolderPath" type="text" value="HotfolderPath" />
-		<script>
-		    document.getElementById("HotfolderPath").value = "/mountpoint";
-		</script>
+			<input id="HotfolderPath" type="text" value="" size="40"/>
 
 
 	<!--	<form action="/action_page.php" onsubmit="myFunction()">
@@ -152,6 +227,15 @@
 	}
 	</script> -->
 
+	<script>
+			const input = document.querySelector("input");
+			input.addEventListener("change", updateValue);
+
+			function updateValue(e) {
+			  console.log(e);
+			}
+	</script>
+
 
 
 
@@ -159,17 +243,15 @@
             </div>
         </div>
 	<div class="drop-box">
-		<fieldset>
-			<div class="drop-box-group">
-				<label>Language Of hotfolder paths and result graphics</label>
-			</div>
-			<div class="radio-buttons">
-				<input type="radio" id="English" name="language" value="english" checked />
-				<label for="huey">English</label>
-				<input type="radio" id="Finnish" name="language" value="finnish" />
-				<label for="dewey">Finnish</label>
-			</div>
-		</fieldset>
+		<div class="drop-box-group">
+			<label>Language Of hotfolder paths and result graphics</label>
+		</div>
+		<div class="radio-buttons">
+			<input type="radio" id="English" name="language" value="english" checked />
+			<label for="English">English</label>
+			<input type="radio" id="Finnish" name="language" value="finnish" />
+			<label for="Finnish">Finnish</label>
+		</div>
         </div>
 	<div class="drop-box">
 		<div class="drop-box-group">
@@ -219,7 +301,9 @@
 
 	</div>
 	<!-- https://stackoverflow.com/questions/34156282/how-do-i-save-json-to-local-text-file -->
-	<button onclick="export2txt()">Export data to local txt file</button>
+	<div class="file-load-save">
+		<button onclick="export2txt()">Save data to LoudnessCorrection_Settings.json</button>
+	</div>
 
 </div>
 <script>
@@ -442,11 +526,13 @@
 		populateProcessors();
 		document.getElementById('NumProcessors').value = "0";
 		applyPreset();
+		document.getElementById("HotfolderPath").value = default_settings.hotfolder_path;
 	}
 
 	init();
 
 	/* https://stackoverflow.com/questions/34156282/how-do-i-save-json-to-local-text-file */
+
 
 	function export2txt() {
 	  const originalData = {
