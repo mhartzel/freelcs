@@ -1,5 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
+	<!-- FIXME -->
+	<!-- https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input -->
+	<!-- https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/file -->
+	<!-- https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/change_event -->
+	<!-- https://community.latenode.com/t/how-to-send-html-form-input-to-javascript/1810 -->
+	<!-- https://teamtreehouse.com/community/get-value-of-text-input-element-store-in-variable -->
+
+	<!--
+		https://stackoverflow.com/questions/67857621/how-to-show-file-content-in-html
+		https://www.geeksforgeeks.org/javascript/how-to-read-a-local-text-file-using-javascript/
+		https://www.sitepoint.com/community/t/getting-content-of-the-file/294355
+		https://developer.mozilla.org/en-US/docs/Web/API/FileReader
+		https://developer.mozilla.org/en-US/docs/Web/API/File_System_API
+	-->
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -119,26 +135,11 @@
 				<label for="file">Load settings from a previously saved LoudnessCorrection_Settings.json - file</label>
 			</div>
 			<div class="drop-box-group">
-				<input type="file" id="file" name="file" />
-				<br>
-				<br>
-				<button>Submit</button>
+				<input type="file" id="inputfile" name="inputfile" accept=".JSON"/>
 			</div>
 		</form>
 	</div>
-
-
-	<!-- https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input -->
-	<!-- https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/file -->
-	<!-- https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/change_event -->
-	<!-- https://community.latenode.com/t/how-to-send-html-form-input-to-javascript/1810 -->
-	<!-- https://teamtreehouse.com/community/get-value-of-text-input-element-store-in-variable -->
-
-<html>
-<body>
-
-
-<div class="main-interface">
+	<div class="main-interface">
 	<div class="drop-box">
 		<div class="drop-box-group">
 			<label>Hotfolder Path</label>
@@ -404,7 +405,7 @@
 	  "number_of_all_items_in_dictionary": 55\
 }';
 
-	const default_settings = JSON.parse(default_settings_json); 
+	var default_settings = JSON.parse(default_settings_json); 
 	console.log(default_settings);
 	console.log(default_settings.libebur128_path);
 
@@ -426,28 +427,12 @@
 	/* Export settings to a json - file */
 	/* https://stackoverflow.com/questions/34156282/how-do-i-save-json-to-local-text-file */
 	function export_settings() {
-	  const originalData = {
-	    members: [{
-		name: "cliff",
-		age: "34"
-	      },
-	      {
-		name: "ted",
-		age: "42"
-	      },
-	      {
-		name: "bob",
-		age: "12"
-	      }
-	    ]
-	  };
-
-	  const a = document.createElement("a");
-	  a.href = URL.createObjectURL(new Blob([JSON.stringify(default_settings, null, 2)], { type: "text/plain" }));
-	  a.setAttribute("download", "LoudnessCorrection_Settings.json");
-	  document.body.appendChild(a);
-	  a.click();
-	  document.body.removeChild(a);
+		const a = document.createElement("a");
+		a.href = URL.createObjectURL(new Blob([JSON.stringify(default_settings, null, 2)], { type: "text/plain" }));
+		a.setAttribute("download", "LoudnessCorrection_Settings.json");
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
 	}
 
 	function applyPreset() {
@@ -466,6 +451,30 @@
 		document.getElementById('NumProcessors').value = "0";
 		applyPreset();
 		document.getElementById("HotfolderPath").value = default_settings.hotfolder_path;
+
+		// Read LoudnessCorrection_Settings.json - file
+		document.getElementById('inputfile').addEventListener('change', function() {
+			var fr=new FileReader();
+
+			fr.onload=function(){
+
+				try {
+					JSON.parse(fr.result);
+				} catch (e) {
+					alert("File is not valid json");
+					return
+				}
+
+				default_settings = JSON.parse(fr.result);
+				init();
+
+				if (debug == true) {
+					console.log(fr.result);
+				}
+			}
+
+			fr.readAsText(this.files[0]);
+		})
 	}
 
 	init();
