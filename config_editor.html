@@ -6,91 +6,171 @@
     <title>FreeLCS Configuration Editor</title>
     <style>
         :root {
-            --bg-color: #e0e0e0;
-            --card-bg: #f4f4f4;
-            --ibm-blue: #006699;
-            --switch-red: #d32f2f;
-            --switch-actuator: #ffffff;
-            --switch-slot: #111;
-            --text-color: #333;
-            --gold: #d4af37;
+		--bg-color: #e0e0e0;
+		--card-bg: #f4f4f4;
+		--ibm-blue: #006699;
+		--switch-red: #d32f2f;
+		--switch-actuator: #ffffff;
+		--switch-slot: #111;
+		--text-color: #333;
+		--gold: #d4af37;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            display: flex;
-            justify-content: center;
-            padding: 20px;
-            margin: 0;
+		font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+		background-color: var(--bg-color);
+		color: var(--text-color);
+		display: flex;
+		justify-content: center;
+		padding: 20px;
+		margin: 0;
         }
 
         .container {
-            background-color: var(--card-bg);
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            /* width: 90%; */
-	    /* max-width: 90%; */
-            padding: 25px;
+		background-color: var(--card-bg);
+		border: 1px solid #ccc;
+		border-radius: 8px;
+		box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+		/* width: 90%; */
+		/* max-width: 90%; */
+		padding: 25px;
         }
 
         header {
-            text-align: center;
-            border-bottom: 2px solid #ddd;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
+		text-align: center;
+		border-bottom: 2px solid #ddd;
+		margin-bottom: 25px;
+		padding-bottom: 15px;
         }
 
-        h1 { margin: 0 0 5px 0; font-size: 1.8rem; color: var(--ibm-blue); }
-        .subtitle { color: #555; font-size: 0.9rem; }
+        h1 {
+		margin: 0 0 5px 0;
+		font-size: 1.8rem;
+		color: var(--ibm-blue);
+	}
+        .subtitle {
+		color: #555;
+		font-size: 0.9rem;
+	}
 
         /* --- MAIN LAYOUT --- */
         .main-interface {
-            display: grid;
-            grid-template-columns: auto auto auto auto;
+		display: grid;
+		grid-template-columns: auto auto auto auto;
         }
 
         .drop-box {
-            background: white;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            height: fit-content;
-	    width: fit-content;
-	    margin-bottom: 8px;
-	    margin-right: 8px;
+		background: white;
+		padding: 20px;
+		border: 1px solid #ddd;
+		border-radius: 6px;
+		margin-bottom: 8px;
+		margin-right: 8px;
+		align-self: stretch;
         }
         .drop-box-group label {
-            display: block;
-            font-weight: 700;
-            margin-bottom: 8px;
-            color: var(--ibm-blue);
+		display: block;
+		font-weight: 700;
+		margin-bottom: 8px;
+		color: var(--ibm-blue);
         }
         .drop-box-group select {
-            /* width: 100%; */
-            padding: 10px;
-            font-size: 1rem;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            height: fit-content;
-	    width: fit-content;
+		/* width: 100%; */
+		padding: 10px;
+		font-size: 1rem;
+		border: 1px solid #ccc;
+		border-radius: 4px;
+		height: fit-content;
+		width: fit-content;
         }
-        .hint { font-size: 0.8rem; color: #777; margin-top: 5px; font-style: italic; }
+        .hint {
+		font-size: 0.8rem;
+		color: #777;
+		margin-top: 5px;
+		font-style: italic;
+	}
+
+        .file-load-save {
+		background: white;
+		padding: 20px;
+		border: 1px solid #ddd;
+		border-radius: 6px;
+		height: fit-content;
+		width: auto;
+		margin-bottom: 8px;
+		margin-right: 8px;
+        }
+        .radio-buttons {
+		font-size: 0.8rem;
+        }
 
     </style>
 </head>
 <body>
 
 <div class="container">
-    <header>
-        <h1>FreeLCS Configuration Editor</h1>
-    </header>
+	<header>
+		<h1>FreeLCS Configuration Editor</h1>
+	</header>
 
-    <div class="main-interface">
-        
-        <!-- Controls -->
+	<div class="file-load-save">
+		<form method="post" enctype="multipart/form-data">
+			<div class="drop-box-group">
+				<label for="file">Load settings from a previously saved LoudnessCorrection_Settings.json - file</label>
+			</div>
+			<div class="drop-box-group">
+				<input type="file" id="file" name="file" />
+				<br>
+				<br>
+				<button>Submit</button>
+			</div>
+		</form>
+	</div>
+
+
+	<!-- https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input -->
+	<!-- https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/file -->
+	    <div class="main-interface">
+		
+		<div class="drop-box">
+			<div class="drop-box-group">
+			<label>Hotfolder Path</label>
+			<input id="HotfolderPath" type="text" value="HotfolderPath" />
+		<script>
+		    document.getElementById("HotfolderPath").value = "/mountpoint";
+		</script>
+
+
+	<!--	<form action="/action_page.php" onsubmit="myFunction()">
+		  Enter name: <input type="text" name="fname">
+		  <input type="submit" value="Submit">
+	</form>
+
+	<script>
+	function myFunction() {
+	  alert("The form was submitted");
+	}
+	</script> -->
+
+
+
+
+
+            </div>
+        </div>
+	<div class="drop-box">
+		<fieldset>
+			<div class="drop-box-group">
+				<label>Language Of hotfolder paths and result graphics</label>
+			</div>
+			<div class="radio-buttons">
+				<input type="radio" id="English" name="language" value="english" checked />
+				<label for="huey">English</label>
+				<input type="radio" id="Finnish" name="language" value="finnish" />
+				<label for="dewey">Finnish</label>
+			</div>
+		</fieldset>
+        </div>
 	<div class="drop-box">
 		<div class="drop-box-group">
                 <label>Number Of Processor Cores To Use</label>
@@ -137,7 +217,212 @@
             </div>
         </div>
 
+	</div>
+	<!-- https://stackoverflow.com/questions/34156282/how-do-i-save-json-to-local-text-file -->
+	<button onclick="export2txt()">Export data to local txt file</button>
+
+</div>
 <script>
+	const default_settings_json = '{\
+	  "language": "english",\
+	  "english": 1,\
+	  "finnish": 0,\
+	  "target_path": "/mountpoint",\
+	  "hotfolder_path": "/mountpoint/LoudnessCorrection",\
+	  "directory_for_temporary_files": "/mountpoint/00-Loudness_Calculation_Temporary_Files",\
+	  "directory_for_results": "/mountpoint/LoudnessCorrection/00-Corrected_Files",\
+	  "delay_between_directory_reads": 5,\
+	  "number_of_processor_cores": 16,\
+	  "file_expiry_time": 28800,\
+	  "natively_supported_file_formats": [\
+	    ".wav",\
+	    ".flac",\
+	    ".ogg"\
+	  ],\
+	  "libebur128_path": "/bin/loudness-freelcs",\
+	  "ffmpeg_output_wrapper_format": "wav",\
+	  "silent": true,\
+	  "write_html_progress_report": false,\
+	  "html_progress_report_write_interval": 5,\
+	  "web_page_name": "00-Calculation_Queue_Information.html",\
+	  "web_page_path": "/mountpoint/LoudnessCorrection/00-Calculation_Queue_Information",\
+	  "directory_for_error_logs": "/mountpoint/00-Error_Logs",\
+	  "send_error_messages_to_logfile": true,\
+	  "heartbeat": false,\
+	  "heartbeat_file_name": "00-HeartBeat.json",\
+	  "heartbeat_write_interval": 30,\
+	  "email_sending_details": {\
+	    "send_error_messages_by_email": false,\
+	    "use_tls": false,\
+	    "smtp_server_requires_authentication": false,\
+	    "smtp_server_name": "",\
+	    "smtp_server_port": "",\
+	    "smtp_username": "",\
+	    "smtp_password": "",\
+	    "message_recipients": [],\
+	    "email_sending_interval": 1800,\
+	    "message_title": "FreeLCS Error Message"\
+	  },\
+	  "send_error_messages_by_email": false,\
+	  "where_to_send_error_messages": [\
+	    "logfile"\
+	  ],\
+	  "config_file_created_by_installer_version": "138",\
+	  "peak_measurement_method": "--peak=true",\
+	  "freelcs_version": "3.2",\
+	  "use_freelcs_file_output_defaults": true,\
+	  "write_loudness_calculation_results_to_a_machine_readable_file": false,\
+	  "create_loudness_corrected_files": true,\
+	  "create_loudness_history_graphics_files": true,\
+	  "delete_original_file_immediately": true,\
+	  "unit_separator": "\\u001f",\
+	  "record_separator": "\\r\\n",\
+	  "enable_mxf_audio_remixing": false,\
+	  "remix_map_file_extension": ".remix_map",\
+	  "global_mxf_audio_remix_channel_map": [\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2,\
+	    2\
+	  ],\
+	  "ffmpeg_free_wrapper_formats": [\
+	    "wav",\
+	    "flac",\
+	    "ogg",\
+	    "mkv",\
+	    "matroska",\
+	    "mka",\
+	    "mpeg",\
+	    "mp2",\
+	    "mp3",\
+	    "mpegts",\
+	    "mpegtsraw",\
+	    "mpegvideo",\
+	    "mpeg1video",\
+	    "mpeg2video",\
+	    "vcd",\
+	    "svcd",\
+	    "dvd",\
+	    "vob",\
+	    "ac3"\
+	  ],\
+	  "ffmpeg_allowed_wrapper_formats": [\
+	    "all"\
+	  ],\
+	  "ffmpeg_free_codec_formats": [\
+	    "pcm_s8",\
+	    "pcm_s8_planar",\
+	    "pcm_u8",\
+	    "pcm_s16be",\
+	    "pcm_s16le",\
+	    "pcm_s16le_planar",\
+	    "pcm_u16be",\
+	    "pcm_u16le",\
+	    "pcm_dvd",\
+	    "pcm_lxf",\
+	    "pcm_s24be",\
+	    "pcm_s24daud",\
+	    "pcm_s24le",\
+	    "pcm_u24be",\
+	    "pcm_u24le",\
+	    "pcm_f32be",\
+	    "pcm_f32le",\
+	    "pcm_s32be",\
+	    "pcm_s32le",\
+	    "pcm_u32be",\
+	    "pcm_u32le",\
+	    "pcm_f64be",\
+	    "pcm_f64le",\
+	    "flac",\
+	    "vorbis",\
+	    "opus",\
+	    "ac3",\
+	    "mp1",\
+	    "mp1float",\
+	    "mp2",\
+	    "mp2float",\
+	    "mp3"\
+	  ],\
+	  "ffmpeg_allowed_codec_formats": [\
+	    "all"\
+	  ],\
+	  "mxf_formats": [\
+	    "mxf",\
+	    "mxf_d10"\
+	  ],\
+	  "mpeg_nonfree_wrapper_formats": [\
+	    "mp4",\
+	    "m4v",\
+	    "m4a",\
+	    "mov",\
+	    "3gp",\
+	    "3g2",\
+	    "mj2"\
+	  ],\
+	  "enable_all_nonfree_ffmpeg_wrapper_formats": true,\
+	  "enable_all_nonfree_ffmpeg_codec_formats": true,\
+	  "enable_mxf_wrapper": false,\
+	  "enable_webm_wrapper": false,\
+	  "enable_nonfree_mpeg_wrappers": false,\
+	  "os_name": "ubuntu",\
+	  "os_version": "24.04",\
+	  "os_init_system_name": "systemd",\
+	  "target_loudness": "-23",\
+	  "number_of_all_items_in_dictionary": 55\
+}';
+
+	// const json = '{"language": "english", "koe": "Koepa hyvinkin"}'
+	// console.log(JSON.parse({"language": "english", "koe": "Koepa hyvinkin"})); 
+	// const json = '{"result":true, "count":42}';
+	// console.log(JSON.parse(json)); 
+	const default_settings = JSON.parse(default_settings_json); 
+	console.log(default_settings);
+	console.log(default_settings.libebur128_path);
+
 	const processors = [ "All", "2", "4", "6", "8", "10", "12" ]
 
 	function populateProcessors() {
@@ -160,6 +445,38 @@
 	}
 
 	init();
+
+	/* https://stackoverflow.com/questions/34156282/how-do-i-save-json-to-local-text-file */
+
+	function export2txt() {
+	  const originalData = {
+	    members: [{
+		name: "cliff",
+		age: "34"
+	      },
+	      {
+		name: "ted",
+		age: "42"
+	      },
+	      {
+		name: "bob",
+		age: "12"
+	      }
+	    ]
+	  };
+
+	  const a = document.createElement("a");
+	  a.href = URL.createObjectURL(new Blob([JSON.stringify(originalData, null, 2)], {
+	    type: "text/plain"
+	  }));
+	  a.setAttribute("download", "data.txt");
+	  document.body.appendChild(a);
+	  a.click();
+	  document.body.removeChild(a);
+	}
+
+	function applyPreset() {
+	}
 
 </script>
 </body>
