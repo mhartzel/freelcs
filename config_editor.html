@@ -9,6 +9,7 @@
 	<!-- https://teamtreehouse.com/community/get-value-of-text-input-element-store-in-variable -->
 
 	<!--
+		https://stackoverflow.com/questions/34156282/how-do-i-save-json-to-local-text-file
 		https://stackoverflow.com/questions/67857621/how-to-show-file-content-in-html
 		https://www.geeksforgeeks.org/javascript/how-to-read-a-local-text-file-using-javascript/
 		https://www.sitepoint.com/community/t/getting-content-of-the-file/294355
@@ -151,38 +152,30 @@
 			<label>Language Of hotfolder paths and result graphics</label>
 		</div>
 		<div class="radio-buttons">
-			<input type="radio" id="English" name="language" value="english" checked />
+			<input type="radio" id="English" name="language" value="english" checked onchange="language_selection()"/>
 			<label for="English">English</label>
-			<input type="radio" id="Finnish" name="language" value="finnish" />
+			<input type="radio" id="Finnish" name="language" value="finnish" onchange="language_selection()"/>
 			<label for="Finnish">Finnish</label>
 		</div>
         </div>
 	<div class="drop-box">
 		<div class="drop-box-group">
                 <label>Number Of Processor Cores To Use</label>
-                <select id="NumProcessors" onchange="applyPreset()">
-                    <!-- <option value="all">All Processors</option>
-                    <option value="2">2</option>
-                    <option value="4">4</option>
-                    <option value="6">6</option>
-                    <option value="8">8</option>
-		    <option value="10">10</option> -->
+                <select id="NumProcessors" onchange="update_number_of_cores()">
                 </select>
             </div>
         </div>
 	<div class="drop-box">
 		<div class="drop-box-group">
                 <label>File Expiry Time In Minutes</label>
-                <select id="FileExpiry" onchange="applyPreset()">
-                    <option value="default">480</option>
+                <select id="FileExpiry" onchange="updateFileExpiryTime()">
                 </select>
             </div>
         </div>
 	<div class="drop-box">
 		<div class="drop-box-group">
                 <label>Target Loudness Level (LUFS)</label>
-                <select id="TargetLufs" onchange="applyPreset()">
-                    <option value="default">-23</option>
+                <select id="TargetLoudness" onchange="updateTargetLoudness()">
                 </select>
             </div>
         </div>
@@ -212,6 +205,10 @@
 </div>
 <script>
 	var debug = true;
+
+	////////////////////////////////////////////
+	// Define initial values for the settings //
+	////////////////////////////////////////////
 
 	const default_settings_json = '{\
 	  "language": "english",\
@@ -405,27 +402,87 @@
 	  "number_of_all_items_in_dictionary": 55\
 }';
 
+	// Get default settings from the json - text to a javascript map //
 	var default_settings = JSON.parse(default_settings_json); 
-	console.log(default_settings);
-	console.log(default_settings.libebur128_path);
 
-	const processors = [ "All", "2", "4", "6", "8", "10", "12" ]
+	if (debug == true) {
+		console.log(default_settings);
+		}
+
+	//////////////////////////////////////
+	// Function definitions starts here //
+	//////////////////////////////////////
+
+	const processors = [ "All", "2", "4", "6", "8", "10", "12", "14", "16", "18", "20", "22", "24", "26", "28", "30", "32", "34", "36", "38", "40", "42", "44", "46", "48", "50", "52", "54", "56", "58", "60", "62", "64" ]
 
 	function populateProcessors() {
 		const selection = document.getElementById('NumProcessors');
-		/* processors.forEach((item, index) => { */
+
 		processors.forEach((item, index) => {
 			const option = document.createElement('option');
-			/* option.value = index ; */
 			option.value = index ;
-			/* option.innerText = item.name; */
 			option.innerText = item;
 			selection.appendChild(option);
 		});
 	}
 
+	function update_number_of_cores() {
+		default_settings.number_of_processor_cores = document.getElementById("NumProcessors").options[document.getElementById("NumProcessors").selectedIndex].text;
+
+		if (debug == true) {
+			console.log("number_of_processor_cores =", default_settings.number_of_processor_cores);
+		}
+	}
+
+	const file_expiry_times = [ "60", "90", "120", "180", "240", "300", "360", "420", "480", "540", "600", "660", "720", "780", "840", "900", "960" ]
+
+	function populateFileExpiryTime() {
+		const selection = document.getElementById('FileExpiry');
+
+		file_expiry_times.forEach((item, index) => {
+
+			const option = document.createElement('option');
+			option.value = index ;
+			option.innerText = item;
+			selection.appendChild(option);
+		});
+
+		document.getElementById('FileExpiry').selectedIndex = 8;
+	}
+
+	function updateFileExpiryTime() {
+		default_settings.file_expiry_time = document.getElementById("FileExpiry").options[document.getElementById("FileExpiry").selectedIndex].text * 60;
+
+		if (debug == true) {
+			console.log("file_expiry_time =", default_settings.file_expiry_time);
+		}
+	}
+
+	const target_loudness = [ "-12", "-13", "-14", "-15", "-16", "-17", "-18", "-19", "-20", "-21", "-22", "-23", "-24", "-25", "-26", "-27", "-28", "-29", "-30", "-31" ]
+
+	function populateTargetLoudness() {
+		const selection = document.getElementById('TargetLoudness');
+
+		target_loudness.forEach((item, index) => {
+
+			const option = document.createElement('option');
+			option.value = index ;
+			option.innerText = item;
+			selection.appendChild(option);
+		});
+
+		document.getElementById('TargetLoudness').selectedIndex = 11;
+	}
+
+	function updateTargetLoudness() {
+		default_settings.target_loudness = document.getElementById("TargetLoudness").options[document.getElementById("TargetLoudness").selectedIndex].text;
+
+		if (debug == true) {
+			console.log("target_loudness", default_settings.target_loudness);
+		}
+	}
+
 	/* Export settings to a json - file */
-	/* https://stackoverflow.com/questions/34156282/how-do-i-save-json-to-local-text-file */
 	function export_settings() {
 		const a = document.createElement("a");
 		a.href = URL.createObjectURL(new Blob([JSON.stringify(default_settings, null, 2)], { type: "text/plain" }));
@@ -446,37 +503,67 @@
 			}
 	}
 
+	function language_selection() {
+
+		// hotfolder_path
+		// directory_for_results
+		// web_page_path
+		// web_page_name
+
+		if (document.getElementById("English").checked == true) {
+			default_settings.language = "english";
+			default_settings.english = "1";
+			default_settings.finnish = "0";
+		} else {
+			default_settings.language = "finnish";
+			default_settings.english = "0";
+			default_settings.finnish = "1";
+		}
+
+		if (debug == true) {
+			console.log("language =",default_settings.language);
+			console.log("english =", default_settings.english);
+			console.log("finnish =", default_settings.finnish);
+		}
+	}
+
 	function init() {
 		populateProcessors();
 		document.getElementById('NumProcessors').value = "0";
 		applyPreset();
 		document.getElementById("HotfolderPath").value = default_settings.hotfolder_path;
+		populateFileExpiryTime();
+		populateTargetLoudness();
 
-		// Read LoudnessCorrection_Settings.json - file
-		document.getElementById('inputfile').addEventListener('change', function() {
-			var fr=new FileReader();
-
-			fr.onload=function(){
-
-				try {
-					JSON.parse(fr.result);
-				} catch (e) {
-					alert("File is not valid json");
-					return
-				}
-
-				default_settings = JSON.parse(fr.result);
-				init();
-
-				if (debug == true) {
-					console.log(fr.result);
-				}
-			}
-
-			fr.readAsText(this.files[0]);
-		})
 	}
 
+	////////////////////////////////////
+	// Function definitions ends here //
+	////////////////////////////////////
+
+	// Read LoudnessCorrection_Settings.json - file
+	document.getElementById('inputfile').addEventListener('change', function() {
+		var fr=new FileReader();
+
+		fr.onload=function(){
+
+			try {
+				JSON.parse(fr.result);
+			} catch (e) {
+				alert("File is not valid json");
+				return
+			}
+
+			default_settings = JSON.parse(fr.result);
+			init();
+
+			if (debug == true) {
+				console.log(fr.result);
+			}
+		}
+
+		fr.readAsText(this.files[0]);
+	})
 	init();
 
 </script>
