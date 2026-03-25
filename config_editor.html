@@ -143,23 +143,6 @@
 	<div class="main-interface">
 	<div class="drop-box">
 		<div class="drop-box-group">
-			<label>Hotfolder Path</label>
-			<input id="HotfolderPath" type="text" value="" size="40" onkeyup="update_folder_name()"/>
-		</div>
-	</div>
-	<div class="drop-box">
-		<div class="drop-box-group">
-			<label>Language Of hotfolder paths and result graphics</label>
-		</div>
-		<div class="radio-buttons">
-			<input type="radio" id="English" name="language" value="english" checked onchange="language_selection()"/>
-			<label for="English">English</label>
-			<input type="radio" id="Finnish" name="language" value="finnish" onchange="language_selection()"/>
-			<label for="Finnish">Finnish</label>
-		</div>
-        </div>
-	<div class="drop-box">
-		<div class="drop-box-group">
                 <label>Number Of Processor Cores To Use</label>
                 <select id="NumProcessors" onchange="update_number_of_cores()">
                 </select>
@@ -181,25 +164,28 @@
         </div>
 	<div class="drop-box">
 		<div class="drop-box-group">
-                <label>Testi</label>
-                <select id="TargetLufs" onchange="applyPreset()">
-                    <option value="default">Pudotusvalikko</option>
-                </select>
-            </div>
-        </div>
+			<label>Email Address</label>
+			<input id="HotfolderPath" type="text" value="" size="40" onkeyup="update_folder_name()"/>
+		</div>
+	</div>
 	<div class="drop-box">
 		<div class="drop-box-group">
-                <label>Testi2</label>
-                <select id="TargetLufs" onchange="applyPreset()">
-                    <option value="default">Pudotusvalikko</option>
-                </select>
-            </div>
+			<label>Language Of hotfolder paths and result graphics</label>
+		</div>
+		<div class="radio-buttons">
+			<input type="radio" id="English" name="language" value="english" checked onchange="language_selection()"/>
+			<label for="English">English</label>
+			<input type="radio" id="Finnish" name="language" value="finnish" onchange="language_selection()"/>
+			<label for="Finnish">Finnish</label>
+		</div>
         </div>
-
 	</div>
 	<!-- https://stackoverflow.com/questions/34156282/how-do-i-save-json-to-local-text-file -->
 	<div class="file-load-save">
 		<button onclick="export_settings()">Save data to LoudnessCorrection_Settings.json</button>
+	</div>
+	<div class="file-load-save">
+		<button onclick="export_samba_config()">Save sample Samba - config</button>
 	</div>
 
 </div>
@@ -216,6 +202,7 @@
 	  "finnish": 0,\
 	  "target_path": "/mountpoint",\
 	  "hotfolder_path": "/mountpoint/LoudnessCorrection",\
+	  "hotfolder_name": "LoudnessCorrection",\
 	  "directory_for_temporary_files": "/mountpoint/00-Loudness_Calculation_Temporary_Files",\
 	  "directory_for_results": "/mountpoint/LoudnessCorrection/00-Corrected_Files",\
 	  "delay_between_directory_reads": 5,\
@@ -254,9 +241,9 @@
 	  "where_to_send_error_messages": [\
 	    "logfile"\
 	  ],\
-	  "config_file_created_by_installer_version": "138",\
+	  "config_file_created_by_installer_version": "200",\
 	  "peak_measurement_method": "--peak=true",\
-	  "freelcs_version": "3.2",\
+	  "freelcs_version": "4.0",\
 	  "use_freelcs_file_output_defaults": true,\
 	  "write_loudness_calculation_results_to_a_machine_readable_file": false,\
 	  "create_loudness_corrected_files": true,\
@@ -402,11 +389,41 @@
 	  "number_of_all_items_in_dictionary": 55\
 }';
 
+const samba_config_json = '[ "# Samba Configuration File\\n",\
+	"\\n",\
+	"[global]\\n",\
+	"workgroup = WORKGROUP\\n",\
+	"server string = %h server (Samba, LoudnessCorrection)\\n",\
+	"force create mode = 0777\\n",\
+	"unix extensions = no\\n",\
+	"log file = /var/log/samba/log.%m\\n",\
+	"max log size = 1000\\n",\
+	"syslog = 0\\n",\
+	"panic action = /usr/share/samba/panic-action %d\\n",\
+	"security = user\\n",\
+	"socket options = TCP_NODELAY\\n",\
+	"load printers = no\\n",\
+	"force create mode = 0777\\n",\
+	"map to guest = never\\n",\
+	"# username map = /etc/samba/user.map\\n",\
+	"server min protocol = SMB2\\n",\
+	"\\n",\
+	"[LoudnessCorrection]\\n",\
+	"comment = LoudnessCorrection\\n",\
+	"read only = no\\n",\
+	"locking = no\\n",\
+	"path = /mountpoint/LoudnessCorrection\\n",\
+	"guest ok = no\\n",\
+	"browseable = yes\\n",\
+	"# force user = freelcs\\n" ]';
+
 	// Get default settings from the json - text to a javascript map //
 	var default_settings = JSON.parse(default_settings_json); 
+	var samba_config = JSON.parse(samba_config_json); 
 
 	if (debug == true) {
 		console.log(default_settings);
+		console.log(samba_config);
 		}
 
 	//////////////////////////////////////
@@ -480,16 +497,28 @@
 		if (debug == true) {
 			console.log("target_loudness", default_settings.target_loudness);
 		}
+
+		language_selection();
 	}
 
 	/* Export settings to a json - file */
 	function export_settings() {
-		const a = document.createElement("a");
-		a.href = URL.createObjectURL(new Blob([JSON.stringify(default_settings, null, 2)], { type: "text/plain" }));
-		a.setAttribute("download", "LoudnessCorrection_Settings.json");
-		document.body.appendChild(a);
-		a.click();
-		document.body.removeChild(a);
+		const element = document.createElement("a");
+		element.href = URL.createObjectURL(new Blob([JSON.stringify(default_settings, null, 2)], { type: "text/plain" }));
+		element.setAttribute("download", "LoudnessCorrection_Settings.json");
+		document.body.appendChild(element);
+		element.click();
+		document.body.removeChild(element);
+	}
+
+	/* Export sample Samba - config as plain text */
+	function export_samba_config() {
+		const element = document.createElement("a");
+		element.href = URL.createObjectURL(new Blob(samba_config, { type: "text/plain" }));
+		element.setAttribute("download", "smb.conf");
+		document.body.appendChild(element);
+		element.click();
+		document.body.removeChild(element);
 	}
 
 	function applyPreset() {
@@ -503,28 +532,75 @@
 			}
 	}
 
-	function language_selection() {
+	function change_samba_config_folder_name() {
+		var counter = 0;
+		var search_term = "";
+		var replace_term = "";
 
-		// hotfolder_path
-		// directory_for_results
-		// web_page_path
-		// web_page_name
+		// samba_config = JSON.parse(samba_config_json); 
+
+		if (default_settings.english == 1) {
+			search_term = "AanekkyysKorjaus"
+			replace_term = default_settings.hotfolder_name;
+		} else {
+			search_term = "LoudnessCorrection"
+			replace_term = default_settings.hotfolder_name;
+		}
+
+		for (const value of samba_config) {
+
+			if (value.includes(search_term)) {
+				samba_config[counter] = value.replace(search_term, replace_term);
+			}
+			counter = counter + 1;
+		}
+
+		if (debug == true) {
+			console.log(samba_config);
+		}
+	}
+
+	function language_selection() {
 
 		if (document.getElementById("English").checked == true) {
 			default_settings.language = "english";
 			default_settings.english = "1";
 			default_settings.finnish = "0";
+			default_settings.hotfolder_name = "LoudnessCorrection";
+
+			if (default_settings.target_loudness != "-23") {
+				default_settings.hotfolder_name = default_settings.hotfolder_name + "_" + default_settings.target_loudness + "_LUFS";
+			}
+
+			default_settings.hotfolder_path = default_settings.target_path + "/" + default_settings.hotfolder_name;
+			default_settings.directory_for_results = default_settings.hotfolder_path + "/00-Corrected_Files";
+			default_settings.web_page_path = default_settings.hotfolder_path + "/00-Calculation_Queue_Information";
 		} else {
 			default_settings.language = "finnish";
 			default_settings.english = "0";
 			default_settings.finnish = "1";
+			default_settings.hotfolder_name = "AanekkyysKorjaus";
+
+			if (default_settings.target_loudness != "-23") {
+				default_settings.hotfolder_name = default_settings.hotfolder_name + "_" + default_settings.target_loudness + "_LUFS";
+			}
+
+			default_settings.hotfolder_path = default_settings.target_path + "/" + default_settings.hotfolder_name;
+			default_settings.directory_for_results = default_settings.hotfolder_path + "/00-Korjatut_Tiedostot";
+			default_settings.web_page_path = default_settings.hotfolder_path + "/00-Laskentajonon_Tiedot";
 		}
 
 		if (debug == true) {
 			console.log("language =",default_settings.language);
 			console.log("english =", default_settings.english);
 			console.log("finnish =", default_settings.finnish);
+			console.log("hotfolder_name =", default_settings.hotfolder_name);
+			console.log("hotfolder_path =", default_settings.hotfolder_path);
+			console.log("directory_for_results =", default_settings.directory_for_results);
+			console.log("web_page_path =", default_settings.web_page_path);
 		}
+
+		change_samba_config_folder_name();
 	}
 
 	function init() {
