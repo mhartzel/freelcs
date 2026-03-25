@@ -534,23 +534,13 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 
 	function change_samba_config_folder_name() {
 		var counter = 0;
-		var search_term = "";
-		var replace_term = "";
 
-		// samba_config = JSON.parse(samba_config_json); 
-
-		if (default_settings.english == 1) {
-			search_term = "AanekkyysKorjaus"
-			replace_term = default_settings.hotfolder_name;
-		} else {
-			search_term = "LoudnessCorrection"
-			replace_term = default_settings.hotfolder_name;
-		}
+		samba_config = JSON.parse(samba_config_json); 
 
 		for (const value of samba_config) {
 
-			if (value.includes(search_term)) {
-				samba_config[counter] = value.replace(search_term, replace_term);
+			if (value.includes("LoudnessCorrection")) {
+				samba_config[counter] = value.replace("LoudnessCorrection", default_settings.hotfolder_name);
 			}
 			counter = counter + 1;
 		}
