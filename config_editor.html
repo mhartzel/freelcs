@@ -15,6 +15,9 @@
 		https://www.sitepoint.com/community/t/getting-content-of-the-file/294355
 		https://developer.mozilla.org/en-US/docs/Web/API/FileReader
 		https://developer.mozilla.org/en-US/docs/Web/API/File_System_API
+		Forms: https://mailtrap.io/blog/javascript-send-email/
+		Email nodemailer: https://sendlayer.com/blog/how-to-send-email-with-javascript/
+		Emai: https://www.vmayo.com/knowledge-base/smtp-server/how-to-send-emails-from-javascript/
 	-->
 
 <head>
@@ -179,6 +182,55 @@
 			<label for="Finnish">Finnish</label>
 		</div>
         </div>
+	<div class="drop-box">
+		<div class="drop-box-group">
+			<label>Send FreeLCS error messages through email</label>
+		</div>
+		<div class="radio-buttons">
+			<input type="radio" id="send_email_yes" name="send_email" value="yes" onchange="send_email()"/>
+			<label for="Yes">Yes</label>
+			<input type="radio" id="send_email_no" name="send_email" value="no" checked onchange="send_email()"/>
+			<label for="No">No</label>
+		</div>
+        </div>
+	<div class="drop-box">
+		<div class="drop-box-group">
+			<label>Smtp Server requires TLS encryption</label>
+		</div>
+		<div class="radio-buttons">
+			<input type="radio" id="tls_encryption_yes" name="tls_encryption" value="yes" checked disabled onchange="language_selection()"/>
+			<label for="Yes">Yes</label>
+			<input type="radio" id="tls_encryption_no" name="tls_encryption" value="no" disabled onchange="language_selection()"/>
+			<label for="No">No</label>
+		</div>
+        </div>
+	<div class="drop-box">
+		<div class="drop-box-group">
+			<label>Smtp Server requires authentication</label>
+		</div>
+		<div class="radio-buttons">
+			<input type="radio" id="email_authentication_yes" name="email_authentication" value="yes" checked disabled onchange="language_selection()"/>
+			<label for="Yes">Yes</label>
+			<input type="radio" id="email_authentication_no" name="email_authentication" value="no" disabled onchange="language_selection()"/>
+			<label for="No">No</label>
+		</div>
+        </div>
+	<div class="drop-box">
+		<div class="drop-box-group">
+			<label>Start HeartBeat Checker</label>
+		</div>
+		<div class="radio-buttons">
+			<input type="radio" id="start_heartbeat_checker_yes" name="start_heartbeat_checker" value="yes" checked disabled onchange="language_selection()"/>
+			<label for="Yes">Yes</label>
+			<input type="radio" id="start_heartbeat_checker_no" name="start_heartbeat_checker" value="no" disabled onchange="language_selection()"/>
+			<label for="No">No</label>
+		</div>
+        </div>
+	<form action="mailto:you@yourdmainhere.com" method="post" enctype="text/plain">
+		FirstName: <input type="text" name="FirstName">
+		Email: <input type="text" name="Email">
+		<input type="submit" name="submit" value="Submit">
+	</form>
 	</div>
 	<!-- https://stackoverflow.com/questions/34156282/how-do-i-save-json-to-local-text-file -->
 	<div class="file-load-save">
@@ -190,6 +242,7 @@
 
 </div>
 <script>
+
 	var debug = true;
 
 	////////////////////////////////////////////
@@ -592,6 +645,34 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 
 		change_samba_config_folder_name();
 	}
+
+	function send_email() {
+
+		const send_email_no = document.getElementById('send_email_no');
+		const email_authentication_yes = document.getElementById('email_authentication_yes');
+		const email_authentication_no = document.getElementById('email_authentication_no');
+		const tls_encryption_yes = document.getElementById('tls_encryption_yes');
+		const tls_encryption_no = document.getElementById('tls_encryption_no');
+		const start_heartbeat_checker_yes = document.getElementById('start_heartbeat_checker_yes');
+		const start_heartbeat_checker_no = document.getElementById('start_heartbeat_checker_no');
+
+		if (send_email_no.checked == true) {
+			email_authentication_yes.disabled = true;
+			email_authentication_no.disabled = true;
+			tls_encryption_yes.disabled = true;
+			tls_encryption_no.disabled = true;
+			start_heartbeat_checker_yes.disabled = true;
+			start_heartbeat_checker_no.disabled = true;
+		} else {
+			email_authentication_yes.disabled = false;
+			email_authentication_no.disabled = false;
+			tls_encryption_yes.disabled = false;
+			tls_encryption_no.disabled = false;
+			start_heartbeat_checker_yes.disabled = false;
+			start_heartbeat_checker_no.disabled = false;
+		}
+	}
+
 
 	function init() {
 		populateProcessors();
