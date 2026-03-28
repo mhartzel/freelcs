@@ -52,8 +52,6 @@
 		border: 1px solid #ccc;
 		border-radius: 8px;
 		box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-		/* width: 90%; */
-		/* max-width: 90%; */
 		padding: 25px;
         }
 
@@ -100,7 +98,7 @@
 
         .drop-box-group select {
 		/* width: 100%; */
-		padding: 10px;
+		padding: 4px;
 		font-size: 1rem;
 		border: 1px solid #ccc;
 		border-radius: 4px;
@@ -207,7 +205,7 @@
         </div>
 	<div class="drop-box">
 		<div class="drop-box-group">
-			<label>Send FreeLCS error messages by email</label>
+			<label>Send error messages by email</label>
 		</div>
 		<div class="radio-buttons">
 			<input type="radio" id="send_email_yes" name="send_email" value="yes" onchange="send_email()"/>
@@ -217,12 +215,18 @@
 		</div>
 		<br>
 		<div class="drop-box-group">
+			<label>Email sending interval</label>
+			<select id="email_sending_interval" onchange="updateEmailSending_interval()">
+		</select>
+	    </div>
+		<br>
+		<div class="drop-box-group">
 			<label>Smtp Server requires TLS encryption</label>
 		</div>
 		<div class="radio-buttons">
-			<input type="radio" id="tls_encryption_yes" name="tls_encryption" value="yes" checked disabled onchange="language_selection()"/>
+			<input type="radio" id="tls_encryption_yes" name="tls_encryption" value="yes" disabled onchange="tls_encryption()"/>
 			<label for="Yes">Yes</label>
-			<input type="radio" id="tls_encryption_no" name="tls_encryption" value="no" disabled onchange="language_selection()"/>
+			<input type="radio" id="tls_encryption_no" name="tls_encryption" value="no" checked disabled onchange="tls_encryption()"/>
 			<label for="No">No</label>
 		</div>
         </div>
@@ -231,9 +235,9 @@
 			<label>Smtp Server requires authentication</label>
 		</div>
 		<div class="radio-buttons">
-			<input type="radio" id="email_authentication_yes" name="email_authentication" value="yes" checked disabled onchange="language_selection()"/>
+			<input type="radio" id="email_authentication_yes" name="email_authentication" value="yes" disabled onchange="email_authentication()"/>
 			<label for="Yes">Yes</label>
-			<input type="radio" id="email_authentication_no" name="email_authentication" value="no" disabled onchange="language_selection()"/>
+			<input type="radio" id="email_authentication_no" name="email_authentication" value="no" checked disabled onchange="email_authentication()"/>
 			<label for="No">No</label>
 		</div>
 		<br>
@@ -241,9 +245,9 @@
 			<label>Start HeartBeat Checker</label>
 		</div>
 		<div class="radio-buttons">
-			<input type="radio" id="start_heartbeat_checker_yes" name="start_heartbeat_checker" value="yes" checked disabled onchange="language_selection()"/>
+			<input type="radio" id="start_heartbeat_checker_yes" name="start_heartbeat_checker" value="yes" disabled onchange="start_heartbeat_checker()"/>
 			<label for="Yes">Yes</label>
-			<input type="radio" id="start_heartbeat_checker_no" name="start_heartbeat_checker" value="no" disabled onchange="language_selection()"/>
+			<input type="radio" id="start_heartbeat_checker_no" name="start_heartbeat_checker" value="no" checked disabled onchange="start_heartbeat_checker()"/>
 			<label for="No">No</label>
 		</div>
         </div>
@@ -593,6 +597,30 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 		}
 	}
 
+	const email_sending_intervals = ["1", "2", "3", "4", "5", "10", "12", "15", "18", "20", "25", "30", "40", "50", "60", "90", "120", "180", "240", "300"]
+
+	function populateEmailSending_interval() {
+		const selection = document.getElementById('email_sending_interval');
+
+		email_sending_intervals.forEach((item, index) => {
+
+			const option = document.createElement('option');
+			option.value = index ;
+			option.innerText = item;
+			selection.appendChild(option);
+		});
+
+		document.getElementById('email_sending_interval').selectedIndex = 11;
+	}
+
+	function updateEmailSending_interval() {
+		default_settings.email_sending_details.email_sending_interval = document.getElementById("email_sending_interval").options[document.getElementById("email_sending_interval").selectedIndex].text * 60;
+
+		if (debug == true) {
+			console.log("email_sending_interval", default_settings.email_sending_details.email_sending_interval);
+		}
+	}
+
 	const target_loudness = [ "-12", "-13", "-14", "-15", "-16", "-17", "-18", "-19", "-20", "-21", "-22", "-23", "-24", "-25", "-26", "-27", "-28", "-29", "-30", "-31" ]
 
 	function populateTargetLoudness() {
@@ -723,6 +751,8 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 		const email_address = document.getElementById('email_address');
 
 		if (send_email_no.checked == true) {
+			default_settings.send_error_messages_by_email = false;
+			default_settings.email_sending_details.send_error_messages_by_email = false;
 			email_authentication_yes.disabled = true;
 			email_authentication_no.disabled = true;
 			tls_encryption_yes.disabled = true;
@@ -742,6 +772,8 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 			document.getElementById("smtp_server_password").disabled=true;
 			document.getElementById("smtp_server_submit_button").disabled=true;
 		} else {
+			default_settings.send_error_messages_by_email = true;
+			default_settings.email_sending_details.send_error_messages_by_email = true;
 			email_authentication_yes.disabled = false;
 			email_authentication_no.disabled = false;
 			tls_encryption_yes.disabled = false;
@@ -760,6 +792,50 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 			document.getElementById("smtp_server_username").disabled=false;
 			document.getElementById("smtp_server_password").disabled=false;
 			document.getElementById("smtp_server_submit_button").disabled=false;
+		}
+
+		if (debug == true) {
+			console.log("send_error_messages_by_email:", default_settings.send_error_messages_by_email);
+			console.log("email_sending_details.send_error_messages_by_email:", default_settings.email_sending_details.send_error_messages_by_email);
+		}
+	}
+
+	function tls_encryption() {
+
+		if (document.getElementById("tls_encryption_yes").checked == true) {
+			default_settings.email_sending_details.use_tls = true;
+		} else {
+			default_settings.email_sending_details.use_tls = false;
+		}
+
+		if (debug == true) {
+			console.log("use_tls:", default_settings.email_sending_details.use_tls);
+		}
+	}
+
+	function email_authentication() {
+
+		if (document.getElementById("email_authentication_yes").checked == true) {
+			default_settings.email_sending_details.smtp_server_requires_authentication = true;
+		} else {
+			default_settings.email_sending_details.smtp_server_requires_authentication = false;
+		}
+
+		if (debug == true) {
+			console.log("smtp_server_requires_authentication:", default_settings.email_sending_details.smtp_server_requires_authentication);
+		}
+	}
+
+	function start_heartbeat_checker() {
+
+		if (document.getElementById("start_heartbeat_checker_yes").checked == true) {
+			default_settings.heartbeat = true;
+		} else {
+			default_settings.heartbeat = false;
+		}
+
+		if (debug == true) {
+			console.log("Star HeartBeat Checker:", default_settings.heartbeat);
 		}
 	}
 
@@ -861,6 +937,7 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 		document.getElementById("HotfolderPath").value = default_settings.hotfolder_path;
 		populateFileExpiryTime();
 		populateTargetLoudness();
+		populateEmailSending_interval();
 
 	}
 
