@@ -69,6 +69,7 @@
 		font-size: 1.8rem;
 		color: var(--ibm-blue);
 	}
+
         .subtitle {
 		color: #555;
 		font-size: 0.9rem;
@@ -89,12 +90,14 @@
 		margin-right: 8px;
 		align-self: stretch;
         }
+
         .drop-box-group label {
 		display: block;
 		font-weight: 700;
 		margin-bottom: 8px;
 		color: var(--ibm-blue);
         }
+
         .drop-box-group select {
 		/* width: 100%; */
 		padding: 10px;
@@ -104,6 +107,7 @@
 		height: fit-content;
 		width: fit-content;
         }
+
         .hint {
 		font-size: 0.8rem;
 		color: #777;
@@ -121,6 +125,7 @@
 		margin-bottom: 8px;
 		margin-right: 8px;
         }
+
         .radio-buttons {
 		font-size: 0.8rem;
         }
@@ -129,6 +134,17 @@
 		font-weight: 700;
 		margin-bottom: 8px;
 		color: var(--green);
+        }
+
+        .smtp-group {
+		background: white;
+		padding: 20px;
+		border: 1px solid #ddd;
+		border-radius: 6px;
+		margin-bottom: 8px;
+		margin-right: 8px;
+		align-self: stretch;
+		input { float: right }
         }
 
     </style>
@@ -199,8 +215,7 @@
 			<input type="radio" id="send_email_no" name="send_email" value="no" checked onchange="send_email()"/>
 			<label for="No">No</label>
 		</div>
-        </div>
-	<div class="drop-box">
+		<br>
 		<div class="drop-box-group">
 			<label>Smtp Server requires TLS encryption</label>
 		</div>
@@ -221,8 +236,7 @@
 			<input type="radio" id="email_authentication_no" name="email_authentication" value="no" disabled onchange="language_selection()"/>
 			<label for="No">No</label>
 		</div>
-        </div>
-	<div class="drop-box">
+		<br>
 		<div class="drop-box-group">
 			<label>Start HeartBeat Checker</label>
 		</div>
@@ -233,9 +247,6 @@
 			<label for="No">No</label>
 		</div>
         </div>
-
-
-
 	<div class="drop-box">
 		<div class="drop-box-group">
 		<label>Add email addresses</label>
@@ -254,9 +265,38 @@
 		<br>
 		<button id="email_submit_button" disabled onclick="submit_email_addresses()">Submit All</button>
         </div>
+	<div class="drop-box">
+		<div class="smtp-group">
+		<form id="smtp_server_details">
+			Smtp server name <input list="smtp_servers" id="smtp_server_name" name="stmp_server_dropbox" disabled>
 
+			<datalist id="smtp_servers">
+				<option value="smtp.gmail.com">
+			</datalist>
+			<br>
+			<br>
+			Smtp server port <input list="smtp_server_ports" id="smtp_server_port" name="stmp_server_port_dropbox" disabled>
 
-
+			<datalist id="smtp_server_ports">
+				<option value="25">
+				<option value="465">
+				<option value="587">
+			</datalist>
+			<br>
+			<br>
+			Smtp username <input type="text" id="smtp_server_username" name="stmp_server_username" disabled>
+			<br>
+			<br>
+			Smtp password <input type="text" id="smtp_server_password" name="stmp_server_password" disabled>
+			<br>
+			<br>
+		</form> 
+		<div class="form-ok label">
+			<button id="smtp_server_submit_button" disabled onclick="submit_email_server_details()">Submit All</button>
+			<label id="smtp_details_saved" colour="green" hidden>&nbsp;&nbsp;Saved</label><br>
+		</div>
+		</div>
+        </div>
 	</div>
 	<!-- https://stackoverflow.com/questions/34156282/how-do-i-save-json-to-local-text-file -->
 	<div class="file-load-save">
@@ -696,6 +736,11 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 			document.getElementById("email_address").elements[3].disabled=true;
 			document.getElementById("email_address").elements[4].disabled=true;
 			document.getElementById("email_submit_button").disabled=true;
+			document.getElementById("smtp_server_name").disabled=true;
+			document.getElementById("smtp_server_port").disabled=true;
+			document.getElementById("smtp_server_username").disabled=true;
+			document.getElementById("smtp_server_password").disabled=true;
+			document.getElementById("smtp_server_submit_button").disabled=true;
 		} else {
 			email_authentication_yes.disabled = false;
 			email_authentication_no.disabled = false;
@@ -710,6 +755,11 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 			document.getElementById("email_address").elements[3].disabled=false;
 			document.getElementById("email_address").elements[4].disabled=false;
 			document.getElementById("email_submit_button").disabled=false;
+			document.getElementById("smtp_server_name").disabled=false;
+			document.getElementById("smtp_server_port").disabled=false;
+			document.getElementById("smtp_server_username").disabled=false;
+			document.getElementById("smtp_server_password").disabled=false;
+			document.getElementById("smtp_server_submit_button").disabled=false;
 		}
 	}
 
@@ -785,6 +835,24 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 		}
 	}
 
+	function submit_email_server_details() {
+		default_settings.email_sending_details.smtp_server_name = document.getElementById("smtp_server_details").elements[0].value;
+		default_settings.email_sending_details.smtp_server_port = document.getElementById("smtp_server_details").elements[1].value;
+		default_settings.email_sending_details.smtp_username = document.getElementById("smtp_server_details").elements[2].value.trim();
+		default_settings.email_sending_details.smtp_password = document.getElementById("smtp_server_details").elements[3].value.trim();
+
+		document.getElementById("smtp_details_saved").hidden=false;
+
+		setTimeout(() => {
+			document.getElementById("smtp_details_saved").hidden=true;
+		}, 1500);
+
+		if (debug == true) {
+			console.log("email_sending_details.smtp_server_name:", default_settings.email_sending_details.smtp_server_name,":", default_settings.email_sending_details.smtp_server_port);
+			console.log("email_sending_details.smtp_username:", default_settings.email_sending_details.smtp_username);
+			console.log("email_sending_details.smtp_password:", default_settings.email_sending_details.smtp_password);
+		}
+	}
 
 	function init() {
 		populateProcessors();
