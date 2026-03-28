@@ -34,6 +34,7 @@
 		--switch-slot: #111;
 		--text-color: #333;
 		--gold: #d4af37;
+		--green: #0ba63a;
         }
 
         body {
@@ -124,6 +125,12 @@
 		font-size: 0.8rem;
         }
 
+        .form-ok label {
+		font-weight: 700;
+		margin-bottom: 8px;
+		color: var(--green);
+        }
+
     </style>
 </head>
 <body>
@@ -184,7 +191,7 @@
         </div>
 	<div class="drop-box">
 		<div class="drop-box-group">
-			<label>Send FreeLCS error messages through email</label>
+			<label>Send FreeLCS error messages by email</label>
 		</div>
 		<div class="radio-buttons">
 			<input type="radio" id="send_email_yes" name="send_email" value="yes" onchange="send_email()"/>
@@ -226,22 +233,40 @@
 			<label for="No">No</label>
 		</div>
         </div>
-	<form action="mailto:you@yourdmainhere.com" method="post" enctype="text/plain">
-		FirstName: <input type="text" name="FirstName">
-		Email: <input type="text" name="Email">
-		<input type="submit" name="submit" value="Submit">
-	</form>
+
+
+
+	<div class="drop-box">
+		<div class="drop-box-group">
+		<label>Add email addresses</label>
+		</div>
+
+		<div class="form-ok label">
+		<form id="email_address">
+			Email 1  <input type="text" name="email_1" value="" disabled><label id="ok_1" colour="green" hidden> Saved</label> <br>
+			Email 2  <input type="text" name="email_2" value="" disabled><label id="ok_2" colour="green" hidden> Saved</label> <br>
+			Email 3  <input type="text" name="email_3" value="" disabled><label id="ok_3" colour="green" hidden> Saved</label> <br>
+			Email 4  <input type="text" name="email_4" value="" disabled><label id="ok_4" colour="green" hidden> Saved</label> <br>
+			Email 5  <input type="text" name="email_5" value="" disabled><label id="ok_5" colour="green" hidden> Saved</label> <br>
+		</form> 
+		</div>
+
+		<br>
+		<button id="email_submit_button" disabled onclick="submit_email_addresses()">Submit All</button>
+        </div>
+
+
+
 	</div>
 	<!-- https://stackoverflow.com/questions/34156282/how-do-i-save-json-to-local-text-file -->
 	<div class="file-load-save">
-		<button onclick="export_settings()">Save data to LoudnessCorrection_Settings.json</button>
+	<button onclick="export_settings()">Save data to LoudnessCorrection_Settings.json</button>
 	</div>
 	<div class="file-load-save">
-		<button onclick="export_samba_config()">Save sample Samba - config</button>
+	<button onclick="export_samba_config()">Save sample Samba - config</button>
 	</div>
-
-</div>
-<script>
+	</div>
+	<script>
 
 	var debug = true;
 
@@ -294,7 +319,7 @@
 	  "where_to_send_error_messages": [\
 	    "logfile"\
 	  ],\
-	  "config_file_created_by_installer_version": "200",\
+	  "config_file_created_by_installer_version": "1.0",\
 	  "peak_measurement_method": "--peak=true",\
 	  "freelcs_version": "4.0",\
 	  "use_freelcs_file_output_defaults": true,\
@@ -655,6 +680,7 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 		const tls_encryption_no = document.getElementById('tls_encryption_no');
 		const start_heartbeat_checker_yes = document.getElementById('start_heartbeat_checker_yes');
 		const start_heartbeat_checker_no = document.getElementById('start_heartbeat_checker_no');
+		const email_address = document.getElementById('email_address');
 
 		if (send_email_no.checked == true) {
 			email_authentication_yes.disabled = true;
@@ -663,6 +689,13 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 			tls_encryption_no.disabled = true;
 			start_heartbeat_checker_yes.disabled = true;
 			start_heartbeat_checker_no.disabled = true;
+			email_address.disabled = true;
+			document.getElementById("email_address").elements[0].disabled=true;
+			document.getElementById("email_address").elements[1].disabled=true;
+			document.getElementById("email_address").elements[2].disabled=true;
+			document.getElementById("email_address").elements[3].disabled=true;
+			document.getElementById("email_address").elements[4].disabled=true;
+			document.getElementById("email_submit_button").disabled=true;
 		} else {
 			email_authentication_yes.disabled = false;
 			email_authentication_no.disabled = false;
@@ -670,6 +703,85 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 			tls_encryption_no.disabled = false;
 			start_heartbeat_checker_yes.disabled = false;
 			start_heartbeat_checker_no.disabled = false;
+			email_address.disabled = false;
+			document.getElementById("email_address").elements[0].disabled=false;
+			document.getElementById("email_address").elements[1].disabled=false;
+			document.getElementById("email_address").elements[2].disabled=false;
+			document.getElementById("email_address").elements[3].disabled=false;
+			document.getElementById("email_address").elements[4].disabled=false;
+			document.getElementById("email_submit_button").disabled=false;
+		}
+	}
+
+	function submit_email_addresses() {
+
+		var email_addresses = [];
+
+		var email_1 = document.getElementById("email_address").elements[0].value;
+
+		if (email_1 != "" ) {
+			email_addresses.push(email_1.trim())
+
+			// Show "Saved" after the email input box for 1 second
+			document.getElementById("ok_1").hidden=false;
+
+			setTimeout(() => {
+				document.getElementById("ok_1").hidden=true;
+			}, 1500);
+		}
+
+		var email_2 = document.getElementById("email_address").elements[1].value;
+
+		if (email_2 != "" ) {
+			email_addresses.push(email_2.trim())
+
+			document.getElementById("ok_2").hidden=false;
+
+			setTimeout(() => {
+				document.getElementById("ok_2").hidden=true;
+			}, 1500);
+		}
+
+		var email_3 = document.getElementById("email_address").elements[2].value;
+
+		if (email_3 != "" ) {
+			email_addresses.push(email_3.trim())
+
+			document.getElementById("ok_3").hidden=false;
+
+			setTimeout(() => {
+				document.getElementById("ok_3").hidden=true;
+			}, 1500);
+		}
+
+		var email_4 = document.getElementById("email_address").elements[3].value;
+
+		if (email_4 != "" ) {
+			email_addresses.push(email_4.trim())
+
+			document.getElementById("ok_4").hidden=false;
+
+			setTimeout(() => {
+				document.getElementById("ok_4").hidden=true;
+			}, 1500);
+		}
+
+		var email_5 = document.getElementById("email_address").elements[4].value;
+
+		if (email_5 != "" ) {
+			email_addresses.push(email_5.trim())
+
+			document.getElementById("ok_5").hidden=false;
+
+			setTimeout(() => {
+				document.getElementById("ok_5").hidden=true;
+			}, 1500);
+		}
+
+		default_settings.email_sending_details.message_recipients = email_addresses;
+
+		if (debug = true) {
+			console.log(default_settings.email_sending_details.message_recipients);
 		}
 	}
 
