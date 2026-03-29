@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 
-	<!-- FIXME -->
 	<!-- https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input -->
 	<!-- https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/file -->
 	<!-- https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/change_event -->
@@ -9,6 +8,10 @@
 	<!-- https://teamtreehouse.com/community/get-value-of-text-input-element-store-in-variable -->
 
 	<!--
+		FIXME
+		-----
+		Unit ja Record separator: enable puuttuu, tsekkaa miten none - arvo käsitellään, kato että arvo tallennetaan jsoniin oikein, kato että tulostuu oikein consoleen.
+
 		https://stackoverflow.com/questions/34156282/how-do-i-save-json-to-local-text-file
 		https://stackoverflow.com/questions/67857621/how-to-show-file-content-in-html
 		https://www.geeksforgeeks.org/javascript/how-to-read-a-local-text-file-using-javascript/
@@ -367,6 +370,31 @@
 			<label for="Yes">Yes</label>
 			<input type="radio" id="delete_original_file_immediately_no" name="delete_original_file_immediately" value="no" disabled onchange="delete_original_file_immediately()"/>
 			<label for="No">No</label>
+		</div>
+        </div>
+	<div class="drop-box">
+		<div class="drop-box-group">
+			<label>Write loudness calculation results<br>to a machine readable file</label>
+		</div>
+		<div class="radio-buttons">
+			<input type="radio" id="write_loudness_calculation_results_yes" name="write_loudness_calculation_results" value="yes" onchange="write_loudness_calculation_results()"/>
+			<label for="Yes">Yes</label>
+			<input type="radio" id="write_loudness_calculation_results_no" name="write_loudness_calculation_results" value="no" checked onchange="write_loudness_calculation_results()"/>
+			<label for="No">No</label>
+		</div>
+		<div class="drop-box-group">
+			<p>Unit Separator (ASCII / UTF-8)</p>
+			<select id="unit_separator_1" disabled onchange="update_unit_separator()">
+		</select>
+			<select id="unit_separator_2" disabled onchange="update_unit_separator()">
+		</select>
+		</div>
+		<div class="drop-box-group">
+			<p>Record Separator (ASCII / UTF-8)</p>
+			<select id="record_separator_1" disabled onchange="update_record_separator()">
+		</select>
+			<select id="record_separator_2" disabled onchange="update_record_separator()">
+		</select>
 		</div>
         </div>
 </div>
@@ -1122,6 +1150,92 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 		}
 	}
 
+	function populateUnitSeparators() {
+
+		// Unit and Record separators are both populated with the same values
+
+		// Unit Separator
+		const unit_separator_1 = [ '0','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31' ]
+
+		var selection = document.getElementById('unit_separator_1');
+
+		unit_separator_1.forEach((item, index) => {
+
+			const option = document.createElement('option');
+			option.value = index ;
+			option.innerText = item;
+			selection.appendChild(option);
+		});
+
+		document.getElementById('unit_separator_1').selectedIndex = 31;
+
+
+		var unit_separator_2 = [ 'None','0','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31'  ]
+		selection = document.getElementById('unit_separator_2');
+
+		unit_separator_2.forEach((item, index) => {
+
+			const option = document.createElement('option');
+			option.value = index ;
+			option.innerText = item;
+			selection.appendChild(option);
+		});
+
+		document.getElementById('unit_separator_2').selectedIndex = 1;
+
+
+		// Record Separator
+		selection = document.getElementById('record_separator_1');
+
+		unit_separator_1.forEach((item, index) => {
+
+			const option = document.createElement('option');
+			option.value = index ;
+			option.innerText = item;
+			selection.appendChild(option);
+		});
+
+		document.getElementById('record_separator_1').selectedIndex = 13;
+
+		selection = document.getElementById('record_separator_2');
+
+		unit_separator_2.forEach((item, index) => {
+
+			const option = document.createElement('option');
+			option.value = index ;
+			option.innerText = item;
+			selection.appendChild(option);
+		});
+
+		document.getElementById('record_separator_2').selectedIndex = 11;
+	}
+
+	function update_unit_separator() {
+
+		// "unit_separator": "\\u001f",\                                                                                                                                                                                                    
+		// "record_separator": "\\r\\n",\
+
+		default_settings.unit_separator = document.getElementById("unit_separator_1").options[document.getElementById("unit_separator_1").selectedIndex].text;
+		default_settings.unit_separator = default_settings.unit_separator + document.getElementById("unit_separator_2").options[document.getElementById("unit_separator_2").selectedIndex].text;
+
+		if (debug == true) {
+			console.log("unit_separator", default_settings.unit_separator);
+		}
+	}
+
+	function update_record_separator() {
+
+		// "unit_separator": "\\u001f",\                                                                                                                                                                                                    
+		// "record_separator": "\\r\\n",\
+
+		default_settings.record_separator = document.getElementById("record_separator_1").options[document.getElementById("record_separator_1").selectedIndex].text;
+		default_settings.record_separator = default_settings.record_separator + document.getElementById("record_separator_2").options[document.getElementById("record_separator_2").selectedIndex].text;
+
+		if (debug == true) {
+			console.log("record_separator", default_settings.record_separator);
+		}
+	}
+
 	function init() {
 		populateProcessors();
 		document.getElementById('NumProcessors').value = "0";
@@ -1130,6 +1244,7 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 		populateFileExpiryTime();
 		populateTargetLoudness();
 		populateEmailSending_interval();
+		populateUnitSeparators();
 
 	}
 
