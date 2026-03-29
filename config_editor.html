@@ -32,15 +32,16 @@
 		--switch-red: #d32f2f;
 		--switch-actuator: #ffffff;
 		--switch-slot: #111;
-		--text-color: #333;
+		--text-black: #333;
 		--gold: #d4af37;
 		--green: #0ba63a;
+		--text-gray: #afafaf;
         }
 
         body {
 		font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 		background-color: var(--bg-color);
-		color: var(--text-color);
+		color: var(--text-black);
 		display: flex;
 		justify-content: center;
 		padding: 20px;
@@ -128,6 +129,10 @@
 		font-size: 0.8rem;
         }
 
+        .form-ok {
+		color: var(--text-gray);
+        }
+
         .form-ok label {
 		font-weight: 700;
 		margin-bottom: 8px;
@@ -143,6 +148,7 @@
 		margin-right: 8px;
 		align-self: stretch;
 		input { float: right }
+		color: var(--text-gray);
         }
 
     </style>
@@ -216,7 +222,7 @@
 		<br>
 		<div class="drop-box-group">
 			<label>Email sending interval</label>
-			<select id="email_sending_interval" onchange="updateEmailSending_interval()">
+			<select id="email_sending_interval" disabled onchange="updateEmailSending_interval()">
 		</select>
 	    </div>
 		<br>
@@ -258,11 +264,11 @@
 
 		<div class="form-ok label">
 		<form id="email_address">
-			Email 1  <input type="text" name="email_1" value="" disabled><label id="ok_1" colour="green" hidden> Saved</label> <br>
-			Email 2  <input type="text" name="email_2" value="" disabled><label id="ok_2" colour="green" hidden> Saved</label> <br>
-			Email 3  <input type="text" name="email_3" value="" disabled><label id="ok_3" colour="green" hidden> Saved</label> <br>
-			Email 4  <input type="text" name="email_4" value="" disabled><label id="ok_4" colour="green" hidden> Saved</label> <br>
-			Email 5  <input type="text" name="email_5" value="" disabled><label id="ok_5" colour="green" hidden> Saved</label> <br>
+			Email 1 <input type="text" name="email_1" value="" disabled><label id="ok_1" colour="green" hidden> Saved</label> <br>
+			Email 2 <input type="text" name="email_2" value="" disabled><label id="ok_2" colour="green" hidden> Saved</label> <br>
+			Email 3 <input type="text" name="email_3" value="" disabled><label id="ok_3" colour="green" hidden> Saved</label> <br>
+			Email 4 <input type="text" name="email_4" value="" disabled><label id="ok_4" colour="green" hidden> Saved</label> <br>
+			Email 5 <input type="text" name="email_5" value="" disabled><label id="ok_5" colour="green" hidden> Saved</label> <br>
 		</form> 
 		</div>
 
@@ -294,22 +300,86 @@
 			Smtp password <input type="text" id="smtp_server_password" name="stmp_server_password" disabled>
 			<br>
 			<br>
-		</form> 
-		<div class="form-ok label">
-			<button id="smtp_server_submit_button" disabled onclick="submit_email_server_details()">Submit All</button>
-			<label id="smtp_details_saved" colour="green" hidden>&nbsp;&nbsp;Saved</label><br>
-		</div>
+			</form> 
+			<div class="form-ok label">
+				<button id="smtp_server_submit_button" disabled onclick="submit_email_server_details()">Submit All</button>
+				<label id="smtp_details_saved" colour="green" hidden>&nbsp;&nbsp;Saved</label><br>
+			</div>
 		</div>
         </div>
-	</div>
-	<!-- https://stackoverflow.com/questions/34156282/how-do-i-save-json-to-local-text-file -->
-	<div class="file-load-save">
+	<div class="drop-box">
+		<div class="drop-box-group">
+			<label>Write html progress report</label>
+		</div>
+		<div class="radio-buttons">
+			<input type="radio" id="html_progress_report_yes" name="html_progress_report" value="yes" onchange="html_progress_report()"/>
+			<label for="Yes">Yes</label>
+			<input type="radio" id="html_progress_report_no" name="html_progress_report" value="no" checked onchange="html_progress_report()"/>
+			<label for="No">No</label>
+		</div>
+		<br>
+		<div class="drop-box-group">
+			<label>Peak measurement method</label>
+		</div>
+		<div class="radio-buttons">
+			<input type="radio" id="peak_measurement_method_sample" name="peak_measurement_method" value="samplepeak" onchange="peak_measurement_method()"/>
+			<label for="samplepeak">Samplepeak</label>
+			<input type="radio" id="peak_measurement_method_true" name="peak_measurement_method" value="truepeak" checked onchange="peak_measurement_method()"/>
+			<label for="truepeak">Truepeak</label>
+		</div>
+        </div>
+	<div class="drop-box">
+		<div class="drop-box-group">
+			<label>Use FreeLCS file output defaults</label>
+		</div>
+		<div class="radio-buttons">
+			<input type="radio" id="use_freelcs_file_output_defaults_yes" name="use_freelcs_file_output_defaults" value="yes" checked onchange="use_freelcs_file_output_defaults()"/>
+			<label for="Yes">Yes</label>
+			<input type="radio" id="use_freelcs_file_output_defaults_no" name="use_freelcs_file_output_defaults" value="no" onchange="use_freelcs_file_output_defaults()"/>
+			<label for="No">No</label>
+		</div>
+		<br>
+		<div class="drop-box-group">
+			<label>Create loudness corrected audio files</label>
+		</div>
+		<div class="radio-buttons">
+			<input type="radio" id="create_loudness_corrected_files_yes" name="create_loudness_corrected_files" value="yes" checked disabled onchange="create_loudness_corrected_files()"/>
+			<label for="Yes">Yes</label>
+			<input type="radio" id="create_loudness_corrected_files_no" name="create_loudness_corrected_files" value="no" disabled onchange="create_loudness_corrected_files()"/>
+			<label for="No">No</label>
+		</div>
+		<br>
+		<div class="drop-box-group">
+			<label>Create loudness history graphics files</label>
+		</div>
+		<div class="radio-buttons">
+			<input type="radio" id="create_loudness_history_graphics_files_yes" name="create_loudness_history_graphics_files" value="yes" checked disabled onchange="create_loudness_history_graphics_files()"/>
+			<label for="Yes">Yes</label>
+			<input type="radio" id="create_loudness_history_graphics_files_no" name="create_loudness_history_graphics_files" value="no" disabled onchange="create_loudness_history_graphics_files()"/>
+			<label for="No">No</label>
+		</div>
+		<br>
+		<div class="drop-box-group">
+			<label>Delete original multistream audiofile</label>
+		</div>
+		<div class="radio-buttons">
+			<input type="radio" id="delete_original_file_immediately_yes" name="delete_original_file_immediately" value="yes" checked disabled onchange="delete_original_file_immediately()"/>
+			<label for="Yes">Yes</label>
+			<input type="radio" id="delete_original_file_immediately_no" name="delete_original_file_immediately" value="no" disabled onchange="delete_original_file_immediately()"/>
+			<label for="No">No</label>
+		</div>
+        </div>
+</div>
+<!-- https://stackoverflow.com/questions/34156282/how-do-i-save-json-to-local-text-file -->
+<div class="file-load-save">
 	<button onclick="export_settings()">Save data to LoudnessCorrection_Settings.json</button>
-	</div>
+</div>
 	<div class="file-load-save">
-	<button onclick="export_samba_config()">Save sample Samba - config</button>
+		<button onclick="export_samba_config()">Save sample Samba - config</button>
 	</div>
-	</div>
+</div>
+
+
 	<script>
 
 	var debug = true;
@@ -505,7 +575,7 @@
 	  "enable_webm_wrapper": false,\
 	  "enable_nonfree_mpeg_wrappers": false,\
 	  "os_name": "ubuntu",\
-	  "os_version": "24.04",\
+	  "os_version": "26.04",\
 	  "os_init_system_name": "systemd",\
 	  "target_loudness": "-23",\
 	  "number_of_all_items_in_dictionary": 55\
@@ -760,12 +830,15 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 			start_heartbeat_checker_yes.disabled = true;
 			start_heartbeat_checker_no.disabled = true;
 			email_address.disabled = true;
+			document.getElementById("email_sending_interval").disabled=true;
+			document.getElementById("email_address").style.color='gray';
 			document.getElementById("email_address").elements[0].disabled=true;
 			document.getElementById("email_address").elements[1].disabled=true;
 			document.getElementById("email_address").elements[2].disabled=true;
 			document.getElementById("email_address").elements[3].disabled=true;
 			document.getElementById("email_address").elements[4].disabled=true;
 			document.getElementById("email_submit_button").disabled=true;
+			document.getElementById("smtp_server_details").style.color='gray';
 			document.getElementById("smtp_server_name").disabled=true;
 			document.getElementById("smtp_server_port").disabled=true;
 			document.getElementById("smtp_server_username").disabled=true;
@@ -781,12 +854,15 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 			start_heartbeat_checker_yes.disabled = false;
 			start_heartbeat_checker_no.disabled = false;
 			email_address.disabled = false;
+			document.getElementById("email_sending_interval").disabled=false;
+			document.getElementById("email_address").style.color='black';
 			document.getElementById("email_address").elements[0].disabled=false;
 			document.getElementById("email_address").elements[1].disabled=false;
 			document.getElementById("email_address").elements[2].disabled=false;
 			document.getElementById("email_address").elements[3].disabled=false;
 			document.getElementById("email_address").elements[4].disabled=false;
 			document.getElementById("email_submit_button").disabled=false;
+			document.getElementById("smtp_server_details").style.color='black';
 			document.getElementById("smtp_server_name").disabled=false;
 			document.getElementById("smtp_server_port").disabled=false;
 			document.getElementById("smtp_server_username").disabled=false;
@@ -927,6 +1003,122 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 			console.log("email_sending_details.smtp_server_name:", default_settings.email_sending_details.smtp_server_name,":", default_settings.email_sending_details.smtp_server_port);
 			console.log("email_sending_details.smtp_username:", default_settings.email_sending_details.smtp_username);
 			console.log("email_sending_details.smtp_password:", default_settings.email_sending_details.smtp_password);
+		}
+	}
+
+	function html_progress_report() {
+
+		if (document.getElementById("html_progress_report_yes").checked == true) {
+			default_settings.write_html_progress_report = true;
+		} else {
+			default_settings.write_html_progress_report = false;
+		}
+
+		if (debug == true) {
+			console.log("write_html_progress_report:", default_settings.write_html_progress_report);
+		}
+	}
+
+	function peak_measurement_method() {
+
+		if (document.getElementById("peak_measurement_method_true").checked == true) {
+			default_settings.peak_measurement_method = "--peak=true";
+		} else {
+			default_settings.peak_measurement_method = "--peak=sample";
+		}
+
+		if (debug == true) {
+			console.log("peak_measurement_method:", default_settings.peak_measurement_method);
+		}
+	}
+
+	function use_freelcs_file_output_defaults() {
+
+		const use_freelcs_file_output_defaults_yes = document.getElementById('use_freelcs_file_output_defaults_yes');
+		const create_loudness_corrected_files_yes = document.getElementById('create_loudness_corrected_files_yes');
+		const create_loudness_corrected_files_no = document.getElementById('create_loudness_corrected_files_no');
+		const create_loudness_history_graphics_files_yes = document.getElementById('create_loudness_history_graphics_files_yes');
+		const create_loudness_history_graphics_files_no = document.getElementById('create_loudness_history_graphics_files_no');
+		const delete_original_file_immediately_yes = document.getElementById('delete_original_file_immediately_yes');
+		const delete_original_file_immediately_no = document.getElementById('delete_original_file_immediately_no');
+
+		if (use_freelcs_file_output_defaults_yes.checked == true) {
+			default_settings.use_freelcs_file_output_defaults = true;
+			default_settings.create_loudness_corrected_files = true;
+			default_settings.create_loudness_history_graphics_files = true;
+			default_settings.delete_original_file_immediately = true;
+
+			create_loudness_corrected_files_yes.disabled = true;
+			create_loudness_corrected_files_yes.checked = true;
+			create_loudness_corrected_files_no.disabled = true;
+			create_loudness_corrected_files_no.checked = false;
+
+			create_loudness_history_graphics_files_yes.disabled = true;
+			create_loudness_history_graphics_files_yes.checked = true;
+			create_loudness_history_graphics_files_no.disabled = true;
+			create_loudness_history_graphics_files_no.checked = false;
+
+			delete_original_file_immediately_yes.disabled = true;
+			delete_original_file_immediately_yes.checked = true;
+			delete_original_file_immediately_no.disabled = true;
+			delete_original_file_immediately_no.checked = false;
+		} else {
+			default_settings.use_freelcs_file_output_defaults = false;
+
+			create_loudness_corrected_files_yes.disabled = false;
+			create_loudness_corrected_files_no.disabled = false;
+
+			create_loudness_history_graphics_files_yes.disabled = false;
+			create_loudness_history_graphics_files_no.disabled = false;
+
+			delete_original_file_immediately_yes.disabled = false;
+			delete_original_file_immediately_no.disabled = false;
+		}
+
+		if (debug == true) {
+			console.log("use_freelcs_file_output_defaults:", default_settings.use_freelcs_file_output_defaults);
+			console.log("create_loudness_corrected_files:", default_settings.create_loudness_corrected_files);
+			console.log("create_loudness_history_graphics_files:", default_settings.create_loudness_history_graphics_files);
+			console.log("delete_original_file_immediately:", default_settings.delete_original_file_immediately);
+		}
+	}
+
+	function create_loudness_corrected_files() {
+
+		if (document.getElementById("create_loudness_corrected_files_yes").checked == true) {
+			default_settings.create_loudness_corrected_files = true;
+		} else {
+			default_settings.create_loudness_corrected_files = false;
+		}
+
+		if (debug == true) {
+			console.log("create_loudness_corrected_files:", default_settings.create_loudness_corrected_files);
+		}
+	}
+
+	function create_loudness_history_graphics_files() {
+
+		if (document.getElementById("create_loudness_history_graphics_files_yes").checked == true) {
+			default_settings.create_loudness_history_graphics_files = true;
+		} else {
+			default_settings.create_loudness_history_graphics_files = false;
+		}
+
+		if (debug == true) {
+			console.log("create_loudness_history_graphics_files:", default_settings.create_loudness_history_graphics_files);
+		}
+	}
+
+	function delete_original_file_immediately() {
+
+		if (document.getElementById("delete_original_file_immediately_yes").checked == true) {
+			default_settings.delete_original_file_immediately = true;
+		} else {
+			default_settings.delete_original_file_immediately = false;
+		}
+
+		if (debug == true) {
+			console.log("delete_original_file_immediately:", default_settings.delete_original_file_immediately);
 		}
 	}
 
