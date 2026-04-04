@@ -37,7 +37,7 @@ import math
 import signal
 import traceback
 
-loudnesscorrection_version = '309'
+loudnesscorrection_version = '400'
 freelcs_version = 'unknown version'
 
 ########################################################################################################################################################################################
@@ -5901,10 +5901,20 @@ try:
 			create_loudness_history_graphics_files = all_settings_dict['create_loudness_history_graphics_files']
 		if 'delete_original_file_immediately' in all_settings_dict:
 			delete_original_file_immediately = all_settings_dict['delete_original_file_immediately']
+
 		if 'unit_separator' in all_settings_dict:
-			unit_separator = all_settings_dict['unit_separator']
+			temp_list = all_settings_dict['unit_separator']
+			unit_separator = chr(temp_list[0])
+
+			if temp_list[1] != "":
+				unit_separator = unit_separator + chr(temp_list[1])
+
 		if 'record_separator' in all_settings_dict:
-			record_separator = all_settings_dict['record_separator']
+			temp_list = all_settings_dict['record_separator']
+			record_separator = chr(temp_list[0])
+
+			if temp_list[1] != "":
+				record_separator = record_separator + chr(temp_list[1])
 
 		if 'enable_mxf_audio_remixing' in all_settings_dict:
 			enable_mxf_audio_remixing = all_settings_dict['enable_mxf_audio_remixing']

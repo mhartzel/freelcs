@@ -10,7 +10,10 @@
 	<!--
 		FIXME
 		-----
-		Unit ja Record separator: enable puuttuu, tsekkaa miten none - arvo käsitellään, kato että arvo tallennetaan jsoniin oikein, kato että tulostuu oikein consoleen.
+		# Unit ja Record separator: enable puuttuu
+		- tsekkaa miten none - arvo käsitellään
+		- kato että arvo tallennetaan jsoniin oikein
+		- kato että tulostuu oikein consoleen.
 
 		https://stackoverflow.com/questions/34156282/how-do-i-save-json-to-local-text-file
 		https://stackoverflow.com/questions/67857621/how-to-show-file-content-in-html
@@ -95,7 +98,7 @@
 
         .drop-box-group label {
 		display: block;
-		font-weight: 700;
+		font-weight: 500;
 		margin-bottom: 8px;
 		color: var(--ibm-blue);
         }
@@ -469,8 +472,8 @@
 	  "create_loudness_corrected_files": true,\
 	  "create_loudness_history_graphics_files": true,\
 	  "delete_original_file_immediately": true,\
-	  "unit_separator": "\\u001f",\
-	  "record_separator": "\\r\\n",\
+	  "unit_separator": [ "31", "" ] ,\
+	  "record_separator": [ "13", "10" ],\
 	  "enable_mxf_audio_remixing": false,\
 	  "remix_map_file_extension": ".remix_map",\
 	  "global_mxf_audio_remix_channel_map": [\
@@ -1150,6 +1153,32 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 		}
 	}
 
+	function write_loudness_calculation_results() {
+
+	const unit_separator_1 = document.getElementById('unit_separator_1');
+	const unit_separator_2 = document.getElementById('unit_separator_2');
+	const record_separator_1 = document.getElementById('record_separator_1');
+	const record_separator_2 = document.getElementById('record_separator_2');
+
+		if (document.getElementById("write_loudness_calculation_results_yes").checked == true) {
+			default_settings.write_loudness_calculation_results_to_a_machine_readable_file = true;
+			unit_separator_1.disabled = false;
+			unit_separator_2.disabled = false;
+			record_separator_1.disabled = false;
+			record_separator_2.disabled = false;
+		} else {
+			default_settings.write_loudness_calculation_results_to_a_machine_readable_file = false;
+			unit_separator_1.disabled = true;
+			unit_separator_2.disabled = true;
+			record_separator_1.disabled = true;
+			record_separator_2.disabled = true;
+		}
+
+		if (debug == true) {
+			console.log("write_loudness_calculation_results_to_a_machine_readable_file:", default_settings.write_loudness_calculation_results_to_a_machine_readable_file);
+			}
+	}
+
 	function populateUnitSeparators() {
 
 		// Unit and Record separators are both populated with the same values
@@ -1181,7 +1210,7 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 			selection.appendChild(option);
 		});
 
-		document.getElementById('unit_separator_2').selectedIndex = 1;
+		document.getElementById('unit_separator_2').selectedIndex = 0;
 
 
 		// Record Separator
@@ -1212,11 +1241,14 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 
 	function update_unit_separator() {
 
-		// "unit_separator": "\\u001f",\                                                                                                                                                                                                    
-		// "record_separator": "\\r\\n",\
+		default_settings.unit_separator[0] = document.getElementById("unit_separator_1").options[document.getElementById("unit_separator_1").selectedIndex].text;
+		var character_2 = document.getElementById("unit_separator_2").options[document.getElementById("unit_separator_2").selectedIndex].text;
 
-		default_settings.unit_separator = document.getElementById("unit_separator_1").options[document.getElementById("unit_separator_1").selectedIndex].text;
-		default_settings.unit_separator = default_settings.unit_separator + document.getElementById("unit_separator_2").options[document.getElementById("unit_separator_2").selectedIndex].text;
+		if (character_2 == "None") {
+			default_settings.unit_separator[1] = "";
+		} else {
+			default_settings.unit_separator[1] = character_2;
+		}
 
 		if (debug == true) {
 			console.log("unit_separator", default_settings.unit_separator);
@@ -1225,11 +1257,14 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 
 	function update_record_separator() {
 
-		// "unit_separator": "\\u001f",\                                                                                                                                                                                                    
-		// "record_separator": "\\r\\n",\
+		default_settings.record_separator[0] = document.getElementById("record_separator_1").options[document.getElementById("record_separator_1").selectedIndex].text;
+		var character_2 = document.getElementById("record_separator_2").options[document.getElementById("record_separator_2").selectedIndex].text;
 
-		default_settings.record_separator = document.getElementById("record_separator_1").options[document.getElementById("record_separator_1").selectedIndex].text;
-		default_settings.record_separator = default_settings.record_separator + document.getElementById("record_separator_2").options[document.getElementById("record_separator_2").selectedIndex].text;
+		if (character_2 == "None") {
+			default_settings.record_separator[1] = "";
+		} else {
+			default_settings.record_separator[1] = character_2;
+		}
 
 		if (debug == true) {
 			console.log("record_separator", default_settings.record_separator);
