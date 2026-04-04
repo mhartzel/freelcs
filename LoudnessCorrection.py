@@ -5903,18 +5903,22 @@ try:
 			delete_original_file_immediately = all_settings_dict['delete_original_file_immediately']
 
 		if 'unit_separator' in all_settings_dict:
+
 			temp_list = all_settings_dict['unit_separator']
 			unit_separator = chr(temp_list[0])
 
-			if temp_list[1] != "":
-				unit_separator = unit_separator + chr(temp_list[1])
+			if len(temp_list) == 2:
+				if temp_list[1] != "":
+					unit_separator = unit_separator + chr(temp_list[1])
 
 		if 'record_separator' in all_settings_dict:
+
 			temp_list = all_settings_dict['record_separator']
 			record_separator = chr(temp_list[0])
 
-			if temp_list[1] != "":
-				record_separator = record_separator + chr(temp_list[1])
+			if len(temp_list) == 2:
+				if temp_list[1] != "":
+					record_separator = record_separator + chr(temp_list[1])
 
 		if 'enable_mxf_audio_remixing' in all_settings_dict:
 			enable_mxf_audio_remixing = all_settings_dict['enable_mxf_audio_remixing']
