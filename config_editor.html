@@ -410,6 +410,7 @@
 			<label for="yes">Yes</label>
 			<input type="radio" id="enable_mxf_audio_remixing_no" name="enable_mxf_audio_remixing" value="no" checked onchange="enable_mxf_audio_remixing()"/>
 			<label for="no">No</label>
+			<button id="reset_mxf_audio_remixing" disabled onclick="reset_mxf_audio_remixing()">Reset All</button>
 		</div>
 		<br>
 		<div class="drop-box-group">
@@ -942,12 +943,12 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 			start_heartbeat_checker_no.disabled = true;
 			email_address.disabled = true;
 			document.getElementById("email_sending_interval").disabled=true;
-			document.getElementById("email_address").style.color='gray';
-			document.getElementById("email_address").elements[0].disabled=true;
-			document.getElementById("email_address").elements[1].disabled=true;
-			document.getElementById("email_address").elements[2].disabled=true;
-			document.getElementById("email_address").elements[3].disabled=true;
-			document.getElementById("email_address").elements[4].disabled=true;
+			email_address.style.color='gray';
+			email_address.elements[0].disabled=true;
+			email_address.elements[1].disabled=true;
+			email_address.elements[2].disabled=true;
+			email_address.elements[3].disabled=true;
+			email_address.elements[4].disabled=true;
 			document.getElementById("email_submit_button").disabled=true;
 			document.getElementById("smtp_server_details").style.color='gray';
 			document.getElementById("smtp_server_name").disabled=true;
@@ -966,12 +967,12 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 			start_heartbeat_checker_no.disabled = false;
 			email_address.disabled = false;
 			document.getElementById("email_sending_interval").disabled=false;
-			document.getElementById("email_address").style.color='black';
-			document.getElementById("email_address").elements[0].disabled=false;
-			document.getElementById("email_address").elements[1].disabled=false;
-			document.getElementById("email_address").elements[2].disabled=false;
-			document.getElementById("email_address").elements[3].disabled=false;
-			document.getElementById("email_address").elements[4].disabled=false;
+			email_address.style.color='black';
+			email_address.elements[0].disabled=false;
+			email_address.elements[1].disabled=false;
+			email_address.elements[2].disabled=false;
+			email_address.elements[3].disabled=false;
+			email_address.elements[4].disabled=false;
 			document.getElementById("email_submit_button").disabled=false;
 			document.getElementById("smtp_server_details").style.color='black';
 			document.getElementById("smtp_server_name").disabled=false;
@@ -1374,6 +1375,8 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 				selection.appendChild(option);
 			});
 		}
+
+		reset_mxf_audio_remixing();
 	}
 
 	function enable_mxf_audio_remixing() {
@@ -1396,6 +1399,23 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 
 			element_name = element_name + counter;
 			document.getElementById(element_name).disabled = is_disabled;
+		}
+
+		document.getElementById("reset_mxf_audio_remixing").disabled = is_disabled;
+	}
+
+	function reset_mxf_audio_remixing() {
+
+		for (let counter = 1; counter < 49; counter++) {
+
+			var element_name = 'mxf_remix_';
+
+			if (counter < '10') {
+				element_name = 'mxf_remix_0';
+			}
+
+			element_name = element_name + counter;
+			document.getElementById(element_name).selectedIndex = 1;
 		}
 	}
 
