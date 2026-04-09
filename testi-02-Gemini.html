@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Gemini free -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FreeLCS Configuration Editor</title>
+        <style>
+	body {
+	    font-family: sans-serif;
+	    padding: 40px;
+	}
+
+	.form-group {
+	    display: flex;
+	    align-items: center;
+	}
+
+	label {
+	    margin-right: 5px;
+	    font-weight: bold;
+	}
+
+	/* Container relative positioning ensures the absolute tooltip stays attached to the icon */
+	.icon-container {
+	    position: relative;
+	    display: inline-block;
+	    margin-right: 10px;
+	}
+
+	/* Styling the question mark circle */
+	.help-icon {
+	    display: inline-flex;
+	    justify-content: center;
+	    align-items: center;
+	    width: 18px;
+	    height: 18px;
+	    background-color: #007bff;
+	    color: white;
+	    border-radius: 50%;
+	    font-size: 12px;
+	    cursor: help;
+	}
+
+	/* The hidden tooltip box */
+	.tooltip {
+	    visibility: hidden;
+	    opacity: 0;
+	    background-color: #333;
+	    color: #fff;
+	    text-align: center;
+	    border-radius: 4px;
+	    padding: 5px 10px;
+	    position: absolute;
+	    z-index: 1;
+	    bottom: 130%; /* Positions it right above the icon */
+	    left: 50%;
+	    transform: translateX(-50%); /* Centers it perfectly above the ? */
+	    white-space: nowrap;
+	    transition: opacity 0.2s ease-in-out;
+	}
+
+	/* The small triangle pointer at the bottom of the tooltip */
+	.tooltip::after {
+	    content: "";
+	    position: absolute;
+	    top: 100%;
+	    left: 50%;
+	    margin-left: -5px;
+	    border-width: 5px;
+	    border-style: solid;
+	    border-color: #333 transparent transparent transparent;
+	}
+
+	/* The class our JavaScript will add/remove */
+	.tooltip.show {
+	    visibility: visible;
+	    opacity: 1;
+	}
+
+	/* Basic styling for the input field */
+	input[type="text"] {
+	    padding: 6px;
+	    border: 1px solid #ccc;
+	    border-radius: 4px;
+	}
+    </style>
+</head>
+<body>
+    <div class="form-group">
+        <label for="username">Username</label>
+        
+        <span class="icon-container">
+            <span class="help-icon" id="helpIcon">?</span>
+            <span class="tooltip" id="tooltipText">Hello world</span>
+        </span>
+
+        <input type="text" id="username" name="username">
+    </div>
+
+<script>
+	// 1. Grab the HTML elements we need to interact with
+	var helpIcon = document.getElementById("helpIcon");
+	var tooltipText = document.getElementById("tooltipText");
+
+	// 2. Define a traditional function to show the tooltip
+	function showTooltip() {
+	    tooltipText.classList.add("show");
+	}
+
+	// 3. Define a traditional function to hide the tooltip
+	function hideTooltip() {
+	    tooltipText.classList.remove("show");
+	}
+
+	// 4. Attach the functions to the mouse events
+	helpIcon.addEventListener("mouseover", showTooltip);
+	helpIcon.addEventListener("mouseout", hideTooltip);
+</script>
+</body>
+</html>

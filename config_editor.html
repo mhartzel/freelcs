@@ -60,6 +60,7 @@
 		border-radius: 8px;
 		box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 		padding: 25px;
+		width: 1000px;
         }
 
         header {
@@ -83,7 +84,7 @@
         /* --- MAIN LAYOUT --- */
         .main-interface {
 		display: grid;
-		grid-template-columns: auto auto auto auto;
+		grid-template-columns: auto;
         }
 
         .drop-box {
@@ -398,6 +399,219 @@
 		</select>
 			<select id="record_separator_2" disabled onchange="update_record_separator()">
 		</select>
+		</div>
+        </div>
+	<div class="drop-box">
+		<div class="drop-box-group">
+			<label>Enable MXF Audio Remixing</label>
+		</div>
+		<div class="radio-buttons">
+			<input type="radio" id="enable_mxf_audio_remixing_yes" name="enable_mxf_audio_remixing_" value="yes" onchange="enable_mxf_audio_remixing_()"/>
+			<label for="Yes">Yes</label>
+			<input type="radio" id="enable_mxf_audio_remixing__no" name="enable_mxf_audio_remixing_" value="no" checked onchange="enable_mxf_audio_remixing_()"/>
+			<label for="No">No</label>
+		</div>
+		<br>
+		<div class="drop-box-group">
+			<span> 01 <select id="mxf_remix_01" disabled onchange="update_unit_separator()">
+			</select>
+			<span> 02
+			<select id="mxf_remix_02" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 03
+			<select id="mxf_remix_03" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 04
+			<select id="mxf_remix_04" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 05
+			<select id="mxf_remix_05" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 06
+			<select id="mxf_remix_06" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 07
+			<select id="mxf_remix_07" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 08
+			<select id="mxf_remix_08" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 09
+			<select id="mxf_remix_09" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 10
+			<select id="mxf_remix_10" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 11
+			<select id="mxf_remix_11" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 12
+			<select id="mxf_remix_12" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+		</div>
+		<br>
+		<div class="drop-box-group">
+			<span> 13
+			<select id="mxf_remix_13" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 14
+			<select id="mxf_remix_14" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 15
+			<select id="mxf_remix_15" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 16
+			<select id="mxf_remix_16" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 17
+			<select id="mxf_remix_17" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 18
+			<select id="mxf_remix_18" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 19
+			<select id="mxf_remix_19" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 20
+			<select id="mxf_remix_20" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 21
+			<select id="mxf_remix_21" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 22
+			<select id="mxf_remix_22" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 23
+			<select id="mxf_remix_23" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 24
+			<select id="mxf_remix_24" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+		</div>
+		<br>
+		<div class="drop-box-group">
+			<span> 25
+			<select id="mxf_remix_25" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 26
+			<select id="mxf_remix_26" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 27
+			<select id="mxf_remix_27" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 28
+			<select id="mxf_remix_28" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 29
+			<select id="mxf_remix_29" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 30
+			<select id="mxf_remix_30" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 31
+			<select id="mxf_remix_21" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 32
+			<select id="mxf_remix_32" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 33
+			<select id="mxf_remix_33" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 34
+			<select id="mxf_remix_34" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 35
+			<select id="mxf_remix_35" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 36
+			<select id="mxf_remix_36" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+		</div>
+		<br>
+		<div class="drop-box-group">
+			<span> 37
+			<select id="mxf_remix_37" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 38
+			<select id="mxf_remix_38" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 39
+			<select id="mxf_remix_39" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 40
+			<select id="mxf_remix_40" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 41
+			<select id="mxf_remix_41" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 42
+			<select id="mxf_remix_42" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 43
+			<select id="mxf_remix_43" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 44
+			<select id="mxf_remix_44" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 45
+			<select id="mxf_remix_45" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 46
+			<select id="mxf_remix_46" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 47
+			<select id="mxf_remix_47" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
+			<span> 48
+			<select id="mxf_remix_48" disabled onchange="update_unit_separator()">
+			</select>
+			</span>
 		</div>
         </div>
 </div>

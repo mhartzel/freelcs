@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FreeLCS Configuration Editor</title>
+        <style>
+		.input-container {
+		  display: flex;
+		  align-items: center;
+		  font-family: sans-serif;
+		}
+
+		.tooltip-icon {
+		  display: inline-flex;
+		  justify-content: center;
+		  align-items: center;
+		  width: 16px;
+		  height: 16px;
+		  margin-left: 8px;
+		  background-color: #ddd;
+		  border-radius: 50%;
+		  font-size: 12px;
+		  cursor: help;
+		  color: #555;
+		  user-select: none;
+		}
+
+		.tooltip-icon:hover {
+		  background-color: #bbb;
+		}
+    </style>
+</head>
+<body>
+
+	<label class="input-container">
+	  Username
+	  <!-- Only this span will trigger the tooltip -->
+	  <span class="tooltip-icon" data-info="Enter your unique username">?</span>
+	</label>
+
+	<input type="text" name="username">
+
+<script>
+// Select only the icons, not the whole labels
+const tooltips = document.querySelectorAll('.tooltip-icon');
+
+// Use your existing function logic
+// (Assuming you wrap your logic in a function called initTooltips)
+function initTooltips(elements) {
+    elements.forEach(el => {
+        el.addEventListener('mouseenter', (event) => {
+            // Use the data-info attribute for the message
+            const message = event.target.getAttribute('data-info');
+            showTooltip(event.target, message);
+        });
+        
+        el.addEventListener('mouseleave', () => {
+            hideTooltip();
+		console.log("Heips");
+        });
+    });
+}
+
+</script>
+</body>
+</html>
