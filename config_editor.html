@@ -11,9 +11,18 @@
 		FIXME
 		-----
 		# Unit ja Record separator: enable puuttuu
-		- tsekkaa miten none - arvo käsitellään
-		- kato että arvo tallennetaan jsoniin oikein
-		- kato että tulostuu oikein consoleen.
+		# tsekkaa miten none - arvo käsitellään
+		# kato että arvo tallennetaan jsoniin oikein
+		# kato että tulostuu oikein consoleen.
+		# Poista viides elementti email joka jäi sinne jonkun jutun placeholderiksi, tsekkaa että se tuli tehtyä
+		# Korjaa FFmpeg allowed formats sen GUI freimi meni väärin
+		- for:it
+		- defaultit pitää tulla jsonista
+		- defaultit pitää tulla jsonista jos se ladataan uudestaan
+		- Datatyypit pitää tallentaa oikein jsonin
+		- Alueiden uudelleen ryhmittely
+		- Help - tekstit
+		- Testaus verraten viimeiseen tkinter - sovellukseen
 
 		https://stackoverflow.com/questions/34156282/how-do-i-save-json-to-local-text-file
 		https://stackoverflow.com/questions/67857621/how-to-show-file-content-in-html
@@ -199,12 +208,6 @@
                 </select>
             </div>
         </div>
-	<div class="drop-box">
-		<div class="drop-box-group">
-			<label>Email Address</label>
-			<input id="HotfolderPath" type="text" value="" size="40" onkeyup="update_folder_name()"/>
-		</div>
-	</div>
 	<div class="drop-box">
 		<div class="drop-box-group">
 			<label>Language Of hotfolder paths and result graphics</label>
@@ -480,6 +483,27 @@
 				48 <select id="mxf_remix_48" disabled onchange="update_mxf_remix()"> </select>
 			</span>
 		</div>
+	</div>
+	<div class="drop-box">
+		<div class="drop-box-group">
+			<label>FFmpeg allowed wrapper formats</label>
+		</div>
+		<div class="radio-buttons">
+			<input type="radio" id="ffmpeg_allowed_wrapper_formats_all" name="ffmpeg_allowed_wrapper_formats" checked value="all" onchange="ffmpeg_allowed_wrapper_formats()"/>
+			<label for="ffmpeg_allowed_wrapper_formats_all">All</label>
+			<input type="radio" id="ffmpeg_free_formats" name="ffmpeg_allowed_wrapper_formats" value="wav_flac_ogg_etc" onchange="ffmpeg_allowed_wrapper_formats()"/>
+			<label for="ffmpeg_free_formats">Only Wav, Flac, Ogg, Matrosta, Ac3, free Mpeg and:</label>
+			<span>
+				<input type="checkbox" id="mxf" name="mxf" value="mxf" disabled onchange="update_mxf()"> MXF
+				<input type="checkbox" id="mp4" name="mp4" value="mp4" disabled onchange="update_mpeg()"> MP4
+				<input type="checkbox" id="webm" name="webm" value="webm" disabled onchange="update_webm()"> Webm
+			</span>
+			<br>
+			<input type="radio" id="ffmpeg_allowed_codec_formats_all" name="ffmpeg_allowed_codec_formats_all" checked value="all" onchange="ffmpeg_allowed_codec_formats()"/>
+			<label for="All">All</label>
+			<input type="radio" id="ffmpeg_free_codec_formats" name="ffmpeg_allowed_codec_formats_all" value="only_free" onchange="ffmpeg_allowed_codec_formats()"/>
+			<label for="ffmpeg_free_codec_formats">Only free codecs: PCM, Flac, Vorbis, Opus, Ac3, Mpeg 1 Layer 1, 2 and 3</label>
+		</div>
         </div>
 </div>
 <!-- https://stackoverflow.com/questions/34156282/how-do-i-save-json-to-local-text-file -->
@@ -724,17 +748,6 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 		document.body.appendChild(element);
 		element.click();
 		document.body.removeChild(element);
-	}
-
-	function applyPreset() {
-	}
-
-	function update_folder_name() {
-		default_settings.hotfolder_path = document.getElementById("HotfolderPath").value;
-
-			if (debug == true) {
-				console.log(default_settings.hotfolder_path);
-			}
 	}
 
 	function change_samba_config_folder_name() {
@@ -1262,8 +1275,10 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 
 		if (document.getElementById("enable_mxf_audio_remixing_yes").checked == true) {
 			is_disabled = false;
+			default_settings.enable_mxf_audio_remixing = true;
 		} else {
 			is_disabled = true;
+			default_settings.enable_mxf_audio_remixing = false;
 		}
 
 		for (let counter = 1; counter < 49; counter++) {
@@ -1279,6 +1294,10 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 		}
 
 		document.getElementById("reset_mxf_audio_remixing").disabled = is_disabled;
+
+		if (debug = true) {
+			console.log("enable_mxf_audio_remixing:", default_settings.enable_mxf_audio_remixing);
+		}
 	}
 
 	function reset_mxf_audio_remixing() {
@@ -1317,11 +1336,148 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 		}
 	}
 
+	function ffmpeg_allowed_wrapper_formats() {
+
+		var is_disabled;
+
+		if (document.getElementById("ffmpeg_allowed_wrapper_formats_all").checked == true) {
+			is_disabled = true;
+			default_settings.enable_all_nonfree_ffmpeg_wrapper_formats = true;
+			default_settings.ffmpeg_allowed_wrapper_formats = [ "all" ];
+			document.getElementById("mxf").disabled = is_disabled;
+			document.getElementById("mp4").disabled = is_disabled;
+			document.getElementById("webm").disabled = is_disabled;
+		} else {
+			is_disabled = false;
+			default_settings.enable_all_nonfree_ffmpeg_wrapper_formats = false;
+			// Deepcopy values. As javascript does not have a deepcopy command use a workaround.
+			default_settings.ffmpeg_allowed_wrapper_formats = JSON.parse(JSON.stringify(default_settings.ffmpeg_free_wrapper_formats));
+			document.getElementById("mxf").disabled = is_disabled;
+			document.getElementById("mp4").disabled = is_disabled;
+			document.getElementById("webm").disabled = is_disabled;
+		}
+
+		if (debug = true) {
+			console.log("enable_all_nonfree_ffmpeg_wrapper_formats:", default_settings.enable_all_nonfree_ffmpeg_wrapper_formats);
+			console.log("ffmpeg_allowed_wrapper_formats:", default_settings.ffmpeg_allowed_wrapper_formats);
+			console.log(document.getElementById("mxf").checked);
+		}
+	}
+
+	function update_mxf() {
+
+		if (document.getElementById("mxf").checked == true) {
+
+			default_settings.enable_mxf_wrapper = true;
+
+			for (const format_name of default_settings.mxf_formats) {
+
+				if (!default_settings.ffmpeg_allowed_wrapper_formats.includes(format_name)) {
+					default_settings.ffmpeg_allowed_wrapper_formats.push(format_name);
+				}
+			}
+
+		} else {
+			default_settings.enable_mxf_wrapper = false;
+
+			for (const format_name of default_settings.mxf_formats) {
+
+				var item_position = default_settings.ffmpeg_allowed_wrapper_formats.indexOf(format_name);
+
+				if (item_position > 0) {
+					default_settings.ffmpeg_allowed_wrapper_formats.splice(item_position, 1);
+				}
+			}
+		}
+
+
+		if (debug = true) {
+			console.log("enable_mxf_wrapper:", default_settings.enable_mxf_wrapper);
+			console.log("ffmpeg_allowed_wrapper_formats):", default_settings.ffmpeg_allowed_wrapper_formats);
+		}
+	}
+
+	function update_mpeg() {
+
+		if (document.getElementById("mp4").checked == true) {
+
+			default_settings.enable_nonfree_mpeg_wrappers = true;
+
+			for (const format_name of default_settings.mpeg_nonfree_wrapper_formats) {
+
+				if (!default_settings.ffmpeg_allowed_wrapper_formats.includes(format_name)) {
+					default_settings.ffmpeg_allowed_wrapper_formats.push(format_name);
+				}
+			}
+
+		} else {
+
+			default_settings.enable_nonfree_mpeg_wrappers = false;
+
+			for (const format_name of default_settings.mpeg_nonfree_wrapper_formats) {
+
+				var item_position = default_settings.ffmpeg_allowed_wrapper_formats.indexOf(format_name);
+
+				if (item_position > 0) {
+					default_settings.ffmpeg_allowed_wrapper_formats.splice(item_position, 1);
+				}
+			}
+		}
+
+		if (debug = true) {
+			console.log("enable_nonfree_mpeg_wrappers:", default_settings.enable_nonfree_mpeg_wrappers);
+			console.log("ffmpeg_allowed_wrapper_formats):", default_settings.ffmpeg_allowed_wrapper_formats);
+		}
+	}
+
+	function update_webm() {
+
+		if (document.getElementById("webm").checked == true) {
+
+			default_settings.enable_webm_wrapper = true;
+
+
+			if (!default_settings.ffmpeg_allowed_wrapper_formats.includes("webm")) {
+				default_settings.ffmpeg_allowed_wrapper_formats.push("webm");
+			}
+
+		} else {
+
+			default_settings.enable_webm_wrapper = false;
+
+			var item_position = default_settings.ffmpeg_allowed_wrapper_formats.indexOf("webm");
+
+			if (item_position > 0) {
+				default_settings.ffmpeg_allowed_wrapper_formats.splice(item_position, 1);
+			}
+		}
+
+		if (debug = true) {
+			console.log("enable_webm_wrapper:", default_settings.enable_webm_wrapper);
+			console.log("ffmpeg_allowed_wrapper_formats):", default_settings.ffmpeg_allowed_wrapper_formats);
+		}
+	}
+
+	function ffmpeg_allowed_codec_formats() {
+
+		if (document.getElementById("ffmpeg_allowed_codec_formats_all").checked == true) {
+			default_settings.enable_all_nonfree_ffmpeg_codec_formats = true;
+			default_settings.ffmpeg_allowed_codec_formats = [ "all" ];
+		} else {
+			default_settings.enable_all_nonfree_ffmpeg_codec_formats = false;
+			// Deepcopy values. As javascript does not have a deepcopy command use a workaround.
+			default_settings.ffmpeg_allowed_codec_formats = JSON.parse(JSON.stringify(default_settings.ffmpeg_free_codec_formats));
+		}
+
+		if (debug = true) {
+			console.log("enable_all_nonfree_ffmpeg_codec_formats:", default_settings.enable_all_nonfree_ffmpeg_codec_formats);
+			console.log("ffmpeg_allowed_codec_formats:", default_settings.ffmpeg_allowed_codec_formats);
+		}
+	}
+
 	function init() {
 		populateProcessors();
 		document.getElementById('NumProcessors').value = "0";
-		applyPreset();
-		document.getElementById("HotfolderPath").value = default_settings.hotfolder_path;
 		populateFileExpiryTime();
 		populateTargetLoudness();
 		populateEmailSending_interval();
