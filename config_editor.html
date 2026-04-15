@@ -123,6 +123,63 @@
 		color: var(--text-gray);
         }
 
+	/* Container relative positioning ensures the absolute tooltip stays attached to the icon */
+	.icon-container {
+	    position: relative;
+	    display: inline-block;
+	    margin-right: 10px;
+	}
+
+	/* Styling the question mark circle */
+	.help-icon {
+	    display: inline-flex;
+	    justify-content: center;
+	    align-items: center;
+	    width: 18px;
+	    height: 18px;
+	    background-color: #007bff;
+	    color: white;
+	    border-radius: 50%;
+	    font-size: 12px;
+	    cursor: help;
+	}
+
+	/* The hidden tooltip box */
+	.tooltip {
+	    visibility: hidden;
+	    opacity: 0;
+	    background-color: #333;
+	    color: #fff;
+	    text-align: center;
+	    border-radius: 4px;
+	    padding: 5px 10px;
+	    position: absolute;
+	    z-index: 1;
+	    bottom: 130%; /* Positions it right above the icon */
+	    left: 50%;
+	    transform: translateX(-50%); /* Centers it perfectly above the ? */
+	    white-space: nowrap;
+	    transition: opacity 0.2s ease-in-out;
+	}
+
+	/* The small triangle pointer at the bottom of the tooltip */
+	.tooltip::after {
+	    content: "";
+	    position: absolute;
+	    top: 100%;
+	    left: 50%;
+	    margin-left: -5px;
+	    border-width: 5px;
+	    border-style: solid;
+	    border-color: #333 transparent transparent transparent;
+	}
+
+	/* The class our JavaScript will add/remove */
+	.tooltip.show {
+	    visibility: visible;
+	    opacity: 1;
+	}
+
     </style>
 </head>
 <body>
@@ -134,28 +191,62 @@
 	<div class="main-interface">
 	<div class="default-styling">
 		<div class="default-styling-group">
-                <label>Number Of Processor Cores To Use</label>
+                <label>Number Of Processor Cores To Use&nbsp;
+			<span class="icon-container">
+				<span class="help-icon" id="processor_cores_icon">?</span>
+				<span class="tooltip" id="processor_cores_tooltip_text">
+					Select how many processor cores to use.<br>
+					Each processed file ties up two so the<br>
+					total number of cores divided by two is the<br>
+					number of simultaneous files you can process.
+				</span>
+			</span>
+		</label>
                 <select id="NumProcessors" onchange="update_number_of_cores()">
                 </select>
             </div>
         </div>
 	<div class="default-styling">
 		<div class="default-styling-group">
-                <label>File Expiry Time In Minutes</label>
+                <label>File Expiry Time In Minutes&nbsp;
+			<span class="icon-container">
+				<span class="help-icon" id="file_expiry_time_icon">?</span>
+				<span class="tooltip" id="file_expiry_time_tooltip_text">
+					How many minutes a file is allowed to<br>
+					stay on the disk before its is deleted<br>
+				</span>
+			</span>
+		</label>
                 <select id="FileExpiry" onchange="updateFileExpiryTime()">
                 </select>
             </div>
         </div>
 	<div class="default-styling">
 		<div class="default-styling-group">
-                <label>Target Loudness Level (LUFS)</label>
+                <label>Target Loudness Level (LUFS)&nbsp;
+			<span class="icon-container">
+				<span class="help-icon" id="target_loudness_icon">?</span>
+				<span class="tooltip" id="target_loudnesss_tooltip_text">
+					How many minutes a file is allowed to<br>
+					stay on the disk before its is deleted<br>
+				</span>
+			</span>
+		</label>
                 <select id="TargetLoudness" onchange="updateTargetLoudness()">
                 </select>
             </div>
         </div>
 	<div class="default-styling">
 		<div class="default-styling-group">
-			<label>Language Of hotfolder paths and result graphics</label>
+			<label>Language Of hotfolder paths and result graphics&nbsp;
+			<span class="icon-container">
+				<span class="help-icon" id="language_icon">?</span>
+				<span class="tooltip" id="language_tooltip_text">
+					How many minutes a file is allowed to<br>
+					stay on the disk before its is deleted<br>
+				</span>
+			</span>
+			</label>
 		</div>
 		<div class="radio-buttons">
 			<input type="radio" id="English" name="language" value="english" checked onchange="language_selection()"/>
@@ -166,7 +257,15 @@
         </div>
 	<div class="default-styling">
 		<div class="default-styling-group">
-			<label>Send error messages by email</label>
+			<label>Send error messages by email&nbsp;
+			<span class="icon-container">
+				<span class="help-icon" id="email_icon">?</span>
+				<span class="tooltip" id="email_tooltip_text">
+					How many minutes a file is allowed to<br>
+					stay on the disk before its is deleted<br>
+				</span>
+			</span>
+			</label>
 		</div>
 		<div class="radio-buttons">
 			<input type="radio" id="send_email_yes" name="send_email" value="yes" onchange="send_email()"/>
@@ -176,7 +275,15 @@
 		</div>
 		<br>
 		<div class="default-styling-group">
-			<label>Email sending interval</label>
+			<label>Email sending interval&nbsp;
+			<span class="icon-container">
+				<span class="help-icon" id="email_interval_icon">?</span>
+				<span class="tooltip" id="email_interval_tooltip_text">
+					How many minutes a file is allowed to<br>
+					stay on the disk before its is deleted<br>
+				</span>
+			</span>
+			</label>
 			<select id="email_sending_interval" disabled onchange="updateEmailSending_interval()">
 		</select>
 	    </div>
@@ -203,7 +310,15 @@
 		</div>
 		<br>
 		<div class="default-styling-group">
-			<label>Start HeartBeat Checker</label>
+			<label>Start HeartBeat Checker&nbsp;
+			<span class="icon-container">
+				<span class="help-icon" id="heartbeat_checker_icon">?</span>
+				<span class="tooltip" id="heartbeat_checker_tooltip_text">
+					How many minutes a file is allowed to<br>
+					stay on the disk before its is deleted<br>
+				</span>
+			</span>
+			</label>
 		</div>
 		<div class="radio-buttons">
 			<input type="radio" id="start_heartbeat_checker_yes" name="start_heartbeat_checker" value="yes" disabled onchange="start_heartbeat_checker()"/>
@@ -264,7 +379,15 @@
         </div>
 	<div class="default-styling">
 		<div class="default-styling-group">
-			<label>Write html progress report</label>
+			<label>Write html progress report&nbsp;
+			<span class="icon-container">
+				<span class="help-icon" id="html_progress_report_icon">?</span>
+				<span class="tooltip" id="html_progress_report_tooltip_text">
+					How many minutes a file is allowed to<br>
+					stay on the disk before its is deleted<br>
+				</span>
+			</span>
+			</label>
 		</div>
 		<div class="radio-buttons">
 			<input type="radio" id="html_progress_report_yes" name="html_progress_report" value="yes" onchange="html_progress_report()"/>
@@ -274,7 +397,15 @@
 		</div>
 		<br>
 		<div class="default-styling-group">
-			<label>Peak measurement method</label>
+			<label>Peak measurement method&nbsp;
+			<span class="icon-container">
+				<span class="help-icon" id="true_or_samplepeak_icon">?</span>
+				<span class="tooltip" id="true_or_samplepeak_tooltip_text">
+					How many minutes a file is allowed to<br>
+					stay on the disk before its is deleted<br>
+				</span>
+			</span>
+			</label>
 		</div>
 		<div class="radio-buttons">
 			<input type="radio" id="peak_measurement_method_sample" name="peak_measurement_method" value="samplepeak" onchange="peak_measurement_method()"/>
@@ -285,7 +416,15 @@
         </div>
 	<div class="default-styling">
 		<div class="default-styling-group">
-			<label>Use FreeLCS file output defaults</label>
+			<label>Use FreeLCS file output defaults&nbsp;
+			<span class="icon-container">
+				<span class="help-icon" id="output_defaults_icon">?</span>
+				<span class="tooltip" id="output_defaults_tooltip_text">
+					How many minutes a file is allowed to<br>
+					stay on the disk before its is deleted<br>
+				</span>
+			</span>
+			</label>
 		</div>
 		<div class="radio-buttons">
 			<input type="radio" id="use_freelcs_file_output_defaults_yes" name="use_freelcs_file_output_defaults" value="yes" checked onchange="use_freelcs_file_output_defaults()"/>
@@ -295,7 +434,15 @@
 		</div>
 		<br>
 		<div class="default-styling-group">
-			<label>Create loudness corrected audio files</label>
+			<label>Create loudness corrected audio files&nbsp;
+			<span class="icon-container">
+				<span class="help-icon" id="create_loudness_corrected_files_icon">?</span>
+				<span class="tooltip" id="create_loudness_corrected_files_tooltip_text">
+					How many minutes a file is allowed to<br>
+					stay on the disk before its is deleted<br>
+				</span>
+			</span>
+			</label>
 		</div>
 		<div class="radio-buttons">
 			<input type="radio" id="create_loudness_corrected_files_yes" name="create_loudness_corrected_files" value="yes" checked disabled onchange="create_loudness_corrected_files()"/>
@@ -305,7 +452,15 @@
 		</div>
 		<br>
 		<div class="default-styling-group">
-			<label>Create loudness history graphics files</label>
+			<label>Create loudness history graphics files&nbsp;
+			<span class="icon-container">
+				<span class="help-icon" id="create_loudness_history_graphics_icon">?</span>
+				<span class="tooltip" id="create_loudness_history_graphics_tooltip_text">
+					How many minutes a file is allowed to<br>
+					stay on the disk before its is deleted<br>
+				</span>
+			</span>
+			</label>
 		</div>
 		<div class="radio-buttons">
 			<input type="radio" id="create_loudness_history_graphics_files_yes" name="create_loudness_history_graphics_files" value="yes" checked disabled onchange="create_loudness_history_graphics_files()"/>
@@ -315,7 +470,15 @@
 		</div>
 		<br>
 		<div class="default-styling-group">
-			<label>Delete original multistream audiofile</label>
+			<label>Delete original multistream audiofile&nbsp;
+			<span class="icon-container">
+				<span class="help-icon" id="delete_multistream_files_icon">?</span>
+				<span class="tooltip" id="delete_multistream_files_tooltip_text">
+					How many minutes a file is allowed to<br>
+					stay on the disk before its is deleted<br>
+				</span>
+			</span>
+			</label>
 		</div>
 		<div class="radio-buttons">
 			<input type="radio" id="delete_original_file_immediately_yes" name="delete_original_file_immediately" value="yes" checked disabled onchange="delete_original_file_immediately()"/>
@@ -326,7 +489,15 @@
         </div>
 	<div class="default-styling">
 		<div class="default-styling-group">
-			<label>Write loudness calculation results to a machine readable file</label>
+			<label>Write loudness calculation results to a machine readable file&nbsp;
+			<span class="icon-container">
+				<span class="help-icon" id="machine_readable_results_icon">?</span>
+				<span class="tooltip" id="machine_readable_results_tooltip_text">
+					How many minutes a file is allowed to<br>
+					stay on the disk before its is deleted<br>
+				</span>
+			</span>
+			</label>
 		</div>
 		<div class="radio-buttons">
 			<input type="radio" id="write_loudness_calculation_results_yes" name="write_loudness_calculation_results" value="yes" onchange="write_loudness_calculation_results()"/>
@@ -335,14 +506,30 @@
 			<label for="Write loudness calculation results files No">No</label>
 		</div>
 		<div class="default-styling-group">
-			<p>Unit Separator (ASCII / UTF-8)</p>
+			<p>Unit Separator (ASCII / UTF-8)&nbsp;
+			<span class="icon-container">
+				<span class="help-icon" id="unit_separator_icon">?</span>
+				<span class="tooltip" id="unit_separator_tooltip_text">
+					How many minutes a file is allowed to<br>
+					stay on the disk before its is deleted<br>
+				</span>
+			</span>
+			</p>
 			<select id="unit_separator_1" disabled onchange="update_unit_separator()">
 		</select>
 			<select id="unit_separator_2" disabled onchange="update_unit_separator()">
 		</select>
 		</div>
 		<div class="default-styling-group">
-			<p>Record Separator (ASCII / UTF-8)</p>
+			<p>Record Separator (ASCII / UTF-8)&nbsp;
+			<span class="icon-container">
+				<span class="help-icon" id="record_separator_icon">?</span>
+				<span class="tooltip" id="record_separator_tooltip_text">
+					How many minutes a file is allowed to<br>
+					stay on the disk before its is deleted<br>
+				</span>
+			</span>
+			</p>
 			<select id="record_separator_1" disabled onchange="update_record_separator()">
 		</select>
 			<select id="record_separator_2" disabled onchange="update_record_separator()">
@@ -351,7 +538,15 @@
         </div>
 	<div class="default-styling">
 		<div class="default-styling-group">
-			<label>Enable MXF Audio Remixing</label>
+			<label>Enable MXF Audio Remixing&nbsp;
+			<span class="icon-container">
+				<span class="help-icon" id="mxf_audio_remixing_icon">?</span>
+				<span class="tooltip" id="mxf_audio_remixing_tooltip_text">
+					How many minutes a file is allowed to<br>
+					stay on the disk before its is deleted<br>
+				</span>
+			</span>
+			</label>
 		</div>
 		<div class="radio-buttons">
 			<input type="radio" id="enable_mxf_audio_remixing_yes" name="enable_mxf_audio_remixing" value="yes" onchange="enable_mxf_audio_remixing()"/>
@@ -431,7 +626,15 @@
 	</div>
 	<div class="default-styling">
 		<div class="default-styling-group">
-			<label>FFmpeg allowed wrapper formats</label>
+			<label>FFmpeg allowed wrapper and codec formats&nbsp;
+			<span class="icon-container">
+				<span class="help-icon" id="wrapper_and_codec_formats_icon">?</span>
+				<span class="tooltip" id="wrapper_and_codec_formats_tooltip_text">
+					How many minutes a file is allowed to<br>
+					stay on the disk before its is deleted<br>
+				</span>
+			</span>
+			</label>
 		</div>
 		<div class="radio-buttons">
 			<input type="radio" id="ffmpeg_allowed_wrapper_formats_all" name="ffmpeg_allowed_wrapper_formats" checked value="all" onchange="ffmpeg_allowed_wrapper_formats()"/>
@@ -451,7 +654,6 @@
 		</div>
         </div>
 </div>
-<!-- https://stackoverflow.com/questions/34156282/how-do-i-save-json-to-local-text-file -->
 <div class="file-load-save">
 	<div class="default-styling-group">
 		<label for="Save settings to a file">Save settings to a json - file</label>
@@ -1420,6 +1622,35 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 			console.log("enable_all_nonfree_ffmpeg_codec_formats:", default_settings.enable_all_nonfree_ffmpeg_codec_formats);
 			console.log("ffmpeg_allowed_codec_formats:", default_settings.ffmpeg_allowed_codec_formats);
 		}
+	}
+
+	/////////////////////
+	// Tooltip handler //
+	/////////////////////
+	// 1. Reusable function to show the tooltip relative to the hovered icon
+	function showTooltip(event) {
+		// event.target is the specific '?' icon being hovered
+		var icon = event.target;
+		// The tooltip is the sibling element directly after the icon
+		var tooltip = icon.nextElementSibling;
+		tooltip.classList.add("show");
+	}
+
+	// 2. Reusable function to hide the tooltip
+	function hideTooltip(event) {
+		var icon = event.target;
+		var tooltip = icon.nextElementSibling;
+		tooltip.classList.remove("show");
+	}
+
+	// 3. Find all help icons on the page
+	var icons = document.querySelectorAll(".help-icon");
+
+	// 4. Use a simple loop to attach the listeners to every icon found
+	// This avoids writing out names for every single element
+	for (var i = 0; i < icons.length; i++) {
+		icons[i].addEventListener("mouseover", showTooltip);
+		icons[i].addEventListener("mouseout", hideTooltip);
 	}
 
 	function startup_initialization() {
