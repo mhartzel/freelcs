@@ -1,44 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
-	<!-- https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input -->
-	<!-- https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/file -->
-	<!-- https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/change_event -->
-	<!-- https://community.latenode.com/t/how-to-send-html-form-input-to-javascript/1810 -->
-	<!-- https://teamtreehouse.com/community/get-value-of-text-input-element-store-in-variable -->
-
-	<!--
-		FIXME
-		-----
-		# Unit ja Record separator: enable puuttuu
-		# tsekkaa miten none - arvo käsitellään
-		# kato että arvo tallennetaan jsoniin oikein
-		# kato että tulostuu oikein consoleen.
-		# Poista viides elementti email joka jäi sinne jonkun jutun placeholderiksi, tsekkaa että se tuli tehtyä
-		# Korjaa FFmpeg allowed formats sen GUI freimi meni väärin
-		# for:it
-		# Poista turhat luokat ja css - asetukset
-		- defaultit pitää tulla jsonista
-		- defaultit pitää tulla jsonista jos se ladataan uudestaan
-		- Datatyypit pitää tallentaa oikein jsonin
-		- Laita koodi lisäämään ladattuun jsoniin sieltä mahdollisesti puuttuvat arvot niin saadaan taaksepäin yhteensopivuus
-		- Luokkien nimet järkeviksi
-		- Alueiden uudelleen ryhmittely
-		- Help - tekstit
-		- Testaus verraten viimeiseen tkinter - sovellukseen
-		- Tee LoudessSOrrection:iin corejen lukumäärän tunnistus
-
-		https://stackoverflow.com/questions/34156282/how-do-i-save-json-to-local-text-file
-		https://stackoverflow.com/questions/67857621/how-to-show-file-content-in-html
-		https://www.geeksforgeeks.org/javascript/how-to-read-a-local-text-file-using-javascript/
-		https://www.sitepoint.com/community/t/getting-content-of-the-file/294355
-		https://developer.mozilla.org/en-US/docs/Web/API/FileReader
-		https://developer.mozilla.org/en-US/docs/Web/API/File_System_API
-		Forms: https://mailtrap.io/blog/javascript-send-email/
-		Email nodemailer: https://sendlayer.com/blog/how-to-send-email-with-javascript/
-		Emai: https://www.vmayo.com/knowledge-base/smtp-server/how-to-send-emails-from-javascript/
-	-->
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -91,7 +52,7 @@
 		grid-template-columns: auto;
         }
 
-        .drop-box {
+        .default-styling {
 		background: white;
 		padding: 20px;
 		border: 1px solid #ddd;
@@ -101,14 +62,14 @@
 		align-self: stretch;
         }
 
-        .drop-box-group label {
+        .default-styling-group label {
 		display: block;
 		font-weight: 500;
 		margin-bottom: 8px;
 		color: var(--ibm-blue);
         }
 
-        .drop-box-group select {
+        .default-styling-group select {
 		/* width: 100%; */
 		padding: 4px;
 		font-size: 1rem;
@@ -170,41 +131,30 @@
 	<header>
 		<h1>FreeLCS Configuration Editor</h1>
 	</header>
-
-	<div class="file-load-save">
-		<form method="post" enctype="multipart/form-data">
-			<div class="drop-box-group">
-				<label for="Load settings from a file">Load settings from a previously saved LoudnessCorrection_Settings.json - file</label>
-			</div>
-			<div class="drop-box-group">
-				<input type="file" id="inputfile" name="inputfile" accept=".JSON"/>
-			</div>
-		</form>
-	</div>
 	<div class="main-interface">
-	<div class="drop-box">
-		<div class="drop-box-group">
+	<div class="default-styling">
+		<div class="default-styling-group">
                 <label>Number Of Processor Cores To Use</label>
                 <select id="NumProcessors" onchange="update_number_of_cores()">
                 </select>
             </div>
         </div>
-	<div class="drop-box">
-		<div class="drop-box-group">
+	<div class="default-styling">
+		<div class="default-styling-group">
                 <label>File Expiry Time In Minutes</label>
                 <select id="FileExpiry" onchange="updateFileExpiryTime()">
                 </select>
             </div>
         </div>
-	<div class="drop-box">
-		<div class="drop-box-group">
+	<div class="default-styling">
+		<div class="default-styling-group">
                 <label>Target Loudness Level (LUFS)</label>
                 <select id="TargetLoudness" onchange="updateTargetLoudness()">
                 </select>
             </div>
         </div>
-	<div class="drop-box">
-		<div class="drop-box-group">
+	<div class="default-styling">
+		<div class="default-styling-group">
 			<label>Language Of hotfolder paths and result graphics</label>
 		</div>
 		<div class="radio-buttons">
@@ -214,8 +164,8 @@
 			<label for="Language Finnish">Finnish</label>
 		</div>
         </div>
-	<div class="drop-box">
-		<div class="drop-box-group">
+	<div class="default-styling">
+		<div class="default-styling-group">
 			<label>Send error messages by email</label>
 		</div>
 		<div class="radio-buttons">
@@ -225,13 +175,13 @@
 			<label for="Send Email No">No</label>
 		</div>
 		<br>
-		<div class="drop-box-group">
+		<div class="default-styling-group">
 			<label>Email sending interval</label>
 			<select id="email_sending_interval" disabled onchange="updateEmailSending_interval()">
 		</select>
 	    </div>
 		<br>
-		<div class="drop-box-group">
+		<div class="default-styling-group">
 			<label>Smtp Server requires TLS encryption</label>
 		</div>
 		<div class="radio-buttons">
@@ -241,8 +191,8 @@
 			<label for="TLS Encryption No">No</label>
 		</div>
         </div>
-	<div class="drop-box">
-		<div class="drop-box-group">
+	<div class="default-styling">
+		<div class="default-styling-group">
 			<label>Smtp Server requires authentication</label>
 		</div>
 		<div class="radio-buttons">
@@ -252,7 +202,7 @@
 			<label for="Email server requires authentication No">No</label>
 		</div>
 		<br>
-		<div class="drop-box-group">
+		<div class="default-styling-group">
 			<label>Start HeartBeat Checker</label>
 		</div>
 		<div class="radio-buttons">
@@ -262,8 +212,8 @@
 			<label for="Start Heartbeat Checker No">No</label>
 		</div>
         </div>
-	<div class="drop-box">
-		<div class="drop-box-group">
+	<div class="default-styling">
+		<div class="default-styling-group">
 		<label>Add email addresses</label>
 		</div>
 
@@ -280,7 +230,7 @@
 		<br>
 		<button id="email_submit_button" disabled onclick="submit_email_addresses()">Submit All</button>
         </div>
-	<div class="drop-box">
+	<div class="default-styling">
 		<div class="smtp-group">
 		<form id="smtp_server_details">
 			Smtp server name <input list="smtp_servers" id="smtp_server_name" name="stmp_server_dropbox" disabled>
@@ -312,8 +262,8 @@
 			</div>
 		</div>
         </div>
-	<div class="drop-box">
-		<div class="drop-box-group">
+	<div class="default-styling">
+		<div class="default-styling-group">
 			<label>Write html progress report</label>
 		</div>
 		<div class="radio-buttons">
@@ -323,7 +273,7 @@
 			<label for="Create html progress report No">No</label>
 		</div>
 		<br>
-		<div class="drop-box-group">
+		<div class="default-styling-group">
 			<label>Peak measurement method</label>
 		</div>
 		<div class="radio-buttons">
@@ -333,8 +283,8 @@
 			<label for="Peak measurement method truepeak">Truepeak</label>
 		</div>
         </div>
-	<div class="drop-box">
-		<div class="drop-box-group">
+	<div class="default-styling">
+		<div class="default-styling-group">
 			<label>Use FreeLCS file output defaults</label>
 		</div>
 		<div class="radio-buttons">
@@ -344,7 +294,7 @@
 			<label for="Use FreeLCS file output defaults No">No</label>
 		</div>
 		<br>
-		<div class="drop-box-group">
+		<div class="default-styling-group">
 			<label>Create loudness corrected audio files</label>
 		</div>
 		<div class="radio-buttons">
@@ -354,7 +304,7 @@
 			<label for="Create loudness corrected files No">No</label>
 		</div>
 		<br>
-		<div class="drop-box-group">
+		<div class="default-styling-group">
 			<label>Create loudness history graphics files</label>
 		</div>
 		<div class="radio-buttons">
@@ -364,7 +314,7 @@
 			<label for="Create loudness history graphics No">No</label>
 		</div>
 		<br>
-		<div class="drop-box-group">
+		<div class="default-styling-group">
 			<label>Delete original multistream audiofile</label>
 		</div>
 		<div class="radio-buttons">
@@ -374,8 +324,8 @@
 			<label for="Delete original multistream file No">No</label>
 		</div>
         </div>
-	<div class="drop-box">
-		<div class="drop-box-group">
+	<div class="default-styling">
+		<div class="default-styling-group">
 			<label>Write loudness calculation results to a machine readable file</label>
 		</div>
 		<div class="radio-buttons">
@@ -384,14 +334,14 @@
 			<input type="radio" id="write_loudness_calculation_results_no" name="write_loudness_calculation_results" value="no" checked onchange="write_loudness_calculation_results()"/>
 			<label for="Write loudness calculation results files No">No</label>
 		</div>
-		<div class="drop-box-group">
+		<div class="default-styling-group">
 			<p>Unit Separator (ASCII / UTF-8)</p>
 			<select id="unit_separator_1" disabled onchange="update_unit_separator()">
 		</select>
 			<select id="unit_separator_2" disabled onchange="update_unit_separator()">
 		</select>
 		</div>
-		<div class="drop-box-group">
+		<div class="default-styling-group">
 			<p>Record Separator (ASCII / UTF-8)</p>
 			<select id="record_separator_1" disabled onchange="update_record_separator()">
 		</select>
@@ -399,8 +349,8 @@
 		</select>
 		</div>
         </div>
-	<div class="drop-box">
-		<div class="drop-box-group">
+	<div class="default-styling">
+		<div class="default-styling-group">
 			<label>Enable MXF Audio Remixing</label>
 		</div>
 		<div class="radio-buttons">
@@ -411,7 +361,7 @@
 			<button id="reset_mxf_audio_remixing" disabled onclick="reset_mxf_audio_remixing()">Reset All</button>
 		</div>
 		<br>
-		<div class="drop-box-group">
+		<div class="default-styling-group">
 			<span>
 				01 <select id="mxf_remix_01" disabled onchange="update_mxf_remix()"> </select>
 				02 <select id="mxf_remix_02" disabled onchange="update_mxf_remix()"> </select>
@@ -428,7 +378,7 @@
 			</span>
 		</div>
 		<br>
-		<div class="drop-box-group">
+		<div class="default-styling-group">
 			<span>
 				13 <select id="mxf_remix_13" disabled onchange="update_mxf_remix()"> </select>
 				14 <select id="mxf_remix_14" disabled onchange="update_mxf_remix()"> </select>
@@ -445,7 +395,7 @@
 			</span>
 		</div>
 		<br>
-		<div class="drop-box-group">
+		<div class="default-styling-group">
 			<span>
 				25 <select id="mxf_remix_25" disabled onchange="update_mxf_remix()"> </select>
 				26 <select id="mxf_remix_26" disabled onchange="update_mxf_remix()"> </select>
@@ -462,7 +412,7 @@
 			</span>
 		</div>
 		<br>
-		<div class="drop-box-group">
+		<div class="default-styling-group">
 			<span>
 				37 <select id="mxf_remix_37" disabled onchange="update_mxf_remix()"> </select>
 				38 <select id="mxf_remix_38" disabled onchange="update_mxf_remix()"> </select>
@@ -479,8 +429,8 @@
 			</span>
 		</div>
 	</div>
-	<div class="drop-box">
-		<div class="drop-box-group">
+	<div class="default-styling">
+		<div class="default-styling-group">
 			<label>FFmpeg allowed wrapper formats</label>
 		</div>
 		<div class="radio-buttons">
@@ -503,13 +453,13 @@
 </div>
 <!-- https://stackoverflow.com/questions/34156282/how-do-i-save-json-to-local-text-file -->
 <div class="file-load-save">
-	<div class="drop-box-group">
+	<div class="default-styling-group">
 		<label for="Save settings to a file">Save settings to a json - file</label>
 	</div>
 	<button onclick="export_settings()">Save</button>
 </div>
 <div class="file-load-save">
-	<div class="drop-box-group">
+	<div class="default-styling-group">
 		<label for="Save sample Samba - config to a file">Save sample Samba - config to a file</label>
 	</div>
 		<button onclick="export_samba_config()">Save</button>
@@ -619,7 +569,7 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 	"# force user = freelcs\\n" ]';
 
 	// Get default settings from the json - text to a javascript map //
-	const config_editor_version = 400;
+	const config_editor_version = "400";
 	const freelcs_version = "4.0";
 	const os_version = "26.04";
 	var default_settings = JSON.parse(default_settings_json); 
@@ -1325,7 +1275,7 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 			}
 
 			element_name = element_name + counter;
-			default_settings.global_mxf_audio_remix_channel_map[counter - 1] = document.getElementById(element_name).options[document.getElementById(element_name).selectedIndex].text;
+			default_settings.global_mxf_audio_remix_channel_map[counter - 1] = Number(document.getElementById(element_name).options[document.getElementById(element_name).selectedIndex].text);
 		}
 
 		if (debug == true) {
@@ -1472,12 +1422,17 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 		}
 	}
 
-	function set_default_values_for_gui_objects() {
+	function startup_initialization() {
+		populateProcessors();
+		populateFileExpiryTime();
+		populateTargetLoudness();
+		populateEmailSending_interval();
+		populateUnitSeparators();
+		populateMXFremix();
 
-		////////////////////////////////////////////////////////////////
-		// Add values possibly missing from user loaded settings file //
-		// This adds backwards compatibilty                           //
-		////////////////////////////////////////////////////////////////
+		////////////////////////////////////////////////////////////////////////////////
+		// Get default values for dropbown menus from the default_settings - variable //
+		////////////////////////////////////////////////////////////////////////////////
 
 		if (!("hotfolder_name" in default_settings)) {
 			default_settings["hotfolder_name"] = "LoudnessCorrection";
@@ -1593,47 +1548,18 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 		if (default_settings.record_separator.length == 2) {
 			document.getElementById('record_separator_2').selectedIndex = Number(default_settings.record_separator[1]) + 1;
 		}
-	}
 
-	function startup_initialization() {
-		populateProcessors();
-		populateFileExpiryTime();
-		populateTargetLoudness();
-		populateEmailSending_interval();
-		populateUnitSeparators();
-		populateMXFremix();
-		set_default_values_for_gui_objects();
-
+		////////////////////////////////////////////////////////////////
+		// Print the number of options in default_settings - variable //
+		////////////////////////////////////////////////////////////////
+		if (debug = true) {
+			console.log("default_settings.length", Object.keys(default_settings).length);
+		}
 	}
 
 	////////////////////////////////////
 	// Function definitions ends here //
 	////////////////////////////////////
-
-	// Read LoudnessCorrection_Settings.json - file
-	document.getElementById('inputfile').addEventListener('change', function() {
-		var file_reader_object = new FileReader();
-
-		file_reader_object.onload=function(){
-
-			try {
-				JSON.parse(file_reader_object.result);
-			} catch (e) {
-				alert("File is not valid json");
-				return
-			}
-
-			default_settings = JSON.parse(file_reader_object.result);
-
-			if (debug == true) {
-				console.log("default_settings:", default_settings);
-			}
-
-			set_default_values_for_gui_objects();
-		}
-
-		file_reader_object.readAsText(this.files[0]);
-	})
 
 	startup_initialization();
 
