@@ -191,7 +191,7 @@
 	<div class="main-interface">
 	<div class="default-styling">
 		<div class="default-styling-group">
-                <label>Number Of Processor Cores To Use&nbsp;
+		<label>Number Of Processor Cores To Use&nbsp;
 			<span class="icon-container">
 				<span class="help-icon" id="processor_cores_icon">?</span>
 				<span class="tooltip" id="processor_cores_tooltip_text">
@@ -202,11 +202,10 @@
 				</span>
 			</span>
 		</label>
-                <select id="NumProcessors" onchange="update_number_of_cores()">
-                </select>
+		<select id="NumProcessors" onchange="update_number_of_cores()">
+		</select>
             </div>
-        </div>
-	<div class="default-styling">
+	    <br>
 		<div class="default-styling-group">
                 <label>File Expiry Time In Minutes&nbsp;
 			<span class="icon-container">
@@ -220,8 +219,7 @@
                 <select id="FileExpiry" onchange="updateFileExpiryTime()">
                 </select>
             </div>
-        </div>
-	<div class="default-styling">
+	    <br>
 		<div class="default-styling-group">
                 <label>Target Loudness Level (LUFS)&nbsp;
 			<span class="icon-container">
@@ -234,8 +232,7 @@
                 <select id="TargetLoudness" onchange="updateTargetLoudness()">
                 </select>
             </div>
-        </div>
-	<div class="default-styling">
+	    <br>
 		<div class="default-styling-group">
 			<label>Language for hotfolder paths and result graphics&nbsp;
 			<span class="icon-container">
@@ -272,8 +269,8 @@
 			<span class="icon-container">
 				<span class="help-icon" id="email_interval_icon">?</span>
 				<span class="tooltip" id="email_interval_tooltip_text">
-					Error messages are collected and sent<br>
-					periodically <br>
+					Error messages are collected<br>
+					and sent periodically <br>
 				</span>
 			</span>
 			</label>
@@ -290,8 +287,7 @@
 			<input type="radio" id="tls_encryption_no" name="tls_encryption" value="no" checked disabled onchange="tls_encryption()"/>
 			<label for="TLS Encryption No">No</label>
 		</div>
-        </div>
-	<div class="default-styling">
+		<br>
 		<div class="default-styling-group">
 			<label>Smtp Server requires authentication</label>
 		</div>
@@ -302,44 +298,6 @@
 			<label for="Email server requires authentication No">No</label>
 		</div>
 		<br>
-		<div class="default-styling-group">
-			<label>Start HeartBeat Checker&nbsp;
-			<span class="icon-container">
-				<span class="help-icon" id="heartbeat_checker_icon">?</span>
-				<span class="tooltip" id="heartbeat_checker_tooltip_text">
-					Heartbeat Checker monitors lifesigns<br>
-					of the LoudnessCorrection - program<br>
-					and sends email if it stops<br>
-				</span>
-			</span>
-			</label>
-		</div>
-		<div class="radio-buttons">
-			<input type="radio" id="start_heartbeat_checker_yes" name="start_heartbeat_checker" value="yes" disabled onchange="start_heartbeat_checker()"/>
-			<label for="Start Heartbeat Checker Yes">Yes</label>
-			<input type="radio" id="start_heartbeat_checker_no" name="start_heartbeat_checker" value="no" checked disabled onchange="start_heartbeat_checker()"/>
-			<label for="Start Heartbeat Checker No">No</label>
-		</div>
-        </div>
-	<div class="default-styling">
-		<div class="default-styling-group">
-		<label>Add email addresses</label>
-		</div>
-
-		<div class="form-ok label">
-		<form id="email_address">
-			Email 1 <input type="text" name="email_1" value="" disabled><label id="ok_1" colour="green" hidden> Saved</label> <br>
-			Email 2 <input type="text" name="email_2" value="" disabled><label id="ok_2" colour="green" hidden> Saved</label> <br>
-			Email 3 <input type="text" name="email_3" value="" disabled><label id="ok_3" colour="green" hidden> Saved</label> <br>
-			Email 4 <input type="text" name="email_4" value="" disabled><label id="ok_4" colour="green" hidden> Saved</label> <br>
-			Email 5 <input type="text" name="email_5" value="" disabled><label id="ok_5" colour="green" hidden> Saved</label> <br>
-		</form> 
-		</div>
-
-		<br>
-		<button id="email_submit_button" disabled onclick="submit_email_addresses()">Submit All</button>
-        </div>
-	<div class="default-styling">
 		<div class="smtp-group">
 		<form id="smtp_server_details">
 			Smtp server name <input list="smtp_servers" id="smtp_server_name" name="stmp_server_dropbox" disabled>
@@ -370,6 +328,41 @@
 				<label id="smtp_details_saved" colour="green" hidden>&nbsp;&nbsp;Saved</label><br>
 			</div>
 		</div>
+		<br>
+		<div class="default-styling-group">
+		<label>Add email addresses</label>
+		</div>
+
+		<div class="form-ok label">
+		<form id="email_address">
+			Email 1 <input type="text" name="email_1" value="" disabled><label id="ok_1" colour="green" hidden> Saved</label> <br>
+			Email 2 <input type="text" name="email_2" value="" disabled><label id="ok_2" colour="green" hidden> Saved</label> <br>
+			Email 3 <input type="text" name="email_3" value="" disabled><label id="ok_3" colour="green" hidden> Saved</label> <br>
+			Email 4 <input type="text" name="email_4" value="" disabled><label id="ok_4" colour="green" hidden> Saved</label> <br>
+			Email 5 <input type="text" name="email_5" value="" disabled><label id="ok_5" colour="green" hidden> Saved</label> <br>
+		</form> 
+		</div>
+		<br>
+		<button id="email_submit_button" disabled onclick="submit_email_addresses()">Submit All</button>
+		<div class="default-styling-group">
+			<br>
+			<label>Start HeartBeat Checker&nbsp;
+			<span class="icon-container">
+				<span class="help-icon" id="heartbeat_checker_icon">?</span>
+				<span class="tooltip" id="heartbeat_checker_tooltip_text">
+					Heartbeat Checker monitors lifesigns<br>
+					of the LoudnessCorrection - program<br>
+					and sends email if it stops<br>
+				</span>
+			</span>
+			</label>
+		</div>
+		<div class="radio-buttons">
+			<input type="radio" id="start_heartbeat_checker_yes" name="start_heartbeat_checker" value="yes" disabled onchange="start_heartbeat_checker()"/>
+			<label for="Start Heartbeat Checker Yes">Yes</label>
+			<input type="radio" id="start_heartbeat_checker_no" name="start_heartbeat_checker" value="no" checked disabled onchange="start_heartbeat_checker()"/>
+			<label for="Start Heartbeat Checker No">No</label>
+		</div>
         </div>
 	<div class="default-styling">
 		<div class="default-styling-group">
@@ -377,8 +370,8 @@
 			<span class="icon-container">
 				<span class="help-icon" id="html_progress_report_icon">?</span>
 				<span class="tooltip" id="html_progress_report_tooltip_text">
-					Do you want to monitor file processing<br>
-					via a web page ?<br>
+					Do you want to monitor file<br>
+					processing via a web page ?<br>
 				</span>
 			</span>
 			</label>
@@ -395,8 +388,8 @@
 			<span class="icon-container">
 				<span class="help-icon" id="true_or_samplepeak_icon">?</span>
 				<span class="tooltip" id="true_or_samplepeak_tooltip_text">
-					Should peak measurements be done by<br>
-					4x oversampling the audio ?<br>
+					Should peak measurements be done by 4x<br>
+					oversampling the audio (Truepeak)<br>
 				</span>
 			</span>
 			</label>
@@ -522,10 +515,10 @@
 			<span class="icon-container">
 				<span class="help-icon" id="mxf_audio_remixing_icon">?</span>
 				<span class="tooltip" id="mxf_audio_remixing_tooltip_text">
-					Do you want to always split audio streams inside<br>
-					a MXf - file each to its own file ? If so you<br>
+					Do you always want to split audio streams inside<br>
+					a MXf - file each into its own file ? If so you<br>
 					can define here how many audio channels will<br>
-					be combined to form a single audio file<br>
+					be combined to form a single audio file.<br>
 					A maximum of 48 mixes can be defined here<br>
 				</span>
 			</span>
@@ -615,7 +608,7 @@
 				<span class="tooltip" id="wrapper_and_codec_formats_tooltip_text">
 					Here you can define which wrapper and codec formats<br>
 					are processed. This option is here to enable one to<br>
-					process only free formats if need. If in doubt<br>
+					process only free formats if needed. If in doubt<br>
 					just select the option: ALL<br>
 				</span>
 			</span>
