@@ -377,9 +377,9 @@
 			</label>
 		</div>
 		<div class="radio-buttons">
-			<input type="radio" id="html_progress_report_yes" name="html_progress_report" value="yes" onchange="html_progress_report()"/>
+			<input type="radio" id="html_progress_report_yes" name="html_progress_report" value="yes" checked onchange="html_progress_report()"/>
 			<label for="Create html progress report Yes">Yes</label>
-			<input type="radio" id="html_progress_report_no" name="html_progress_report" value="no" checked onchange="html_progress_report()"/>
+			<input type="radio" id="html_progress_report_no" name="html_progress_report" value="no" onchange="html_progress_report()"/>
 			<label for="Create html progress report No">No</label>
 		</div>
 		<br>
@@ -635,7 +635,7 @@
 	<div class="default-styling-group">
 		<label for="Save settings to a file">Save settings to a json - file</label>
 	</div>
-	<button onclick="export_settings()">Save</button>
+	<button onclick="check_if_email_settings_are_ok()">Save</button>
 </div>
 <div class="file-load-save">
 	<div class="default-styling-group">
@@ -859,6 +859,39 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 		language_selection();
 	}
 
+	function check_if_email_settings_are_ok() {
+
+		if (default_settings.send_error_messages_by_email == true) {
+
+			if (default_settings.email_sending_details.smtp_server_name == "") {
+				window.alert("Smtp server name is missing. Did you forget to click the submit button ?");
+				return;
+			}
+
+			if (default_settings.email_sending_details.smtp_server_port == "") {
+				window.alert("Smtp server port is missing. Did you forget to click the submit button ?");
+				return;
+			}
+
+			if (default_settings.email_sending_details.smtp_username == "") {
+				window.alert("Smtp user name is missing. Did you forget to click the submit button ?");
+				return;
+			}
+
+			if (default_settings.email_sending_details.smtp_password == "") {
+				window.alert("Smtp user password is missing. Did you forget to click the submit button ?");
+				return;
+			}
+
+			if (default_settings.email_sending_details.message_recipients.length < 1 ) {
+				window.alert("Email address is missing. Did you forget to click the submit button ?");
+				return;
+			}
+		}
+
+		export_settings();
+	}
+
 	/* Export settings to a json - file */
 	function export_settings() {
 		const element = document.createElement("a");
@@ -960,8 +993,6 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 			email_authentication_no.disabled = true;
 			tls_encryption_yes.disabled = true;
 			tls_encryption_no.disabled = true;
-			start_heartbeat_checker_yes.disabled = true;
-			start_heartbeat_checker_no.disabled = true;
 			email_address.disabled = true;
 			document.getElementById("email_sending_interval").disabled=true;
 			email_address.style.color='gray';
@@ -977,6 +1008,12 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 			document.getElementById("smtp_server_username").disabled=true;
 			document.getElementById("smtp_server_password").disabled=true;
 			document.getElementById("smtp_server_submit_button").disabled=true;
+
+			start_heartbeat_checker_yes.disabled = true;
+			start_heartbeat_checker_no.disabled = true;
+			start_heartbeat_checker_yes.checked = false;
+			start_heartbeat_checker_no.checked = true;
+			start_heartbeat_checker();
 		} else {
 			default_settings.send_error_messages_by_email = true;
 			default_settings.email_sending_details.send_error_messages_by_email = true;
