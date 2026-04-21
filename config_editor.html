@@ -459,8 +459,7 @@
 			<input type="radio" id="delete_original_file_immediately_no" name="delete_original_file_immediately" value="no" disabled onchange="delete_original_file_immediately()"/>
 			<label for="Delete original multistream file No">No</label>
 		</div>
-        </div>
-	<div class="default-styling">
+		<br>
 		<div class="default-styling-group">
 			<label>Write loudness calculation results to a machine readable file&nbsp;
 			<span class="icon-container">
@@ -473,9 +472,9 @@
 			</label>
 		</div>
 		<div class="radio-buttons">
-			<input type="radio" id="write_loudness_calculation_results_yes" name="write_loudness_calculation_results" value="yes" onchange="write_loudness_calculation_results()"/>
+			<input type="radio" id="write_loudness_calculation_results_yes" name="write_loudness_calculation_results" value="yes" disabled onchange="write_loudness_calculation_results()"/>
 			<label for="Write loudness calculation results files Yes">Yes</label>
-			<input type="radio" id="write_loudness_calculation_results_no" name="write_loudness_calculation_results" value="no" checked onchange="write_loudness_calculation_results()"/>
+			<input type="radio" id="write_loudness_calculation_results_no" name="write_loudness_calculation_results" value="no" disabled checked onchange="write_loudness_calculation_results()"/>
 			<label for="Write loudness calculation results files No">No</label>
 		</div>
 		<div class="default-styling-group">
@@ -668,7 +667,7 @@
 	  "libebur128_path": "/bin/loudness-freelcs",\
 	  "ffmpeg_output_wrapper_format": "wav",\
 	  "silent": true,\
-	  "write_html_progress_report": false,\
+	  "write_html_progress_report": true,\
 	  "html_progress_report_write_interval": 5,\
 	  "web_page_name": "00-Calculation_Queue_Information.html",\
 	  "web_page_path": "/mountpoint/LoudnessCorrection/00-Calculation_Queue_Information",\
@@ -785,7 +784,7 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 	}
 
 	function update_number_of_cores() {
-		default_settings.number_of_processor_cores = document.getElementById("NumProcessors").options[document.getElementById("NumProcessors").selectedIndex].text;
+		default_settings.number_of_processor_cores = Number(document.getElementById("NumProcessors").options[document.getElementById("NumProcessors").selectedIndex].text);
 
 		if (debug == true) {
 			console.log("number_of_processor_cores =", default_settings.number_of_processor_cores);
@@ -902,8 +901,8 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 
 		if (document.getElementById("English").checked == true) {
 			default_settings.language = "english";
-			default_settings.english = "1";
-			default_settings.finnish = "0";
+			default_settings.english = 1;
+			default_settings.finnish = 0;
 			default_settings.hotfolder_name = "LoudnessCorrection";
 
 			if (default_settings.target_loudness != "-23") {
@@ -913,10 +912,11 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 			default_settings.hotfolder_path = default_settings.target_path + "/" + default_settings.hotfolder_name;
 			default_settings.directory_for_results = default_settings.hotfolder_path + "/00-Corrected_Files";
 			default_settings.web_page_path = default_settings.hotfolder_path + "/00-Calculation_Queue_Information";
+			default_settings.web_page_name = "00-Calculation_Queue_Information.html";
 		} else {
 			default_settings.language = "finnish";
-			default_settings.english = "0";
-			default_settings.finnish = "1";
+			default_settings.english = 0;
+			default_settings.finnish = 1;
 			default_settings.hotfolder_name = "AanekkyysKorjaus";
 
 			if (default_settings.target_loudness != "-23") {
@@ -926,6 +926,7 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 			default_settings.hotfolder_path = default_settings.target_path + "/" + default_settings.hotfolder_name;
 			default_settings.directory_for_results = default_settings.hotfolder_path + "/00-Korjatut_Tiedostot";
 			default_settings.web_page_path = default_settings.hotfolder_path + "/00-Laskentajonon_Tiedot";
+			default_settings.web_page_name = "00-Laskentajonon_Tiedot.html";
 		}
 
 		if (debug == true) {
@@ -1173,12 +1174,14 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 		const create_loudness_history_graphics_files_no = document.getElementById('create_loudness_history_graphics_files_no');
 		const delete_original_file_immediately_yes = document.getElementById('delete_original_file_immediately_yes');
 		const delete_original_file_immediately_no = document.getElementById('delete_original_file_immediately_no');
+		const write_loudness_calculation_results = document.getElementById('write_loudness_calculation_results');
 
 		if (use_freelcs_file_output_defaults_yes.checked == true) {
 			default_settings.use_freelcs_file_output_defaults = true;
 			default_settings.create_loudness_corrected_files = true;
 			default_settings.create_loudness_history_graphics_files = true;
 			default_settings.delete_original_file_immediately = true;
+			default_settings.write_loudness_calculation_results_to_a_machine_readable_file = false;
 
 			create_loudness_corrected_files_yes.disabled = true;
 			create_loudness_corrected_files_yes.checked = true;
@@ -1194,6 +1197,14 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 			delete_original_file_immediately_yes.checked = true;
 			delete_original_file_immediately_no.disabled = true;
 			delete_original_file_immediately_no.checked = false;
+
+			write_loudness_calculation_results_yes.disabled = true;
+			write_loudness_calculation_results_yes.checked = false;
+			write_loudness_calculation_results_no.disabled = true;
+			write_loudness_calculation_results_no.checked = true;
+
+			reset_unit_and_record_separator();
+
 		} else {
 			default_settings.use_freelcs_file_output_defaults = false;
 
@@ -1205,6 +1216,9 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 
 			delete_original_file_immediately_yes.disabled = false;
 			delete_original_file_immediately_no.disabled = false;
+
+			write_loudness_calculation_results_yes.disabled = false;
+			write_loudness_calculation_results_no.disabled = false;
 		}
 
 		if (debug == true) {
@@ -1212,6 +1226,7 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 			console.log("create_loudness_corrected_files:", default_settings.create_loudness_corrected_files);
 			console.log("create_loudness_history_graphics_files:", default_settings.create_loudness_history_graphics_files);
 			console.log("delete_original_file_immediately:", default_settings.delete_original_file_immediately);
+			console.log("write_loudness_calculation_results_to_a_machine_readable_file", default_settings.write_loudness_calculation_results_to_a_machine_readable_file);
 		}
 	}
 
@@ -1278,6 +1293,24 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 			if (debug == true) {
 				console.log("write_loudness_calculation_results_to_a_machine_readable_file:", default_settings.write_loudness_calculation_results_to_a_machine_readable_file);
 				}
+	}
+
+	function reset_unit_and_record_separator () {
+
+		document.getElementById("unit_separator_1").selectedIndex = 31;
+		document.getElementById("unit_separator_2").selectedIndex = 0;
+		document.getElementById("record_separator_1").selectedIndex = 13;
+		document.getElementById("record_separator_2").selectedIndex = 11;
+
+		default_settings.unit_separator = [ "31" ];
+		default_settings.record_separator = [ "13", "10" ];
+
+		if (debug == true) {
+			console.log("unit_separator", default_settings.unit_separator);
+			console.log("record_separator", default_settings.record_separator);
+			}
+
+		 write_loudness_calculation_results();
 	}
 
 	function populateUnitSeparators() {
