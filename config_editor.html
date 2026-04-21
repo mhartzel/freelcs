@@ -989,6 +989,7 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 		if (send_email_no.checked == true) {
 			default_settings.send_error_messages_by_email = false;
 			default_settings.email_sending_details.send_error_messages_by_email = false;
+			default_settings.where_to_send_error_messages = [ "logfile" ];
 			email_authentication_yes.disabled = true;
 			email_authentication_no.disabled = true;
 			tls_encryption_yes.disabled = true;
@@ -1017,12 +1018,11 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 		} else {
 			default_settings.send_error_messages_by_email = true;
 			default_settings.email_sending_details.send_error_messages_by_email = true;
+			default_settings.where_to_send_error_messages = [ "logfile", "email" ];
 			email_authentication_yes.disabled = false;
 			email_authentication_no.disabled = false;
 			tls_encryption_yes.disabled = false;
 			tls_encryption_no.disabled = false;
-			start_heartbeat_checker_yes.disabled = false;
-			start_heartbeat_checker_no.disabled = false;
 			email_address.disabled = false;
 			document.getElementById("email_sending_interval").disabled=false;
 			email_address.style.color='black';
@@ -1038,11 +1038,18 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 			document.getElementById("smtp_server_username").disabled=false;
 			document.getElementById("smtp_server_password").disabled=false;
 			document.getElementById("smtp_server_submit_button").disabled=false;
+
+			start_heartbeat_checker_yes.disabled = false;
+			start_heartbeat_checker_no.disabled = false;
+			start_heartbeat_checker_yes.checked = true;
+			start_heartbeat_checker_no.checked = false;
+			start_heartbeat_checker();
 		}
 
 		if (debug == true) {
 			console.log("send_error_messages_by_email:", default_settings.send_error_messages_by_email);
 			console.log("email_sending_details.send_error_messages_by_email:", default_settings.email_sending_details.send_error_messages_by_email);
+			console.log("where_to_send_error_messages", default_settings.where_to_send_error_messages);
 		}
 	}
 
