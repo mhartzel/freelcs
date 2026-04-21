@@ -1159,7 +1159,7 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 
 		default_settings.email_sending_details.message_recipients = email_addresses;
 
-		if (debug = true) {
+		if (debug == true) {
 			console.log(default_settings.email_sending_details.message_recipients);
 		}
 	}
@@ -1499,7 +1499,7 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 
 		document.getElementById("reset_mxf_audio_remixing").disabled = is_disabled;
 
-		if (debug = true) {
+		if (debug == true) {
 			console.log("enable_mxf_audio_remixing:", default_settings.enable_mxf_audio_remixing);
 		}
 	}
@@ -1561,7 +1561,7 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 			document.getElementById("webm").disabled = is_disabled;
 		}
 
-		if (debug = true) {
+		if (debug == true) {
 			console.log("enable_all_nonfree_ffmpeg_wrapper_formats:", default_settings.enable_all_nonfree_ffmpeg_wrapper_formats);
 			console.log("ffmpeg_allowed_wrapper_formats:", default_settings.ffmpeg_allowed_wrapper_formats);
 			console.log(document.getElementById("mxf").checked);
@@ -1595,7 +1595,7 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 		}
 
 
-		if (debug = true) {
+		if (debug == true) {
 			console.log("enable_mxf_wrapper:", default_settings.enable_mxf_wrapper);
 			console.log("ffmpeg_allowed_wrapper_formats):", default_settings.ffmpeg_allowed_wrapper_formats);
 		}
@@ -1628,7 +1628,7 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 			}
 		}
 
-		if (debug = true) {
+		if (debug == true) {
 			console.log("enable_nonfree_mpeg_wrappers:", default_settings.enable_nonfree_mpeg_wrappers);
 			console.log("ffmpeg_allowed_wrapper_formats):", default_settings.ffmpeg_allowed_wrapper_formats);
 		}
@@ -1656,7 +1656,7 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 			}
 		}
 
-		if (debug = true) {
+		if (debug == true) {
 			console.log("enable_webm_wrapper:", default_settings.enable_webm_wrapper);
 			console.log("ffmpeg_allowed_wrapper_formats):", default_settings.ffmpeg_allowed_wrapper_formats);
 		}
@@ -1673,7 +1673,7 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 			default_settings.ffmpeg_allowed_codec_formats = JSON.parse(JSON.stringify(default_settings.ffmpeg_free_codec_formats));
 		}
 
-		if (debug = true) {
+		if (debug == true) {
 			console.log("enable_all_nonfree_ffmpeg_codec_formats:", default_settings.enable_all_nonfree_ffmpeg_codec_formats);
 			console.log("ffmpeg_allowed_codec_formats:", default_settings.ffmpeg_allowed_codec_formats);
 		}
@@ -1838,7 +1838,7 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 		////////////////////////////////////////////////////////////////
 		// Print the number of options in default_settings - variable //
 		////////////////////////////////////////////////////////////////
-		if (debug = true) {
+		if (debug == true) {
 			console.log("default_settings.length", Object.keys(default_settings).length);
 		}
 	}
