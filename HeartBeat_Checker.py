@@ -68,40 +68,45 @@ message_attachment_path = ''
 
 @app.route('/heartbeat', methods=['POST'])
 def receive_messages():
-    """REST API: Uses constant-time comparison and input validation."""
-    global loudness_correction_program_info_and_timestamps
+	"""REST API: Uses constant-time comparison and input validation."""
+	global loudness_correction_program_info_and_timestamps
 
-    incoming_data = request.get_json()
-    if not incoming_data or not isinstance(incoming_data, dict):
-        abort(400, description="Invalid JSON payload")
+	incoming_data = request.get_json()
+	if not incoming_data or not isinstance(incoming_data, dict):
+		abort(400, description="Invalid JSON payload")
 
-    # Use hmac.compare_digest to prevent Timing Attacks
-    incoming_auth = str(incoming_data.get("authorization", ""))
-    expected_auth = str(all_settings_dict.get("authorization", ""))
+	# Use hmac.compare_digest to prevent Timing Attacks
+	incoming_auth = str(incoming_data.get("authorization", ""))
+	expected_auth = str(all_settings_dict.get("authorization", ""))
 
-    if not hmac.compare_digest(incoming_auth, expected_auth):
-        # We use a generic error to avoid giving away details to an attacker
-        abort(401, description="Unauthorized access")
+	if not hmac.compare_digest(incoming_auth, expected_auth):
+		# We use a generic error to avoid giving away details to an attacker
+		abort(401, description="Unauthorized access")
 
-    # Clean the data to ensure we only store strings
-    # and don't allow nested objects that could bloat memory.
-    # sanitized_data = {str(k): str(v) for k, v in data.items() if len(str(v)) < 1024}
+	# Clean the data to ensure we only store strings
+	# and don't allow nested objects that could bloat memory.
+	# sanitized_data = {str(k): str(v) for k, v in data.items() if len(str(v)) < 1024}
 
-    sanitized_data = {}
+	sanitized_data = {}
 
-    for k, v in incoming_data.items():
-	    # Convert values to strings to ensure type safety
-	    key_str = str(k)
-	    value_str = str(v)
+	for k, v in incoming_data.items():
+		# Convert values to strings to ensure type safety
+		key_str = str(k)
+		value_str = str(v)
 
-	    # Check our security constraint (length check)
-	    if len(value_str) < 1024:
-		    sanitized_data[key_str] = value_str
+		# Check our security constraint (length check)
+		if len(value_str) < 1024:
+			sanitized_data[key_str] = value_str
 
-    with report_lock:
-        loudness_correction_program_info_and_timestamps = sanitized_data
+	with report_lock:
+		loudness_correction_program_info_and_timestamps = sanitized_data
 
-    return {"status": "success"}, 200
+	# FIXME
+	print("loudness_correction_program_info_and_timestamps:")
+	print(loudness_correction_program_info_and_timestamps)
+	print()
+
+	return {"status": "success"}, 200
 
 def send_email(message_recipients, message_title, message_text_string, message_attachment_path):
    
@@ -375,7 +380,7 @@ def check_timestamps_and_send_email():
 		previous_values_of_loudness_correction_program_info_and_timestamps = loudness_correction_program_info_and_timestamps
 
 timestamp_checking_thread = threading.Thread(target=check_timestamps_and_send_email)
-app.run(host='0.0.0.0', port=9000, debug=False)
+app.run(host='0.0.0.0', port=all_settings_dict["heartbeat_service_port"], debug=False)
 
 quit_all_threads_now = True
 

@@ -178,7 +178,7 @@ if (configfile_path == '') and (target_path == ''):
 
 	print()
 	print(error_message)
-	print('\nUSAGE: Give either the full path to the HotFolder or the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi joko Hotfolderin koko polku tai optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)
+	print('\nUSAGE: Give the option: -configfile followed by full path to the config file as the argument to the program.\n' * english + '\nKÄYTTÖOHJE: Anna ohjelman komentoriville optioksi optio: -configfile ja sen perään asetustiedoston koko polku.\n' * finnish)
 	print('Debug options: -debug_file_processing, -debug_lists_and_dictionaries, -save_all_measurement_results_to_a_single_debug_file, -debug_all, -force-samplepeak, -force-truepeak, -force-no-ffmpeg, -force-quit-when-idle' * english + 'Debuggausoptioita: -debug_file_processing, -debug_lists_and_dictionaries, -save_all_measurement_results_to_a_single_debug_file, -force-samplepeak, -force-truepeak, -force-no-ffmpeg, -force-quit-when-idle' * finnish )
 	print()
 
@@ -3057,7 +3057,7 @@ def send_to_progress_report(english, finnish):
 				headers = { 'Content-Type' : 'application/json' }
 				data_to_send["authorization"] = authorization
 				data_to_send.update(loudness_correction_program_info_and_timestamps)
-				target_address = "http://" + str(heartbeat_service_ip) + ":" + str(heartbeat_service_port) + str(heartbeat_service_path)
+				target_address = "http://" + str(progress_service_ip) + ":" + str(progress_service_port) + str(progress_service_path)
 
 				# Send data and ignore status reply
 				_ = requests.post(target_address, data=json.dumps(data_to_send), headers=headers)
@@ -3123,6 +3123,10 @@ def send_to_heartbeat_checker():
 				# Send data and ignore status reply
 				_ = requests.post(target_address, data=json.dumps(data_to_send), headers=headers)
 
+				#FIXME
+				print("target_address:", target_address)
+				print("data:", json.dumps(data_to_send))
+
 			except KeyboardInterrupt:
 				if silent == False:
 					print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
@@ -3177,7 +3181,6 @@ def debug_lists_and_dictionaries_thread():
 	global ffmpeg_output_wrapper_format
 	global write_html_progress_report
 	global html_progress_report_write_interval
-	global web_page_name
 	global heartbeat
 	global heartbeat_write_interval
 	global where_to_send_error_messages
@@ -5822,8 +5825,8 @@ try:
 			
 		if 'target_path' in all_settings_dict:
 			target_path = all_settings_dict['target_path']
-		if 'hotfolder_path' in all_settings_dict:
-			hotfolder_path = all_settings_dict['hotfolder_path']
+		if 'hotfolder_name' in all_settings_dict:
+			hotfolder_path = target_path + os.sep + all_settings_dict['hotfolder_name']
 		if 'directory_for_temporary_files' in all_settings_dict:
 			directory_for_temporary_files = all_settings_dict['directory_for_temporary_files']
 		if 'directory_for_results' in all_settings_dict:
@@ -5837,6 +5840,13 @@ try:
 			delay_between_directory_reads = all_settings_dict['delay_between_directory_reads']		
 		if 'number_of_processor_cores' in all_settings_dict:
 			number_of_processor_cores = all_settings_dict['number_of_processor_cores']
+
+		# Check if user selected use All Processor Cores and if so then number_of_processor_cores = -1
+		usable_physical_cores = get_number_of_physical_processors()
+
+		if number_of_processor_cores == -1:
+			number_of_processor_cores = usable_physical_cores
+	
 		if 'target_loudness' in all_settings_dict:
 			target_loudness = all_settings_dict['target_loudness']
 		if 'file_expiry_time' in all_settings_dict:
@@ -5890,20 +5900,20 @@ try:
 		if 'unit_separator' in all_settings_dict:
 
 			temp_list = all_settings_dict['unit_separator']
-			unit_separator = chr(temp_list[0])
+			unit_separator = chr(int(temp_list[0]))
 
 			if len(temp_list) == 2:
 				if temp_list[1] != "":
-					unit_separator = unit_separator + chr(temp_list[1])
+					unit_separator = unit_separator + chr(int(temp_list[1]))
 
 		if 'record_separator' in all_settings_dict:
 
 			temp_list = all_settings_dict['record_separator']
-			record_separator = chr(temp_list[0])
+			record_separator = chr(int(temp_list[0]))
 
 			if len(temp_list) == 2:
 				if temp_list[1] != "":
-					record_separator = record_separator + chr(temp_list[1])
+					record_separator = record_separator + chr(int(temp_list[1]))
 
 		if 'enable_mxf_audio_remixing' in all_settings_dict:
 			enable_mxf_audio_remixing = all_settings_dict['enable_mxf_audio_remixing']
@@ -5971,12 +5981,6 @@ try:
 		if silent == False:
 			print('Created directory' * english + 'Loin hakemiston' * finnish, str(directory_for_error_logs))
 
-	# Check if user selected use All Processor Cores and if so then number_of_processor_cores = -1
-	usable_physical_cores = get_number_of_physical_processors()
-
-	if number_of_processor_cores == -1:
-		number_of_processor_cores = usable_physical_cores
-	
 	# Define the name of the error logfile.
 	error_logfile_path = directory_for_error_logs + os.sep + 'error_log-' + str(get_realtime(english, finnish)[1]) + '.txt' # Error log filename is 'error_log' + current date + time
 
@@ -6272,9 +6276,6 @@ try:
 				break
 
 			for filename in list_of_files:
-
-				if filename == web_page_name:
-					continue # Skip loudness calculation web - page we have created, we don't wan't to delete that.
 
 				partial_path=os.path.relpath(path + os.sep + filename, hotfolder_path) # Truncate file path by removing the preceding 'HotFolder' path.
 				time_file_was_first_seen = 0
