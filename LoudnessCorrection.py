@@ -31,11 +31,11 @@ import email
 import email.mime
 import email.mime.text
 import email.mime.multipart
-import pickle
 import json
 import math
 import signal
 import traceback
+import requests
 
 loudnesscorrection_version = '400'
 freelcs_version = 'unknown version'
@@ -255,15 +255,6 @@ os_version = '' # Create variable to store os version information.
 
 delay_between_directory_reads = 5 # HotFolder poll interval (seconds) (how ofter the directory is checked for new files).
 
-# FIXME Korjaa prossujen lukumäärän tunistus, ota mallia ffcommanderin koodista, se tuntuu toimivan.
-number_of_processor_cores = 2 # The number of processor cores to use for simultaneous file processing and loudness calculation. Only use even numbers. Slightly too big number often results in better performance. If you have 4 cores try defining 6 or 8 here and check the time it takes processing same set of files.
-
-if len(os.sched_getaffinity(0)) > 2: # Get number of physical processor cores from the os.
-       number_of_processor_cores = len(os.sched_getaffinity(0))
-
-if number_of_processor_cores / 2 != int(number_of_processor_cores / 2): # If the number for processor cores is not an even number, force it to an even number.
-	 number_of_processor_cores = number_of_processor_cores + 1 # The number of processor cores to use for simultaneous file processing and loudness calculation. Only use even numbers. Slightly too big number often results in better performance. If you have 4 cores try defining 6 or 8 here and check the time it takes processing same set of files.
-
 file_expiry_time = 60*60*8 # This number (in seconds) defines how long the files are allowed to exist in HotFolder and results - directory. File creation time is not taken into account only the time this program first saw the file in the directory. Files are automatically deleted when they are 'expired'.
 
 natively_supported_file_formats = ['.wav', '.flac', '.ogg'] # Natively supported formats may be processed without first decoding to flac with ffmpeg, since libebur128 and sox both support these formats.
@@ -274,17 +265,14 @@ if not ffmpeg_output_wrapper_format == 'wav':
 # Write calculation queue progress report to a html-page on disk.
 write_html_progress_report = True # Controls if the program writes loudness calculation queue information to a web page on disk.
 html_progress_report_write_interval = 5 # How many seconds between writing web page to disk.
-web_page_name = '00-Calculation_Queue_Information.html' * english + '00-Laskentajonon_Tiedot.html' * finnish # Define the name of the web-page we write to disk.
-web_page_path = hotfolder_path + os.sep + '00-Calculation_Queue_Information' * english + '00-Laskentajonon_Tiedot' * finnish # Where to write the web-page.
 
 # Define the path for the error logfile.
 directory_for_error_logs = target_path + os.sep + '00-Error_Logs' # Define the path for error log files. The file is automatically named ('error_log- ' + date + current time).
 send_error_messages_to_logfile = True
 
-# Heartbeat writes timestamp periodically to a file so that a outside program can monitor if this program has stopped.
-heartbeat = True # This variable controls if this program periodically writes the current time in to a file. This file can be externally monitored to see if this program is still alive or if it has stopped due to an unexpected error.
-heartbeat_file_name = '00-HeartBeat.json' # This variable defines the name of the file where the heartbeat timestamp will be written. The files 'modification date' reflects the last heartbeat. The time strings produced by python3 function int(time.time()) is written in to the file. 
-heartbeat_write_interval = 30 # This variable defines how many seconds there approximately will be between writing the current time to the heartbeat - file. The real delay between writes gets considerably longer when the machine is under heavy disk IO. Writing the timestamp to the file can get delayed by a factor of 2 - 4. So use a longer value when determining if this program is still running. The delay during high disk IO can be avoided if the directory the heartbeat-file is written to is on a ram-disk.
+# Heartbeat send timestamp periodically so that a outside program can monitor if this program has stopped.
+heartbeat = True # This variable controls if this program periodically sends the current time.
+heartbeat_write_interval = 30 # This variable defines how many seconds there approximately will be between sending the current time to the Heartbeat_Checker.
 # Collect error messages and send them periodically by email to the administrator.
 email_sending_details = {} # All information needed to send email is gathered to this dictionary.
 email_sending_details['last_send_timestamp'] = 0 # This value is always set to the last time when email was sent. This is used to calculate the next time we are allowed to send email again.
@@ -401,9 +389,57 @@ unsupported_formats_list = ['libmodplug']
 # This value will be overwritten by value that comes from the installer program through the file Loudness_Correction_Settings.json
 target_loudness = '-23'
 
+####################################################
+# Heartbeat_Checker and web service IP - addresses #
+####################################################
+authorization = ""
+progress_service_ip = ""
+progress_service_port = ""
+progress_service_path = "/progress_report"
+heartbeat_service_ip = ""
+heartbeat_service_port = ""
+heartbeat_service_path = "/heartbeat"
+
 ###############################################################################################################################################################################
 # Default value definitions end here :)																	      #
 ###############################################################################################################################################################################
+
+def get_number_of_physical_processors():
+
+	last_physical_id_int = -1
+	physical_id_int = -1
+	physical_id_found = False
+	cpu_cores_int = 0
+
+	with open("/proc/cpuinfo", 'r') as file_handle:
+
+		for line in file_handle:
+
+			line = line.strip()
+
+			if line.startswith("physical id"):
+
+				temp_list = line.split(":")
+				physical_id_int = int(temp_list[1].strip())
+
+				if physical_id_int != last_physical_id_int:
+
+					physical_id_found = True
+					last_physical_id_int = physical_id_int
+					continue
+
+			if physical_id_found and line.startswith("cpu cores"):
+
+				temp_list = line.split(":")
+				temp_int = int(temp_list[1].strip())
+				cpu_cores_int = cpu_cores_int + temp_int
+				physical_id_found = False
+
+	# If the number of cores is not a multiple of 2 then make the amount usable cores an even number
+	if cpu_cores_int % 2 != 0:
+		cpu_cores_int = cpu_cores_int - 1
+
+	return cpu_cores_int
 
 
 def calculate_integrated_loudness(event_for_integrated_loudness_calculation, filename, hotfolder_path, libebur128_commands_for_integrated_loudness_calculation, english, finnish):
@@ -2937,21 +2973,23 @@ def send_error_messages_by_email_thread(email_sending_details, english, finnish)
 							print('\033[7m' + '\r-------->	' + exception_error_message + '\033[0m')
 				reason_for_failed_send = []
 
-def write_html_progress_report_thread(english, finnish):
+def send_to_progress_report(english, finnish):
 		
-	'''This subprocess runs in it's own thread and periodically writes calculation queue information to disk in html format allowing the calculation queue progress to be monitored with a web browser'''
+	'''This subprocess runs in it's own thread and periodically sends calculation queue information to Progress_Report allowing the calculation queue progress to be monitored with a web browser'''
 
 	try:
 		global files_queued_to_loudness_calculation
 		global loudness_calculation_queue
-		global web_page_path
-		global web_page_name
 		global html_progress_report_write_interval
 		global silent
 		global quit_all_threads_now
 		global freelcs_version
 		global all_ip_addresses_of_the_machine
 		
+		data_to_send = {}
+		data_to_send["title"] = 'LoudnessCorrection_Process_Queue' * english + 'AanekkyysKorjauksen laskentajono' * finnish
+		data_to_send["freelcs_version"] = freelcs_version
+
 		while True:
 			
 			# Wait user defined number of seconds between updating the html-page.
@@ -2961,30 +2999,16 @@ def write_html_progress_report_thread(english, finnish):
 			if quit_all_threads_now == True:
 				return()
 
+			# Exit if Progress_Report IP or port is not known
+			if (progress_service_ip == "") or (progress_service_port == ""):
+				return()
+
 			loudness_correction_program_info_and_timestamps['write_html_progress_report'] = [write_html_progress_report, int(time.time())] # Update the heartbeat timestamp for the html writing thread. This is used to keep track if the thread has crashed.
-			
-			counter = 0
-			html_code = [] # The finished html - page is stored in this list variable.
 			realtime = get_realtime(english, finnish)[1] # Get the current date and time of day.
+			data_to_send["files_queued_to_loudness_calculation"] = str(len(files_queued_to_loudness_calculation)) + ' Files Waiting In The Queue' * english + 'Tiedostoa jonossa' * finnish + realtime.replace('_', ' ')
+			data_to_send["files_being_processed"] = 'Files Being Processed' * english + 'K&auml;sittelyss&auml; olevat tiedostot' * finnish
+			data_to_send["completed_files"] = 'Completed Files' * english + 'K&auml;sitellyt tiedostot' * finnish
 			
-			# Create the start of the html page by putting the first static part of the html - code in to a list variable.
-			server_string = 'Server ip-address: '
-
-			if len(all_ip_addresses_of_the_machine) > 1:
-				server_string = 'Server ip-addresses: '
-
-			html_code_part_1 = ['<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">', \
-			'<html><head>', \
-			'<meta content="text/html; charset=UTF-8" http-equiv="content-type">', \
-			'<meta http-equiv="refresh" content="' + str(html_progress_report_write_interval) + '">', \
-			'<META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">', \
-			'<title>' + 'LoudnessCorrection_Process_Queue' * english + 'AanekkyysKorjauksen laskentajono' * finnish + '</title>', \
-			'<h1>' + 'FreeLCS ' + freelcs_version + '</h1>', \
-			'<h3>' + server_string + ', '.join(all_ip_addresses_of_the_machine) + '</h3>', \
-			'</head><body style="background-color: rgb(255, 255, 255);">', \
-			'<h2><font color="#000000">' + str(len(files_queued_to_loudness_calculation)) + ' &nbsp ' + ' Files Waiting In The Queue' * english + 'Tiedostoa jonossa' * finnish + ' &nbsp ' + realtime.replace('_', ' ')  + '</font></h2>', \
-			'<hr style="width: 100%; height: 2px;"><font color="#000000"><br>']
-
 			# Get the first 10 filenames waiting for getting into loudness calculation and insert those names in to the html code.
 			first_ten_files_queued_to_loudness_calculation = files_queued_to_loudness_calculation[:10] # Get the first 10 filenames from the waiting queue into a list.
 
@@ -2996,24 +3020,11 @@ def write_html_progress_report_thread(english, finnish):
 				position_in_queue = str(counter) # This variable holds the queue number we print in html for each file in the queue.
 				if len(position_in_queue) == 1: # If queue number is only one digit long (1, 2, 3, etc), use two digits instead (01, 02, 03, etc).
 					position_in_queue = '0' + position_in_queue
-				# Append information generated above to the html-code.
-				html_code_part_1.append(position_in_queue + ': &nbsp;&nbsp;&nbsp; ' + str(filename + '<br>')) # Insert queue number and corresponing filename into the html-code.
-			
-			# Create the next static part of html-code.		
-			html_code_part_2 = ['<br>', \
-			'<br>', \
-			'<font color="#000000">', \
-			'<table color="#FFFFFF" bgcolor="#DDDDDD" border="3" width="100%">', \
-			'<tbody>', \
-			'<tr>', \
-			'<td width="100%">', \
-			'<h2><font color="#000000" size="5">', \
-			# '<h2><font color="#000000" face="Monotype Corsiva, Verdana" size="5">', \
-			'Files Being Processed' * english + 'K&auml;sittelyss&auml; olevat tiedostot' * finnish + '</font></h2>', \
-			'<hr style="width: 100%; height: 2px;">', \
-			'<p><font color="#000000" size="4">']
-			
-			# Get the filenames currently in loudness calculation and insert their names into the html-code.
+
+				key_name = "file_" + str(counter) + "_in_queue"
+				data_to_send[key_name] = position_in_queue + ": " + filename
+
+			# Get the filenames currently in loudness calculation and insert their names into the data to send
 			maximum_number_of_simultaneously_processed_files = int(number_of_processor_cores / 2) # This variable holds the number of files we are able to process simultanously. As two loudness calculation processed are started for each file, this number is always the value in variable 'number_of_processor_cores' divided by two.
 			loudness_calculation_queue_list = list(loudness_calculation_queue) # Get the list of filesnames currently in loudness calculation from the 'loudness_calculation_queue' dictionary.
 			
@@ -3026,81 +3037,66 @@ def write_html_progress_report_thread(english, finnish):
 				position_in_queue = str(counter) # This variable holds a number we print before the filename.
 				if len(position_in_queue) == 1: # If queue number is only one digit long (1, 2, 3, etc), use two digits instead (01, 02, 03, etc).
 					position_in_queue = '0' + position_in_queue
-				# Append information generated above to the html-code.
-				html_code_part_2.append(position_in_queue + ': &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ' + str(filename + '<br>'))
-			
-			# Create the next static part of html-code.		
-			html_code_part_3 = ['</font></p>', \
-			'</td>', \
-			'</tr>', \
-			'</tbody>', \
-			'</table>', \
-			'<br>', \
-			'</font>', \
-			'</font>', \
-			'<h2><font color="#000000">' + 'Completed Files' * english + 'K&auml;sitellyt tiedostot' * finnish + '</font></font></h2>', \
-			'<hr style="width: 100%; height: 2px;"><font color="#000000"><br>']
-			
+				# Append information generated above to the data to send
+				key_name = "file_" + str(counter) + "_being_processed"
+				data_to_send[key_name] = position_in_queue + ": " + filename
+
 			# Generate the list of files that has gone through loudness calculation and insert names in the html-code.
 			copy_of_completed_files_list = copy.deepcopy(completed_files_list)
 
 			for filename in copy_of_completed_files_list:
 				# Append information generated above to the html-code.
 				completion_time = completed_files_dict[filename]
-				html_code_part_3.append(completion_time + ':&nbsp;&nbsp;&nbsp;' + str(filename + '<br>'))
-			
-			# Create the last static part of html-code.		
-			html_code_part_4 = ['<br>', \
-			'<br>', \
-			'</font>', \
-			'</font>', \
-			'</body></html>']
+				key_name = "file_" + str(counter) + "_ready"
+				data_to_send[key_name] = completion_time + ": " + filename
 
-			# Combine all parts of html code to a complete web-page
-			html_code.extend(html_code_part_1)
-			html_code.extend(html_code_part_2)
-			html_code.extend(html_code_part_3)
-			html_code.extend(html_code_part_4)
-			
-			# Write complete web-page to disk. First write it to temporary directory and then move to the target directory.
+			# Send data to the Progress_Report
 			try:
-				with open(web_page_path + os.sep + '.temporary_files' + os.sep + web_page_name, 'wt') as webpage_filehandler:
-					for item in html_code:
-						webpage_filehandler.write(item + '\n')
-					webpage_filehandler.flush() # Flushes written data to os cache
-					os.fsync(webpage_filehandler.fileno()) # Flushes os cache to disk
-				shutil.move(web_page_path + os.sep + '.temporary_files' + os.sep + web_page_name, web_page_path + os.sep + web_page_name)
+
+				# Send timestamp and some other information to HeartBeat_Checker
+				headers = { 'Content-Type' : 'application/json' }
+				data_to_send["authorization"] = authorization
+				data_to_send.update(loudness_correction_program_info_and_timestamps)
+				target_address = "http://" + str(heartbeat_service_ip) + ":" + str(heartbeat_service_port) + str(heartbeat_service_path)
+
+				# Send data and ignore status reply
+				_ = requests.post(target_address, data=json.dumps(data_to_send), headers=headers)
+
 			except KeyboardInterrupt:
 				if silent == False:
 					print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
 				sys.exit(0)
 			except IOError as reason_for_error:
-				error_message = 'Error opening loudness calculation queue html-file for writing ' * english + 'Laskentajonon html-tiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
+				error_message = str(reason_for_error)
 				send_error_messages_to_screen_logfile_email(error_message, [])
 			except OSError as reason_for_error:
-				error_message = 'Error opening loudness calculation queue html-file for writing ' * english + 'Laskentajonon html-tiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
+				error_message = str(reason_for_error)
 				send_error_messages_to_screen_logfile_email(error_message, [])
+			except RuntimeError:
+				# If the 'loudness_correction_program_info_and_timestamps' dictionary is changed by another thread in the middle of this thread sending it then a RuntimeError is raised.
+				# Ignore it and try again after the wait period.
+				pass
 
 	except Exception:
 		exc_type, exc_value, exc_traceback = sys.exc_info()
 		error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
-		subroutine_name = 'write_html_progress_report_thread'
+		subroutine_name = 'send_to_progress_report'
 		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 			
-def write_to_heartbeat_file_thread():
+def send_to_heartbeat_checker():
 	
-	# This subprocess is started in its own thread and it periodically writes current time to the heartbeat - file.
-	# An external program can monitor the heartbeat - file and do something if it stops updating (for example inform the admin or restart this program).
+	# This subprocess is started in its own thread and it periodically sneds current time to the Heartbeat_Checker.
+	# If timestamp stops updating send email to admin.
 
 	try:
 		global heartbeat_write_interval
-		global web_page_path
-		global heartbeat_file_name
 		global loudness_correction_program_info_and_timestamps
 		global english
 		global finnish
 		global silent
 		global quit_all_threads_now
+
+		data_to_send = {}
 
 		while True:
 
@@ -3108,37 +3104,44 @@ def write_to_heartbeat_file_thread():
 			if quit_all_threads_now == True:
 				return()
 
+			# Exit if Hearbeat_Checker IP or port is not known
+			if (heartbeat_service_ip == "") or (heartbeat_service_port == ""):
+				return()
+
 			# Wait user defined number of seconds between writing to the heartbeat file.
 			time.sleep(heartbeat_write_interval)
 
-			# Write timestamp to the heartbeat file, indicating that we are still alive :)
-			# Create the file in temp - directory and then move to the target location.
+			# Send timestamp to the Heartbeat_Checker, indicating that we are still alive :)
 			try:
-				with open(web_page_path + os.sep + '.temporary_files' + os.sep + heartbeat_file_name, 'w') as heartbeat_commandfile_handler:
-					json.dump(loudness_correction_program_info_and_timestamps, heartbeat_commandfile_handler)
-					heartbeat_commandfile_handler.flush() # Flushes written data to os cache
-					os.fsync(heartbeat_commandfile_handler.fileno()) # Flushes os cache to disk
-					shutil.move(web_page_path + os.sep + '.temporary_files' + os.sep + heartbeat_file_name, web_page_path + os.sep + heartbeat_file_name)
+
+				# Send timestamp and some other information to HeartBeat_Checker
+				headers = { 'Content-Type' : 'application/json' }
+				data_to_send["authorization"] = authorization
+				data_to_send.update(loudness_correction_program_info_and_timestamps)
+				target_address = "http://" + str(heartbeat_service_ip) + ":" + str(heartbeat_service_port) + str(heartbeat_service_path)
+
+				# Send data and ignore status reply
+				_ = requests.post(target_address, data=json.dumps(data_to_send), headers=headers)
 
 			except KeyboardInterrupt:
 				if silent == False:
 					print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
 				sys.exit(0)
 			except IOError as reason_for_error:
-				error_message = 'Error opening HeartBeat commandfile for writing ' * english + 'HeartBeat - tiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
+				error_message = str(reason_for_error)
 				send_error_messages_to_screen_logfile_email(error_message, [])
 			except OSError as reason_for_error:
-				error_message = 'Error opening HeartBeat commandfile for writing ' * english + 'HeartBeat - tiedoston avaaminen kirjoittamista varten epäonnistui ' * finnish + str(reason_for_error)
+				error_message = str(reason_for_error)
 				send_error_messages_to_screen_logfile_email(error_message, [])
 			except RuntimeError:
-				# If the 'loudness_correction_program_info_and_timestamps' dictionary is changed by another thread in the middle of this thread writing it to disk, then a RuntimeError is raised and the save fails.
-				# If save fails ignore it and try again after the wait period.
+				# If the 'loudness_correction_program_info_and_timestamps' dictionary is changed by another thread in the middle of this thread sending it then a RuntimeError is raised.
+				# Ignore it and try again after the wait period.
 				pass
 
 	except Exception:
 		exc_type, exc_value, exc_traceback = sys.exc_info()
 		error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
-		subroutine_name = 'write_to_heartbeat_file_thread'
+		subroutine_name = 'send_to_heartbeat_checker'
 		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 			
 def debug_lists_and_dictionaries_thread():
@@ -3157,7 +3160,6 @@ def debug_lists_and_dictionaries_thread():
 	global finished_processes
 	global integrated_loudness_calculation_results
 	global silent
-	global web_page_path
 	global directory_for_error_logs
 	global language
 	global english
@@ -3177,7 +3179,6 @@ def debug_lists_and_dictionaries_thread():
 	global html_progress_report_write_interval
 	global web_page_name
 	global heartbeat
-	global heartbeat_file_name
 	global heartbeat_write_interval
 	global where_to_send_error_messages
 	global send_error_messages_to_logfile
@@ -3262,11 +3263,8 @@ def debug_lists_and_dictionaries_thread():
 		values_read_from_configfile.append('')
 		values_read_from_configfile.append('write_html_progress_report = ' + str(write_html_progress_report))
 		values_read_from_configfile.append('html_progress_report_write_interval = ' + str(html_progress_report_write_interval))
-		values_read_from_configfile.append('web_page_name = ' + web_page_name)
-		values_read_from_configfile.append('web_page_path = ' + web_page_path)
 		values_read_from_configfile.append('')
 		values_read_from_configfile.append('heartbeat = ' + str(heartbeat))
-		values_read_from_configfile.append('heartbeat_file_name = ' + heartbeat_file_name)
 		values_read_from_configfile.append('heartbeat_write_interval = ' + str(heartbeat_write_interval))
 		values_read_from_configfile.append('')
 		values_read_from_configfile.append('where_to_send_error_messages = ' + ', '.join(where_to_send_error_messages))
@@ -5532,14 +5530,11 @@ def write_user_defined_configuration_settings_to_logfile():
 	user_defined_configuration_options.append('where_to_send_error_messages = ' + ', '.join(all_settings_dict['where_to_send_error_messages']))
 	user_defined_configuration_options.append('send_error_messages_to_logfile = '+ str(all_settings_dict['send_error_messages_to_logfile']))
 	user_defined_configuration_options.append('heartbeat = ' + str(all_settings_dict['heartbeat']))
-	user_defined_configuration_options.append('heartbeat_file_name = ' + all_settings_dict['heartbeat_file_name'])
 	user_defined_configuration_options.append('heartbeat_write_interval = ' + str(all_settings_dict['heartbeat_write_interval']))
 	user_defined_configuration_options.append('----------------------------------------------------------------------------------------------------')
 	user_defined_configuration_options.append('')
 	user_defined_configuration_options.append('write_html_progress_report = ' + str(all_settings_dict['write_html_progress_report']))
 	user_defined_configuration_options.append('html_progress_report_write_interval = ' + str(all_settings_dict['html_progress_report_write_interval']))
-	user_defined_configuration_options.append('web_page_name = ' + all_settings_dict['web_page_name'])
-	user_defined_configuration_options.append('web_page_path = ' + all_settings_dict['web_page_path'])
 	user_defined_configuration_options.append('peak_measurement_method = ' + all_settings_dict['peak_measurement_method'])
 	user_defined_configuration_options.append('----------------------------------------------------------------------------------------------------')
 	user_defined_configuration_options.append('')
@@ -5789,9 +5784,8 @@ try:
 
 	if configfile_path != '':
 
-		# Test if the configfile exists as json or pickle and read settings from it
+		# Test if the configfile exists
 		configfile_path_json = os.path.splitext(configfile_path)[0] + ".json"
-		configfile_path_pickle = os.path.splitext(configfile_path)[0] + ".pickle"
 
 		# Read the config variables from a file. The file contains a dictionary with the needed values.
 		try:
@@ -5800,9 +5794,6 @@ try:
 
 				with open(configfile_path_json, 'r') as configfile_handler:
 					all_settings_dict = json.load(configfile_handler)
-			else:
-				with open(configfile_path_pickle, 'rb') as configfile_handler:
-					all_settings_dict = pickle.load(configfile_handler)
 
 		except KeyboardInterrupt:
 			if silent == False:
@@ -5864,15 +5855,9 @@ try:
 			write_html_progress_report = all_settings_dict['write_html_progress_report']
 		if 'html_progress_report_write_interval' in all_settings_dict:
 			html_progress_report_write_interval = all_settings_dict['html_progress_report_write_interval']
-		if 'web_page_name' in all_settings_dict:
-			web_page_name = all_settings_dict['web_page_name']
-		if 'web_page_path' in all_settings_dict:
-			web_page_path = all_settings_dict['web_page_path']
 
 		if 'heartbeat' in all_settings_dict:
 			heartbeat = all_settings_dict['heartbeat']	
-		if 'heartbeat_file_name' in all_settings_dict:
-			heartbeat_file_name = all_settings_dict['heartbeat_file_name']
 		if 'heartbeat_write_interval' in all_settings_dict:
 			heartbeat_write_interval = all_settings_dict['heartbeat_write_interval']
 		
@@ -5948,6 +5933,17 @@ try:
 		if 'os_version' in all_settings_dict:
 			os_version = all_settings_dict['os_version']
 
+		if 'authorization' in all_settings_dict:
+			authorization = all_settings_dict['authorization']
+		if 'progress_service_ip' in all_settings_dict:
+			progress_service_ip = all_settings_dict['progress_service_ip']
+		if 'progress_service_port' in all_settings_dict:
+			progress_service_port = all_settings_dict['progress_service_port']
+		if 'heartbeat_service_ip' in all_settings_dict:
+			heartbeat_service_ip = all_settings_dict['heartbeat_service_ip']
+		if 'heartbeat_service_port' in all_settings_dict:
+			heartbeat_service_port = all_settings_dict['heartbeat_service_port']
+
 		if debug_all == True:
 			write_loudness_calculation_results_to_a_machine_readable_file = True
 			write_user_defined_configuration_settings_to_logfile()
@@ -5974,17 +5970,13 @@ try:
 		os.makedirs(directory_for_error_logs)
 		if silent == False:
 			print('Created directory' * english + 'Loin hakemiston' * finnish, str(directory_for_error_logs))
-	if (not os.path.exists(web_page_path)):
-		if ((write_html_progress_report == True)) or (heartbeat == True):
-			os.makedirs(web_page_path)
-			if silent == False:
-				print('Created directory' * english + 'Loin hakemiston' * finnish, str(web_page_path))
-	if (not os.path.exists(web_page_path + os.sep + '.temporary_files')):
-		if ((write_html_progress_report == True)) or (heartbeat == True):
-			os.makedirs(web_page_path + os.sep + '.temporary_files')
-			if silent == False:
-				print('Created directory' * english + 'Loin hakemiston' * finnish, str(web_page_path + os.sep + '.temporary_files'))
 
+	# Check if user selected use All Processor Cores and if so then number_of_processor_cores = -1
+	usable_physical_cores = get_number_of_physical_processors()
+
+	if number_of_processor_cores == -1:
+		number_of_processor_cores = usable_physical_cores
+	
 	# Define the name of the error logfile.
 	error_logfile_path = directory_for_error_logs + os.sep + 'error_log-' + str(get_realtime(english, finnish)[1]) + '.txt' # Error log filename is 'error_log' + current date + time
 
@@ -6094,12 +6086,12 @@ try:
 		
 	# Start in its own thread the subroutine that writes process queue information to a web-page on disk periodically.
 	if write_html_progress_report == True:
-		html_writing_process = threading.Thread(target=write_html_progress_report_thread, args=(english, finnish)) # Create a process instance.
+		html_writing_process = threading.Thread(target=send_to_progress_report, args=(english, finnish)) # Create a process instance.
 		thread_object = html_writing_process.start() # Start the process in it'own thread.
 
 	# Start in its own thread the subroutine that writes current time periodically to the HeartBeat-file indicating that we are still alive and running :)
 	if heartbeat == True:
-		heartbeat_process = threading.Thread(target=write_to_heartbeat_file_thread, args=()) # Create a process instance.
+		heartbeat_process = threading.Thread(target=send_to_heartbeat_checker, args=()) # Create a process instance.
 		thread_object = heartbeat_process.start() # Start the process in it'own thread.
 
 	# Start a debugging process that saves the contents of variables, main lists and dictionaries once a minute to a file.
