@@ -3076,7 +3076,6 @@ def send_to_progress_report(english, finnish):
 				# If the 'loudness_correction_program_info_and_timestamps' dictionary is changed by another thread in the middle of this thread sending it then a RuntimeError is raised.
 				# Ignore it and try again after the wait period.
 				pass
-
 	except Exception:
 		exc_type, exc_value, exc_traceback = sys.exc_info()
 		error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)

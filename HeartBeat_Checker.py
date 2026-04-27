@@ -25,7 +25,7 @@ from flask import Flask, request, abort
 import hmac
 
 version = '400'
-debug = True
+debug = False
 
 app = Flask(__name__)
 
@@ -113,7 +113,6 @@ def receive_messages():
 	if debug == True:
 		print("loudness_correction_program_info_and_timestamps:")
 		print(loudness_correction_program_info_and_timestamps)
-		print()
 
 	return {"status": "success"}, 200
 
