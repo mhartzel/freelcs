@@ -25,6 +25,7 @@ from flask import Flask, request, abort
 import hmac
 
 version = '400'
+debug = True
 
 app = Flask(__name__)
 
@@ -68,6 +69,11 @@ message_attachment_path = ''
 
 @app.route('/heartbeat', methods=['POST'])
 def receive_messages():
+
+	if debug == True:
+		print("Thread: receive_messages started")
+		print("--------------------------------")
+   
 	"""REST API: Uses constant-time comparison and input validation."""
 	global loudness_correction_program_info_and_timestamps
 
@@ -90,26 +96,29 @@ def receive_messages():
 	sanitized_data = {}
 
 	for k, v in incoming_data.items():
-		# Convert values to strings to ensure type safety
-		key_str = str(k)
-		value_str = str(v)
-
+#		# Convert values to strings to ensure type safety
+#		key_str = str(k)
+#		value_str = str(v)
+#
+#		# Check our security constraint (length check)
+#		if len(value_str) < 1024:
+#			sanitized_data[key_str] = value_str
 		# Check our security constraint (length check)
-		if len(value_str) < 1024:
-			sanitized_data[key_str] = value_str
+		if len(v) < 1024:
+			sanitized_data[k] = v
 
 	with report_lock:
 		loudness_correction_program_info_and_timestamps = sanitized_data
 
-	# FIXME
-	print("loudness_correction_program_info_and_timestamps:")
-	print(loudness_correction_program_info_and_timestamps)
-	print()
+	if debug == True:
+		print("loudness_correction_program_info_and_timestamps:")
+		print(loudness_correction_program_info_and_timestamps)
+		print()
 
 	return {"status": "success"}, 200
 
 def send_email(message_recipients, message_title, message_text_string, message_attachment_path):
-   
+
 	# Compile info about LoudnessCorrection and HeartBeat Checker. This info is inserted into the error email message.
 	program_info = '\nFreeLCS version: ' + freelcs_version  + '\n\n\nLoudnessCorrection info:\n--------------------------------------\n' + 'Commandline: ' + ' '.join(loudness_correction_commandline) + '\n' + 'IP-Addresses: ' + ', '.join(all_ip_addresses_of_the_machine) + '\n' + 'PID: ' + str(loudness_correction_pid) + '\n' + 'LoudnessCorrection version: ' + loudnesscorrection_version +  '\n\n' + 'HeartBeat Checker info:\n--------------------------------------\n' + 'Commandline: ' + ' '.join(sys.argv) + '\n' + 'PID: ' + str(heartbeat_checker_pid) + '\n' +'HeartBeat Checker version: ' + version + '\n\n'
 	
@@ -181,6 +190,11 @@ def send_email(message_recipients, message_title, message_text_string, message_a
 	except RuntimeError as reason_for_error:
 		print('Error, SSL/TLS support is not available to your Python interpreter:', reason_for_error)
 
+	if debug == True:
+		print("Sent email to:", message_recipients)
+		print("Email content:", email_message_content_string)
+		print()
+
 #========================================================================================================
 
 def parse_time(time_int):
@@ -202,6 +216,145 @@ def parse_time(time_int):
 	time_string= year + '.' + month + '.' + day + ' at ' + hours + ':' + minutes + ':' + seconds
 	
 	return(time_string)
+
+def check_timestamps_and_send_email():
+
+	if debug == True:
+		print("Thread: check_timestamps_and_send_email started")
+		print("-----------------------------------------------")
+   
+	previous_values_of_loudness_correction_program_info_and_timestamps = {} # This dictionary will store the previous values of LoudnessCorrection.py - program info and timestamps.
+	startup_message_has_been_sent = False
+	alert_email_has_been_sent = False
+
+	while True:
+
+		# Check if the main routine asks us to exit now. This is used when running regression tests.
+		if quit_all_threads_now == True:
+			return()
+
+		# Global variables we are modifying in this thread
+		global loudness_correction_commandline
+		global loudness_correction_pid
+		global all_ip_addresses_of_the_machine
+		global freelcs_version
+		global loudnesscorrection_version
+		
+		# Sleep before the next timestamp check.
+		time.sleep(heartbeat_check_interval)
+		
+		message_text_list=['\n']
+		message_text_string = ''
+		time_string = parse_time(time.time()) # Parse current time to a nicely formatted string.
+
+
+		if debug == True:
+			print("report_lock:", report_lock)
+			print()
+		
+		# Reset some variables. First read LoudnessCorrection pid, commandline, ip-address and version number from the heartBeat json.
+		with report_lock:
+			loudness_correction_commandline = loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'][0]
+			loudness_correction_pid = loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'][1]
+			all_ip_addresses_of_the_machine = loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'][2]
+			freelcs_version = loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'][3]
+			loudnesscorrection_version = loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'][4]
+		
+		# Send an email telling HeartBeat_Checker has started.
+		if startup_message_has_been_sent == False:
+			startup_message_has_been_sent = True
+			message_text_list = ['HeartBeat_Checker started: ' + time_string]
+			message_text_string = '\n'.join(message_text_list) + '\n\n'
+			send_email(message_recipients, 'HeartBeat_Checker has started.', message_text_string, message_attachment_path)
+		
+		# If a timestamp stops updating, we wan't the first line of the emailed error message always to contain the commandline and PID of the LoudnessCorrection script.
+		# If you have several versions of the script running on the same computer, the commandline tells which one encountered the error.
+		message_text_list=[]
+		message_text_string = ''
+		stopped_timestamps_counter = 0
+
+
+		if debug == True:
+			print("previous_values_of_loudness_correction_program_info_and_timestamps:", previous_values_of_loudness_correction_program_info_and_timestamps)
+			print("len(previous_values_of_loudness_correction_program_info_and_timestamps):", len(previous_values_of_loudness_correction_program_info_and_timestamps))
+			print()
+
+		# The first time this loop is run, there are no values in 'previous_values_of_loudness_correction_program_info_and_timestamps', then skip the following commands.
+		if len(previous_values_of_loudness_correction_program_info_and_timestamps) != 0:
+			
+			############################################################################################################
+			# Read timestamps and compare to the previous value.
+			# If there was no change the corresponding thread in LoudnessCorrection.py has crashed.
+			############################################################################################################
+			with report_lock:
+				for item in loudness_correction_program_info_and_timestamps:
+					
+					# The item called 'loudnesscorrection_program_info' holds the commandline and PID of LoudnessCorrection.py. We have already red this info into variables earlier, so skip this info here.
+					if item == 'loudnesscorrection_program_info':
+						continue
+
+					# Skip the authorization item
+					if item == "authorization":
+						continue
+					
+					# If the user disabled a functionality like for example html - writing in LoudnessCorrection.py, then it's first value in the list is 'False'.
+					# In this case the timestamp of the disabled feature will not be updating, so skip the item.
+					if loudness_correction_program_info_and_timestamps[item][0] == False:
+						continue
+
+					if debug == True:
+						print("item:", item)
+						print()
+
+					# If previous and new timestamp does not differ the thread in question has stopped, compile an error message describing the situation.
+					if loudness_correction_program_info_and_timestamps[item][1] == previous_values_of_loudness_correction_program_info_and_timestamps[item][1]:
+						
+						stopped_timestamps_counter = stopped_timestamps_counter + 1 # Count how many stopped threads we have.
+						heartbeat_time_string = parse_time(loudness_correction_program_info_and_timestamps[item][1]) # Parse time read from LoudnessCorrection timestamp to a nicely formatted string.
+						
+						# Set the error message according to the situation. There are a couple of different possible error cases. If timestamp = 0, then it was never updated, if it is bigger then it was updated at least once.
+						if (loudness_correction_program_info_and_timestamps[item][1] == 0) and (item == 'write_html_progress_report'):
+							message_text_list.append("LoudnessCorrection has not started updating 'html-thread' timestamps, the thread has probably crashed and a restart of the script is needed.")
+							message_text_list.append('\n')
+						if (loudness_correction_program_info_and_timestamps[item][1] == 0) and (item != 'write_html_progress_report'):
+							message_text_list.append('LoudnessCorrection has not started updating \'' + item +  '\' timestamps, the thread has probably crashed and a restart of the script is needed.')
+							message_text_list.append('\n')
+						if loudness_correction_program_info_and_timestamps[item][1] > 0:
+							message_text_list.append('LoudnessCorrection has stopped updating \'' + item +  '\' timestamps, the thread has probably crashed and a restart of the script is needed.' + ' Last thread timestamp update happened at: ' + heartbeat_time_string)
+							message_text_list.append('\n')
+							
+			# Test how many stopped timestamps there was and set the variable 'heartbeat_has_stopped' accordingly.
+			if stopped_timestamps_counter > 0:
+				heartbeat_has_stopped = True
+			else:
+				heartbeat_has_stopped = False
+				
+			# If there were stopped timestamps / threads print and email error messages to admin.
+			if (heartbeat_has_stopped == True) and (alert_email_has_been_sent == False):
+				
+				# Print message on screen.
+				if silent == False:
+					for line in message_text_list:
+						print(line)
+						
+				# Consolidate email text lines to one string adding carriage return after each text line.
+				message_text_string = '\n'.join(message_text_list)
+				send_email(message_recipients, message_title, message_text_string, message_attachment_path)
+				alert_email_has_been_sent = True
+			else:
+				# If all HeartBeat timestamps start again after being stopped, reset settings and start monitoring HeartBeat again. Also print / send message to the admin.
+				if (heartbeat_has_stopped == False) and (alert_email_has_been_sent == True):
+					alert_email_has_been_sent = False
+					message_text_list.append('All Heartbeat timestamps started updating again at: ' + time_string + '\n\n')
+					message_text_string = '\n'.join(message_text_list)
+					send_email(message_recipients, message_title, message_text_string, message_attachment_path)
+					
+					if silent == False:
+						print(message_text_string)
+						
+		# Store last timestamps so that we can compare them to new ones on the next while - loop run.
+		with report_lock:
+			previous_values_of_loudness_correction_program_info_and_timestamps = loudness_correction_program_info_and_timestamps
 
 #========================================================================================================
 
@@ -267,119 +420,8 @@ smtp_server_port = email_sending_details['smtp_server_port']
 message_recipients = email_sending_details['message_recipients']
 message_title = email_sending_details['message_title']
 
-def check_timestamps_and_send_email():
-
-	while True:
-
-		# Check if the main routine asks us to exit now. This is used when running regression tests.
-		if quit_all_threads_now == True:
-			return()
-
-		# Global variables we are modifying in this thread
-		global loudness_correction_commandline
-		global loudness_correction_pid
-		global all_ip_addresses_of_the_machine
-		global freelcs_version
-		global loudnesscorrection_version
-		
-		# Sleep before the next timestamp check.
-		time.sleep(heartbeat_check_interval)
-		
-		startup_message_has_been_sent = False
-		previous_values_of_loudness_correction_program_info_and_timestamps = {} # This dictionary will store the previous values of LoudnessCorrection.py - program info and timestamps.
-		alert_email_has_been_sent = False
-		message_text_list=['\n']
-		message_text_string = ''
-		time_string = parse_time(time.time()) # Parse current time to a nicely formatted string.
-		
-		# Reset some variables. First read LoudnessCorrection pid, commandline, ip-address and version number from the heartBeat json.
-		loudness_correction_commandline = loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'][0]
-		loudness_correction_pid = loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'][1]
-		all_ip_addresses_of_the_machine = loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'][2]
-		freelcs_version = loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'][3]
-		loudnesscorrection_version = loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'][4]
-		
-		# Send an email telling HeartBeat_Checker has started.
-		if startup_message_has_been_sent == False:
-			startup_message_has_been_sent = True
-			message_text_list = ['HeartBeat_Checker started: ' + time_string]
-			message_text_string = '\n'.join(message_text_list) + '\n\n'
-			send_email(message_recipients, 'HeartBeat_Checker has started.', message_text_string, message_attachment_path)
-		
-		# If a timestamp stops updating, we wan't the first line of the emailed error message always to contain the commandline and PID of the LoudnessCorrection script.
-		# If you have several versions of the script running on the same computer, the commandline tells which one encountered the error.
-		message_text_list=[]
-		message_text_string = ''
-		stopped_timestamps_counter = 0
-
-		# The first time this loop is run, there are no values in 'previous_values_of_loudness_correction_program_info_and_timestamps', then skip the following commands.
-		if len(previous_values_of_loudness_correction_program_info_and_timestamps) != 0:
-			
-			############################################################################################################
-			# Read timestamps and compare to the previous value.
-			# If there was no change the corresponding thread in LoudnessCorrection.py has crashed.
-			############################################################################################################
-			for item in loudness_correction_program_info_and_timestamps:
-				
-				# The item called 'loudnesscorrection_program_info' holds the commandline and PID of LoudnessCorrection.py. We have already red this info into variables earlier, so skip this info here.
-				if item == 'loudnesscorrection_program_info':
-					continue
-
-				# If the user disabled a functionality like for example html - writing in LoudnessCorrection.py, then it's first value in the list is 'False'.
-				# In this case the timestamp of the disabled feature will not be updating, so skip the item.
-				if loudness_correction_program_info_and_timestamps[item][0] == False:
-					continue
-				
-				# If previous and new timestamp does not differ the thread in question has stopped, compile an error message describing the situation.
-				if loudness_correction_program_info_and_timestamps[item][1] == previous_values_of_loudness_correction_program_info_and_timestamps[item][1]:
-					
-					stopped_timestamps_counter = stopped_timestamps_counter + 1 # Count how many stopped threads we have.
-					heartbeat_time_string = parse_time(loudness_correction_program_info_and_timestamps[item][1]) # Parse time read from LoudnessCorrection timestamp to a nicely formatted string.
-					
-					# Set the error message according to the situation. There are a couple of different possible error cases. If timestamp = 0, then it was never updated, if it is bigger then it was updated at least once.
-					if (loudness_correction_program_info_and_timestamps[item][1] == 0) and (item == 'write_html_progress_report'):
-						message_text_list.append("LoudnessCorrection has not started updating 'html-thread' timestamps, the thread has probably crashed and a restart of the script is needed.")
-						message_text_list.append('\n')
-					if (loudness_correction_program_info_and_timestamps[item][1] == 0) and (item != 'write_html_progress_report'):
-						message_text_list.append('LoudnessCorrection has not started updating \'' + item +  '\' timestamps, the thread has probably crashed and a restart of the script is needed.')
-						message_text_list.append('\n')
-					if loudness_correction_program_info_and_timestamps[item][1] > 0:
-						message_text_list.append('LoudnessCorrection has stopped updating \'' + item +  '\' timestamps, the thread has probably crashed and a restart of the script is needed.' + ' Last thread timestamp update happened at: ' + heartbeat_time_string)
-						message_text_list.append('\n')
-						
-			# Test how many stopped timestamps there was and set the variable 'heartbeat_has_stopped' accordingly.
-			if stopped_timestamps_counter > 0:
-				heartbeat_has_stopped = True
-			else:
-				heartbeat_has_stopped = False
-				
-			# If there were stopped timestamps / threads print and email error messages to admin.
-			if (heartbeat_has_stopped == True) and (alert_email_has_been_sent == False):
-				
-				# Print message on screen.
-				if silent == False:
-					for line in message_text_list:
-						print(line)
-						
-				# Consolidate email text lines to one string adding carriage return after each text line.
-				message_text_string = '\n'.join(message_text_list)
-				send_email(message_recipients, message_title, message_text_string, message_attachment_path)
-				alert_email_has_been_sent = True
-			else:
-				# If all HeartBeat timestamps start again after being stopped, reset settings and start monitoring HeartBeat again. Also print / send message to the admin.
-				if (heartbeat_has_stopped == False) and (alert_email_has_been_sent == True):
-					alert_email_has_been_sent = False
-					message_text_list.append('All Heartbeat timestamps started updating again at: ' + time_string + '\n\n')
-					message_text_string = '\n'.join(message_text_list)
-					send_email(message_recipients, message_title, message_text_string, message_attachment_path)
-					
-					if silent == False:
-						print(message_text_string)
-						
-		# Store last timestamps so that we can compare them to new ones on the next while - loop run.
-		previous_values_of_loudness_correction_program_info_and_timestamps = loudness_correction_program_info_and_timestamps
-
 timestamp_checking_thread = threading.Thread(target=check_timestamps_and_send_email)
+timestamp_checking_thread.start()
 app.run(host='0.0.0.0', port=all_settings_dict["heartbeat_service_port"], debug=False)
 
 quit_all_threads_now = True

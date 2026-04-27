@@ -3123,10 +3123,6 @@ def send_to_heartbeat_checker():
 				# Send data and ignore status reply
 				_ = requests.post(target_address, data=json.dumps(data_to_send), headers=headers)
 
-				#FIXME
-				print("target_address:", target_address)
-				print("data:", json.dumps(data_to_send))
-
 			except KeyboardInterrupt:
 				if silent == False:
 					print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
@@ -6088,12 +6084,12 @@ try:
 		email_process = threading.Thread(target=send_error_messages_by_email_thread, args=(email_sending_details, english, finnish)) # Create a process instance.
 		thread_object = email_process.start() # Start the process in it'own thread.
 		
-	# Start in its own thread the subroutine that writes process queue information to a web-page on disk periodically.
+	# Start in its own thread the subroutine that send process queue information periodically.
 	if write_html_progress_report == True:
 		html_writing_process = threading.Thread(target=send_to_progress_report, args=(english, finnish)) # Create a process instance.
 		thread_object = html_writing_process.start() # Start the process in it'own thread.
 
-	# Start in its own thread the subroutine that writes current time periodically to the HeartBeat-file indicating that we are still alive and running :)
+	# Start in its own thread the subroutine that sends current time periodically to the HeartBeat_Checker indicating that we are still alive and running :)
 	if heartbeat == True:
 		heartbeat_process = threading.Thread(target=send_to_heartbeat_checker, args=()) # Create a process instance.
 		thread_object = heartbeat_process.start() # Start the process in it'own thread.
@@ -6133,7 +6129,6 @@ try:
 
 		if ip_address_refresh_counter >= ip_address_refresh_interval:
 			all_ip_addresses_of_the_machine = get_ip_addresses_of_the_host_machine(all_ip_addresses_of_the_machine)
-	
 
 		try:
 			# Get directory listing for HotFolder. The 'break' statement stops the for - statement from recursing into subdirectories.
