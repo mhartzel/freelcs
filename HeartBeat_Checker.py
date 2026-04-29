@@ -89,23 +89,14 @@ def receive_messages():
 		# We use a generic error to avoid giving away details to an attacker
 		abort(401, description="Unauthorized access")
 
-	# Clean the data to ensure we only store strings
-	# and don't allow nested objects that could bloat memory.
-	# sanitized_data = {str(k): str(v) for k, v in data.items() if len(str(v)) < 1024}
-
+	# Sanity check for the length if incoming key and value data
 	sanitized_data = {}
 
-	for k, v in incoming_data.items():
-#		# Convert values to strings to ensure type safety
-#		key_str = str(k)
-#		value_str = str(v)
-#
-#		# Check our security constraint (length check)
-#		if len(value_str) < 1024:
-#			sanitized_data[key_str] = value_str
+	for key, value in incoming_data.items():
+		# Convert values to strings to ensure type safety
 		# Check our security constraint (length check)
-		if len(v) < 1024:
-			sanitized_data[k] = v
+		if len(str(value)) < 1024:
+			sanitized_data[key] = value
 
 	with report_lock:
 		loudness_correction_program_info_and_timestamps = sanitized_data

@@ -661,7 +661,7 @@
 	  "directory_for_temporary_files": "/mountpoint/00-Loudness_Calculation_Temporary_Files",\
 	  "directory_for_results": "/mountpoint/LoudnessCorrection/00-Corrected_Files",\
 	  "delay_between_directory_reads": 5,\
-	  "number_of_processor_cores": 16,\
+	  "number_of_processor_cores": -1,\
 	  "file_expiry_time": 28800,\
 	  "natively_supported_file_formats": [ ".wav", ".flac", ".ogg" ],\
 	  "libebur128_path": "/bin/loudness-freelcs",\
@@ -781,6 +781,8 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 			option.innerText = item;
 			selection.appendChild(option);
 		});
+
+		default_settings.number_of_processor_cores = -1;
 	}
 
 	function update_number_of_cores() {
