@@ -155,7 +155,10 @@ func render_progress_report(context *gin.Context) {
 
 func main() {
 
-	progress_report_data = make(map[string]string)
+	var server_incoming_port = "9000"
+	var server_incoming_path = "/progress_report"
+	// FIXME
+	// progress_report_data = make(map[string]string)
 	read_loudness_correction_settings_json(path_to_loudness_correction_settings_json)
 
 	gin.SetMode(gin.ReleaseMode) // Set Gin to production / release mode as opposed to rehearse
@@ -170,7 +173,11 @@ func main() {
 
 	// Create a path for receiving progress report data through REST - api
 	// Register path /progress_report for the POST - method
-	gin_instance.POST("/progress_report", authorize_and_sanitize_input_data)
+	if _, ok := default_settings["progress_service_path"]; ok {
+		server_incoming_path = default_settings["progress_service_path"].(string)
+	}
+
+	gin_instance.POST(server_incoming_path, authorize_and_sanitize_input_data)
 
 	// Create a path for serving a web - page
 	// Register path / for the GET - method
@@ -190,7 +197,10 @@ func main() {
 		})
 	})
 
-	server_incoming_port := ":" + default_settings["progress_service_port"].(string)
+	if _, ok := default_settings["progress_service_port"]; ok {
+		server_incoming_port = ":" + default_settings["progress_service_port"].(string)
+	}
+
 	log.Println("Server running on", server_incoming_port)
 	gin_instance.Run(server_incoming_port)
 }
