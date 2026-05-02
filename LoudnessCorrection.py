@@ -2987,8 +2987,7 @@ def send_to_progress_report(english, finnish):
 		global all_ip_addresses_of_the_machine
 		
 		data_to_send = {}
-		data_to_send["title"] = 'LoudnessCorrection_Process_Queue' * english + 'AanekkyysKorjauksen laskentajono' * finnish
-		data_to_send["freelcs_version"] = freelcs_version
+		data_to_send["title_1"] = 'FreeLCS ' + freelcs_version + ' Progress Report' * english + ' Laskentajono' * finnish
 
 		while True:
 			
@@ -3005,50 +3004,51 @@ def send_to_progress_report(english, finnish):
 
 			loudness_correction_program_info_and_timestamps['write_html_progress_report'] = [write_html_progress_report, int(time.time())] # Update the heartbeat timestamp for the html writing thread. This is used to keep track if the thread has crashed.
 			realtime = get_realtime(english, finnish)[1] # Get the current date and time of day.
-			data_to_send["files_queued_to_loudness_calculation"] = str(len(files_queued_to_loudness_calculation)) + ' Files Waiting In The Queue' * english + 'Tiedostoa jonossa' * finnish + realtime.replace('_', ' ')
-			data_to_send["files_being_processed"] = 'Files Being Processed' * english + 'K&auml;sittelyss&auml; olevat tiedostot' * finnish
-			data_to_send["completed_files"] = 'Completed Files' * english + 'K&auml;sitellyt tiedostot' * finnish
+			data_to_send["title_2"] = str(len(files_queued_to_loudness_calculation)) + ' Files Waiting In The Queue' * english + ' Tiedostoa jonossa' * finnish + realtime.replace('_', ' ')
+			data_to_send["title_3"] = 'Files Being Processed' * english + 'Käsittelyssä olevat tiedostot' * finnish
+			data_to_send["title_4"] = 'Completed Files' * english + 'Käsitellyt tiedostot' * finnish
 			
 			# Get the first 10 filenames waiting for getting into loudness calculation and insert those names in to the html code.
 			first_ten_files_queued_to_loudness_calculation = files_queued_to_loudness_calculation[:10] # Get the first 10 filenames from the waiting queue into a list.
+			waiting_queue = []
 
-			for counter in range(10, 0, -1): # Create index numbers to print in the html-page before each filename.
+			for counter in range(10, 0, -1):
 				# If there is a filename at the queue position then get it's name from the list, if not then use the queue number with an empty string as the filename.
 				filename = ''
 				if (len(first_ten_files_queued_to_loudness_calculation) > 0) and (counter <= len(first_ten_files_queued_to_loudness_calculation)):
 					filename = first_ten_files_queued_to_loudness_calculation[counter - 1]
-				position_in_queue = str(counter) # This variable holds the queue number we print in html for each file in the queue.
-				if len(position_in_queue) == 1: # If queue number is only one digit long (1, 2, 3, etc), use two digits instead (01, 02, 03, etc).
-					position_in_queue = '0' + position_in_queue
 
-				key_name = "file_" + str(counter) + "_in_queue"
-				data_to_send[key_name] = position_in_queue + ": " + filename
+				waiting_queue.append(filename)
+
+			data_to_send["files_waiting_in_queue"] = waiting_queue
 
 			# Get the filenames currently in loudness calculation and insert their names into the data to send
 			maximum_number_of_simultaneously_processed_files = int(number_of_processor_cores / 2) # This variable holds the number of files we are able to process simultanously. As two loudness calculation processed are started for each file, this number is always the value in variable 'number_of_processor_cores' divided by two.
 			loudness_calculation_queue_list = list(loudness_calculation_queue) # Get the list of filesnames currently in loudness calculation from the 'loudness_calculation_queue' dictionary.
+			processing_queue = []
 			
-			for counter in range(1, maximum_number_of_simultaneously_processed_files + 1): # Create index numbers to print in the html-page before each filename and if there is a file currently in the loudness calculation corresponding to the index number then print that name after the number.
+			for counter in range(1, maximum_number_of_simultaneously_processed_files + 1):
 				# If there is a filename at the calculation queue position then get it's name from the list, if not then use empty string as the filename.
 				filename = ''
 				if (len(loudness_calculation_queue_list) > 0) and (counter <= len(loudness_calculation_queue_list)):
 					filename = loudness_calculation_queue_list[counter - 1]
 					filename = filename.replace('ä', '&auml;').replace('Ä', '&Auml;').replace('ö', '&ouml;').replace('Ö', '&Ouml;').replace('å', '&aring;').replace('Å', '&Aring;') # Special Finnish characters in filename won't print correctly unless they are replaced with proper html-codes.
-				position_in_queue = str(counter) # This variable holds a number we print before the filename.
-				if len(position_in_queue) == 1: # If queue number is only one digit long (1, 2, 3, etc), use two digits instead (01, 02, 03, etc).
-					position_in_queue = '0' + position_in_queue
-				# Append information generated above to the data to send
-				key_name = "file_" + str(counter) + "_being_processed"
-				data_to_send[key_name] = position_in_queue + ": " + filename
+
+				processing_queue.append(filename)
+
+			data_to_send["files_being_processed"] = processing_queue
 
 			# Generate the list of files that has gone through loudness calculation and insert names in the html-code.
 			copy_of_completed_files_list = copy.deepcopy(completed_files_list)
+			processed_files = []
 
 			for filename in copy_of_completed_files_list:
 				# Append information generated above to the html-code.
 				completion_time = completed_files_dict[filename]
-				key_name = "file_" + str(counter) + "_ready"
-				data_to_send[key_name] = completion_time + ": " + filename
+				processed_files.append(completion_time + ": " + filename)
+
+			# Take max 100 names of processed files in the list
+			data_to_send["processed_files"] = processed_files[:100]
 
 			# Send data to the Progress_Report
 			try:
