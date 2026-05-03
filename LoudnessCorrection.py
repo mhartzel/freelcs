@@ -3002,7 +3002,7 @@ def send_to_progress_report(english, finnish):
 			if (progress_service_ip == "") or (progress_service_port == ""):
 				return()
 
-			loudness_correction_program_info_and_timestamps['write_html_progress_report'] = [write_html_progress_report, int(time.time())] # Update the heartbeat timestamp for the html writing thread. This is used to keep track if the thread has crashed.
+			loudness_correction_program_info_and_timestamps['write_html_progress_report'] = [write_html_progress_report, str(int(time.time()))] # Update the heartbeat timestamp for the html writing thread. This is used to keep track if the thread has crashed.
 			realtime = get_realtime(english, finnish)[1] # Get the current date and time of day.
 			data_to_send["title_2"] = [ str(len(files_queued_to_loudness_calculation)) + ' Files Waiting In The Queue' * english + ' Tiedostoa jonossa' * finnish ]
 			data_to_send["title_3"] = [ 'Files Being Processed' * english + 'Käsittelyssä olevat tiedostot' * finnish ]
@@ -3122,9 +3122,6 @@ def send_to_heartbeat_checker():
 				data_to_send["authorization"] = authorization
 				data_to_send.update(loudness_correction_program_info_and_timestamps)
 				target_address = "http://" + str(heartbeat_service_ip) + ":" + str(heartbeat_service_port) + str(heartbeat_service_path)
-
-				# Send data and ignore status reply
-				return_message = requests.post(target_address, data=json.dumps(data_to_send), headers=headers)
 
 				# Send data and get reply
 				return_message = requests.post(target_address, data=json.dumps(data_to_send), headers=headers)
@@ -6086,7 +6083,7 @@ try:
 	# LoudnessCorrection to write a html - page to disk, he set the variable 'write_html_progress_report' to False and this value is also sent to HeartBeat_Checker so that it knows the
 	# Html - thread won't be updating it's timestamp.
 
-	loudness_correction_program_info_and_timestamps = {'loudnesscorrection_program_info' : [sys.argv, loudness_correction_pid, all_ip_addresses_of_the_machine, freelcs_version, loudnesscorrection_version], 'main_thread' : [True, 0], 'write_html_progress_report' : [write_html_progress_report, 0]}
+	loudness_correction_program_info_and_timestamps = {'loudnesscorrection_program_info' : [sys.argv, loudness_correction_pid, all_ip_addresses_of_the_machine, freelcs_version, loudnesscorrection_version], 'main_thread' : [True, "0"], 'write_html_progress_report' : [write_html_progress_report, "0"]}
 
 	# Start in its own thread the subroutine that sends error messages by email.
 	if email_sending_details['send_error_messages_by_email'] == True:
@@ -6130,7 +6127,7 @@ try:
 
 	while True:
 		
-		loudness_correction_program_info_and_timestamps['main_thread'] = [True, int(time.time())] # Update the heartbeat timestamp for the main thread. This is used to keep track if the main thread has crashed.
+		loudness_correction_program_info_and_timestamps['main_thread'] = [True, str(int(time.time()))] # Update the heartbeat timestamp for the main thread. This is used to keep track if the main thread has crashed.
 		loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'] = [sys.argv, loudness_correction_pid, all_ip_addresses_of_the_machine, freelcs_version, loudnesscorrection_version]
 
 		# Get IP-Addresses of the machine, if update time has passed (default 5 minutes).

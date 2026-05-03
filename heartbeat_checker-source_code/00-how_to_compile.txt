@@ -1,0 +1,10 @@
+
+##################################
+# How to compile progress_report# 
+##################################
+- install go language from your distros repo
+- go get github.com/wneessen/go-mail 
+- cd HeartBeat_Checker 
+- This will get the gin framework and its dependencies into your home directory: ~/go and then you can build the program with: go build HeartBeat_Checker.go
+
+
