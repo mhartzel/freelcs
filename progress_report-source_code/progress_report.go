@@ -10,6 +10,7 @@ import (
 	"sync"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
+	"fmt"
 )
 
 // Global variable definitions
@@ -32,11 +33,12 @@ const html_template = `
         .box { border: 1px solid #444; padding: 15px; background: #222; margin: 15px 0; }
         h1, h2 { color: #fff; }
         hr { border: 0; border-top: 1px solid #444; }
+        p { color: #aaaaaa; }
     </style>
 </head>
 <body>
     <h1>{{.title_1}}</h1>
-    <br>
+    <p>{{.realtime}}</p>
     <h2>{{.title_2}}</h2><hr>
     {{range .files_waiting_in_queue}}<div>{{.}}</div>{{end}}
     <div class="box">
@@ -85,6 +87,7 @@ func authorize_and_sanitize_input_data(context *gin.Context) {
 		Queued_Files     []string `json:"files_waiting_in_queue"`
 		Processing_Files []string `json:"files_being_processed"`
 		Processed_Files  []string `json:"processed_files"`
+		Realtime         []string `json:"realtime"`
 	}
 
 	// Get only the authorization code from the incoming json. The AuthorizationData struct does the filtering.
@@ -92,7 +95,7 @@ func authorize_and_sanitize_input_data(context *gin.Context) {
 	incoming_authorization_data := AuthorizationData{}
 
 	if err := context.ShouldBindBodyWith(&incoming_authorization_data, binding.JSON); err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -107,12 +110,26 @@ func authorize_and_sanitize_input_data(context *gin.Context) {
 		return
 	}
 
+	if debug == true {
+		fmt.Println("")
+		fmt.Println("incomingAuth:", incomingAuth)
+		fmt.Println("expectedAuth:", expectedAuth)
+		fmt.Println("")
+	}
+
 	// Read incoming data again and insert into incoming_json_as_map
 	incoming_json_as_map := ReportData{}
 	if err := context.ShouldBindBodyWith(&incoming_json_as_map, binding.JSON); err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	if debug == true {
+		fmt.Println("incoming_json_as_map:")
+		fmt.Println(incoming_json_as_map)
+		fmt.Println("")
+	}
+
 	var sanitized_queued_files []string
 	var sanitized_processed_files []string
 	var sanitized_completed_files []string
@@ -185,7 +202,20 @@ func authorize_and_sanitize_input_data(context *gin.Context) {
 			progress_report_data["title_4"] = temp_slice_of_strings
 		}
 
+		temp_slice_of_strings = nil
+
+		if len(incoming_json_as_map.Realtime) > 0 {
+			temp_slice_of_strings = incoming_json_as_map.Realtime
+			progress_report_data["realtime"] = temp_slice_of_strings
+		}
+
 	progress_report_mutex.Unlock()
+
+	if debug == true {
+		fmt.Println("progress_report_data:")
+		fmt.Println(progress_report_data)
+		fmt.Println("")
+	}
 
 	context.JSON(http.StatusOK, gin.H{"status": "updated"})
 }
@@ -244,6 +274,7 @@ func main() {
 		title_2 := ""
 		title_3 := ""
 		title_4 := ""
+		realtime := ""
 
 		temp_slice := progress_report_data["title_1"]
 
@@ -277,11 +308,20 @@ func main() {
 			title_4 = "Completed Files"
 		}
 
+		temp_slice = progress_report_data["realtime"]
+
+		if len(temp_slice) > 0 {
+			realtime = temp_slice[0]
+		} else {
+			realtime = ""
+		}
+
 		context.HTML(http.StatusOK, "progress_report", gin.H{
 			"title_1": title_1,
 			"title_2": title_2,
 			"title_3": title_3,
 			"title_4": title_4,
+			"realtime": realtime,
 			"files_waiting_in_queue":     progress_report_data["files_waiting_in_queue"],
 			"files_being_processed": progress_report_data["files_being_processed"],
 			"processed_files":     progress_report_data["processed_files"],

@@ -2987,7 +2987,7 @@ def send_to_progress_report(english, finnish):
 		global all_ip_addresses_of_the_machine
 		
 		data_to_send = {}
-		data_to_send["title_1"] = 'FreeLCS ' + freelcs_version + ' Progress Report' * english + ' Laskentajono' * finnish
+		data_to_send["title_1"] = [ 'FreeLCS ' + freelcs_version + ' Progress Report' * english + ' Laskentajono' * finnish ]
 
 		while True:
 			
@@ -3004,9 +3004,10 @@ def send_to_progress_report(english, finnish):
 
 			loudness_correction_program_info_and_timestamps['write_html_progress_report'] = [write_html_progress_report, int(time.time())] # Update the heartbeat timestamp for the html writing thread. This is used to keep track if the thread has crashed.
 			realtime = get_realtime(english, finnish)[1] # Get the current date and time of day.
-			data_to_send["title_2"] = str(len(files_queued_to_loudness_calculation)) + ' Files Waiting In The Queue' * english + ' Tiedostoa jonossa' * finnish + realtime.replace('_', ' ')
-			data_to_send["title_3"] = 'Files Being Processed' * english + 'Käsittelyssä olevat tiedostot' * finnish
-			data_to_send["title_4"] = 'Completed Files' * english + 'Käsitellyt tiedostot' * finnish
+			data_to_send["title_2"] = [ str(len(files_queued_to_loudness_calculation)) + ' Files Waiting In The Queue' * english + ' Tiedostoa jonossa' * finnish ]
+			data_to_send["title_3"] = [ 'Files Being Processed' * english + 'Käsittelyssä olevat tiedostot' * finnish ]
+			data_to_send["title_4"] = [ 'Completed Files' * english + 'Käsitellyt tiedostot' * finnish ]
+			data_to_send["realtime"] = [ realtime.replace('_', ' ')  ]
 			
 			# Get the first 10 filenames waiting for getting into loudness calculation and insert those names in to the html code.
 			first_ten_files_queued_to_loudness_calculation = files_queued_to_loudness_calculation[:10] # Get the first 10 filenames from the waiting queue into a list.
@@ -3056,11 +3057,14 @@ def send_to_progress_report(english, finnish):
 				# Send timestamp and some other information to HeartBeat_Checker
 				headers = { 'Content-Type' : 'application/json' }
 				data_to_send["authorization"] = authorization
-				data_to_send.update(loudness_correction_program_info_and_timestamps)
+
 				target_address = "http://" + str(progress_service_ip) + ":" + str(progress_service_port) + str(progress_service_path)
 
-				# Send data and ignore status reply
-				_ = requests.post(target_address, data=json.dumps(data_to_send), headers=headers)
+				# Send data and get reply
+				return_message = requests.post(target_address, data=json.dumps(data_to_send), headers=headers)
+
+				if return_message != "":
+					send_error_messages_to_screen_logfile_email(str(return_message), []) 
 
 			except KeyboardInterrupt:
 				if silent == False:
@@ -3120,7 +3124,13 @@ def send_to_heartbeat_checker():
 				target_address = "http://" + str(heartbeat_service_ip) + ":" + str(heartbeat_service_port) + str(heartbeat_service_path)
 
 				# Send data and ignore status reply
-				_ = requests.post(target_address, data=json.dumps(data_to_send), headers=headers)
+				return_message = requests.post(target_address, data=json.dumps(data_to_send), headers=headers)
+
+				# Send data and get reply
+				return_message = requests.post(target_address, data=json.dumps(data_to_send), headers=headers)
+
+				if return_message != "":
+					send_error_messages_to_screen_logfile_email(str(return_message), []) 
 
 			except KeyboardInterrupt:
 				if silent == False:
