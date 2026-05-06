@@ -3063,7 +3063,7 @@ def send_to_progress_report(english, finnish):
 				# Send data and get reply
 				return_message = requests.post(target_address, data=json.dumps(data_to_send), headers=headers)
 
-				if return_message != "":
+				if return_message.status_code != 200:
 					send_error_messages_to_screen_logfile_email(str(return_message), []) 
 
 			except KeyboardInterrupt:
@@ -3126,7 +3126,7 @@ def send_to_heartbeat_checker():
 				# Send data and get reply
 				return_message = requests.post(target_address, data=json.dumps(data_to_send), headers=headers)
 
-				if return_message != "":
+				if return_message.status_code != 200:
 					send_error_messages_to_screen_logfile_email(str(return_message), []) 
 
 			except KeyboardInterrupt:

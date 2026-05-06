@@ -206,11 +206,18 @@ func handle_receive_heartbeat(context *gin.Context) {
 func check_timestamps_loop() {
 
 	previous_timestamps := make(map[string]interface{})
-	startup_message_sent := false
+	startup_message_has_been_sent := false
 	alert_email_sent := false
 
+	// FIXME
+	// Example of a incoming json that is read and processed here.
+	// {'authorization': '8f3226f95066601445199672049d5696d99723f5b72e5052912445b410502690',
+	// 'loudnesscorrection_program_info': [['./LoudnessCorrection.py', '-configfile', '/etc/Loudness_Correction_Settings.json'], 6057, ['192.168.1.198', '192.168.0.105'], '4.0', '400'],
+	// 'main_thread': [True, 1777790954],
+	// 'write_html_progress_report': [True, 1777790953]}
+
 	for {
-		if quit_all_threads_now {
+		if quit_all_threads_now == true {
 			return
 		}
 
@@ -218,30 +225,33 @@ func check_timestamps_loop() {
 
 		report_lock.RLock()
 
-		// Replicate Python data extraction
-		if prog_info, ok := loudness_correction_program_info_and_timestamps["loudnesscorrection_program_info"].([]interface{}); ok && len(prog_info) >= 5 {
+			// Replicate Python data extraction
+			if prog_info, ok := loudness_correction_program_info_and_timestamps["loudnesscorrection_program_info"].([]interface{}); ok && len(prog_info) >= 5 {
 
-			if cmd_list, ok := prog_info[0].([]interface{}); ok {
-				loudness_correction_commandline = nil
-				for _, cmd := range cmd_list {
-					loudness_correction_commandline = append(loudness_correction_commandline, fmt.Sprint(cmd))
+				if loudness_correction_commandline, ok := prog_info[0].([]interface{}); ok {
+					loudness_correction_commandline = nil
+
+					for _, cmd := range loudness_correction_commandline {
+						loudness_correction_commandline = append(loudness_correction_commandline, fmt.Sprint(cmd))
+					}
 				}
+
+				loudness_correction_pid = prog_info[1]
+
+				if all_ip_addresses_of_the_machine, ok := prog_info[2].([]interface{}); ok {
+					all_ip_addresses_of_the_machine = nil
+
+					for _, ip := range all_ip_addresses_of_the_machine {
+						all_ip_addresses_of_the_machine = append(all_ip_addresses_of_the_machine, fmt.Sprint(ip))
+					}
+				}
+
+				freelcs_version = fmt.Sprint(prog_info[3])
+				loudnesscorrection_version = fmt.Sprint(prog_info[4])
 			}
 
-			loudness_correction_pid = prog_info[1]
+			current_data := loudness_correction_program_info_and_timestamps
 
-			if ip_list, ok := prog_info[2].([]interface{}); ok {
-				all_ip_addresses_of_the_machine = nil
-				for _, ip := range ip_list {
-					all_ip_addresses_of_the_machine = append(all_ip_addresses_of_the_machine, fmt.Sprint(ip))
-				}
-			}
-
-			freelcs_version = fmt.Sprint(prog_info[3])
-			loudnesscorrection_version = fmt.Sprint(prog_info[4])
-		}
-
-		current_data := loudness_correction_program_info_and_timestamps
 		report_lock.RUnlock()
 
 		if debug == true {
@@ -256,8 +266,8 @@ func check_timestamps_loop() {
 			fmt.Println()
 		}
 
-		if !startup_message_sent {
-			startup_message_sent = true
+		if startup_message_has_been_sent == false {
+			startup_message_has_been_sent = true
 			msg := "HeartBeat_Checker started: " + current_time_string + "\n\n"
 			send_error_email(message_recipients, "HeartBeat_Checker has started.", msg, message_attachment_path)
 		}
@@ -290,7 +300,7 @@ func check_timestamps_loop() {
 			}
 
 			// details[0] is the boolean 'enabled' flag
-			if enabled, ok := details[0].(bool); ok && !enabled {
+			if enabled, ok := details[0].(bool); ok && enabled == false {
 				continue
 			}
 
@@ -387,8 +397,6 @@ func main() {
 		fmt.Println("os.Args[2]:", os.Args[2])
 		fmt.Println("json_path:", json_path)
 		fmt.Println("")
-		fmt.Println("")
-		fmt.Println("")
 	}
 
 	file_bytes, err := os.ReadFile(json_path)
@@ -451,14 +459,15 @@ func main() {
 
 	// Initialize Gin
 	gin.SetMode(gin.ReleaseMode)
-	router := gin.Default()
+	gin_instance := gin.New()
 
 	// Add Security Middleware: Max Content Length 100KB
-	router.Use(limit_request_body_size(1024 * 100))
+	gin_instance.Use(gin.Recovery(), limit_request_body_size(1024 * 100))
 
-	router.POST("/heartbeat", handle_receive_heartbeat)
+	// Add path to listen to
+	gin_instance.POST("/heartbeat", handle_receive_heartbeat)
 
-	port := "8080"
+	port := "9002"
 
 	if p, ok := all_settings_dict["heartbeat_service_port"].(string); ok {
 		port = p
@@ -466,7 +475,7 @@ func main() {
 
 	fmt.Printf("Starting HeartBeat Checker on port %s...\n", port)
 
-	if err := router.Run(":" + port); err != nil {
+	if err := gin_instance.Run(":" + port); err != nil {
 		log.Fatalf("Server failed: %v", err)
 	}
 
