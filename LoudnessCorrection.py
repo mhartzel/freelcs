@@ -6075,15 +6075,23 @@ try:
 
 	# The dictionary 'loudness_correction_program_info_and_timestamps' is used to send information to the HeartBeat_Checker - program that is run independently of the LoudnessCorrection - script.
 	# Some threads in LoudnessCorrection write periodically a timestamp to this dictionary indicating they are still alive. 
-	# The dictionary gets written to disk periodically and the HeartBeat_Checker - program checks that the timestamps in it keeps changing and sends email to the user if they stop.
+	# The dictionary gets sent to HeartBeat_Checker periodically and it makes sure timestamps in it keeps changing and sends email to the user if they stop.
 	# The commandline used to start LoudnessCorrection - script and the PID it is currently running on is also recorded in this dictionary. This infomation may be used
 	# in the future to automatically kill and start again LoudnessCorrection if some of it's threads have crashed, but that is not implemented yet.
 	#
 	# Keys 'main_thread' and 'write_html_progress_report' have a list of two values. The first one (True / False) tells if user enabled the feature or not. For example if user does not wan't
-	# LoudnessCorrection to write a html - page to disk, he set the variable 'write_html_progress_report' to False and this value is also sent to HeartBeat_Checker so that it knows the
+	# LoudnessCorrection to create a html - page he set the variable 'write_html_progress_report' to False and this value is also sent to HeartBeat_Checker so that it knows the
 	# Html - thread won't be updating it's timestamp.
 
-	loudness_correction_program_info_and_timestamps = {'loudnesscorrection_program_info' : [sys.argv, loudness_correction_pid, all_ip_addresses_of_the_machine, freelcs_version, loudnesscorrection_version], 'main_thread' : [True, "0"], 'write_html_progress_report' : [write_html_progress_report, "0"]}
+	loudness_correction_program_info_and_timestamps = {
+	"commandline": ' '.join(sys.argv),
+	"loudness_correction_pid": str(loudness_correction_pid),
+	"all_ip_addresses_of_the_machine": ' '.join(all_ip_addresses_of_the_machine),
+	"freelcs_version": str(freelcs_version),
+	"loudnesscorrection_version": str(loudnesscorrection_version),
+	'main_thread' : [True, "0"],
+	'write_html_progress_report' : [write_html_progress_report, "0"]
+	} 
 
 	# Start in its own thread the subroutine that sends error messages by email.
 	if email_sending_details['send_error_messages_by_email'] == True:
@@ -6128,7 +6136,6 @@ try:
 	while True:
 		
 		loudness_correction_program_info_and_timestamps['main_thread'] = [True, str(int(time.time()))] # Update the heartbeat timestamp for the main thread. This is used to keep track if the main thread has crashed.
-		loudness_correction_program_info_and_timestamps['loudnesscorrection_program_info'] = [sys.argv, loudness_correction_pid, all_ip_addresses_of_the_machine, freelcs_version, loudnesscorrection_version]
 
 		# Get IP-Addresses of the machine, if update time has passed (default 5 minutes).
 		ip_address_refresh_counter = ip_address_refresh_counter + delay_between_directory_reads

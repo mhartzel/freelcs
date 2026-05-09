@@ -19,7 +19,7 @@ import (
 
 // Global constants and state
 const heartbeat_checker_version = "400"
-var debug = true
+var debug = false
 
 var (
 	heartbeat_checker_pid                           int
@@ -42,18 +42,23 @@ var (
 	message_attachment_path             string   = ""
 
 	// Dynamic program info extracted from heartbeats
-	loudness_correction_commandline []string
-	loudness_correction_pid         interface{}
-	all_ip_addresses_of_the_machine []string
+	loudness_correction_commandline = ""
+	heartbeat_checker_commandline = ""
+	loudness_correction_pid =""
+	all_ip_addresses_of_the_machine string
 	freelcs_version                 string = "Not known yet"
 	loudnesscorrection_version      string = "Not known yet"
 )
 
 // --- Helper Functions ---
 
-func parse_time_to_string(time_int int64) string {
+func parse_time_to_string(time_string string) string {
 
+	var time_int int64
+
+	time_int, _ = strconv.ParseInt(time_string, 10, 64) 
 	time_object := time.Unix(time_int, 0)
+
 	// Format: YYYY.MM.DD at HH:MM:SS
 	return time_object.Format("2006.01.02 at 15:04:05")
 }
@@ -61,16 +66,24 @@ func parse_time_to_string(time_int int64) string {
 func send_error_email(recipients []string, title string, body_text string, attachment_path string) {
 
 	program_info := fmt.Sprintf(
-		"\nFreeLCS version: %s\n\n\nLoudnessCorrection info:\n--------------------------------------\n"+
-			"Commandline: %s\nIP-Addresses: %s\nPID: %v\nLoudnessCorrection version: %s\n\n"+
-			"HeartBeat Checker info:\n--------------------------------------\n"+
-			"Commandline: %s\nPID: %d\nHeartBeat Checker version: %s\n\n",
+		"\nFreeLCS version: %s\n\n\n" +
+		"LoudnessCorrection info:\n" +
+		"--------------------------------------\n"+
+		"Commandline: %s\n" +
+		"IP-Addresses: %s\n" +
+		"PID: %s\n" +
+		"LoudnessCorrection version: %s\n\n"+
+		"HeartBeat Checker info:\n" +
+		"--------------------------------------\n"+
+		"Commandline: %s\n" +
+		"PID: %d\n" +
+		"HeartBeat Checker version: %s\n\n",
 		freelcs_version,
-		strings.Join(loudness_correction_commandline, " "),
-		strings.Join(all_ip_addresses_of_the_machine, ", "),
+		loudness_correction_commandline,
+		all_ip_addresses_of_the_machine,
 		loudness_correction_pid,
 		loudnesscorrection_version,
-		strings.Join(os.Args, " "),
+		heartbeat_checker_commandline,
 		heartbeat_checker_pid,
 		heartbeat_checker_version,
 	)
@@ -136,7 +149,7 @@ func send_error_email(recipients []string, title string, body_text string, attac
 
 	if err := mail_client.DialAndSend(message); err != nil {
 		log.Printf("Failed to send email: %v", err)
-	} else if !silent_mode {
+	} else if silent_mode == false {
 		log.Printf("Sent email to: %v", recipients)
 	}
 }
@@ -160,6 +173,12 @@ func handle_receive_heartbeat(context *gin.Context) {
 	if err := context.ShouldBindJSON(&incoming_payload); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON payload"})
 		return
+	}
+
+	if debug == true {
+
+		fmt.Println()
+		fmt.Println("incoming_payload:", incoming_payload)
 	}
 
 	// Security: Constant-time comparison to prevent timing attacks
@@ -198,6 +217,14 @@ func handle_receive_heartbeat(context *gin.Context) {
 	loudness_correction_program_info_and_timestamps = sanitized_payload
 	report_lock.Unlock()
 
+	
+	if debug == true {
+
+		fmt.Println("loudness_correction_program_info_and_timestamps:", loudness_correction_program_info_and_timestamps)
+		fmt.Println()
+	}
+
+
 	context.JSON(http.StatusOK, gin.H{"status": "success"})
 }
 
@@ -208,171 +235,163 @@ func check_timestamps_loop() {
 	previous_timestamps := make(map[string]interface{})
 	startup_message_has_been_sent := false
 	alert_email_sent := false
-
-	// FIXME
-	// Example of a incoming json that is read and processed here.
-	// {'authorization': '8f3226f95066601445199672049d5696d99723f5b72e5052912445b410502690',
-	// 'loudnesscorrection_program_info': [['./LoudnessCorrection.py', '-configfile', '/etc/Loudness_Correction_Settings.json'], 6057, ['192.168.1.198', '192.168.0.105'], '4.0', '400'],
-	// 'main_thread': [True, 1777790954],
-	// 'write_html_progress_report': [True, 1777790953]}
+	main_thread_heartbeat_enabled := false
+	progress_report_thread_heartbeat_enabled := false
+	main_thread_timestamp := "0"
+	progress_report_thread_timestamp := "0"
+	previous_main_thread_timestamp := "0"
+	previous_progress_report_thread_timestamp := "0"
 
 	for {
 		if quit_all_threads_now == true {
 			return
 		}
 
+		// Sleep between checking heartbeat timestamps
 		time.Sleep(time.Duration(heartbeat_check_interval) * time.Second)
 
+		// Get information we will send as the body of the error email
 		report_lock.RLock()
 
-			// Replicate Python data extraction
-			if prog_info, ok := loudness_correction_program_info_and_timestamps["loudnesscorrection_program_info"].([]interface{}); ok && len(prog_info) >= 5 {
+			current_time_string := parse_time_to_string(strconv.FormatInt(time.Now().Unix(), 10))
 
-				if loudness_correction_commandline, ok := prog_info[0].([]interface{}); ok {
-					loudness_correction_commandline = nil
-
-					for _, cmd := range loudness_correction_commandline {
-						loudness_correction_commandline = append(loudness_correction_commandline, fmt.Sprint(cmd))
-					}
-				}
-
-				loudness_correction_pid = prog_info[1]
-
-				if all_ip_addresses_of_the_machine, ok := prog_info[2].([]interface{}); ok {
-					all_ip_addresses_of_the_machine = nil
-
-					for _, ip := range all_ip_addresses_of_the_machine {
-						all_ip_addresses_of_the_machine = append(all_ip_addresses_of_the_machine, fmt.Sprint(ip))
-					}
-				}
-
-				freelcs_version = fmt.Sprint(prog_info[3])
-				loudnesscorrection_version = fmt.Sprint(prog_info[4])
+			if debug == true {
+				fmt.Println("current_time_string:", current_time_string)
+				fmt.Println()
 			}
 
-			current_data := loudness_correction_program_info_and_timestamps
+			if incoming_value, ok := loudness_correction_program_info_and_timestamps["commandline"].(string); ok == true {
+				loudness_correction_commandline = incoming_value
 
-		report_lock.RUnlock()
+			}
 
-		if debug == true {
-			fmt.Println()
-			fmt.Println("time.Now().Unix()):", time.Now().Unix())
-		}
+			if incoming_value,ok := loudness_correction_program_info_and_timestamps["loudness_correction_pid"].(string) ; ok == true {
+				loudness_correction_pid = incoming_value
+			}
 
-		current_time_string := parse_time_to_string(time.Now().Unix())
+			if incoming_value,ok := loudness_correction_program_info_and_timestamps["all_ip_addresses_of_the_machine"].(string) ; ok == true {
+				all_ip_addresses_of_the_machine = incoming_value
+			}
 
-		if debug == true {
-			fmt.Println("current_time_string:", current_time_string)
-			fmt.Println()
-		}
+			if incoming_value,ok := loudness_correction_program_info_and_timestamps["freelcs_version"].(string) ; ok == true {
+				freelcs_version = incoming_value
+			}
 
-		if startup_message_has_been_sent == false {
-			startup_message_has_been_sent = true
-			msg := "HeartBeat_Checker started: " + current_time_string + "\n\n"
-			send_error_email(message_recipients, "HeartBeat_Checker has started.", msg, message_attachment_path)
-		}
-
-		if len(previous_timestamps) == 0 {
-			previous_timestamps = current_data
-			continue
-		}
-
-		stopped_threads_counter := 0
-		var error_messages []string
-
-		for key, value := range current_data {
+			if incoming_value,ok := loudness_correction_program_info_and_timestamps["loudnesscorrection_version"].(string) ; ok == true {
+				loudnesscorrection_version = incoming_value
+			}
 
 			if debug == true {
 				fmt.Println()
-				fmt.Println("key:", key)
-				fmt.Println("value:", value)
+				fmt.Println("time.Now().Unix()):", time.Now().Unix())
+			}
+
+			// On first run send a message that the Heartbeat_Checker is running now
+			if startup_message_has_been_sent == false {
+				startup_message_has_been_sent = true
+				message := "HeartBeat_Checker started: " + current_time_string + "\n\n"
+				send_error_email(message_recipients, "HeartBeat_Checker has started.", message, message_attachment_path)
+			}
+
+			// Check if main_thread or write_html_progress_report - thread timestamps have stopped updating
+			stopped_threads_counter := 0
+			var error_messages []string
+
+			if temp_list, ok := loudness_correction_program_info_and_timestamps["main_thread"].([]interface{}); ok == true {
+				main_thread_heartbeat_enabled = temp_list[0].(bool)
+				main_thread_timestamp = temp_list[1].(string)
+
+			}
+
+			if temp_list, ok := loudness_correction_program_info_and_timestamps["write_html_progress_report"].([]interface{}); ok == true {
+				progress_report_thread_heartbeat_enabled = temp_list[0].(bool)
+				progress_report_thread_timestamp = temp_list[1].(string)
+
+			}
+
+			if debug == true {
+				fmt.Println()
+				fmt.Println("main_thread_heartbeat_enabled:", main_thread_heartbeat_enabled)
+				fmt.Println("main_thread_timestamp:", main_thread_timestamp)
+				fmt.Println("progress_report_thread_heartbeat_enabled:", progress_report_thread_heartbeat_enabled)
+				fmt.Println("progress_report_thread_timestamp:", progress_report_thread_timestamp)
 				fmt.Println()
 			}
 
-			if key == "loudnesscorrection_program_info" || key == "authorization" {
-				continue
+			if temp_list, ok := previous_timestamps["main_thread"].([]interface{}); ok == true {
+				previous_main_thread_timestamp = temp_list[1].(string)
+
 			}
 
-			details, ok := value.([]interface{})
+			if temp_list, ok := previous_timestamps["write_html_progress_report"].([]interface{}); ok == true {
+				previous_progress_report_thread_timestamp = temp_list[1].(string)
 
-			if !ok || len(details) < 2 {
-				continue
 			}
 
-			// details[0] is the boolean 'enabled' flag
-			if enabled, ok := details[0].(bool); ok && enabled == false {
-				continue
+
+			if debug == true {
+				fmt.Println()
+				fmt.Println("previous_main_thread_timestamp:", previous_main_thread_timestamp, parse_time_to_string(previous_main_thread_timestamp))
+				fmt.Println("main_thread_timestamp:", main_thread_timestamp, parse_time_to_string(main_thread_timestamp))
+				fmt.Println("previous_progress_report_thread_timestamp:", previous_progress_report_thread_timestamp, parse_time_to_string(previous_progress_report_thread_timestamp))
+				fmt.Println("progress_report_thread_timestamp:", progress_report_thread_timestamp, parse_time_to_string(progress_report_thread_timestamp))
+				fmt.Println()
 			}
 
-			// Compare current timestamp to previous timestamp
-			prev_val, prev_exists := previous_timestamps[key].([]interface{})
+			if  main_thread_heartbeat_enabled == true &&  previous_main_thread_timestamp == main_thread_timestamp {
 
-			if prev_exists && len(prev_val) >= 2 {
+				stopped_threads_counter = stopped_threads_counter + 1
 
-				// We compare the timestamps (index 1) as strings to handle various numeric types from JSON
-				if fmt.Sprintf("%v", details[1]) == fmt.Sprintf("%v", prev_val[1]) {
-					stopped_threads_counter++
-					ts_int := int64(0)
-
-					// FIXME
-
-					// if ts_int, ok := details[1].(int64); ok {
-					// 	ts_int = int64(ts_int)
-					// }
-
-					if ts_int, ok := prev_val[1].(int64); ok {
-						ts_int = int64(ts_int)
-					}
-
-					if debug == true {
-						fmt.Println()
-						fmt.Println("ts_int", ts_int)
-					}
-
-					ts_str := parse_time_to_string(ts_int)
-
-					if debug == true {
-						fmt.Println()
-						fmt.Println("ts_str", ts_str)
-					}
-
-					msg := fmt.Sprintf("LoudnessCorrection has stopped updating '%s' timestamps. Last update: %s", key, ts_str)
-					error_messages = append(error_messages, msg)
-
-					if debug == true {
-						fmt.Println()
-						fmt.Println("details:", details)
-						fmt.Println("prev_val:", prev_val)
-						fmt.Println()
-						fmt.Println()
-					}
+				if main_thread_timestamp == "0" {
+					message := "LoudnessCorrection has not started updating main_thread timestamp, the thread has probably crashed and a restart of the script is needed\n"
+					error_messages = append(error_messages, message)
+				} else {
+					time_string := parse_time_to_string(main_thread_timestamp)
+					message := fmt.Sprintf("LoudnessCorrection has stopped updating main_thread timestamps. Last update: %s\n", time_string)
+					error_messages = append(error_messages, message)
 				}
 			}
-		}
 
-		if stopped_threads_counter > 0 {
+			if progress_report_thread_heartbeat_enabled == true && previous_progress_report_thread_timestamp == progress_report_thread_timestamp {
 
-			if !alert_email_sent {
+				stopped_threads_counter = stopped_threads_counter + 1
 
-				if !silent_mode {
+				if progress_report_thread_timestamp == "0" {
+					message := "LoudnessCorrection has not started updating progress_report timestamp, the thread has probably crashed and a restart of the script is needed\n"
+					error_messages = append(error_messages, message)
+				} else {
+					time_string := parse_time_to_string(progress_report_thread_timestamp)
+					message := fmt.Sprintf("LoudnessCorrection has stopped updating progress_report timestamps. Last update: %s\n", time_string)
+					error_messages = append(error_messages, message)
+				}
+			}
 
-					for _, line := range error_messages {
-						fmt.Println(line)
+			if stopped_threads_counter > 0 {
+
+				if alert_email_sent == false {
+
+					if silent_mode == false {
+
+						for _, line := range error_messages {
+							fmt.Println(line)
+						}
 					}
+
+					body := strings.Join(error_messages, "\n")
+					send_error_email(message_recipients, message_title, body, message_attachment_path)
+					alert_email_sent = true
 				}
 
-				body := strings.Join(error_messages, "\n")
-				send_error_email(message_recipients, message_title, body, message_attachment_path)
-				alert_email_sent = true
+			} else if alert_email_sent == true {
+				// Reset if threads resumed
+				alert_email_sent = false
+				message := "All Heartbeat timestamps started updating again at: " + current_time_string + "\n"
+				send_error_email(message_recipients, message_title, message, message_attachment_path)
 			}
-		} else if alert_email_sent {
-			// Reset if threads resumed
-			alert_email_sent = false
-			msg := "All Heartbeat timestamps started updating again at: " + current_time_string + "\n\n"
-			send_error_email(message_recipients, message_title, msg, message_attachment_path)
-		}
 
-		previous_timestamps = current_data
+			previous_timestamps = loudness_correction_program_info_and_timestamps
+
+		report_lock.RUnlock()
 	}
 }
 
@@ -381,6 +400,7 @@ func check_timestamps_loop() {
 func main() {
 
 	heartbeat_checker_pid = os.Getpid()
+	heartbeat_checker_commandline = strings.Join(os.Args, " ")
 
 	if len(os.Args) != 3 || strings.ToLower(os.Args[1]) != "-configfile" {
 		fmt.Println("\nUSAGE: Give the option: -configfile followed by full path to the config file.")
