@@ -26,7 +26,6 @@ var (
 	loudness_correction_program_info_and_timestamps map[string]interface{}
 	report_lock                                     sync.RWMutex
 	all_settings_dict                               map[string]interface{}
-	quit_all_threads_now                            bool = false
 
 	// Default Settings
 	silent_mode                         bool     = false
@@ -37,7 +36,7 @@ var (
 	smtp_password                       string   = "password"
 	smtp_server_name                    string   = "smtp.company.com"
 	smtp_server_port                    int      = 25
-	message_recipients                  []string = []string{"recipient1@company.com", "recipient2@company.com"}
+	list_of_email_recipients            []string = []string{}
 	message_title                       string   = "LoudnessCorrection Error Message"
 	message_attachment_path             string   = ""
 
@@ -56,7 +55,7 @@ func parse_time_to_string(time_string string) string {
 
 	var time_int int64
 
-	time_int, _ = strconv.ParseInt(time_string, 10, 64) 
+	time_int, _ = strconv.ParseInt(time_string, 10, 64)  // Base = 10, Bits = 64
 	time_object := time.Unix(time_int, 0)
 
 	// Format: YYYY.MM.DD at HH:MM:SS
@@ -68,13 +67,13 @@ func send_error_email(recipients []string, title string, body_text string, attac
 	program_info := fmt.Sprintf(
 		"\nFreeLCS version: %s\n\n\n" +
 		"LoudnessCorrection info:\n" +
-		"--------------------------------------\n"+
+		"--------------------------------------\n" +
 		"Commandline: %s\n" +
 		"IP-Addresses: %s\n" +
 		"PID: %s\n" +
-		"LoudnessCorrection version: %s\n\n"+
+		"LoudnessCorrection version: %s\n\n" +
 		"HeartBeat Checker info:\n" +
-		"--------------------------------------\n"+
+		"--------------------------------------\n" +
 		"Commandline: %s\n" +
 		"PID: %d\n" +
 		"HeartBeat Checker version: %s\n\n",
@@ -106,24 +105,24 @@ func send_error_email(recipients []string, title string, body_text string, attac
 		fmt.Println()
 	}
 
-	message := mail.NewMsg()
+	message_instance := mail.NewMsg()
 
-	if err := message.From(smtp_username); err != nil {
+	if err := message_instance.From(smtp_username); err != nil {
 		log.Printf("Error setting sender: %v", err)
 		return
 	}
 
-	if err := message.To(recipients...); err != nil {
+	if err := message_instance.To(recipients...); err != nil {
 		log.Printf("Error setting recipients: %v", err)
 		return
 	}
 
 
-	message.Subject(title)
-	message.SetBodyString(mail.TypeTextPlain, body_text + program_info)
+	message_instance.Subject(title)
+	message_instance.SetBodyString(mail.TypeTextPlain, body_text + program_info)
 
 	if attachment_path != "" {
-		message.AttachFile(attachment_path)
+		message_instance.AttachFile(attachment_path)
 	}
 
 	// Configure client
@@ -147,9 +146,12 @@ func send_error_email(recipients []string, title string, body_text string, attac
 		return
 	}
 
-	if err := mail_client.DialAndSend(message); err != nil {
+	if err := mail_client.DialAndSend(message_instance); err != nil {
+
 		log.Printf("Failed to send email: %v", err)
+
 	} else if silent_mode == false {
+
 		log.Printf("Sent email to: %v", recipients)
 	}
 }
@@ -166,11 +168,11 @@ func limit_request_body_size(max_bytes int64) gin.HandlerFunc {
 
 // --- Route Handlers ---
 
-func handle_receive_heartbeat(context *gin.Context) {
+func receive_json_data(context *gin.Context) {
 
-	var incoming_payload map[string]interface{}
+	var incoming_data map[string]interface{}
 
-	if err := context.ShouldBindJSON(&incoming_payload); err != nil {
+	if err := context.ShouldBindJSON(&incoming_data); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON payload"})
 		return
 	}
@@ -178,11 +180,11 @@ func handle_receive_heartbeat(context *gin.Context) {
 	if debug == true {
 
 		fmt.Println()
-		fmt.Println("incoming_payload:", incoming_payload)
+		fmt.Println("incoming_data:", incoming_data)
 	}
 
 	// Security: Constant-time comparison to prevent timing attacks
-	incoming_auth, _ := incoming_payload["authorization"].(string)
+	incoming_auth, _ := incoming_data["authorization"].(string)
 	expected_auth, _ := all_settings_dict["authorization"].(string)
 
 	if subtle.ConstantTimeCompare([]byte(incoming_auth), []byte(expected_auth)) != 1 {
@@ -190,13 +192,13 @@ func handle_receive_heartbeat(context *gin.Context) {
 		return
 	}
 
-	sanitized_payload := make(map[string]interface{})
+	sanitized_data := make(map[string]interface{})
 
-	for key, value := range incoming_payload {
+	for key, value := range incoming_data {
 		// Basic length check for values to avoid large string attacks
 		if len(fmt.Sprintf("%v", value)) < 1024 {
 
-			sanitized_payload[key] = value
+			sanitized_data[key] = value
 
 			if debug == true {
 				fmt.Println("value:", value)
@@ -208,13 +210,13 @@ func handle_receive_heartbeat(context *gin.Context) {
 		fmt.Println()
 		fmt.Println("incoming_auth:", incoming_auth)
 		fmt.Println("expected_auth:", expected_auth)
-		fmt.Println("sanitized_payload:")
-		fmt.Println(sanitized_payload)
+		fmt.Println("sanitized_data:")
+		fmt.Println(sanitized_data)
 		fmt.Println()
 	}
 
 	report_lock.Lock()
-	loudness_correction_program_info_and_timestamps = sanitized_payload
+	loudness_correction_program_info_and_timestamps = sanitized_data
 	report_lock.Unlock()
 
 	
@@ -243,17 +245,13 @@ func check_timestamps_loop() {
 	previous_progress_report_thread_timestamp := "0"
 
 	for {
-		if quit_all_threads_now == true {
-			return
-		}
-
 		// Sleep between checking heartbeat timestamps
 		time.Sleep(time.Duration(heartbeat_check_interval) * time.Second)
 
 		// Get information we will send as the body of the error email
 		report_lock.RLock()
 
-			current_time_string := parse_time_to_string(strconv.FormatInt(time.Now().Unix(), 10))
+			current_time_string := parse_time_to_string(strconv.FormatInt(time.Now().Unix(), 10)) // Base = 10
 
 			if debug == true {
 				fmt.Println("current_time_string:", current_time_string)
@@ -290,7 +288,7 @@ func check_timestamps_loop() {
 			if startup_message_has_been_sent == false {
 				startup_message_has_been_sent = true
 				message := "HeartBeat_Checker started: " + current_time_string + "\n\n"
-				send_error_email(message_recipients, "HeartBeat_Checker has started.", message, message_attachment_path)
+				send_error_email(list_of_email_recipients, "HeartBeat_Checker has started.", message, message_attachment_path)
 			}
 
 			// Check if main_thread or write_html_progress_report - thread timestamps have stopped updating
@@ -328,7 +326,6 @@ func check_timestamps_loop() {
 
 			}
 
-
 			if debug == true {
 				fmt.Println()
 				fmt.Println("previous_main_thread_timestamp:", previous_main_thread_timestamp, parse_time_to_string(previous_main_thread_timestamp))
@@ -338,7 +335,7 @@ func check_timestamps_loop() {
 				fmt.Println()
 			}
 
-			if  main_thread_heartbeat_enabled == true &&  previous_main_thread_timestamp == main_thread_timestamp {
+			if  main_thread_heartbeat_enabled == true && previous_main_thread_timestamp == main_thread_timestamp {
 
 				stopped_threads_counter = stopped_threads_counter + 1
 
@@ -361,7 +358,7 @@ func check_timestamps_loop() {
 					error_messages = append(error_messages, message)
 				} else {
 					time_string := parse_time_to_string(progress_report_thread_timestamp)
-					message := fmt.Sprintf("LoudnessCorrection has stopped updating progress_report timestamps. Last update: %s\n", time_string)
+					message := fmt.Sprintf("LoudnessCorrection has stopped updating progress_report timestamps. The thread has probably crashed and a restart of the script is needed. Last update happened at: %s\n", time_string)
 					error_messages = append(error_messages, message)
 				}
 			}
@@ -378,15 +375,15 @@ func check_timestamps_loop() {
 					}
 
 					body := strings.Join(error_messages, "\n")
-					send_error_email(message_recipients, message_title, body, message_attachment_path)
+					send_error_email(list_of_email_recipients, message_title, body, message_attachment_path)
 					alert_email_sent = true
 				}
 
 			} else if alert_email_sent == true {
-				// Reset if threads resumed
+				// Reset if threads resumed updating timestamps.
 				alert_email_sent = false
 				message := "All Heartbeat timestamps started updating again at: " + current_time_string + "\n"
-				send_error_email(message_recipients, message_title, message, message_attachment_path)
+				send_error_email(list_of_email_recipients, message_title, message, message_attachment_path)
 			}
 
 			previous_timestamps = loudness_correction_program_info_and_timestamps
@@ -430,12 +427,12 @@ func main() {
 	}
 
 	// Load settings from config
-	if val, ok := all_settings_dict["silent"].(bool); ok {
-		silent_mode = val
+	if value, ok := all_settings_dict["silent"].(bool); ok {
+		silent_mode = value
 	}
 
-	if val, ok := all_settings_dict["heartbeat_write_interval"].(int); ok {
-		heartbeat_check_interval = int(val) * 4
+	if value, ok := all_settings_dict["heartbeat_write_interval"].(int); ok {
+		heartbeat_check_interval = int(value) * 4
 	}
 
 	if email_details, ok := all_settings_dict["email_sending_details"].(map[string]interface{}); ok {
@@ -445,18 +442,16 @@ func main() {
 		smtp_password, _ = email_details["smtp_password"].(string)
 		smtp_server_name, _ = email_details["smtp_server_name"].(string)
 
-		// if smtp_port, ok := email_details["smtp_server_port"].(string); ok {
-		// 	smtp_server_port = strconv.Atoi(smtp_port)
-		// }
-
 		if smtp_port, err := strconv.Atoi(email_details["smtp_server_port"].(string)); err == nil {
 			smtp_server_port = smtp_port
 		}
 
-		if recs, ok := email_details["message_recipients"].([]interface{}); ok {
-			message_recipients = nil
-			for _, r := range recs {
-				message_recipients = append(message_recipients, fmt.Sprint(r))
+		if incoming_list_of_email_recipients, ok := email_details["list_of_email_recipients"].([]interface{}); ok {
+
+			list_of_email_recipients = nil
+
+			for _, email_recipient := range incoming_list_of_email_recipients {
+				list_of_email_recipients = append(list_of_email_recipients, fmt.Sprint(email_recipient))
 			}
 		}
 
@@ -485,21 +480,19 @@ func main() {
 	gin_instance.Use(gin.Recovery(), limit_request_body_size(1024 * 100))
 
 	// Add path to listen to
-	gin_instance.POST("/heartbeat", handle_receive_heartbeat)
+	gin_instance.POST("/heartbeat", receive_json_data)
 
 	port := "9002"
 
-	if p, ok := all_settings_dict["heartbeat_service_port"].(string); ok {
-		port = p
+	if incoming_port, ok := all_settings_dict["heartbeat_service_port"].(string); ok {
+		port = incoming_port
 	}
 
 	fmt.Printf("Starting HeartBeat Checker on port %s...\n", port)
 
 	if err := gin_instance.Run(":" + port); err != nil {
-		log.Fatalf("Server failed: %v", err)
+		log.Fatalf("Server failed to start: %v", err)
 	}
-
-	quit_all_threads_now = true
 }
 
 
