@@ -332,7 +332,7 @@ func main() {
 		server_incoming_port = ":" + default_settings["progress_service_port"].(string)
 	}
 
-	log.Println("Server running on", server_incoming_port)
+	log.Println("Starting ProgressReport on port ", server_incoming_port)
 	gin_instance.Run(server_incoming_port)
 }
 

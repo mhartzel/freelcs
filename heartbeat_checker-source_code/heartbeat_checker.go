@@ -49,9 +49,9 @@ var (
 	loudnesscorrection_version      string = "Not known yet"
 )
 
-// --- Helper Functions ---
-
 func parse_time_to_string(time_string string) string {
+
+	// Convert Linux time string like: 1778403692 to a human readable date and time
 
 	var time_int int64
 
@@ -64,6 +64,7 @@ func parse_time_to_string(time_string string) string {
 
 func send_error_email(recipients []string, title string, body_text string, attachment_path string) {
 
+	// Create the startup message into a string
 	program_info := fmt.Sprintf(
 		"\nFreeLCS version: %s\n\n\n" +
 		"LoudnessCorrection info:\n" +
@@ -105,6 +106,7 @@ func send_error_email(recipients []string, title string, body_text string, attac
 		fmt.Println()
 	}
 
+	// Create a email - instance
 	message_instance := mail.NewMsg()
 
 	if err := message_instance.From(smtp_username); err != nil {
@@ -146,6 +148,7 @@ func send_error_email(recipients []string, title string, body_text string, attac
 		return
 	}
 
+	// Send email
 	if err := mail_client.DialAndSend(message_instance); err != nil {
 
 		log.Printf("Failed to send email: %v", err)
@@ -156,19 +159,13 @@ func send_error_email(recipients []string, title string, body_text string, attac
 	}
 }
 
-// --- Middleware ---
-
-func limit_request_body_size(max_bytes int64) gin.HandlerFunc {
-
-	return func(context *gin.Context) {
-		context.Request.Body = http.MaxBytesReader(context.Writer, context.Request.Body, max_bytes)
-		context.Next()
-	}
-}
-
-// --- Route Handlers ---
-
 func receive_json_data(context *gin.Context) {
+
+	// Receive a json and get the values from it to a map
+
+	// Limit request body to 100 KB to prevent Memory Exhaustion
+	context.Request.Body = http.MaxBytesReader(context.Writer, context.Request.Body, 100 * 1024)
+	context.Next()
 
 	var incoming_data map[string]interface{}
 
@@ -183,7 +180,8 @@ func receive_json_data(context *gin.Context) {
 		fmt.Println("incoming_data:", incoming_data)
 	}
 
-	// Security: Constant-time comparison to prevent timing attacks
+	// Verify that the json - sender knows the secret key
+	// Constant-time comparison to prevent timing attacks
 	incoming_auth, _ := incoming_data["authorization"].(string)
 	expected_auth, _ := all_settings_dict["authorization"].(string)
 
@@ -192,6 +190,7 @@ func receive_json_data(context *gin.Context) {
 		return
 	}
 
+	// Check that json values have a sane size
 	sanitized_data := make(map[string]interface{})
 
 	for key, value := range incoming_data {
@@ -215,6 +214,7 @@ func receive_json_data(context *gin.Context) {
 		fmt.Println()
 	}
 
+	// Write accepted data from json to a map
 	report_lock.Lock()
 	loudness_correction_program_info_and_timestamps = sanitized_data
 	report_lock.Unlock()
@@ -227,12 +227,13 @@ func receive_json_data(context *gin.Context) {
 	}
 
 
+	// Return status = success to the json - sender
 	context.JSON(http.StatusOK, gin.H{"status": "success"})
 }
 
-// --- Background Worker ---
-
 func check_timestamps_loop() {
+
+	// Check LoudnessCorrection sent timestamps in a loop sleepin between checks
 
 	previous_timestamps := make(map[string]interface{})
 	startup_message_has_been_sent := false
@@ -258,6 +259,7 @@ func check_timestamps_loop() {
 				fmt.Println()
 			}
 
+			// Get values send by LoudnessCorrection to variables
 			if incoming_value, ok := loudness_correction_program_info_and_timestamps["commandline"].(string); ok == true {
 				loudness_correction_commandline = incoming_value
 
@@ -287,11 +289,10 @@ func check_timestamps_loop() {
 			// On first run send a message that the Heartbeat_Checker is running now
 			if startup_message_has_been_sent == false {
 				startup_message_has_been_sent = true
-				message := "HeartBeat_Checker started: " + current_time_string + "\n\n"
+				message := "HeartBeat_Checker started: " + current_time_string + "\n"
 				send_error_email(list_of_email_recipients, "HeartBeat_Checker has started.", message, message_attachment_path)
 			}
 
-			// Check if main_thread or write_html_progress_report - thread timestamps have stopped updating
 			stopped_threads_counter := 0
 			var error_messages []string
 
@@ -335,16 +336,18 @@ func check_timestamps_loop() {
 				fmt.Println()
 			}
 
+			// Check if main_thread or write_html_progress_report - thread timestamps have stopped updating
+			// Create a message to send to the user
 			if  main_thread_heartbeat_enabled == true && previous_main_thread_timestamp == main_thread_timestamp {
 
 				stopped_threads_counter = stopped_threads_counter + 1
 
 				if main_thread_timestamp == "0" {
-					message := "LoudnessCorrection has not started updating main_thread timestamp, the thread has probably crashed and a restart of the script is needed\n"
+					message := "LoudnessCorrection has not started updating main_thread timestamp\n"
 					error_messages = append(error_messages, message)
 				} else {
 					time_string := parse_time_to_string(main_thread_timestamp)
-					message := fmt.Sprintf("LoudnessCorrection has stopped updating main_thread timestamps. Last update: %s\n", time_string)
+					message := fmt.Sprintf("LoudnessCorrection has stopped updating main_thread timestamps.\nThe thread has probably crashed and a restart of the script is needed.\nLast update happaned at: %s\n", time_string)
 					error_messages = append(error_messages, message)
 				}
 			}
@@ -354,15 +357,16 @@ func check_timestamps_loop() {
 				stopped_threads_counter = stopped_threads_counter + 1
 
 				if progress_report_thread_timestamp == "0" {
-					message := "LoudnessCorrection has not started updating progress_report timestamp, the thread has probably crashed and a restart of the script is needed\n"
+					message := "LoudnessCorrection has not started updating progress_report timestamp.\n"
 					error_messages = append(error_messages, message)
 				} else {
 					time_string := parse_time_to_string(progress_report_thread_timestamp)
-					message := fmt.Sprintf("LoudnessCorrection has stopped updating progress_report timestamps. The thread has probably crashed and a restart of the script is needed. Last update happened at: %s\n", time_string)
+					message := fmt.Sprintf("LoudnessCorrection has stopped updating progress_report timestamps.\nThe thread has probably crashed and a restart of the script is needed.\nLast update happened at: %s\n", time_string)
 					error_messages = append(error_messages, message)
 				}
 			}
 
+			// Send email to the user
 			if stopped_threads_counter > 0 {
 
 				if alert_email_sent == false {
@@ -380,7 +384,7 @@ func check_timestamps_loop() {
 				}
 
 			} else if alert_email_sent == true {
-				// Reset if threads resumed updating timestamps.
+				// Reset if threads resumed updating timestamps and send message.
 				alert_email_sent = false
 				message := "All Heartbeat timestamps started updating again at: " + current_time_string + "\n"
 				send_error_email(list_of_email_recipients, message_title, message, message_attachment_path)
@@ -396,6 +400,7 @@ func check_timestamps_loop() {
 
 func main() {
 
+	// Handle commandline options
 	heartbeat_checker_pid = os.Getpid()
 	heartbeat_checker_commandline = strings.Join(os.Args, " ")
 
@@ -416,17 +421,19 @@ func main() {
 		fmt.Println("")
 	}
 
+	// Read configuration from common config - file
 	file_bytes, err := os.ReadFile(json_path)
 
 	if err != nil {
 		log.Fatalf("Error reading configfile: %v", err)
 	}
 
+	// Convert config - file json to a map
 	if err := json.Unmarshal(file_bytes, &all_settings_dict); err != nil {
 		log.Fatalf("Error parsing JSON config: %v", err)
 	}
 
-	// Load settings from config
+	// Get some settings from config - file
 	if value, ok := all_settings_dict["silent"].(bool); ok {
 		silent_mode = value
 	}
@@ -446,7 +453,7 @@ func main() {
 			smtp_server_port = smtp_port
 		}
 
-		if incoming_list_of_email_recipients, ok := email_details["list_of_email_recipients"].([]interface{}); ok {
+		if incoming_list_of_email_recipients, ok := email_details["message_recipients"].([]interface{}); ok {
 
 			list_of_email_recipients = nil
 
@@ -477,7 +484,7 @@ func main() {
 	gin_instance := gin.New()
 
 	// Add Security Middleware: Max Content Length 100KB
-	gin_instance.Use(gin.Recovery(), limit_request_body_size(1024 * 100))
+	gin_instance.Use(gin.Recovery())
 
 	// Add path to listen to
 	gin_instance.POST("/heartbeat", receive_json_data)
@@ -488,7 +495,7 @@ func main() {
 		port = incoming_port
 	}
 
-	fmt.Printf("Starting HeartBeat Checker on port %s...\n", port)
+	fmt.Printf("Starting HeartBeat Checker on port :%s\n", port)
 
 	if err := gin_instance.Run(":" + port); err != nil {
 		log.Fatalf("Server failed to start: %v", err)
