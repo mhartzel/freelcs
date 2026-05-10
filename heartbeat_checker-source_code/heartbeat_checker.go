@@ -14,8 +14,11 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	"github.com/wneessen/go-mail"
 )
+
+// github.com/wneessen/go-mail Documentation: https://pkg.go.dev/github.com/wneessen/go-mail#section-documentation
 
 // Global constants and state
 const heartbeat_checker_version = "400"
@@ -128,11 +131,24 @@ func send_error_email(recipients []string, title string, body_text string, attac
 	}
 
 	// Configure client
-	client_options := []mail.Option{
-		mail.WithPort(smtp_server_port),
-		mail.WithSMTPAuth(mail.SMTPAuthAutoDiscover),
-		mail.WithUsername(smtp_username),
-		mail.WithPassword(smtp_password),
+	// Email frameworks authentication options are documented here: https://pkg.go.dev/github.com/wneessen/go-mail#SMTPAuthType
+	client_options := []mail.Option{}
+
+	if smtp_server_requires_authentication == true {
+
+		client_options = []mail.Option{
+			mail.WithPort(smtp_server_port),
+			mail.WithSMTPAuth(mail.SMTPAuthAutoDiscover),
+			mail.WithUsername(smtp_username),
+			mail.WithPassword(smtp_password),
+		}
+	} else {
+		// When server does not require authentication the email framework recommends not using WithSMTPAuth at all.
+		client_options = []mail.Option{
+			mail.WithPort(smtp_server_port),
+			mail.WithUsername(smtp_username),
+			mail.WithPassword(smtp_password),
+		}
 	}
 
 	if use_tls {
@@ -159,18 +175,52 @@ func send_error_email(recipients []string, title string, body_text string, attac
 	}
 }
 
-func receive_json_data(context *gin.Context) {
+func authorize_and_sanitize_input_data(context *gin.Context) {
 
-	// Receive a json and get the values from it to a map
+	// Get autorization key from incoming data and if it is accepted accept other data in the incoming message
 
 	// Limit request body to 100 KB to prevent Memory Exhaustion
 	context.Request.Body = http.MaxBytesReader(context.Writer, context.Request.Body, 100 * 1024)
 	context.Next()
 
+	// AuthorizationData defines exactly what we accept.
+	// Any extra keys sent by an attacker are automatically discarded.
+	// This datatype is only used for filtering the authorization key from the incoming data.
+	type AuthorizationData struct {
+		Authorization string            `json:"authorization"`
+		Data          map[string]string `json:"-"` // We won't map everything to a flat structure
+	}
+
+	// Get only the authorization code from the incoming json. The AuthorizationData struct does the filtering.
+	// This way we won't read in other json data if authorization fails.
+	incoming_authorization_data := AuthorizationData{}
+
+	if err := context.ShouldBindBodyWith(&incoming_authorization_data, binding.JSON); err != nil {
+		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Verify that the json - sender knows the secret key
+	// Constant-time comparison to prevent timing attacks
+	incoming_auth := incoming_authorization_data.Authorization
+	expected_auth, _ := all_settings_dict["authorization"].(string)
+
+	if subtle.ConstantTimeCompare([]byte(incoming_auth), []byte(expected_auth)) != 1 {
+		context.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized access"})
+		return
+	}
+
+	if debug == true {
+		fmt.Println("")
+		fmt.Println("incomingAuth:", incoming_auth)
+		fmt.Println("expectedAuth:", expected_auth)
+		fmt.Println("")
+	}
+
 	var incoming_data map[string]interface{}
 
-	if err := context.ShouldBindJSON(&incoming_data); err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON payload"})
+	if err := context.ShouldBindBodyWith(&incoming_data, binding.JSON); err != nil {
+		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -178,16 +228,6 @@ func receive_json_data(context *gin.Context) {
 
 		fmt.Println()
 		fmt.Println("incoming_data:", incoming_data)
-	}
-
-	// Verify that the json - sender knows the secret key
-	// Constant-time comparison to prevent timing attacks
-	incoming_auth, _ := incoming_data["authorization"].(string)
-	expected_auth, _ := all_settings_dict["authorization"].(string)
-
-	if subtle.ConstantTimeCompare([]byte(incoming_auth), []byte(expected_auth)) != 1 {
-		context.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized access"})
-		return
 	}
 
 	// Check that json values have a sane size
@@ -487,17 +527,17 @@ func main() {
 	gin_instance.Use(gin.Recovery())
 
 	// Add path to listen to
-	gin_instance.POST("/heartbeat", receive_json_data)
+	gin_instance.POST("/heartbeat", authorize_and_sanitize_input_data)
 
-	port := "9002"
+	server_incoming_port := "9002"
 
 	if incoming_port, ok := all_settings_dict["heartbeat_service_port"].(string); ok {
-		port = incoming_port
+		server_incoming_port = incoming_port
 	}
 
-	fmt.Printf("Starting HeartBeat Checker on port :%s\n", port)
+	log.Println("Starting HeartBeat Checker on port ", server_incoming_port)
 
-	if err := gin_instance.Run(":" + port); err != nil {
+	if err := gin_instance.Run(":" + server_incoming_port); err != nil {
 		log.Fatalf("Server failed to start: %v", err)
 	}
 }

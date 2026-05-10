@@ -11,13 +11,14 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"fmt"
+	"strings"
+	"path/filepath"
 )
 
 // Global variable definitions
 var default_settings map[string]interface{} // Key = string and value needs to be interface since values can be int or string.
 var progress_report_data  = make(map[string][]string)
 var progress_report_mutex     sync.RWMutex
-var path_to_loudness_correction_settings_json = "/etc/Loudness_Correction_Settings.json"
 var version = "400"
 var debug = false
 
@@ -50,26 +51,13 @@ const html_template = `
 </body>
 </html>
 `
-func read_loudness_correction_settings_json(path string) {
-
-	// Read common settings for all HeartBeat_Checker, LoudnesCorrection and Progress_Report from a json from disk,
-
-	file, err := os.ReadFile(path)
-
-	if err != nil {
-		log.Fatalf("Cannot load settings: %v", err)
-	}
-	if err := json.Unmarshal(file, &default_settings); err != nil {
-		log.Fatalf("JSON Error: %v", err)
-	}
-}
 
 func authorize_and_sanitize_input_data(context *gin.Context) {
 
 	// Get autorization key from incoming data and if it is accepted accept other data in the incoming message
 
-	// Limit request body to 100 KB to prevent Memory Exhaustion
-	context.Request.Body = http.MaxBytesReader(context.Writer, context.Request.Body, 100 * 1024)
+	// Limit request body to 500 KB to prevent Memory Exhaustion
+	context.Request.Body = http.MaxBytesReader(context.Writer, context.Request.Body, 500 * 1024)
 
 	// AuthorizationData defines exactly what we accept.
 	// Any extra keys sent by an attacker are automatically discarded.
@@ -119,6 +107,7 @@ func authorize_and_sanitize_input_data(context *gin.Context) {
 
 	// Read incoming data again and insert into incoming_json_as_map
 	incoming_json_as_map := ReportData{}
+
 	if err := context.ShouldBindBodyWith(&incoming_json_as_map, binding.JSON); err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -237,9 +226,42 @@ func render_progress_report(context *gin.Context) {
 
 func main() {
 
+	// Handle commandline options
+	if len(os.Args) != 3 || strings.ToLower(os.Args[1]) != "-configfile" {
+		fmt.Println("\nUSAGE: Give the option: -configfile followed by full path to the config file.")
+		os.Exit(1)
+	}
+
+	config_path := os.Args[2]
+	json_path := strings.TrimSuffix(config_path, filepath.Ext(config_path)) + ".json"
+
+	if debug == true {
+		fmt.Println("")
+		fmt.Println("os.Args[0]:", os.Args[0])
+		fmt.Println("os.Args[1]:", os.Args[1])
+		fmt.Println("os.Args[2]:", os.Args[2])
+		fmt.Println("json_path:", json_path)
+		fmt.Println("")
+	}
+
+	// Read configuration from common config - file
+	file_bytes, err := os.ReadFile(json_path)
+
+	if err != nil {
+		log.Fatalf("Error reading configfile: %v", err)
+	}
+
+	// Convert config - file json to a map
+	if err := json.Unmarshal(file_bytes, &default_settings); err != nil {
+		log.Fatalf("Error parsing JSON config: %v", err)
+	}
+
+	if err != nil {
+		log.Fatalf("Cannot load settings: %v", err)
+	}
+
 	var server_incoming_port = "9000"
 	var server_incoming_path = "/progress_report"
-	read_loudness_correction_settings_json(path_to_loudness_correction_settings_json)
 
 	gin.SetMode(gin.ReleaseMode) // Set Gin to production / release mode as opposed to rehearse
 	gin_instance := gin.New() // gin.New() is cleaner than Default() for secure apps
@@ -329,11 +351,14 @@ func main() {
 	})
 
 	if _, ok := default_settings["progress_service_port"]; ok {
-		server_incoming_port = ":" + default_settings["progress_service_port"].(string)
+		server_incoming_port = default_settings["progress_service_port"].(string)
 	}
 
 	log.Println("Starting ProgressReport on port ", server_incoming_port)
-	gin_instance.Run(server_incoming_port)
+
+	if err := gin_instance.Run(":" + server_incoming_port) ; err != nil {
+		log.Fatalf("Server failed to start: %v", err)
+	}
 }
 
 
