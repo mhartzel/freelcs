@@ -3,11 +3,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.loudness_correction
-    depends_on:
-      heartbeat_checker: 
-        condition: service_started
-      progress_report:
-        condition: service_healthy
     networks:
       - local_network
     volumes:
@@ -20,12 +15,6 @@ services:
       - local_network
     ports:
       - 9000:9000
-    healthcheck:
-      test: ["CMD", "curl", "-f", "-X", "GET", "http://progress_report:9000"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-      start_period: 10s
   heartbeat_checker: 
     build:
       context: .

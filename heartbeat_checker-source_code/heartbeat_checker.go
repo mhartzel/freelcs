@@ -473,6 +473,13 @@ func main() {
 		log.Fatalf("Error parsing JSON config: %v", err)
 	}
 
+	if heartbeat_checker_enabled, ok := all_settings_dict["heartbeat"]; ok {
+
+		if heartbeat_checker_enabled == false {
+			log.Fatal("Heartbeat_checker is disabled in Loudness_Correction_Settings.json, exiting now")
+		}
+	}
+
 	// Get some settings from config - file
 	if value, ok := all_settings_dict["silent"].(bool); ok {
 		silent_mode = value

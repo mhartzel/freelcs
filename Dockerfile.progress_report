@@ -2,7 +2,6 @@ FROM ubuntu:26.04
 USER root:root
 RUN apt-get -y update
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y upgrade
-RUN apt-get -y install curl
 COPY ./progress_report /usr/bin/
 COPY ./Loudness_Correction_Settings.json /etc/
 RUN chmod 755 /usr/bin/progress_report ; chmod 644 /etc/Loudness_Correction_Settings.json

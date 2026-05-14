@@ -258,6 +258,13 @@ func main() {
 		log.Fatalf("Cannot load settings: %v", err)
 	}
 
+	if progress_report_enabled, ok := default_settings["write_html_progress_report"]; ok {
+
+		if progress_report_enabled == false {
+			log.Fatal("Progress_report is disabled in Loudness_Correction_Settings.json, exiting now")
+		}
+	}
+
 	var server_incoming_port = "9000"
 	var server_incoming_path = "/progress_report"
 
