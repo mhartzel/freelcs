@@ -647,7 +647,8 @@
 
 	<script>
 
-	var debug = false;
+	// var debug = false;
+	var debug = true;
 
 	////////////////////////////////////////////
 	// Define initial values for the settings //
@@ -716,7 +717,12 @@
 	  "os_version": "26.04",\
 	  "os_init_system_name": "systemd",\
 	  "target_loudness": "-23",\
-	  "number_of_all_items_in_dictionary": 55\
+	  "authorization_code": "0E00D6E0C01B25D3DF9A49CBC7C79F720C8A9077B6E77A7E86ADD68DE5516D26",\
+	  "progress_network_name": "progress_report",\
+	  "progress_service_port": "9000",\
+	  "heartbeat_network_name": "heartbeat_checker",\
+	  "heartbeat_service_port": "9002",\
+	  "number_of_all_items_in_dictionary": 0\
 }';
 
 const samba_config_json = '[ "# Samba Configuration File\\n",\
@@ -1710,6 +1716,24 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 		icons[i].addEventListener("mouseout", hideTooltip);
 	}
 
+	function generate_authorization_code() {
+		const min = Math.ceil(0);
+		const max = Math.floor(16);
+		var random_number = 0;
+		let authorization_code = "";
+
+		for(let i = 0; i < 64; i++) {
+			random_number = Math.floor(Math.random() * (max - min) + min);
+		    	authorization_code = authorization_code + random_number.toString(16).toUpperCase();
+		}
+
+		default_settings.authorization = authorization_code
+
+		if (debug == true) {
+			console.log("default_settings.authorization:", default_settings.authorization);
+		}
+	}
+
 	function startup_initialization() {
 		populateProcessors();
 		populateFileExpiryTime();
@@ -1717,6 +1741,7 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 		populateEmailSending_interval();
 		populateUnitSeparators();
 		populateMXFremix();
+		generate_authorization_code();
 
 		////////////////////////////////////////////////////////////////////////////////
 		// Get default values for dropbown menus from the default_settings - variable //
@@ -1840,8 +1865,10 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 		////////////////////////////////////////////////////////////////
 		// Print the number of options in default_settings - variable //
 		////////////////////////////////////////////////////////////////
+		default_settings.number_of_all_items_in_dictionary = Object.keys(default_settings).length;
+
 		if (debug == true) {
-			console.log("default_settings.length", Object.keys(default_settings).length);
+			console.log("default_settings.length", default_settings.number_of_all_items_in_dictionary);
 		}
 	}
 

@@ -526,10 +526,17 @@ func main() {
 	// Add Security Middleware: Max Content Length 100KB
 	gin_instance.Use(gin.Recovery())
 
-	// Add path to listen to
-	gin_instance.POST("/heartbeat", authorize_and_sanitize_input_data)
-
 	server_incoming_port := "9002"
+	server_incoming_path := "/heartbeat"
+
+	// Create a path for receiving progress report data through REST - api
+	// Register path /progress_report for the POST - method
+	if _, ok := all_settings_dict["heartbeat_service_path"]; ok {
+		server_incoming_path = all_settings_dict["heartbeat_service_path"].(string)
+	}
+
+	// Add path to listen to
+	gin_instance.POST(server_incoming_path, authorize_and_sanitize_input_data)
 
 	if incoming_port, ok := all_settings_dict["heartbeat_service_port"].(string); ok {
 		server_incoming_port = incoming_port

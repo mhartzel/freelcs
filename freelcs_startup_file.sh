@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Start HeartbeatChecker as user freelcs
-runuser --user=freelcs -- /usr/bin/python3 /usr/bin/HeartBeat_Checker.py -configfile /etc/Loudness_Correction_Settings.json &
-
 # Start LoudnessCorrection as user freelcs
 runuser --user=freelcs -- /usr/bin/python3 /usr/bin/LoudnessCorrection.py -configfile /etc/Loudness_Correction_Settings.json &
 

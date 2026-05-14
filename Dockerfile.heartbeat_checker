@@ -1,0 +1,8 @@
+FROM ubuntu:26.04
+USER root:root
+RUN apt-get -y update
+RUN DEBIAN_FRONTEND=noninteractive apt-get -y upgrade
+COPY ./heartbeat_checker /usr/bin/
+COPY ./Loudness_Correction_Settings.json /etc/
+RUN chmod 755 /usr/bin/heartbeat_checker ; chmod 644 /etc/Loudness_Correction_Settings.json
+CMD ["/usr/bin/heartbeat_checker", "-configfile", "/etc/Loudness_Correction_Settings.json"]

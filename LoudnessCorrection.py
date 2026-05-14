@@ -393,10 +393,10 @@ target_loudness = '-23'
 # Heartbeat_Checker and web service IP - addresses #
 ####################################################
 authorization = ""
-progress_service_ip = ""
+progress_network_name = ""
 progress_service_port = ""
 progress_service_path = "/progress_report"
-heartbeat_service_ip = ""
+heartbeat_network_name = ""
 heartbeat_service_port = ""
 heartbeat_service_path = "/heartbeat"
 
@@ -2999,7 +2999,7 @@ def send_to_progress_report(english, finnish):
 				return()
 
 			# Exit if Progress_Report IP or port is not known
-			if (progress_service_ip == "") or (progress_service_port == ""):
+			if (progress_network_name == "") or (progress_service_port == ""):
 				return()
 
 			loudness_correction_program_info_and_timestamps['write_html_progress_report'] = [write_html_progress_report, str(int(time.time()))] # Update the heartbeat timestamp for the html writing thread. This is used to keep track if the thread has crashed.
@@ -3058,7 +3058,7 @@ def send_to_progress_report(english, finnish):
 				headers = { 'Content-Type' : 'application/json' }
 				data_to_send["authorization"] = authorization
 
-				target_address = "http://" + str(progress_service_ip) + ":" + str(progress_service_port) + str(progress_service_path)
+				target_address = "http://" + str(progress_network_name) + ":" + str(progress_service_port) + str(progress_service_path)
 
 				# Send data and get reply
 				return_message = requests.post(target_address, data=json.dumps(data_to_send), headers=headers)
@@ -3108,7 +3108,7 @@ def send_to_heartbeat_checker():
 				return()
 
 			# Exit if Hearbeat_Checker IP or port is not known
-			if (heartbeat_service_ip == "") or (heartbeat_service_port == ""):
+			if (heartbeat_network_name == "") or (heartbeat_service_port == ""):
 				return()
 
 			# Wait user defined number of seconds between writing to the heartbeat file.
@@ -3121,7 +3121,7 @@ def send_to_heartbeat_checker():
 				headers = { 'Content-Type' : 'application/json' }
 				data_to_send["authorization"] = authorization
 				data_to_send.update(loudness_correction_program_info_and_timestamps)
-				target_address = "http://" + str(heartbeat_service_ip) + ":" + str(heartbeat_service_port) + str(heartbeat_service_path)
+				target_address = "http://" + str(heartbeat_network_name) + ":" + str(heartbeat_service_port) + str(heartbeat_service_path)
 
 				# Send data and get reply
 				return_message = requests.post(target_address, data=json.dumps(data_to_send), headers=headers)
@@ -5947,12 +5947,12 @@ try:
 
 		if 'authorization' in all_settings_dict:
 			authorization = all_settings_dict['authorization']
-		if 'progress_service_ip' in all_settings_dict:
-			progress_service_ip = all_settings_dict['progress_service_ip']
+		if 'progress_network_name' in all_settings_dict:
+			progress_network_name = all_settings_dict['progress_network_name']
 		if 'progress_service_port' in all_settings_dict:
 			progress_service_port = all_settings_dict['progress_service_port']
-		if 'heartbeat_service_ip' in all_settings_dict:
-			heartbeat_service_ip = all_settings_dict['heartbeat_service_ip']
+		if 'heartbeat_network_name' in all_settings_dict:
+			heartbeat_network_name = all_settings_dict['heartbeat_network_name']
 		if 'heartbeat_service_port' in all_settings_dict:
 			heartbeat_service_port = all_settings_dict['heartbeat_service_port']
 

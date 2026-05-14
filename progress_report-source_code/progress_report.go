@@ -215,8 +215,6 @@ func render_progress_report(context *gin.Context) {
 	progress_report_mutex.RLock()
 	defer progress_report_mutex.RUnlock()
 
-	// The code below calls funciongetSortedValues that returns a list that is inserted
-	// as the value into the map. Keys of the map are: queue, processed, ready.
 	context.HTML(http.StatusOK, "progress_report", gin.H{
 		"files_waiting_in_queue":     progress_report_data["files_waiting_in_queue"],
 		"files_being_processed": progress_report_data["files_being_processed"],
