@@ -31,6 +31,7 @@ import email
 import email.mime
 import email.mime.text
 import email.mime.multipart
+import pickle
 import json
 import math
 import signal
@@ -1570,7 +1571,7 @@ def create_commands_for_loudness_adjusting_a_file(integrated_loudness_calculatio
 			temporary_peak_limited_targetfile = filename_and_extension[0] + '-Peak_Limited.' + output_format_for_intermediate_files
 			difference_from_target_loudness_sign_inverted = difference_from_target_loudness * -1 # The sign (+/-) of the difference from target loudness needs to be flipped for sox. Plus becomes minus and vice versa.
 			
-			start_of_sox_commandline = ['sox']
+			start_of_sox_commandline = ['sox','--single-threaded']
 			
 			# Set the absolute peak level for the resulting corrected audio file.
 			# If sample peak is used for the highest value, then set the absolute peak to be -4 dBFS (resulting peaks will be about 1 dB higher than this).
@@ -3033,7 +3034,6 @@ def send_to_progress_report(english, finnish):
 				filename = ''
 				if (len(loudness_calculation_queue_list) > 0) and (counter <= len(loudness_calculation_queue_list)):
 					filename = loudness_calculation_queue_list[counter - 1]
-					filename = filename.replace('ä', '&auml;').replace('Ä', '&Auml;').replace('ö', '&ouml;').replace('Ö', '&Ouml;').replace('å', '&aring;').replace('Å', '&Aring;') # Special Finnish characters in filename won't print correctly unless they are replaced with proper html-codes.
 
 				processing_queue.append(filename)
 
