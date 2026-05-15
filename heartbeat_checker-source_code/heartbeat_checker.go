@@ -387,7 +387,7 @@ func check_timestamps_loop() {
 					error_messages = append(error_messages, message)
 				} else {
 					time_string := parse_time_to_string(main_thread_timestamp)
-					message := fmt.Sprintf("LoudnessCorrection has stopped updating main_thread timestamps.\nThe thread has probably crashed and a restart of the script is needed.\nLast update happaned at: %s\n", time_string)
+					message := fmt.Sprintf("LoudnessCorrection has stopped updating main_thread timestamps.\nThe thread has probably crashed and a restart of the script is needed.\nLast update happened at: %s\n", time_string)
 					error_messages = append(error_messages, message)
 				}
 			}

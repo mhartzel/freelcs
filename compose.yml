@@ -5,7 +5,10 @@ services:
       dockerfile: Dockerfile.loudness_correction
     networks:
       - local_network
+    # Use the timezone settings of the host machine
     volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
       - ./mountpoint:/mountpoint:rw
   progress_report: 
     build:
@@ -21,5 +24,9 @@ services:
       dockerfile: Dockerfile.heartbeat_checker
     networks:
       - local_network
+    # Use the timezone settings of the host machine
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
 networks:
   local_network:

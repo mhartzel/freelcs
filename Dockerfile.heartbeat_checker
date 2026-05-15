@@ -1,6 +1,5 @@
 FROM ubuntu:26.04
 USER root:root
-ENV TZ="Europe/Helsinki"
 RUN apt-get -y update
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y upgrade
 RUN apt-get -y install ca-certificates tzdata
