@@ -1,8 +1,7 @@
 services:
   loudness_correction: 
     build:
-      context: .
-      dockerfile: Dockerfile.loudness_correction
+      target: loudness_correction
     networks:
       - local_network
     # Use the timezone settings of the host machine
@@ -12,16 +11,14 @@ services:
       - ./mountpoint:/mountpoint:rw
   progress_report: 
     build:
-      context: .
-      dockerfile: Dockerfile.progress_report
+      target: progress_report
     networks:
       - local_network
     ports:
       - 9000:9000
   heartbeat_checker: 
     build:
-      context: .
-      dockerfile: Dockerfile.heartbeat_checker
+      target: heartbeat_checker
     networks:
       - local_network
     # Use the timezone settings of the host machine
