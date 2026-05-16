@@ -4973,6 +4973,8 @@ def signal_handler_routine(signal_number, stack_frame):
 		# Handle SIGTERM
 		if signal_number == 15:
 			quit_all_threads_now = True
+			print("Caught signal SIGTERM, shutting down now")
+			sys.exit(0)
 
 	except Exception:
 		exc_type, exc_value, exc_traceback = sys.exc_info()
