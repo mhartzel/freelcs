@@ -1,11 +1,9 @@
 FROM ubuntu:26.04 AS base_ubuntu_image
 RUN apt-get -y update
-RUN apt-get -y upgrade
+RUN DEBIAN_FRONTEND=noninteractive apt-get -y upgrade
 
 FROM base_ubuntu_image AS loudness_correction
 USER root:root
-RUN apt-get -y update
-RUN apt-get -y upgrade
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y install python3 sox mediainfo gnuplot fonts-liberation ffmpeg samba python3-requests ca-certificates tzdata
 COPY ./LoudnessCorrection.py ./loudness-freelcs ./freelcs_startup_file.sh /usr/bin/
 COPY ./LoudnessCorrection_Settings.json /etc/
@@ -22,8 +20,6 @@ CMD ["/usr/bin/freelcs_startup_file.sh"]
 
 FROM base_ubuntu_image AS progress_report
 USER root:root
-RUN apt-get -y update
-RUN DEBIAN_FRONTEND=noninteractive apt-get -y upgrade
 COPY ./progress_report /usr/bin/
 COPY ./LoudnessCorrection_Settings.json /etc/
 RUN chmod 755 /usr/bin/progress_report ; chmod 644 /etc/LoudnessCorrection_Settings.json
@@ -31,8 +27,6 @@ CMD ["/usr/bin/progress_report", "-configfile", "/etc/LoudnessCorrection_Setting
 
 FROM base_ubuntu_image AS heartbeat_checker
 USER root:root
-RUN apt-get -y update
-RUN DEBIAN_FRONTEND=noninteractive apt-get -y upgrade
 RUN apt-get -y install ca-certificates tzdata
 COPY ./heartbeat_checker /usr/bin/
 COPY ./LoudnessCorrection_Settings.json /etc/
