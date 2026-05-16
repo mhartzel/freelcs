@@ -365,7 +365,7 @@ if debug_all == True:
 # Set defaults for 'Machine Reabable Results' settings #
 ########################################################
 
-# These values will be overwritten by values that come from the installer program through the file Loudness_Correction_Settings.json
+# These values will be overwritten by values that come from the installer program through the file LoudnessCorrection_Settings.json
 write_loudness_calculation_results_to_a_machine_readable_file = False
 create_loudness_corrected_files = True
 create_loudness_history_graphics_files = True
@@ -387,7 +387,7 @@ unsupported_formats_list = ['libmodplug']
 #####################################################################################
 # Set default target loudness = -23 LUFS. The user can change this in the installer #
 #####################################################################################
-# This value will be overwritten by value that comes from the installer program through the file Loudness_Correction_Settings.json
+# This value will be overwritten by value that comes from the installer program through the file LoudnessCorrection_Settings.json
 target_loudness = '-23'
 
 ####################################################

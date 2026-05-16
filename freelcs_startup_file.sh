@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Start LoudnessCorrection as user freelcs
-runuser --user=freelcs -- /usr/bin/python3 /usr/bin/LoudnessCorrection.py -configfile /etc/Loudness_Correction_Settings.json &
+runuser --user=freelcs -- /usr/bin/python3 /usr/bin/LoudnessCorrection.py -configfile /etc/LoudnessCorrection_Settings.json &
 
 # Start Samba as root
 /usr/sbin/smbd --foreground --no-process-group --configfile=/etc/samba/smb.conf &

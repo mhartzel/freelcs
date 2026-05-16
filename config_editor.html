@@ -717,7 +717,7 @@
 	  "os_version": "26.04",\
 	  "os_init_system_name": "systemd",\
 	  "target_loudness": "-23",\
-	  "authorization_code": "0E00D6E0C01B25D3DF9A49CBC7C79F720C8A9077B6E77A7E86ADD68DE5516D26",\
+	  "authorization": "8f3226f95066601445199672049d5696d99723f5b72e5052912445b410502690",\
 	  "progress_network_name": "progress_report",\
 	  "progress_service_port": "9000",\
 	  "heartbeat_network_name": "heartbeat_checker",\
@@ -1724,7 +1724,7 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 
 		for(let i = 0; i < 64; i++) {
 			random_number = Math.floor(Math.random() * (max - min) + min);
-		    	authorization_code = authorization_code + random_number.toString(16).toUpperCase();
+		    	authorization_code = authorization_code + random_number.toString(16);
 		}
 
 		default_settings.authorization = authorization_code
