@@ -4926,8 +4926,10 @@ def debug_manage_file_processing_information_thread():
 		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 
 def signal_handler_routine(signal_number, stack_frame):
+
+	global quit_all_threads_now
 	
-	# This routine catches SIGUSR1 and SIGUSR2 sent from the outside world to LoudnessCorrection.
+	# This routine catches SIGUSR1, SIGUSR2 and SIGTERM sent from the outside world to LoudnessCorrection.
 	#
 	# SIGUSR1 flips the state of variable 'debug_file_processing' between True / False which in turn starts / stops writing of file processing debug info to disk.
 	# SIGUSR2 flips the state of variable 'debug_all' between True / False which in turn starts / stops writing of all debugging information to disk.
@@ -4967,6 +4969,10 @@ def signal_handler_routine(signal_number, stack_frame):
 				debug_lists_and_dictionaries  = False 
 				debug_file_processing = False
 				save_all_measurement_results_to_a_single_debug_file = False
+
+		# Handle SIGTERM
+		if signal_number == 15:
+			quit_all_threads_now = True
 
 	except Exception:
 		exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -6120,6 +6126,7 @@ try:
 	# Define a handler routine for signals recieved outside of program.
 	signal.signal(signal.SIGUSR1, signal_handler_routine)
 	signal.signal(signal.SIGUSR2, signal_handler_routine)
+	signal.signal(signal.SIGTERM, signal_handler_routine)
 
 	# Print version information to screen
 	if silent == False:
