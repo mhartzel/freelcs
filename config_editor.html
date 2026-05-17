@@ -655,77 +655,77 @@
 	////////////////////////////////////////////
 
 	const default_settings_json = '{\
-	  "language": "english",\
-	  "english": 1,\
-	  "finnish": 0,\
-	  "target_path": "/mountpoint",\
-	  "directory_for_temporary_files": "/mountpoint/00-Loudness_Calculation_Temporary_Files",\
-	  "directory_for_results": "/mountpoint/LoudnessCorrection/00-Corrected_Files",\
-	  "delay_between_directory_reads": 5,\
-	  "number_of_processor_cores": -1,\
-	  "file_expiry_time": 28800,\
-	  "natively_supported_file_formats": [ ".wav", ".flac", ".ogg" ],\
-	  "libebur128_path": "/bin/loudness-freelcs",\
-	  "ffmpeg_output_wrapper_format": "wav",\
-	  "silent": true,\
-	  "write_html_progress_report": true,\
-	  "html_progress_report_write_interval": 5,\
-	  "web_page_name": "00-Calculation_Queue_Information.html",\
-	  "web_page_path": "/mountpoint/LoudnessCorrection/00-Calculation_Queue_Information",\
-	  "directory_for_error_logs": "/mountpoint/00-Error_Logs",\
-	  "send_error_messages_to_logfile": true,\
-	  "heartbeat": false,\
-	  "heartbeat_file_name": "00-HeartBeat.json",\
-	  "heartbeat_write_interval": 30,\
-	  "email_sending_details": {\
-	    "send_error_messages_by_email": false,\
-	    "use_tls": false,\
-	    "smtp_server_requires_authentication": false,\
-	    "smtp_server_name": "",\
-	    "smtp_server_port": "",\
-	    "smtp_username": "",\
-	    "smtp_password": "",\
-	    "message_recipients": [],\
-	    "email_sending_interval": 1800,\
-	    "message_title": "FreeLCS Error Message"\
-	  },\
-	  "send_error_messages_by_email": false,\
-	  "where_to_send_error_messages": [ "logfile" ],\
-	  "peak_measurement_method": "--peak=true",\
-	  "use_freelcs_file_output_defaults": true,\
-	  "write_loudness_calculation_results_to_a_machine_readable_file": false,\
-	  "create_loudness_corrected_files": true,\
-	  "create_loudness_history_graphics_files": true,\
-	  "delete_original_file_immediately": true,\
-	  "unit_separator": [ "31" ] ,\
-	  "record_separator": [ "13", "10" ],\
-	  "enable_mxf_audio_remixing": false,\
-	  "remix_map_file_extension": ".remix_map",\
-	  "global_mxf_audio_remix_channel_map": [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2 ],\
-	  "ffmpeg_free_wrapper_formats": ["wav","flac","ogg","mkv","matroska","mka","mpeg","mp2","mp3","mpegts","mpegtsraw","mpegvideo","mpeg1video","mpeg2video","vcd","svcd","dvd","vob","ac3" ],\
-	  "ffmpeg_allowed_wrapper_formats": [ "all" ],\
-	  "ffmpeg_free_codec_formats": ["pcm_s8","pcm_s8_planar","pcm_u8","pcm_s16be","pcm_s16le","pcm_s16le_planar","pcm_u16be","pcm_u16le","pcm_dvd","pcm_lxf","pcm_s24be","pcm_s24daud","pcm_s24le","pcm_u24be","pcm_u24le","pcm_f32be","pcm_f32le","pcm_s32be","pcm_s32le","pcm_u32be","pcm_u32le","pcm_f64be","pcm_f64le","flac","vorbis","opus","ac3","mp1","mp1float","mp2","mp2float","mp3" ],\
-	  "ffmpeg_allowed_codec_formats": [ "all" ],\
-	  "mxf_formats": [ "mxf", "mxf_d10" ],\
-	  "mpeg_nonfree_wrapper_formats": [ "mp4", "m4v", "m4a", "mov", "3gp", "3g2", "mj2" ],\
-	  "enable_all_nonfree_ffmpeg_wrapper_formats": true,\
-	  "enable_all_nonfree_ffmpeg_codec_formats": true,\
-	  "enable_mxf_wrapper": false,\
-	  "enable_webm_wrapper": false,\
-	  "enable_nonfree_mpeg_wrappers": false,\
-	  "os_name": "ubuntu",\
-	  "os_version": "26.04",\
-	  "os_init_system_name": "systemd",\
-	  "target_loudness": "-23",\
-	  "authorization": "8f3226f95066601445199672049d5696d99723f5b72e5052912445b410502690",\
-	  "progress_network_name": "progress_report",\
-	  "progress_service_port": "9000",\
-	  "heartbeat_network_name": "heartbeat_checker",\
-	  "heartbeat_service_port": "9002",\
-	  "number_of_all_items_in_dictionary": 0\
-}';
+	"language": "english",\
+	"english": 1,\
+	"finnish": 0,\
+	"target_path": "/mountpoint",\
+	"directory_for_temporary_files": "/mountpoint/00-Loudness_Calculation_Temporary_Files",\
+	"directory_for_results": "/mountpoint/LoudnessCorrection/00-Corrected_Files",\
+	"delay_between_directory_reads": 5,\
+	"number_of_processor_cores": -1,\
+	"file_expiry_time": 28800,\
+	"natively_supported_file_formats": [ ".wav", ".flac", ".ogg" ],\
+	"libebur128_path": "/bin/loudness-freelcs",\
+	"ffmpeg_output_wrapper_format": "wav",\
+	"silent": true,\
+	"write_html_progress_report": true,\
+	"html_progress_report_write_interval": 5,\
+	"web_page_name": "00-Calculation_Queue_Information.html",\
+	"web_page_path": "/mountpoint/LoudnessCorrection/00-Calculation_Queue_Information",\
+	"directory_for_error_logs": "/mountpoint/00-Error_Logs",\
+	"send_error_messages_to_logfile": true,\
+	"heartbeat": false,\
+	"heartbeat_file_name": "00-HeartBeat.json",\
+	"heartbeat_write_interval": 30,\
+	"email_sending_details": {\
+		"send_error_messages_by_email": false,\
+		"use_tls": false,\
+		"smtp_server_requires_authentication": false,\
+		"smtp_server_name": "",\
+		"smtp_server_port": "",\
+		"smtp_username": "",\
+		"smtp_password": "",\
+		"message_recipients": [],\
+		"email_sending_interval": 1800,\
+		"message_title": "FreeLCS Error Message"\
+	},\
+	"send_error_messages_by_email": false,\
+	"where_to_send_error_messages": [ "logfile" ],\
+	"peak_measurement_method": "--peak=true",\
+	"use_freelcs_file_output_defaults": true,\
+	"write_loudness_calculation_results_to_a_machine_readable_file": false,\
+	"create_loudness_corrected_files": true,\
+	"create_loudness_history_graphics_files": true,\
+	"delete_original_file_immediately": true,\
+	"unit_separator": [ "31" ] ,\
+	"record_separator": [ "13", "10" ],\
+	"enable_mxf_audio_remixing": false,\
+	"remix_map_file_extension": ".remix_map",\
+	"global_mxf_audio_remix_channel_map": [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2 ],\
+	"ffmpeg_free_wrapper_formats": ["wav","flac","ogg","mkv","matroska","mka","mpeg","mp2","mp3","mpegts","mpegtsraw","mpegvideo","mpeg1video","mpeg2video","vcd","svcd","dvd","vob","ac3" ],\
+	"ffmpeg_allowed_wrapper_formats": [ "all" ],\
+	"ffmpeg_free_codec_formats": ["pcm_s8","pcm_s8_planar","pcm_u8","pcm_s16be","pcm_s16le","pcm_s16le_planar","pcm_u16be","pcm_u16le","pcm_dvd","pcm_lxf","pcm_s24be","pcm_s24daud","pcm_s24le","pcm_u24be","pcm_u24le","pcm_f32be","pcm_f32le","pcm_s32be","pcm_s32le","pcm_u32be","pcm_u32le","pcm_f64be","pcm_f64le","flac","vorbis","opus","ac3","mp1","mp1float","mp2","mp2float","mp3" ],\
+	"ffmpeg_allowed_codec_formats": [ "all" ],\
+	"mxf_formats": [ "mxf", "mxf_d10" ],\
+	"mpeg_nonfree_wrapper_formats": [ "mp4", "m4v", "m4a", "mov", "3gp", "3g2", "mj2" ],\
+	"enable_all_nonfree_ffmpeg_wrapper_formats": true,\
+	"enable_all_nonfree_ffmpeg_codec_formats": true,\
+	"enable_mxf_wrapper": false,\
+	"enable_webm_wrapper": false,\
+	"enable_nonfree_mpeg_wrappers": false,\
+	"os_name": "ubuntu",\
+	"os_version": "26.04",\
+	"os_init_system_name": "systemd",\
+	"target_loudness": "-23",\
+	"authorization": "8f3226f95066601445199672049d5696d99723f5b72e5052912445b410502690",\
+	"progress_network_name": "progress_report",\
+	"progress_service_port": "9000",\
+	"heartbeat_network_name": "heartbeat_checker",\
+	"heartbeat_service_port": "9002",\
+	"number_of_all_items_in_dictionary": 0\
+	}';
 
-const samba_config_json = '[ "# Samba Configuration File\\n",\
+	const samba_config_json = '[ "# Samba Configuration File\\n",\
 	"\\n",\
 	"[global]\\n",\
 	"workgroup = WORKGROUP\\n",\
@@ -756,7 +756,6 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 	// Get default settings from the json - text to a javascript map //
 	const config_editor_version = "400";
 	const freelcs_version = "4.0";
-	const os_version = "26.04";
 	var default_settings = JSON.parse(default_settings_json); 
 	var samba_config = JSON.parse(samba_config_json); 
 	const usable_processor_cores = [ -1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64];
@@ -1753,7 +1752,7 @@ const samba_config_json = '[ "# Samba Configuration File\\n",\
 
 		default_settings.config_file_created_by_installer_version = config_editor_version;
 		default_settings.freelcs_version = freelcs_version;
-		default_settings.os_version = os_version;
+		os_version = default_settings.os_version
 		
 		// If unit_separator or record_separator are strings convert them to a list with ascii codes.
 		var unit_separator_1 = -1;

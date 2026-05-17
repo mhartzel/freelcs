@@ -31,14 +31,17 @@ def run_external_command(command_to_run):
 			stderr_commandfile_handler.flush() # Flushes written data to os cache
 			os.fsync(stderr_commandfile_handler.fileno()) # Flushes os cache to disk
 		
+	except KeyboardInterrupt:
+		print('\nUser cancelled operation.\n')
+		sys.exit(0)
 	except IOError as reason_for_error:
-		error_message = 'Stdout- tai stderr - tiedostoon kirjoittaminen epäonnistui ajettaessa komentoa: ' + ' '.join(command_to_run) + '. ' + str(reason_for_error)
+		error_message = 'Error writing in Stdout- or stderr - file while running: ' + ' '.join(command_to_run) + '. ' + str(reason_for_error)
 		print()
 		print(error_message)
 		print()
 
 	except OSError as reason_for_error:
-		error_message = 'Stdout- tai stderr - tiedostoon kirjoittaminen epäonnistui ajettaessa komentoa: ' + ' '.join(command_to_run) + '. ' + str(reason_for_error)
+		error_message = 'Error writing in Stdout- or stderr - file while running: ' + ' '.join(command_to_run) + '. ' + str(reason_for_error)
 		print()
 		print(error_message)
 		print()
@@ -49,13 +52,16 @@ def run_external_command(command_to_run):
 			command_stdout = stdout_commandfile_handler.read(None)
 			command_stderr = stderr_commandfile_handler.read(None)
 
+	except KeyboardInterrupt:
+		print('\nUser cancelled operation.\n')
+		sys.exit(0)
 	except IOError as reason_for_error:
-		error_message = 'Stdout- tai stderr - tiedoston lukeminen epäonnistui ajettaessa komentoa: ' + ' '.join(command_to_run) + '. ' + str(reason_for_error)
+		error_message = 'Error reading in Stdout- or stderr - file while running: ' + ' '.join(command_to_run) + '. ' + str(reason_for_error)
 		print()
 		print(error_message)
 		print()
 	except OSError as reason_for_error:
-		error_message = 'Stdout- tai stderr - tiedostoon lukeminen epäonnistui ajettaessa komentoa: ' + ' '.join(command_to_run) + '. ' + str(reason_for_error)
+		error_message = 'Error reading in Stdout- or stderr - file while running: ' + ' '.join(command_to_run) + '. ' + str(reason_for_error)
 		print()
 		print(error_message)
 		print()
@@ -65,13 +71,16 @@ def run_external_command(command_to_run):
 		os.remove(stdout_for_external_command)
 		os.remove(stderr_for_external_command)
 
+	except KeyboardInterrupt:
+		print('\nUser cancelled operation.\n')
+		sys.exit(0)
 	except IOError as reason_for_error:
-		error_message = 'Stdout- tai stderr - tiedoston deletoiminen epäonnistui ajettaessa komentoa: ' + ' '.join(command_to_run) + '. ' + str(reason_for_error)
+		error_message = 'Error deleting Stdout- or stderr - file while running: ' + ' '.join(command_to_run) + '. ' + str(reason_for_error)
 		print()
 		print(error_message)
 		print()
 	except OSError as reason_for_error:
-		error_message = 'Stdout- tai stderr - tiedoston deletoiminen epäonnistui ajettaessa komentoa: ' + ' '.join(command_to_run) + '. ' + str(reason_for_error)
+		error_message = 'Error deleting Stdout- or stderr - file while running: ' + ' '.join(command_to_run) + '. ' + str(reason_for_error)
 		print()
 		print(error_message)
 		print()
@@ -79,12 +88,12 @@ def run_external_command(command_to_run):
 	if len(command_stderr) > 0:
 		command_run_stderr_utf8 = command_stderr.decode('UTF-8').strip()
 		print()
-		print("Komennon suoritus tulosti virheilmoituksen: " + command_run_stderr_utf8)
+		print("Error: " + command_run_stderr_utf8)
 		print()
 
 	return command_stdout.decode('UTF-8').strip()
 
-def find_files_in_a_directory(filename, source_directory):
+def find_files_in_a_directory(filename_filter, source_directory):
 
 	list_of_files_found = []
 
@@ -93,26 +102,29 @@ def find_files_in_a_directory(filename, source_directory):
 		for path, list_of_directories, list_of_files in os.walk(source_directory):                                                                                                                                              
 			break
 
+	except KeyboardInterrupt:
+		print('\nUser cancelled operation.\n')
+		sys.exit(0)
 	except IOError as reason_for_error:
-		error_message = 'Lähdehakemistopuun lukeminen epäonnistui ' + str(reason_for_error)
+		error_message = 'Error reading source directory ' + str(reason_for_error)
 		print()
 		print(error_message)
 		print()
 
 	except OSError as reason_for_error:
-		error_message = 'Lähdehakemistopuun lukeminen epäonnistui ' + str(reason_for_error)
+		error_message = 'Error reading source directory ' + str(reason_for_error)
 		print()
 		print(error_message)
 		print()
 
 	for item in list_of_files:
 
-		if item.startswith(os.path.basename(filename)) == True:
+		if filename_filter in item:
 			list_of_files_found.append(item)
 
 	return(list_of_files_found)
 
-def create_timestamp():
+def create_timestamp(return_date = True, return_time = True, return_unix_ticks = False):
 
 	time_int = time.time()
 	
@@ -130,16 +142,28 @@ def create_timestamp():
 	hours = str('0' * (2 - len(str(hours))) + str(hours))
 	minutes = str('0' *( 2 - len(str(minutes))) + str(minutes))
 	seconds = str('0' * (2 - len(str(seconds))) + str(seconds))
+
+	date_string = ""
+	time_string = ""
+
+	if return_date == True:
+		date_string = year + '.' + month + '.' + day
+
+	if return_time == True:
+		time_string = hours + ':' + minutes + ':' + seconds
+
+	if return_unix_ticks == False:
+		time_int = 0
 	
-	time_string= year + '.' + month + '.' + day + ' at ' + hours + ':' + minutes + ':' + seconds
-	
-	return(time_string)
+	return(date_string, time_string, str(int(time_int)))
+
 	
 ############################
 # Main program starts here #
 ############################
 debug = False
 user_given_target_dir = ""
+backups_to_keep = 10
 
 if len(sys.argv) > 1:
 	user_given_target_dir = sys.argv[1]
@@ -148,47 +172,81 @@ if len(sys.argv) > 1:
 		print()
 		print("user_given_target_dir:", user_given_target_dir)
 
+if len(sys.argv) > 2:
+	backups_to_keep = sys.argv[2]
+
+	if debug == True:
+		print()
+		print("backups_to_keep:", backups_to_keep)
+
 if user_given_target_dir != "":
+	temp_tuple = create_timestamp(return_date = True, return_time = True, return_unix_ticks = False)
+	date_string = temp_tuple[0]
+	time_string = temp_tuple[1]
 
 	if os.path.exists(user_given_target_dir) == False or os.path.isdir(user_given_target_dir) == False:
 		print()
-		print("Path does not exists:", user_given_target_dir)
+		print(date_string, time_string, "Path does not exists:", user_given_target_dir)
 		sys.exit(1)
 
 # Check that we can find the docker executable
 docker_path = '/usr/bin/docker'
 
 if not os.path.exists(docker_path):
-	print("Docker executable bot found in path:", docker_path)
+	temp_tuple = create_timestamp(return_date = True, return_time = True, return_unix_ticks = False)
+	date_string = temp_tuple[0]
+	time_string = temp_tuple[1]
+
+	print(date_string, time_string, "Docker executable not found in path:", docker_path)
 	sys.exit(1)
 
 # Get path to user home directory
 user_home_dir = os.path.expanduser("~")
 
 if debug == True:
-	print()
 	print("user_home_dir:", user_home_dir)
 
 # Find the names of freelcs docker images
-command_to_run = ['docker', 'ps']
+command_to_run = ['docker', 'ps', '-a']
+
+if debug == True:
+	print("command_to_run:", command_to_run)
+
 command_output = run_external_command(command_to_run)
 
+freelcs_image_names = []
+
+for text_line in command_output.split("\n"):
+
+	if "freelcs" not in text_line:
+		continue
+	freelcs_image_names.append(text_line)
+
+if len(text_line) == 0:
+	temp_tuple = create_timestamp(return_date = True, return_time = True, return_unix_ticks = False)
+	date_string = temp_tuple[0]
+	time_string = temp_tuple[1]
+
+	print(date_string, time_string, "docker ps -a did not list any images")
+	sys.exit(0)
+
 # Get timestamp we need for the file name
-time_string = create_timestamp()
+temp_tuple = create_timestamp(return_date = True, return_time = False, return_unix_ticks = True)
+backupfile_date_string = temp_tuple[0]
+backupfile_unix_ticks = temp_tuple[2]
 
 # Remove the first row of headlines
-command_output = command_output.split("\n")
 image_names = []
 
 # Compile image and backfile names in list
-for text_line in command_output:
+for text_line in freelcs_image_names:
 
 	if "freelcs" not in text_line:
 		continue
 
 	items_on_the_text_line = text_line.split()
 	image_name = items_on_the_text_line[1]
-	backup_file_name = image_name + "-" + time_string.replace(" ", "_") + ".tar"
+	backup_file_name = backupfile_unix_ticks + "-" + image_name + "-" + backupfile_date_string + ".tar"
 	image_names.append([backup_file_name, image_name])
 
 if debug == True:
@@ -209,14 +267,66 @@ if debug == True:
 if (not os.path.exists(target_dir)):
 	os.makedirs(target_dir)
 
+document_file_name = target_dir + os.sep + "00-How_To_Restore_Docker_Image_Backups.txt"
+
+# Write a text document to the backup directory describing how to restore backups
+if (not os.path.exists(document_file_name)):
+
+	restore_instructions = [\
+			"", \
+			"How to restore Docker image backups:", \
+			"------------------------------------", \
+			"", \
+			"Image backup filenames start with a unix machine readable timestamp that is common to all imagefiles belonging to the same backup.", \
+			"The backup / image rotation / image rebuild - script uses the unix timestamp to find files belonging to the same backup.", \
+			"After the timestamp there's the image name and the backup date in human readable form.", \
+			"", \
+			"Backups are gzip compressed so you need to uncompress them and pipe the output to the Docker load - command.", \
+			"Each image can be restored with a single command:", \
+			"", \
+			"gunzip -c /home/mikael/Downloads/freelcs_docker_image_backups/1779019292-freelcs-loudness_correction-2026.05.17.tar.gz | docker load", \
+			"gunzip -c /home/mikael/Downloads/freelcs_docker_image_backups/1779019292-freelcs-heartbeat_checker-2026.05.17.tar.gz | docker load", \
+			"gunzip -c /home/mikael/Downloads/freelcs_docker_image_backups/1779019292-freelcs-progress_report-2026.05.17.tar.gz | docker load", \
+			"", \
+			"Image backups will protect you against broken software versions that sometimes slip into Ubuntu updates.", \
+			"Fortunately this happens vary rarely, but it is best to guard against it.", \
+			"", \
+			"You can define how many backups you want to keep when setting up the backup script in cron.", \
+			"The number of backups to keep is defined like:", \
+			"", \
+			"/path/backup_and_update_freelcs_images.py /home/mikael/Downloads 8", \
+			"", \
+			"This will create the directory: '/home/mikael/Downloads/freelcs_docker_image_backups' and keep the latest 8 backups and delete others.", \
+			"The script will also delete FreeLCS Docker images and recreate new ones with the latest security updates.", \
+			"", \
+			]
+
+	try:
+		with open(document_file_name, 'wt') as document_file_handler:
+			for item in restore_instructions:
+				document_file_handler.write(item + '\n')
+			document_file_handler.flush() # Flushes written data to os cache
+			os.fsync(document_file_handler.fileno()) # Flushes os cache to disk
+
+	except KeyboardInterrupt:
+		print('\nUser cancelled operation.\n')
+		sys.exit(0)
+	except IOError as reason_for_error:
+		error_message = 'Error writing backup restore instructions to a text file in: ' + target_dir + ' ' + reason_for_error
+	except OSError as reason_for_error:
+		error_message = 'Error writing backup restore instructions to a text file in: ' + target_dir + ' ' + reason_for_error
+
 # Backup FreeLCS image files
 for names in image_names:
 
 	backup_file_name = target_dir + os.sep + names[0]
 	image_name = names[1]
 
-	print()
-	print("Backing up docker image to:", backup_file_name)
+	temp_tuple = create_timestamp(return_date = True, return_time = True, return_unix_ticks = False)
+	date_string = temp_tuple[0]
+	time_string = temp_tuple[1]
+
+	print(date_string, time_string, "Backing up docker image to:", backup_file_name)
 
 	command_to_run = ['docker', 'save', '-o', backup_file_name, image_name]
 	command_output = run_external_command(command_to_run)
@@ -224,14 +334,102 @@ for names in image_names:
 	if command_output != "":
 		print("command_output:", command_output)
 
-	print("Compressing backup file to: ", backup_file_name + ".gz")
+	temp_tuple = create_timestamp(return_date = True, return_time = True, return_unix_ticks = False)
+	date_string = temp_tuple[0]
+	time_string = temp_tuple[1]
+
+	print(date_string, time_string, "Compressing backup file to:", backup_file_name + ".gz")
+
 	command_to_run = ['gzip', backup_file_name]
 	command_output = run_external_command(command_to_run)
 
 	if command_output != "":
 		print("command_output:", command_output)
 
+# Get FreeLCS backup names from the backup directory
+backup_files = find_files_in_a_directory("freelcs", target_dir)
+
+if debug == True:
+	print()
+	print("Found backup files:")
+	print("-------------------")
+
+	for filename in backup_files:
+		print(filename)
+
+# Get unigue timestamps from backup files
+backupfile_timestamps = []
+
+for filename in backup_files:
+	backup_timestamp = filename.split("-")[0]
+	backupfile_timestamps.append(backup_timestamp)
+
+unique_backup_timestamps = list(set(backupfile_timestamps))
+
+# Create map for each backup using the unix timestamp in the filename
+# as the key and a list of filenames as the value
+backups = {}
+filenames_in_backup = []
+
+for timestamp in unique_backup_timestamps:
+	backups[timestamp] = []
+
+# Insert backup filenames under the timestamp key
+for filename in backup_files:
+	backup_timestamp = filename.split("-")[0]
+	list_of_filenames = backups[backup_timestamp]
+	list_of_filenames.append(filename)
+	backups[backup_timestamp] = list_of_filenames
+
+sorted_timestamps = list(backups.keys())
+sorted_timestamps.sort(reverse= True)
+
+if debug == True:
+
+	print()
+	print("type(backups))", type(backups))
+	print()
+	print("Files in each backup:")
+	print("---------------------")
+
+	for item in sorted_timestamps:
+		print(item + ":", backups[item])
+
+# Delete old FreeLCS docker image backups and keep as many as user asked to
+backups_to_delete = sorted_timestamps[backups_to_keep:]
+temp_tuple = create_timestamp(return_date = True, return_time = True, return_unix_ticks = False)
+date_string = temp_tuple[0]
+time_string = temp_tuple[1]
+
+if debug == True:
+	print("backups_to_delete:", backups_to_delete)
+
+if len(backups_to_delete) == 0:
+	print(date_string, time_string, "No old backups to delete, keeping:", len(sorted_timestamps), "backups of the maximum of:", backups_to_keep)
+	sys.exit(0)
+else:
+	print(date_string, time_string, "Deleting :", len(backups_to_delete), " old backups and keeping:", backups_to_keep, "most recent.")
+
+	try:
+		for backup_to_delete in backups_to_delete:
+
+			filenames = backups[backup_to_delete]
+
+			for filename in filenames:
+				os.remove(target_dir + os.sep + filename)
+				print("     Deleted :", target_dir + os.sep + filename)
+
+	except KeyboardInterrupt:
+		print('\nUser cancelled operation.\n')
+		sys.exit(0)
+	except IOError as reason_for_error:
+		error_message = 'Error deleting file: ' + backup_to_delete + ' ' + str(reason_for_error)
+		sys.exit(1)
+	except OSError as reason_for_error:
+		error_message = 'Error deleting file: ' + backup_to_delete + ' ' + str(reason_for_error)
+		sys.exit(1)
+
 # TODO
-# Get timestamps of backup files and delete old ones
+# Stop FreeLCS containers, rebuild and start new ones.
 
 
