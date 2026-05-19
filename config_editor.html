@@ -191,7 +191,7 @@
 	<div class="main-interface">
 	<div class="default-styling">
 		<div class="default-styling-group">
-		<label>Number Of Processor Cores To Use&nbsp;
+		<label for="NumProcessors">Number Of Processor Cores To Use&nbsp;
 			<span class="icon-container">
 				<span class="help-icon" id="processor_cores_icon">?</span>
 				<span class="tooltip" id="processor_cores_tooltip_text">
@@ -207,7 +207,7 @@
             </div>
 	    <br>
 		<div class="default-styling-group">
-                <label>File Expiry Time In Minutes&nbsp;
+                <label for="FileExpiry">File Expiry Time In Minutes&nbsp;
 			<span class="icon-container">
 				<span class="help-icon" id="file_expiry_time_icon">?</span>
 				<span class="tooltip" id="file_expiry_time_tooltip_text">
@@ -221,7 +221,7 @@
             </div>
 	    <br>
 		<div class="default-styling-group">
-                <label>Target Loudness Level (LUFS)&nbsp;
+                <label for="TargetLoudness">Target Loudness Level (LUFS)&nbsp;
 			<span class="icon-container">
 				<span class="help-icon" id="target_loudness_icon">?</span>
 				<span class="tooltip" id="target_loudnesss_tooltip_text">
@@ -234,7 +234,7 @@
             </div>
 	    <br>
 		<div class="default-styling-group">
-			<label>Language for hotfolder paths and result graphics&nbsp;
+			<label for="English">Language for hotfolder paths and result graphics&nbsp;
 			<span class="icon-container">
 			</span>
 			</label>
@@ -248,7 +248,7 @@
         </div>
 	<div class="default-styling">
 		<div class="default-styling-group">
-			<label>Send error messages by email&nbsp;
+			<label for="email_icon">Send error messages by email&nbsp;
 			<span class="icon-container">
 				<span class="help-icon" id="email_icon">?</span>
 				<span class="tooltip" id="email_tooltip_text">
@@ -265,7 +265,7 @@
 		</div>
 		<br>
 		<div class="default-styling-group">
-			<label>Email sending interval&nbsp;
+			<label for="email_interval_icon">Email sending interval&nbsp;
 			<span class="icon-container">
 				<span class="help-icon" id="email_interval_icon">?</span>
 				<span class="tooltip" id="email_interval_tooltip_text">
@@ -279,7 +279,7 @@
 	    </div>
 		<br>
 		<div class="default-styling-group">
-			<label>Smtp Server requires TLS encryption</label>
+			<label for="tls_encryption_yes">Smtp Server requires TLS encryption</label>
 		</div>
 		<div class="radio-buttons">
 			<input type="radio" id="tls_encryption_yes" name="tls_encryption" value="yes" disabled onchange="tls_encryption()"/>
@@ -289,7 +289,7 @@
 		</div>
 		<br>
 		<div class="default-styling-group">
-			<label>Smtp Server requires authentication</label>
+			<label for="email_authentication_yes">Smtp Server requires authentication</label>
 		</div>
 		<div class="radio-buttons">
 			<input type="radio" id="email_authentication_yes" name="email_authentication" value="yes" disabled onchange="email_authentication()"/>
@@ -325,28 +325,28 @@
 			</form> 
 			<div class="form-ok label">
 				<button id="smtp_server_submit_button" disabled onclick="submit_email_server_details()">Submit All</button>
-				<label id="smtp_details_saved" colour="green" hidden>&nbsp;&nbsp;Saved</label><br>
+				<label for="smtp_details_saved" id="smtp_details_saved" colour="green" hidden>&nbsp;&nbsp;Saved</label><br>
 			</div>
 		</div>
 		<br>
 		<div class="default-styling-group">
-		<label>Add email addresses</label>
+		<label for="email_address">Add email addresses</label>
 		</div>
 
 		<div class="form-ok label">
 		<form id="email_address">
-			Email 1 <input type="text" name="email_1" value="" disabled><label id="ok_1" colour="green" hidden> Saved</label> <br>
-			Email 2 <input type="text" name="email_2" value="" disabled><label id="ok_2" colour="green" hidden> Saved</label> <br>
-			Email 3 <input type="text" name="email_3" value="" disabled><label id="ok_3" colour="green" hidden> Saved</label> <br>
-			Email 4 <input type="text" name="email_4" value="" disabled><label id="ok_4" colour="green" hidden> Saved</label> <br>
-			Email 5 <input type="text" name="email_5" value="" disabled><label id="ok_5" colour="green" hidden> Saved</label> <br>
+			Email 1 <input type="text" name="email_1" value="" disabled><label for="ok_1" id="ok_1" colour="green" hidden> Saved</label> <br>
+			Email 2 <input type="text" name="email_2" value="" disabled><label for="ok_2" id="ok_2" colour="green" hidden> Saved</label> <br>
+			Email 3 <input type="text" name="email_3" value="" disabled><label for="ok_3" id="ok_3" colour="green" hidden> Saved</label> <br>
+			Email 4 <input type="text" name="email_4" value="" disabled><label for="ok_4" id="ok_4" colour="green" hidden> Saved</label> <br>
+			Email 5 <input type="text" name="email_5" value="" disabled><label for="ok_5" id="ok_5" colour="green" hidden> Saved</label> <br>
 		</form> 
 		</div>
 		<br>
 		<button id="email_submit_button" disabled onclick="submit_email_addresses()">Submit All</button>
 		<div class="default-styling-group">
 			<br>
-			<label>Start HeartBeat Checker&nbsp;
+			<label for="heartbeat_checker_icon">Start HeartBeat Checker&nbsp;
 			<span class="icon-container">
 				<span class="help-icon" id="heartbeat_checker_icon">?</span>
 				<span class="tooltip" id="heartbeat_checker_tooltip_text">
@@ -366,7 +366,7 @@
         </div>
 	<div class="default-styling">
 		<div class="default-styling-group">
-			<label>Write html progress report&nbsp;
+			<label for="html_progress_report_icon">Write html progress report&nbsp;
 			<span class="icon-container">
 				<span class="help-icon" id="html_progress_report_icon">?</span>
 				<span class="tooltip" id="html_progress_report_tooltip_text">
@@ -384,7 +384,7 @@
 		</div>
 		<br>
 		<div class="default-styling-group">
-			<label>Peak measurement method&nbsp;
+			<label for="true_or_samplepeak_icon">Peak measurement method&nbsp;
 			<span class="icon-container">
 				<span class="help-icon" id="true_or_samplepeak_icon">?</span>
 				<span class="tooltip" id="true_or_samplepeak_tooltip_text">
@@ -403,7 +403,7 @@
         </div>
 	<div class="default-styling">
 		<div class="default-styling-group">
-			<label>Use FreeLCS file output defaults&nbsp;
+			<label for="use_freelcs_file_output_defaults_yes">Use FreeLCS file output defaults&nbsp;
 			<span class="icon-container">
 			</span>
 			</label>
@@ -416,7 +416,7 @@
 		</div>
 		<br>
 		<div class="default-styling-group">
-			<label>Create loudness corrected audio files&nbsp;
+			<label for="create_loudness_corrected_files_yes">Create loudness corrected audio files&nbsp;
 			<span class="icon-container">
 			</span>
 			</label>
@@ -429,7 +429,7 @@
 		</div>
 		<br>
 		<div class="default-styling-group">
-			<label>Create loudness history graphics files&nbsp;
+			<label for="create_loudness_history_graphics_files_yes">Create loudness history graphics files&nbsp;
 			<span class="icon-container">
 			</span>
 			</label>
@@ -442,7 +442,7 @@
 		</div>
 		<br>
 		<div class="default-styling-group">
-			<label>Delete original multistream audiofile&nbsp;
+			<label for="delete_multistream_files_icon">Delete original multistream audiofile&nbsp;
 			<span class="icon-container">
 				<span class="help-icon" id="delete_multistream_files_icon">?</span>
 				<span class="tooltip" id="delete_multistream_files_tooltip_text">
@@ -461,7 +461,7 @@
 		</div>
 		<br>
 		<div class="default-styling-group">
-			<label>Write loudness calculation results to a machine readable file&nbsp;
+			<label for="machine_readable_results_icon">Write loudness calculation results to a machine readable file&nbsp;
 			<span class="icon-container">
 				<span class="help-icon" id="machine_readable_results_icon">?</span>
 				<span class="tooltip" id="machine_readable_results_tooltip_text">
@@ -510,7 +510,7 @@
         </div>
 	<div class="default-styling">
 		<div class="default-styling-group">
-			<label>Enable MXF Audio Remixing&nbsp;
+			<label for="mxf_audio_remixing_icon">Enable MXF Audio Remixing&nbsp;
 			<span class="icon-container">
 				<span class="help-icon" id="mxf_audio_remixing_icon">?</span>
 				<span class="tooltip" id="mxf_audio_remixing_tooltip_text">
@@ -601,7 +601,7 @@
 	</div>
 	<div class="default-styling">
 		<div class="default-styling-group">
-			<label>FFmpeg allowed wrapper and codec formats&nbsp;
+			<label for="wrapper_and_codec_formats_icon">FFmpeg allowed wrapper and codec formats&nbsp;
 			<span class="icon-container">
 				<span class="help-icon" id="wrapper_and_codec_formats_icon">?</span>
 				<span class="tooltip" id="wrapper_and_codec_formats_tooltip_text">
@@ -633,22 +633,26 @@
 </div>
 <div class="file-load-save">
 	<div class="default-styling-group">
-		<label for="Save settings to a file">Save settings to a json - file</label>
+		<label for="Save settings to a file">Save all these settings files to the unzipper FreeLCS directory</label>
 	</div>
+	<p>Save FreeLCS - settings to a json - file</p>
 	<button onclick="check_if_email_settings_are_ok()">Save</button>
-</div>
-<div class="file-load-save">
-	<div class="default-styling-group">
-		<label for="Save sample Samba - config to a file">Save sample Samba - config to a file</label>
-	</div>
-		<button onclick="export_samba_config()">Save</button>
+	<br>
+	<p>Save FreeLCS - Docker compose.yml - file</p>
+	<button onclick="export_docker_compose()">Save</button>
+	<br>
+	<p>Save FreeLCS - Dockerfile</p>
+	<button onclick="export_dockerfile()">Save</button>
+	<br>
+	<p>Save Samba - example config</p>
+	<button onclick="export_samba_config()">Save</button>
 	</div>
 </div>
 
 	<script>
 
-	// var debug = false;
-	var debug = true;
+	var debug = false;
+	// var debug = true;
 
 	////////////////////////////////////////////
 	// Define initial values for the settings //
@@ -725,6 +729,97 @@
 	"number_of_all_items_in_dictionary": 0\
 	}';
 
+	const docker_compose_services = [ "services:\n " ]
+
+	const docker_compose_loudness_correction = [ "  loudness_correction:\n",
+	'    build:\n',
+	"      target: loudness_correction\n",
+	"    networks:\n",
+	"      - local_network\n",
+	"    # Use the timezone settings of the host machine\n",
+	"    volumes:\n",
+	"      - /etc/timezone:/etc/timezone:ro\n",
+	"      - /etc/localtime:/etc/localtime:ro\n",
+	"      - ./mountpoint:/mountpoint:rw\n",
+	"    restart: always\n"
+	];
+
+	const docker_compose_progress_report = [
+	"  progress_report:\n",
+	"    build:\n",
+	"      target: progress_report\n",
+	"    networks:\n",
+	"      - local_network\n",
+	"    ports:\n",
+	"      - 9000:9000\n",
+	"    restart: always\n"
+	];
+
+	const docker_compose_heartbeat_checker = [
+	"  heartbeat_checker:\n",
+	"    build:\n",
+	"      target: heartbeat_checker\n",
+	"    networks:\n",
+	"      - local_network\n",
+	"    # Use the timezone settings of the host machine\n",
+	"    volumes:\n",
+	"      - /etc/timezone:/etc/timezone:ro\n",
+	"      - /etc/localtime:/etc/localtime:ro\n",
+	"    restart: always\n"
+	];
+
+	const docker_compose_networks = [
+	"networks:\n",
+	"  local_network:\n"
+	]
+
+	const dockerfile_base_image = [
+	"FROM ubuntu:26.04 AS base_ubuntu_image\n",
+	"RUN apt-get -y update\n",
+	"RUN DEBIAN_FRONTEND=noninteractive apt-get -y upgrade\n",
+	"\n"
+	]
+
+	const dockerfile_loudness_correction = [
+	"FROM base_ubuntu_image AS loudness_correction\n",
+	"USER root:root\n",
+	"RUN DEBIAN_FRONTEND=noninteractive apt-get -y install python3 sox mediainfo gnuplot fonts-liberation ffmpeg samba python3-requests ca-certificates tzdata\n",
+	"COPY ./LoudnessCorrection.py ./loudness-freelcs ./freelcs_startup_file.sh /usr/bin/\n",
+	"COPY ./LoudnessCorrection_Settings.json /etc/\n",
+	"COPY ./smb.conf /etc/samba/\n",
+	"COPY ./libinput_sndfile-freelcs.so /usr/lib/\n",
+	"RUN ldconfig\n",
+	"RUN chmod 755 /usr/bin/LoudnessCorrection.py /usr/bin/loudness-freelcs /usr/bin/freelcs_startup_file.sh ; chmod 644 /etc/LoudnessCorrection_Settings.json /etc/samba/smb.conf /usr/lib/libinput_sndfile-freelcs.so\n",
+	"RUN useradd -M -s /sbin/nologin freelcs\n",
+	`RUN /bin/bash -c "echo -e 'freelcs\nfreelcs' | smbpasswd -a freelcs"\n`,
+	"EXPOSE 445\n",
+	"# USER freelcs\n",
+	'# CMD ["/usr/bin/python3", "/usr/bin/LoudnessCorrection.py", "-configfile", "/etc/LoudnessCorrection_Settings.json" ]\n',
+	'CMD ["/usr/bin/freelcs_startup_file.sh"]\n',
+	"\n"
+	]
+
+	const dockerfile_progress_report = [
+	"FROM base_ubuntu_image AS progress_report\n",
+	"USER root:root\n",
+	"COPY ./progress_report /usr/bin/\n",
+	"COPY ./LoudnessCorrection_Settings.json /etc/\n",
+	"RUN chmod 755 /usr/bin/progress_report ; chmod 644 /etc/LoudnessCorrection_Settings.json\n",
+	`CMD ["/usr/bin/progress_report", "-configfile", "/etc/LoudnessCorrection_Settings.json"]\n`,
+	"\n"
+	]
+
+	const dockerfile_heartbeat_checker = [
+	"FROM base_ubuntu_image AS heartbeat_checker\n",
+	"USER root:root\n",
+	"RUN apt-get -y install ca-certificates tzdata\n",
+	"COPY ./heartbeat_checker /usr/bin/\n",
+	"COPY ./LoudnessCorrection_Settings.json /etc/\n",
+	"RUN chmod 755 /usr/bin/heartbeat_checker ; chmod 644 /etc/LoudnessCorrection_Settings.json\n",
+	`CMD ["/usr/bin/heartbeat_checker", "-configfile", "/etc/LoudnessCorrection_Settings.json"]\n`,
+	"\n"
+	]
+
 	const samba_config_json = '[ "# Samba Configuration File\\n",\
 	"\\n",\
 	"[global]\\n",\
@@ -762,6 +857,8 @@
 	const file_expiry_times = [ 60, 90, 120, 180, 240, 300, 360, 420, 480, 540, 600, 660, 720, 780, 840, 900, 960 ];
 	const email_sending_intervals = [ 1, 2, 3, 4, 5, 10, 12, 15, 18, 20, 25, 30, 40, 50, 60, 90, 120, 180, 240, 300 ];
 	const target_loudness = [ "-12", "-13", "-14", "-15", "-16", "-17", "-18", "-19", "-20", "-21", "-22", "-23", "-24", "-25", "-26", "-27", "-28", "-29", "-30", "-31" ];
+	var docker_compose_config = [];
+	var dockerfile = [];
 
 	if (debug == true) {
 		console.log(default_settings);
@@ -904,6 +1001,26 @@
 		const element = document.createElement("a");
 		element.href = URL.createObjectURL(new Blob([JSON.stringify(default_settings, null, 2)], { type: "text/plain" }));
 		element.setAttribute("download", "LoudnessCorrection_Settings.json");
+		document.body.appendChild(element);
+		element.click();
+		document.body.removeChild(element);
+	}
+
+	/* Export Docker compose.yml */
+	function export_docker_compose() {
+		const element = document.createElement("a");
+		element.href = URL.createObjectURL(new Blob(docker_compose_config, { type: "text/plain" }));
+		element.setAttribute("download", "compose.yml");
+		document.body.appendChild(element);
+		element.click();
+		document.body.removeChild(element);
+	}
+
+	/* Export Dockerfile */
+	function export_dockerfile() {
+		const element = document.createElement("a");
+		element.href = URL.createObjectURL(new Blob(dockerfile, { type: "text/plain" }));
+		element.setAttribute("download", "Dockerfile");
 		document.body.appendChild(element);
 		element.click();
 		document.body.removeChild(element);
@@ -1094,6 +1211,11 @@
 			default_settings.heartbeat = false;
 		}
 
+		/////////////////////////////////
+		// Compile Docker config files //
+		/////////////////////////////////
+		update_docker_config();
+
 		if (debug == true) {
 			console.log("Star HeartBeat Checker:", default_settings.heartbeat);
 		}
@@ -1197,6 +1319,11 @@
 		} else {
 			default_settings.write_html_progress_report = false;
 		}
+
+		/////////////////////////////////
+		// Compile Docker config files //
+		/////////////////////////////////
+		update_docker_config();
 
 		if (debug == true) {
 			console.log("write_html_progress_report:", default_settings.write_html_progress_report);
@@ -1733,6 +1860,44 @@
 		}
 	}
 
+	function update_docker_config() {
+
+		///////////////////////////////////////
+		// Piece together Docker compose.yml //
+		///////////////////////////////////////
+		docker_compose_config = docker_compose_services;
+		docker_compose_config = docker_compose_config.concat(docker_compose_loudness_correction);
+
+		if (default_settings.write_html_progress_report == true) {
+			docker_compose_config = docker_compose_config.concat(docker_compose_progress_report);
+		}
+
+		if (default_settings.heartbeat == true) {
+			docker_compose_config = docker_compose_config.concat(docker_compose_heartbeat_checker);
+		}
+
+		docker_compose_config = docker_compose_config.concat(docker_compose_networks);
+
+		///////////////////////////////
+		// Piece together Dockerfile //
+		///////////////////////////////
+		dockerfile = dockerfile_base_image;
+		dockerfile = dockerfile.concat(dockerfile_loudness_correction);
+
+		if (default_settings.write_html_progress_report == true) {
+			dockerfile = dockerfile.concat(dockerfile_progress_report);
+		}
+
+		if (default_settings.heartbeat == true) {
+			dockerfile = dockerfile.concat(dockerfile_heartbeat_checker);
+		}
+
+		if (debug == true) {
+			console.log(docker_compose_config);
+			console.log(dockerfile);
+		}
+	}
+
 	function startup_initialization() {
 		populateProcessors();
 		populateFileExpiryTime();
@@ -1865,6 +2030,11 @@
 		// Print the number of options in default_settings - variable //
 		////////////////////////////////////////////////////////////////
 		default_settings.number_of_all_items_in_dictionary = Object.keys(default_settings).length;
+
+		/////////////////////////////////
+		// Compile Docker config files //
+		/////////////////////////////////
+		update_docker_config();
 
 		if (debug == true) {
 			console.log("default_settings.length", default_settings.number_of_all_items_in_dictionary);

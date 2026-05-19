@@ -476,7 +476,8 @@ func main() {
 	if heartbeat_checker_enabled, ok := all_settings_dict["heartbeat"]; ok {
 
 		if heartbeat_checker_enabled == false {
-			log.Fatal("Heartbeat_checker is disabled in LoudnessCorrection_Settings.json, exiting now")
+			fmt.Println("Heartbeat_checker is disabled in LoudnessCorrection_Settings.json, exiting now")
+			os.Exit(0)
 		}
 	}
 

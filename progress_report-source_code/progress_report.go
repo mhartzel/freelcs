@@ -261,7 +261,8 @@ func main() {
 	if progress_report_enabled, ok := default_settings["write_html_progress_report"]; ok {
 
 		if progress_report_enabled == false {
-			log.Fatal("Progress_report is disabled in LoudnessCorrection_Settings.json, exiting now")
+			fmt.Println("Progress_report is disabled in LoudnessCorrection_Settings.json, exiting now")
+			os.Exit(0)
 		}
 	}
 
