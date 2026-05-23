@@ -1,0 +1,27 @@
+[Unit]
+Description=FreeLCS Docker Image Backup, Security Update, Host OS Security Update And Reboot
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+# CRITICAL: Set this to the absolute path of the directory containing your FreeLCS compose.yml
+WorkingDirectory=/home/mika/freelcs
+ExecStart=/home/mika/freelcs/backup_freelcs_docker_images.py
+
+# Power off FreeLCD docker - images
+ExecStart=/usr/bin/docker compose down
+
+# Rebuild FreeLCS docker images again with latest security updates
+ExecStart=/usr/bin/docker compose build --no-cache
+
+# Uncomment these lines if you also want to get security updates for your host Ubuntu machine and reboot it
+# Install host machine Ubuntu updates
+# ExecStart=/usr/bin/apt-get -y update
+# ExecStart=RUN DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -y upgrade
+
+# Reboot host machine for the security updates to take effect
+# /usr/sbin/reboot
+
+[Install]
+WantedBy=multi-user.target

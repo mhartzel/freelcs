@@ -1,0 +1,12 @@
+[Unit]
+Description=Periodically run backup_freelcs_docker_images.service
+
+[Timer]
+# Set here when "backup_freelcs_docker_images.service" should run
+OnCalendar=Mon 05:00:00
+
+# Ensures the timer links directly to your service file
+Unit=backup_freelcs_docker_images.service
+
+[Install]
+WantedBy=timers.target

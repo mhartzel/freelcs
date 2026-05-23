@@ -633,7 +633,17 @@
 </div>
 <div class="file-load-save">
 	<div class="default-styling-group">
-		<label for="Save settings to a file">Save all these settings files to the unzipper FreeLCS directory</label>
+		<label for="Save settings to a file">Save all these setting-files to your unzipped FreeLCS folder
+			<span class="icon-container">
+				<span class="help-icon" id="save_settings">?</span>
+				<span class="tooltip" id="save_settings_tooltip_text">
+					Save all these settings to the same directory as<br>
+					"LoudnessCorrection.py" and "backup_and upgrade_freelcs_images.py"<br>
+					Then copy this directory to the machine you are instaling FreeLCS<br>
+
+				</span>
+			</span>
+		</label>
 	</div>
 	<p>Save FreeLCS - settings to a json - file</p>
 	<button onclick="check_if_email_settings_are_ok()">Save</button>
@@ -731,7 +741,7 @@
 
 	const docker_compose_services = [ "services:\n " ]
 
-	const docker_compose_loudness_correction = [ "  loudness_correction:\n",
+	const docker_compose_loudness_correction = [ " loudness_correction:\n",
 	'    build:\n',
 	"      target: loudness_correction\n",
 	"    networks:\n",
@@ -791,7 +801,7 @@
 	"RUN ldconfig\n",
 	"RUN chmod 755 /usr/bin/LoudnessCorrection.py /usr/bin/loudness-freelcs /usr/bin/freelcs_startup_file.sh ; chmod 644 /etc/LoudnessCorrection_Settings.json /etc/samba/smb.conf /usr/lib/libinput_sndfile-freelcs.so\n",
 	"RUN useradd -M -s /sbin/nologin freelcs\n",
-	`RUN /bin/bash -c "echo -e 'freelcs\nfreelcs' | smbpasswd -a freelcs"\n`,
+	`RUN /bin/bash -c "echo -e 'freelcs\\nfreelcs' | smbpasswd -a freelcs"\n`,
 	"EXPOSE 445\n",
 	"# USER freelcs\n",
 	'# CMD ["/usr/bin/python3", "/usr/bin/LoudnessCorrection.py", "-configfile", "/etc/LoudnessCorrection_Settings.json" ]\n',

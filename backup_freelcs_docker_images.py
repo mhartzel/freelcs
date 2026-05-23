@@ -162,31 +162,79 @@ def create_timestamp(return_date = True, return_time = True, return_unix_ticks =
 # Main program starts here #
 ############################
 debug = False
-user_given_target_dir = ""
+backups_to_keep_found = False
 backups_to_keep = 10
+backupdir_found = False
+user_given_backupdir = ""
+freelcs_dockerfile_dir_found = False
+freelcs_dockerfile_dir = ""
 
-if len(sys.argv) > 1:
-	user_given_target_dir = sys.argv[1]
+for item in sys.argv[1:]:
 
-	if debug == True:
-		print()
-		print("user_given_target_dir:", user_given_target_dir)
+	if item.lower() in [ '-backups_to_keep', '-k' ]:
+		backups_to_keep_found = True
+		continue
 
-if len(sys.argv) > 2:
-	backups_to_keep = sys.argv[2]
+	if item.lower() in ['-backup_dir', '-b']:
+		backupdir_found = True
+		continue
 
-	if debug == True:
-		print()
-		print("backups_to_keep:", backups_to_keep)
+	if item in [ '-freelcs_dockerfile_dir', '-d']:
+		freelcs_dockerfile_dir_found = True
+		continue
 
-if user_given_target_dir != "":
+	if backups_to_keep_found == True:
+		backups_to_keep = int(item)
+		backups_to_keep_found = False
+		continue
+
+	if backupdir_found == True:
+		user_given_backupdir = item
+		backupdir_found = False
+		continue
+
+	if freelcs_dockerfile_dir_found == True:
+		freelcs_dockerfile_dir = item
+		freelcs_dockerfile_dir_found = False
+		continue
+
+if debug == True:
+	print()
+	print("backups_to_keep:", backups_to_keep)
+	print("user_given_backupdir:", user_given_backupdir)
+	print("freelcs_dockerfile_dir:", freelcs_dockerfile_dir)
+	print()
+
+if user_given_backupdir == "" or freelcs_dockerfile_dir == "" or sys.argv[1].startswith("-h") or sys.argv[1].startswith("--h"):
+	print()
+	print("This program will backup freelcs docker images and then shut them down and upgrade base ubuntu image" )
+	print("with latest security updates. Then freelcs docker images will be rebuilt with the ubuntu image and started up." )
+	print()
+	print("Set this program to automatically run weekly right before your host machine Linux security updates.")
+	print()
+	print("Usage:")
+	print("./backup_and_upgrade_freelcs_images.py -backups_to_keep 12 -backup_dir /home/mikael/Downloads -freelcs_dockerfile_dir /home/mikael/freelcs")
+	print()
+	print("Or")
+	print()
+	print("./backup_and_upgrade_freelcs_images.py -k 12 -b /home/mikael/Downloads -d /home/mikael/freelcs")
+	print()
+	print("-k or -backups_to_keep: Keep this many latest freelcs backups and delete others.")
+	print("-b or -backup-dir: Directory named 'freelcs_docker_image_backups' will be create in backup_dir for backup files")
+	print("-d or -freelcs_dockerfile_dir: Directory where freelcs compose.yml and Dockerfile are located.")
+	print("")
+	print("")
+	print()
+	sys.exit(0)
+
+if user_given_backupdir != "":
 	temp_tuple = create_timestamp(return_date = True, return_time = True, return_unix_ticks = False)
 	date_string = temp_tuple[0]
 	time_string = temp_tuple[1]
 
-	if os.path.exists(user_given_target_dir) == False or os.path.isdir(user_given_target_dir) == False:
+	if os.path.exists(user_given_backupdir) == False or os.path.isdir(user_given_backupdir) == False:
 		print()
-		print(date_string, time_string, "Path does not exists:", user_given_target_dir)
+		print(date_string, time_string, "Path does not exists:", user_given_backupdir)
 		sys.exit(1)
 
 # Check that we can find the docker executable
@@ -207,7 +255,7 @@ if debug == True:
 	print("user_home_dir:", user_home_dir)
 
 # Find the names of freelcs docker images
-command_to_run = ['docker', 'ps', '-a']
+command_to_run = [docker_path, 'ps', '-a']
 
 if debug == True:
 	print("command_to_run:", command_to_run)
@@ -252,22 +300,22 @@ for text_line in freelcs_image_names:
 if debug == True:
 	print(image_names)
 
-target_dir = ""
-if user_given_target_dir == "":
-	target_dir = user_home_dir + os.sep + "freelcs_docker_image_backups"
+backupdir = ""
+if user_given_backupdir == "":
+	backupdir = user_home_dir + os.sep + "freelcs_docker_image_backups"
 else:
-	target_dir = user_given_target_dir + os.sep + "freelcs_docker_image_backups"
+	backupdir = user_given_backupdir + os.sep + "freelcs_docker_image_backups"
 
 
 if debug == True:
 	print()
-	print("target_dir:", target_dir)
+	print("backupdir:", backupdir)
 
 # There needs to be a couple of directories in the target path, if they do not exist create them.
-if (not os.path.exists(target_dir)):
-	os.makedirs(target_dir)
+if (not os.path.exists(backupdir)):
+	os.makedirs(backupdir)
 
-document_file_name = target_dir + os.sep + "00-How_To_Restore_Docker_Image_Backups.txt"
+document_file_name = backupdir + os.sep + "00-How_To_Restore_Docker_Image_Backups.txt"
 
 # Write a text document to the backup directory describing how to restore backups
 if (not os.path.exists(document_file_name)):
@@ -312,14 +360,18 @@ if (not os.path.exists(document_file_name)):
 		print('\nUser cancelled operation.\n')
 		sys.exit(0)
 	except IOError as reason_for_error:
-		error_message = 'Error writing backup restore instructions to a text file in: ' + target_dir + ' ' + reason_for_error
+		error_message = 'Error writing backup restore instructions to a text file in: ' + backupdir + ' ' + reason_for_error
 	except OSError as reason_for_error:
-		error_message = 'Error writing backup restore instructions to a text file in: ' + target_dir + ' ' + reason_for_error
+		error_message = 'Error writing backup restore instructions to a text file in: ' + backupdir + ' ' + reason_for_error
+
+if len(image_names) == 0:
+	print()
+	print(date_string, time_string, "No freelcs docker images found")
 
 # Backup FreeLCS image files
 for names in image_names:
 
-	backup_file_name = target_dir + os.sep + names[0]
+	backup_file_name = backupdir + os.sep + names[0]
 	image_name = names[1]
 
 	temp_tuple = create_timestamp(return_date = True, return_time = True, return_unix_ticks = False)
@@ -328,7 +380,7 @@ for names in image_names:
 
 	print(date_string, time_string, "Backing up docker image to:", backup_file_name)
 
-	command_to_run = ['docker', 'save', '-o', backup_file_name, image_name]
+	command_to_run = [docker_path, 'save', '-o', backup_file_name, image_name]
 	command_output = run_external_command(command_to_run)
 
 	if command_output != "":
@@ -347,7 +399,7 @@ for names in image_names:
 		print("command_output:", command_output)
 
 # Get FreeLCS backup names from the backup directory
-backup_files = find_files_in_a_directory("freelcs", target_dir)
+backup_files = find_files_in_a_directory("freelcs", backupdir)
 
 if debug == True:
 	print()
@@ -416,8 +468,8 @@ else:
 			filenames = backups[backup_to_delete]
 
 			for filename in filenames:
-				os.remove(target_dir + os.sep + filename)
-				print("     Deleted :", target_dir + os.sep + filename)
+				os.remove(backupdir + os.sep + filename)
+				print("     Deleted :", backupdir + os.sep + filename)
 
 	except KeyboardInterrupt:
 		print('\nUser cancelled operation.\n')
@@ -428,8 +480,5 @@ else:
 	except OSError as reason_for_error:
 		error_message = 'Error deleting file: ' + backup_to_delete + ' ' + str(reason_for_error)
 		sys.exit(1)
-
-# TODO
-# Stop FreeLCS containers, rebuild and start new ones.
 
 
