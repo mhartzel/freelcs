@@ -5,23 +5,45 @@ Requires=docker.service
 
 [Service]
 Type=oneshot
-# CRITICAL: Set this to the absolute path of the directory containing your FreeLCS compose.yml
-WorkingDirectory=/home/mika/freelcs
-ExecStart=/home/mika/freelcs/backup_freelcs_docker_images.py
+Environment="DEBIAN_FRONTEND=noninteractive"
 
-# Power off FreeLCD docker - images
+####################################################################
+# Critical: Edit settings between this and the line marked as: END #
+####################################################################
+
+# Set WorkingDirectory to the absolute path of the directory containing your FreeLCS compose.yml
+WorkingDirectory=/home/mika/freelcs
+
+# Edit the command below to match your envrironment
+# -backups_to_keep Will delete oldest FreeLCS docker image backups if there are more than this (default 12) in the backup dir
+# If you run backups weekly this will keep 3 months of latest backups
+# -backupdir This will create a dir "docker_image_backups" into the path defined here for FreeLCS docker image backups
+# -freelcs_dockerfile_dir This must be the path where FreeLCS files and its compose.yml are located
+ExecStart=/home/mika/freelcs/backup_freelcs_docker_images.py -backups_to_keep 12 -backup_dir /home/mika/freelcs -freelcs_dockerfile_dir /home/mika/freelcs
+
+############################## END ##################################
+
+# Delete docker build-cache
+ExecStart=/usr/bin/docker buildx prune -f
+
+# Delete not running docker containers and images not associated to running containers
+ExecStart=/usr/bin/docker system prune -a -f
+
+# Shut down FreeLCD docker - containers
 ExecStart=/usr/bin/docker compose down
 
-# Rebuild FreeLCS docker images again with latest security updates
+# Rebuild FreeLCS docker images with latest security updates
 ExecStart=/usr/bin/docker compose build --no-cache
 
-# Uncomment these lines if you also want to get security updates for your host Ubuntu machine and reboot it
-# Install host machine Ubuntu updates
-# ExecStart=/usr/bin/apt-get -y update
-# ExecStart=RUN DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -y upgrade
+# Start FreeLCS docker containers again
+ExecStart=/usr/bin/docker compose up -d
 
-# Reboot host machine for the security updates to take effect
-# /usr/sbin/reboot
+#################################################################################################################
+# Uncomment lines below if you also want to install security updates for your host Ubuntu machine and reboot it #
+#################################################################################################################
+# ExecStart=/usr/bin/apt-get -y update
+# ExecStart=/usr/bin/apt-get -y upgrade
+# ExecStart=/usr/sbin/reboot
 
 [Install]
 WantedBy=multi-user.target
