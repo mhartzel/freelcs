@@ -3289,7 +3289,7 @@ def debug_lists_and_dictionaries_thread():
 		characters_in_ascii = '' 
 
 		for item in variable_string:
-			characters_in_ascii = characters_in_ascii + str(ord(item)) + ', ' 
+			characters_in_ascii = characters_in_ascii + item + ', ' 
 		characters_in_ascii = characters_in_ascii[0:len(characters_in_ascii)-2]
 		values_read_from_configfile.append('unit_separator (ascii numbers) = ' + characters_in_ascii)
 
@@ -3297,7 +3297,7 @@ def debug_lists_and_dictionaries_thread():
 		characters_in_ascii = '' 
 
 		for item in variable_string:
-			characters_in_ascii = characters_in_ascii + str(ord(item)) + ', ' 
+			characters_in_ascii = characters_in_ascii + item + ', ' 
 		characters_in_ascii = characters_in_ascii[0:len(characters_in_ascii)-2]
 		values_read_from_configfile.append('record_separator (ascii numbers) = ' + characters_in_ascii)
 
@@ -5516,7 +5516,7 @@ def write_user_defined_configuration_settings_to_logfile():
 	user_defined_configuration_options.append('language = ' + all_settings_dict['language'])
 	user_defined_configuration_options.append('english = ' + str(all_settings_dict['english']))
 	user_defined_configuration_options.append('finnish = ' + str(all_settings_dict['finnish']))
-	user_defined_configuration_options.append('hotfolder_path = ' + all_settings_dict['hotfolder_path'])
+	user_defined_configuration_options.append('hotfolder_path = ' + target_path + os.sep + all_settings_dict['hotfolder_name'])
 	user_defined_configuration_options.append('directory_for_temporary_files = ' + all_settings_dict['directory_for_temporary_files'])
 	user_defined_configuration_options.append('directory_for_results = ' + all_settings_dict['directory_for_results'])
 	user_defined_configuration_options.append('directory_for_error_logs = ' + all_settings_dict['directory_for_error_logs'])
@@ -5560,7 +5560,8 @@ def write_user_defined_configuration_settings_to_logfile():
 	characters_in_ascii = '' 
 
 	for item in variable_string:
-		characters_in_ascii = characters_in_ascii + str(ord(item)) + ', ' 
+		characters_in_ascii = characters_in_ascii + item + ', ' 
+
 	characters_in_ascii = characters_in_ascii[0:len(characters_in_ascii)-2]
 	user_defined_configuration_options.append('unit_separator (ascii numbers)  = ' + characters_in_ascii)
 
@@ -5568,7 +5569,8 @@ def write_user_defined_configuration_settings_to_logfile():
 	characters_in_ascii = ''
 
 	for item in variable_string:
-		characters_in_ascii = characters_in_ascii + str(ord(item)) + ', '
+		characters_in_ascii = characters_in_ascii + item + ', '
+
 	characters_in_ascii = characters_in_ascii[0:len(characters_in_ascii)-2]
 	user_defined_configuration_options.append('record_separator (ascii numbers)  = ' + characters_in_ascii)
 	user_defined_configuration_options.append('----------------------------------------------------------------------------------------------------')

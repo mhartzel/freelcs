@@ -15,7 +15,7 @@ import os
 import sys
 import shutil
 import subprocess
-import pickle
+import json
 import smtplib
 import email
 import email.mime
@@ -27,7 +27,6 @@ import getpass
 def read_text_lines_in_mediainfo_files_to_dictionary(directory_for_mediainfo_files):
 	
 	mediainfo_results_dict = {}
-	global list_of_test_result_text_lines
 	error_happened = False
 	error_message = ''
 	path = ''
@@ -209,12 +208,17 @@ def link_test_files_to_target_directory(list_of_testfile_paths, target_directory
 
 	error_happened = False
 	error_message = ''
+	counter = 0
+
+	if debug == True:
+		print("Linking:", len(list_of_testfile_paths), "to:", target_directory)
 
 	for sourcefile in list_of_testfile_paths:
 
 		targetfile = target_directory + os.sep + os.path.split(sourcefile)[1]
 		try:
 			os.link(sourcefile, targetfile)
+			counter = counter + 1
 
 		# Error routines for possible errors linking files
 		except KeyboardInterrupt:
@@ -227,6 +231,11 @@ def link_test_files_to_target_directory(list_of_testfile_paths, target_directory
 		except OSError as reason_for_error:
 			error_happened = True
 			error_message = 'Error linking: ' + sourcefile + str(reason_for_error)
+
+	if counter == 0:
+		print()
+		print("Error: No files linked to target directory:", target_directory)
+		sys.exit(1)
 
 	return(error_happened, error_message)
 
@@ -328,13 +337,23 @@ def move_files_to_a_new_directory(source_directory, target_directory):
 	for path, list_of_directories, list_of_files in os.walk(source_directory):
 		break
 
+	if debug == True:
+		print("Moving:", len(list_of_files), "files from directory:", source_directory, "to:", target_directory)
+
 	for file_name in list_of_files:
 		shutil.move(source_directory + os.sep + file_name,   target_directory + os.sep + file_name)
 
 def move_list_of_files_to_target_directory(list_of_source_files, target_directory):
 
 	if not os.path.exists(target_directory):
+
+		if debug == True:
+			print("Directory:", target_directory, "not found, creating it")
+
 		os.makedirs(target_directory)
+
+	if debug == True:
+		print("Moving:", len(list_of_source_files), "files to:", target_directory)
 
 	for file_name in list_of_source_files:
 		shutil.move(file_name, target_directory)
@@ -405,7 +424,7 @@ def print_info_about_usage():
 
 def read_loudnesscorrection_config_file():
 
-	configfile_path = '/etc/Loudness_Correction_Settings.pickle'
+	configfile_path = '/etc/LoudnessCorrection_Settings.json'
 
 	# Read the config variables from a file. The file contains a dictionary with the needed values.
 	all_settings_dict = {}
@@ -413,7 +432,7 @@ def read_loudnesscorrection_config_file():
 
 	try:
 		with open(configfile_path, 'rb') as configfile_handler:
-			all_settings_dict = pickle.load(configfile_handler)
+			all_settings_dict = json.load(configfile_handler)
 	except KeyboardInterrupt:
 		print('\n\nUser cancelled operation.\n')
 		sys.exit(0)
@@ -428,8 +447,8 @@ def read_loudnesscorrection_config_file():
 		sys.exit(1)
 
 	# Configfile was read successfully, assign values from it to our variables overriding script defaults defined in the start of this script.
-	if 'hotfolder_path' in all_settings_dict:
-		hotfolder_path = all_settings_dict['hotfolder_path']
+	if 'hotfolder_name' in all_settings_dict:
+		hotfolder_path = all_settings_dict['target_path'] + os.sep + all_settings_dict['hotfolder_name']
 	if 'directory_for_results' in all_settings_dict:
 		directory_for_results = all_settings_dict['directory_for_results']
 	if 'directory_for_error_logs' in all_settings_dict:
@@ -512,6 +531,13 @@ def run_external_program(commands_to_run):
 		error_message = 'Error deleting stdout- or stderr - file: ' + ' '.join(commands_to_run) + '. ' + str(reason_for_error)
 		list_of_errors.append(error_message)
 
+	if debug == True:
+		print()
+		print("Running command:", commands_to_run, "reported error:")
+
+		for item in list_of_errors:
+			print(item)
+
 	return(list_of_command_output, error_happened, list_of_errors)
 
 def get_realtime():
@@ -577,28 +603,28 @@ def send_email(message_title, message_text_string, message_attachment_path, emai
 
 	# Start communication with the smtp-server.
 	try:
-		 mailServer = smtplib.SMTP(smtp_server_name, smtp_server_port, 'localhost', 15) # Timeout is set to 15 seconds.
-		 mailServer.ehlo()
+		mailServer = smtplib.SMTP(smtp_server_name, smtp_server_port, 'localhost', 15) # Timeout is set to 15 seconds.
+		mailServer.ehlo()
 
-		 # Check if message size is below the max limit the smpt server announced.
-		 message_size_is_within_limits = True # Set the default that is used if smtp-server does not annouce max message size.
-		 if 'size' in mailServer.esmtp_features:
-			 server_max_message_size = int(mailServer.esmtp_features['size']) # Get smtp server announced max message size
-			 message_size = len(email_message_content_string) # Get our message size
-			 if message_size > server_max_message_size: # Message is too large for the smtp server to accept, abort sending.
-				 message_size_is_within_limits = False
-				 list_of_test_result_text_lines.append('Error sending email: ' + 'Message_size (' + str(message_size), ') is larger than the max supported size (' + str(server_max_message_size) + ') of server: ' + smtp_server_name + 'Sending aborted.')
-				 sys.exit(1)
-		 if message_size_is_within_limits == True:
-			 # Uncomment the following line if you want to see printed out the final message that is sent to the smtp server
-			 # print('email_message_content_string =', email_message_content_string)
-			 if use_tls == True:
-				 mailServer.starttls()
-				 mailServer.ehlo() # After starting tls, ehlo must be done again.
-			 if smtp_server_requires_authentication == True:
-				 mailServer.login(smtp_username, smtp_password)
-			 mailServer.sendmail(smtp_username, message_recipients, email_message_content_string)
-		 mailServer.close()
+		# Check if message size is below the max limit the smpt server announced.
+		message_size_is_within_limits = True # Set the default that is used if smtp-server does not annouce max message size.
+		if 'size' in mailServer.esmtp_features:
+		        server_max_message_size = int(mailServer.esmtp_features['size']) # Get smtp server announced max message size
+		        message_size = len(email_message_content_string) # Get our message size
+		        if message_size > server_max_message_size: # Message is too large for the smtp server to accept, abort sending.
+		       	 message_size_is_within_limits = False
+		       	 list_of_test_result_text_lines.append('Error sending email: ' + 'Message_size (' + str(message_size), ') is larger than the max supported size (' + str(server_max_message_size) + ') of server: ' + smtp_server_name + 'Sending aborted.')
+		       	 sys.exit(1)
+		if message_size_is_within_limits == True:
+		        # Uncomment the following line if you want to see printed out the final message that is sent to the smtp server
+		        # print('email_message_content_string =', email_message_content_string)
+		        if use_tls == True:
+		       	 mailServer.starttls()
+		       	 mailServer.ehlo() # After starting tls, ehlo must be done again.
+		        if smtp_server_requires_authentication == True:
+		       	 mailServer.login(smtp_username, smtp_password)
+		        mailServer.sendmail(smtp_username, message_recipients, email_message_content_string)
+		mailServer.close()
 
 	except smtplib.socket.timeout as reason_for_error:
 		list_of_test_result_text_lines.append('Error sending email: ' + 'Timeout error: ' + str(reason_for_error))
@@ -746,8 +772,6 @@ def shutdown_computer(password):
 
 def find_program_in_os_path(program_name_to_find):
 
-	global os_name
-
 	# Find a program in the operating system path. Returns the full path to the program (search for python3 returns: '/usr/bin/python3').
 	program_path = ''
 	os_environment_list = os.environ["PATH"].split(os.pathsep)
@@ -763,6 +787,8 @@ def find_program_in_os_path(program_name_to_find):
 # Main #
 ########
 
+# debug = True
+debug = False
 list_of_result_file_directories = ['ffmpeg-truepeak', 'ffmpeg-samplepeak', 'native-truepeak', 'native-samplepeak']
 list_of_result_file_names = ['debug-file_processing_info-', 'debug-variables_lists_and_dictionaries-', 'error_log-', 'measured_loudness_of_loudness_corrected_files.txt', 'loudness_calculation_log-']
 list_of_test_result_text_lines = []
@@ -782,7 +808,7 @@ email_sending_details =  {}
 home_directory_for_the_current_user = os.path.expanduser('~')
 
 path_to_loudnesscorrection_script = '/usr/bin/LoudnessCorrection.py'
-path_to_loudnesscorrection_config_file = '/etc/Loudness_Correction_Settings.pickle'
+path_to_loudnesscorrection_config_file = '/etc/LoudnessCorrection_Settings.json'
 list_of_loudnesscorrection_commands_to_run = [[path_to_loudnesscorrection_script, '-configfile', path_to_loudnesscorrection_config_file,'-debug_all' , '-force-truepeak', '-force-quit-when-idle']]
 list_of_loudnesscorrection_commands_to_run.append([path_to_loudnesscorrection_script, '-configfile', path_to_loudnesscorrection_config_file,'-debug_all' , '-force-samplepeak', '-force-quit-when-idle'])
 list_of_loudnesscorrection_commands_to_run.append([path_to_loudnesscorrection_script, '-configfile', path_to_loudnesscorrection_config_file,'-debug_all' , '-force-truepeak', '-force-quit-when-idle','-force-no-ffmpeg'])
@@ -927,6 +953,19 @@ if ('-shutdown' in sys.argv) or ('-shut-down' in sys.argv):
 		print()
 		sys.exit()
 
+if debug == True:
+	print("path_to_known_good_results_dir:", path_to_known_good_results_dir)
+	print("path_to_loudnesscorrection_config_file:", path_to_loudnesscorrection_config_file)
+	print("list_of_loudnesscorrection_commands_to_run:")
+	print("-------------------------------------------")
+
+	for item in list_of_loudnesscorrection_commands_to_run:
+		print(item)
+
+	print("dir_of_test_files:", dir_of_test_files)
+	print("path_to_results_comparison_script:", path_to_results_comparison_script)
+	print("path_to_known_good_results_dir:", path_to_known_good_results_dir)
+
 list_of_test_result_text_lines.append('')
 
 # Print information gathered so far.
@@ -938,6 +977,10 @@ last_printed_test_result_text_line = len(list_of_test_result_text_lines)
 # Find the processes from ps output, keywords are 'LoudnessCorrection.py', '-force-quit-when-idle', '-debug_all' no other process uses all these commandline options.
 command_to_run = ['/bin/ps', 'aux']
 processes_to_stop = []
+
+if debug == True:
+	print("Running command:", command_to_run)
+
 list_of_command_output, error_happened, list_of_errors = run_external_program(command_to_run)
 
 for line in list_of_command_output:
@@ -962,6 +1005,10 @@ for line in list_of_command_output:
 # Here we try to find if package  'pulseaudio'  is installed, if it is then the we are running on a 'Desktop' - version of the os.
 os_is_server_or_desktop_version = 'desktop'
 commands_to_run = ['dpkg', '-l', 'pulseaudio']
+
+if debug == True:
+	print("Running command:", command_to_run)
+
 list_of_command_output, error_happened, list_of_errors = run_external_program(commands_to_run)
 
 if error_happened == False:
@@ -979,14 +1026,34 @@ if error_happened == False:
 hotfolder_path, directory_for_results, directory_for_error_logs, email_sending_details, os_name, os_version, target_loudness = read_loudnesscorrection_config_file()
 directory_for_old_error_logs = directory_for_error_logs + os.sep + '00-Old_Error_Logs'
 
+if debug == True:
+	print("hotfolder_path:", hotfolder_path)
+	print("directory_for_results:", directory_for_results)
+	print("directory_for_error_logs:", directory_for_error_logs)
+	print("os_name:", os_name)
+	print("os_version:", os_version)
+	print("target_loudness:", target_loudness)
+
 # Check if path defined in LoudnessCorrection settings file exist, if not create
 if os.path.exists(hotfolder_path) == False:
+
+	if debug == True:
+		print("Directory:", hotfolder_path, "does not exist, creating it")
+
 	os.makedirs(hotfolder_path)
 
 if os.path.exists(directory_for_results) == False:
+
+	if debug == True:
+		print("Directory:", directory_for_results, "does not exist, creating it")
+
 	os.makedirs(directory_for_results)
 
 if os.path.exists(directory_for_error_logs) == False:
+
+	if debug == True:
+		print("Directory:", directory_for_error_logs, "does not exist, creating it")
+
 	os.makedirs(directory_for_error_logs)
 
 
@@ -1219,6 +1286,11 @@ for test_counter in range(0,4):
 	#############################
 	# Run LoudnessCorrection.py #
 	#############################
+
+	if debug == True:
+		print()
+		print("Running command:", loudness_correction_test_run_commands)
+
 	list_of_command_output, error_happened, list_of_errors = run_external_program(loudness_correction_test_run_commands)
 
 	######################################################################
