@@ -42,10 +42,6 @@
     <p>If you would like to integrate FreeLCS as a loudness measurement step in
       your automated file processing workflow, then you might want to change the
       defaults.</p>
-    <p><br>
-    </p>
-    <img alt="" src="Pictures/Installation-17.jpg"><br>
-    <br>
     <br>
     When you set "<strong>Use FreeLCS file output defaults</strong>" to "<strong>No</strong>",
     then you can change settings for the output files FreeLCS creates.<br>
@@ -61,11 +57,9 @@
     readable file. You might want this if some other device needs to read in
     loudness measurement results to make a decision about how the file is
     processed further.<br>
-    <p><br>
-    </p>
-    <img alt="" src="Pictures/Installation-18.jpg">
-    <p><br>
-    </p>
+    <br>
+    <img alt="" style="border:2px solid #AAAAAA" src="Pictures/FreeLCS_4_configuration-04.png">
+    <br>
     <h2><a id="Separator_characters_in_the_machine_readable_results_file">Separator
         characters in the machine readable results file</a></h2>
     <p>There can be many audio streams in one input file, FreeLCS writes these
@@ -509,7 +503,7 @@
       mixes in the remix map, then the extra channels are not used for anything.</p>
     <p><br>
     </p>
-    <img alt="" src="Pictures/MXF_Remixing-01.jpg">
+    <img alt="" style="border:2px solid #AAAAAA" src="Pictures/FreeLCS_4_configuration-05.png">
     <p><br>
     </p>
     <h3><a id="File_specific_MXF_remix_map">File specific MXF remix map</a></h3>
@@ -607,37 +601,20 @@
       channel 4 left of physical file 4 and that fulfills the last remix map
       definition for 1 channels. After the fourth mix is created channels left
       in physical audio files: <strong>0, 0, 0, 0</strong>.</p>
-    <p></p>
-    <p><br>
-    </p>
-    <p><br>
-    </p>
-    <h2><a id="FFmpeg_allowed_wrapper_and_codec_formats">FFmpeg allowed wrapper
-        and codec formats</a></h2>
+    <br>
+    <h2><a id="FFmpeg_allowed_wrapper_and_codec_formats">FFmpeg allowed wrapper and codec formats</a></h2>
     <p>In FreeLCS 3.0 it is possible to restrict FFmpeg to only process a small
       set of formats or allow it to process all formats it supports. This
       feature is mainly designed to allow the user to restrict processing only
       to patent free formats. Format patentability varies from country to
       country, see more about it in <a href="FreeLCS_FAQ.html#Libav-tools%20/%20FFmpeg%20and%20patents">FAQ</a>.</p>
-    <p><br>
+    <p>
     </p>
     <p>If you enabled MXF remixing, then you must allow MXF wrapper format
       processing. In the picture below FFmpeg is allowed to process all formats
       it supports (All includes MXF :)</p>
-    <p><br>
-    </p>
-    <img alt="" src="Pictures/MXF_Remixing-02.jpg"><br>
+    <img alt="" style="border:2px solid #AAAAAA" src="Pictures/FreeLCS_4_configuration-07.png">
     <br>
-    <br>
-    In the following picture FFmpeg processing has been restricted to wrapper
-    formats: <strong>Wav, Flac, Ogg, Matroska, AC-3, Mpeg 1 Layers 1, 2 and 3,
-      MXF, Webm&nbsp;</strong> and codec formats: <strong>PCM, Flac, Vorbis,
-      Opus, AC-3, Mpeg 1 layers 1, 2 and 3</strong>.<br>
-    <br>
-    <br>
-    <img alt="" src="Pictures/MXF_Remixing-03.jpg"><br>
-    <p><br>
-    </p>
     <p>The option "<strong>Mp4</strong>" enables wrapper formats: <strong>mp4,
         m4v, m4a</strong> and formats based on mp4: <strong>mov, 3gp, 3g2, mj2</strong>.<br>
     </p>

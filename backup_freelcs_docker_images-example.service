@@ -12,14 +12,15 @@ Environment="DEBIAN_FRONTEND=noninteractive"
 ####################################################################
 
 # Set WorkingDirectory to the absolute path of the directory containing your FreeLCS compose.yml
-WorkingDirectory=/home/mika/freelcs
+WorkingDirectory=/home/mika/FreeLCS-4.0
 
 # Edit the command below to match your envrironment
-# -backups_to_keep Will delete oldest FreeLCS docker image backups if there are more than this (default 12) in the backup dir
-# If you run backups weekly this will keep 3 months of latest backups
+# Example: ExecStart=/home/mika/freelcs/backup_freelcs_docker_images.py -backups_to_keep 12 -backup_dir /home/mika/freelcs -freelcs_dockerfile_dir /home/mika/freelcs
+# -backups_to_keep Will delete oldest FreeLCS docker image backups if there are more than this in the backup dir
 # -backupdir This will create a dir "docker_image_backups" into the path defined here for FreeLCS docker image backups
 # -freelcs_dockerfile_dir This must be the path where FreeLCS files and its compose.yml are located
-ExecStart=/home/mika/freelcs/backup_freelcs_docker_images.py -backups_to_keep 12 -backup_dir /home/mika/freelcs -freelcs_dockerfile_dir /home/mika/freelcs
+
+ExecStart=/home/mika/FreeLCS-4.0/backup_freelcs_docker_images.py
 
 ############################## END ##################################
 
