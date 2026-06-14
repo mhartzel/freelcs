@@ -1,5 +1,23 @@
 
 #####################################
+# Released FreeLCS 4.0 with:        #
+# ----------------------------      #
+# - LoudnessCorrection version 400  #
+# - HeartBeat_Checker version 400   #
+# - Progress_Report version 400     #
+# - Latest Documentation            #
+#####################################
+- FreeLCS is now installed and run inside the Docker environment. Installation on top of bare Ubuntu or Debian is now longer supported. This is quite a big change and completely changes how FreeLCS is configured, installed and maintained. In my opinion this makes installation and maintenance quite a bit easier.
+- FreeLCS 4.0 requires installing the Docker environment.
+- FreeLCS 4.0 has the same capabilities as the 3.x version of it.
+- Configration is now edited and saved with a web browser.
+- As all configuration files and apps are stored in one directory outside Docker containers it is easy to duplicate or move FreeLCS and its configuration onto other computers.
+- During installation the Ubuntu LTS Docker - image is downloaded and FreeLCS images are built upon that.
+- A maintenance script is included that is able to backup FreeLCS Docker - images, delete the current ones and rebuild them with the latest Ubuntu LTS Docker - image and security updates. This script is also able to update the Docker host computer operating system if it is Ubuntu LTS. Instructions are provided how to setup periodic FreeLCS image backup and recreation with security updates.
+- The preferred (and supported) operating system for the Docker host - computer is Ubuntu 26.04 LTS but it may be possible to use any other Linux distro since FreeLCS Docker images will contain all dependencies FreeLCS needs. For example I have successfully installed FreeLCS 4.0 into the Docker environment on a Arch - Linux machine.
+
+
+#####################################
 # Released FreeLCS 3.12 with:       #
 # ----------------------------      #
 # - LoudnessCorrection version 308  #

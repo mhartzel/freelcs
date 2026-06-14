@@ -31,10 +31,7 @@
     <h3><a href="#Mounting%20the%20server%20HotFolder%20from%20windows%2011%20making%20it%20permanent">Mounting the server HotFolder from windows 11 making it permanent</a><br> </h3>
     <h3> <a href="#Progress%20report">Progress Report</a></h3>
     <h3><a href="#Timezone and Docker">Timezone and Docker</a></h3>
-    <h3><a href="#Cloning%20a%20FreeLCS%20installation%20to%20another%20machine%20%28without%20a%20display%29">Cloning a FreeLCS installation to another machine (without a display)</a><br>
-    </h3>
     <h3><a href="#How%20to%20report%20a%20bug">How to report a bug</a></h3>
-    <h3><a href="#Run%20FreeLCS%20programs%20so%20that%20possible%20error%20messages%20can%20be%20seen">Run FreeLCS programs so that possible error messages can be seen</a></h3>
     <h3><a href="#FreeLCS%20development">FreeLCS development</a></h3>
     <h3><a title="FreeLCS FAQ" href="FreeLCS_FAQ.html"><u>FAQ</u></a></h3>
     <br>
@@ -65,11 +62,6 @@
     also creates a loudness history graphics file which shows loudness
     variations inside the file.<br>
     <br>
-    The software is very fast even on modest hardware giving 15 times faster
-    than realtime processing (16 bit stereo files, TruePeak measurement turned
-    on) on a server with one Intel Core 2 Duo processor, 4 GB Ram, 3 internal
-    Sata disks in software RAID 0. <br>
-    <br>
     FreeLCS uses other open source programs to get the job done (Linux,
     libebur128, gnuplot, FFmpeg, sox, mediainfo). All software is free and Open
     Source.<br>
@@ -94,14 +86,14 @@
         bandwidth.</li>
       <li>Supports writing loudness measurement results to a machine readable
         file.</li>
-      <li>Modest hardware requirements, runs fine with only 4 GB of ram.</li>
+      <li>Modest hardware requirements, runs fine with only 6 GB of ram.</li>
       <li>Fast processing. On typical hardware you can expect processing to be
         10 - 20 faster than realtime.</li>
       <li>Cleans up automatically by deleting all files after a set time delay.</li>
       <li>Sends possible error messages to the admin by email.</li>
       <ul>
       </ul>
-      <li>The wide range of FFmpeg supported formats can be processed.</li>
+      <li>All formats recognized by FFmpeg can be processed.</li>
       <ul>
       </ul>
       <li>Support for multistream files, all audio streams are extracted and
@@ -119,9 +111,9 @@
         you like.</li>
       <li>Runs on the free Linux operating system, no need to pay for
         proprietary os installation.</li>
-      <li>As of version 4.0 FreeLCS installs as a docker service..</li>
+      <li>As of version 4.0 FreeLCS runs inside the Docker environment.</li>
       <li>Easy to integrate in many workflows.</li>
-      <li>Written in Python 3.</li>
+      <li>Written in Python 3, Go, HTML and Javascript.</li>
       <li>More specific information can be found in the <a href="FreeLCS_FAQ.html">FAQ</a>.</li>
     </ul>
     <br>
@@ -133,22 +125,25 @@
       <li>A computer with at least 2 processor cores.</li>
       <li>6 GB of RAM.</li>
       <li>An internet connection is needed for the setup</li>
-      <li>Ubuntu Server LTS is recommended for the FreeLCS host computer os although it probably is possible to use any Linux for this. FreeLCS is only tested with Ubuntu Server LTS.</li>
-      <li>&nbsp;The <a href="FreeLCS_FAQ.html">FAQ</a> discusses things like
+      <li>Ubuntu Server LTS is recommended as the Docker host computer os although it probably is possible to use any Linux for this. FreeLCS is only tested with Ubuntu Server LTS.</li>
+      <li>The <a href="FreeLCS_FAQ.html">FAQ</a> discusses things like
         supported formats, channel orders, etc.<br>
       </li>
     </ul>
     <h2> <a id="Installation">Installation</a></h2>
-    <p>Installation takes these steps on your desktop computer</p>
+    <p>Things you need to do on a desktop computer:</p>
     <ul>
+	    <li>
+		    Unzip FreeLCS-4.xx release - archive.
+	    </li>
 	    <li>
 		    Create FreeLCS configuration files using a web browser
 	    </li>
     </ul>
-    <p>Installation on your FreeLCS computer</p>
+    <p>Things you need to do on your Docker host - computer:</p>
     <ul>
 	    <li>
-		    Unzip the FreeLCS release
+		    Unzip FreeLCS-4.xx release - archive.
 	    </li>
 	    <li>
 		    Copy configuration files from your desktop computer
@@ -161,7 +156,7 @@
 	    </li>
     </ul>
     <p>
-    	Depending on the options you define in the configuration this sets up three docker - instances.
+    	Depending on the options you set while creating the configuration this creates up three docker - images / containers.
     </p>
     <ul>
 	    <li>
@@ -198,13 +193,13 @@
     <img style="border:2px solid #AAAAAA" title="Example: FreeLCS 4 Configuration 03" src="Pictures/FreeLCS_4_configuration-03.png"><br>
     </ul>
     <ul>
-	    <p><li><strong>Use FreeLCS file output defaults:</strong> Disabling this option lets you define what output files FreeLCS creates</li></p>
+	    <p><li><strong>Use FreeLCS file output defaults:</strong> Disabling this option lets you define what output files FreeLCS creates. You may want to change the default behaviour if FreeLCS is a part of a audio processing chain. <a href="Machine_readable_results_and_MXF_audio_remix_mapping.html#Machine_readable_results">Read more about it here</a></li></p>
 	    <p><li><strong>Create loudness corrected audio files:</strong> This will enable / disable creation of loudness corrected audio files</li></p>
 	    <p><li><strong>Create loudness history graphics:</strong> This will enable / disable creation of graphic files showing audio loudness changes across time</li></p>
 	    <p><li><strong>Delete original multistream audiofile:</strong> If an input file has several audio streams in it all streams will be extracted to separate files. Set this option to: <strong>Yes</strong> if the multichannes file can be deleted after audio stream extraction </li></p>
 	    <p><li><strong>Write loudness calculation results to a machine readable file:</strong> If FreeLCS is a part of a processing chain then enable this setting to write loudness measurement details to a file where the next step can pick them up. Also define what characters are used to separate measurement details for a single file (Unit separator) and measurement details of different files (Record separator) </li></p>
-	    <p><li><strong>Unit separator:</strong> These unprintable ASCII characters are used between measurement details of a single file</li></p>
-	    <p><li><strong>Record separator:</strong> These unprintable ASCII characters are used where the measurement details for one files ends and another begins</li></p>
+	    <p><li><strong>Unit separator:</strong> These unprintable ASCII characters are used between measurement details of a single file <a href="Machine_readable_results_and_MXF_audio_remix_mapping.html#Separator_characters_in_the_machine_readable_results_file">Read more about it here</a></li></p>
+	    <p><li><strong>Record separator:</strong> These unprintable ASCII characters are used where the measurement details for one files ends and another begins <a href="Machine_readable_results_and_MXF_audio_remix_mapping.html#Separator_characters_in_the_machine_readable_results_file">Read more about it here</a></li></p>
     <img style="border:2px solid #AAAAAA" title="Example: FreeLCS 4 Configuration 04" src="Pictures/FreeLCS_4_configuration-04.png"><br>
     </ul>
     <ul>
@@ -315,6 +310,13 @@
     
    	</ul> 
 	<p>This will tell the script that FreeLCS docker config files are in: <strong>/home/john/FreeLCS-4.0</strong> and tells the script to backup into directory: <strong>/home/john/docker_image_backups</strong> and keep the 12 latest backups and delete backups older than that. If you run this weekly it will keep the last 3 months of backups available.</p>
+	<h3>Enable host machine security updates</h3>
+	<p>Optionally you can uncomment the following lines and enable the script to also install security updates for you host - machine Ubuntu LTS:</p>
+    <ul>
+	    <li>ExecStart=/usr/bin/apt-get -y update</li>
+	    <li>ExecStart=/usr/bin/apt-get -y upgrade</li>
+	    <li>ExecStart=/usr/sbin/reboot</li>
+    </ul>
     <br> 
     <h3> <a id="Editing backup_freelcs_docker_images.timer">Editing backup_freelcs_docker_images.timer</a></h3>
     <p>The systemd timer - file defines when and how often the FreeLCS backup and update - service defined above will run.</p>
@@ -360,19 +362,10 @@
         systems.</li>
       <li>The root of HotFolder is where you drag files you want to be loudness
         corrected.</li>
-      <li>Inside the root - folder there are two other folders: "<strong>00-Corrected_Files</strong>"
+      <li>Inside the root - folder the folder: "<strong>00-Corrected_Files</strong>"
         is where corrected files and loudness calculation history graphics
-        appear. The folder "<strong>00-Calculation_Queue_Information</strong>"
-        is used to store two files that normally aren't of interest to normal
-        users. The first one is "<strong>00-Calculation_Queue_Information.html</strong>".
-        That is an html-file that can be opened in a web-browser. The page is
-        updated every 5 seconds and it shows how many files are waiting to be
-        processed, which files are currently worked upon and so on. The second
-        file that is stored in this folder is "<strong>00-HeartBeat.pickle</strong>".
-        LoudnessCorrection writes periodically timestamps and other information
-        in this file and HeartBeat_Checker.py monitors this file. If information
-        in the file stops updating then LoudnessCorrection has crashed and
-        HeartBeat_Checker sends email to the admin.<br>
+        appear.
+        <br>
       </li>
     </ul>
     <p><br>
@@ -380,8 +373,6 @@
     <p><img src="Pictures/Usage-01.jpg"><br>
     </p>
     <ul>
-      <li>For normal users the only folders of interest are the root of the
-        HotFolder and the "<strong>HotFolder / 00-Corrected_Files</strong>".</li>
       <li>To process a file drag it in the root of the HotFolder.<br>
       </li>
     </ul>
@@ -470,9 +461,7 @@
     </p>
     <ul>
       <li>The next window lets you choose between logging in anonymously or as a
-        registered user. The network share on the FreeLCS - server is configured
-        to accept only anonymous logins. So don't write in any username or
-        password, just click "<strong>Guest</strong>".<br>
+        registered user.
       </li>
     </ul>
     <p><br>
@@ -628,21 +617,17 @@
     <h2> <a id="Progress report">Progress Report</a><br>
     </h2>
     If you selected "<strong>Write html progress report</strong>" = "<strong>yes</strong>"
-    in the installer then an html file will appear in "<strong>HotFolder /
-      00-Calculation_Queue_Information / 00-Calculation_Queue_Information.html</strong>".
-    This file can be opend in an web-browser and it shows an view inside the
-    loudness calculation queue. The html progress report is updated every 5
+    in the installer then you can navigate to the IP and port 9000 of your Docker - machine (for example 192.168.1.100:9000) with your browser and see the loudness calculation queue. The progress report is updated every 5
     seconds and it shows how many files are waiting for a processing slot to
-    open, what files are currently processed and the names of 100 last files
+    open, what files are currently processed and the names of last files
     that were processed and the time processing was finished.<br>
     <br>
     The upper part of the window shows the names of next 10 first files that are
     coming in for processing and above that the total number of files waiting in
-    queue is shown. Date and time are also shown and updated every 5 seconds.
-    You can use the time display to easily check if the server is up and
-    running.<br>
+    queue is shown. 
     <br>
-    The middle gray part shows the names of files that are currently being
+    <br>
+    The middle part shows the names of files that are currently being
     processed. The number of files that are simultaneously processed depends on
     what you selected as the "<strong>Number Of Processor Cores To Use</strong>"
     in the installer. Each file is simultaneously processed by two processor
@@ -650,7 +635,7 @@
     processed at the same time (in the example picture below 14 cores are
     assigned, so seven files can be processed simultaneously).<br>
     <br>
-    The bottom of the page shows the last 100 files that were processed.<br>
+    The bottom of the page shows the last files that were processed.<br>
     <br>
     <img style="border:2px solid #AAAAAA" title="Example: FreeLCS Progress Report" src="Pictures/Progress_Report-2.jpg"><br>
     <h2><a id="Timezone and Docker">Timezone and Docker</a></h2>
@@ -671,7 +656,7 @@
     to reproduce the bug in his own system in order to fix it. So when reporting
     a bug report the following:<br>
     <ul>
-      <li>The operating system version that you use.</li>
+      <li>The Docker Ubuntu - image version that you use.</li>
       <li>The version of the FreeLCS - package that you use.<br>
       </li>
       <li>The steps that needs to be done in order to make the bug appear.</li>
@@ -679,17 +664,6 @@
         developer, then store the file in a cloud file storage system for
         example DropBox's Public - folder and add the download link to the bug
         report.</li>
-      <li>Error messages are good sources for information when hunting a bug, so
-        if you get one please add it to the bug report.</li>
-      <li>If a program just stops working, then it has crashed. In most cases
-        the program is not able to show any error message to the user because
-        the program runs in the background. An error message holds valuable
-        information about what went wrong and if you want to help to sort out
-        the cause of the error you can run the program manually in Terminal.
-        When a program is run manually in Terminal the user can see all possible
-        error messages. <a href="#Run%20FreeLCS%20programs%20so%20that%20possible%20error%20messages%20can%20be%20seen">Click
-          here to see how a program can be manually run in the Terminal</a>.<br>
-      </li>
     </ul>
     Report bugs here (requires creating an free account): <a href="https://sourceforge.net/p/freelcs/tickets/">https://sourceforge.net/p/freelcs/tickets/</a><br>
     When you have logged in navigate to the link above and click the "<strong>Create
