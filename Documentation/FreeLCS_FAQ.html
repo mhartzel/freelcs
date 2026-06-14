@@ -77,8 +77,6 @@
     <a href="#What%20Linux%20distributions%20are%20supported%20?">What Linux
       distributions are supported ?</a><br>
     <br>
-    <a href="#AppArmor" title="AppArmor">AppArmor<br>
-    </a><br>
     <a href="#FreeLCS_error_messages">FreeLCS error messages</a><br>
     <br>
     <a href="#Critical_error_messages">Critical error messages</a><br>
@@ -182,7 +180,7 @@
     <h2><a id="Can_I_restrict_avconv_/_FFmpeg_to_use_only_patent_free_formats">Can
         I restrict FFmpeg to use only patent free formats</a></h2>
     <ul>
-      <li>Yes, in FreeLCS 3.0 you can set FFmpeg allowed formats during
+      <li>Yes, in FreeLCS 3.0 and later you can set FFmpeg allowed formats during
         installation. In the following picture below allowed wrapper formats are
         restricted to:&nbsp;&nbsp; <strong>wav, flac ogg, matroska, AC-3 and
           Mpeg 1 Layers 1, 2, 3 and MXF</strong>. &nbsp; Allowed codec formats
@@ -251,7 +249,7 @@
       <li>After loudness measurement Gnuplot creates a loudness result graphics
         file from momentary loudness measurements provided by libebur128.<br>
       </li>
-      <li>Then a new loudness adjusted file is created with sox. Loudness of
+      <li>Then a new loudness adjusted file is created with sox (or FFmpeg if peak limiting is needed). Loudness of
         this file is at EBU R128 target level <strong>-23.0 LUFS</strong>.</li>
       <li>All files will be automatically deleted after a delay defined during
         FreeLCS installation, default is 8 hours.</li>
@@ -261,7 +259,7 @@
     <h2><a id="Is TruePeak measurement supported ?">Is TruePeak measurement
         supported ?</a></h2>
     <p>Yes :) When you install the software you can choose which method of peak
-      measurement is used: sample peak or TruePeak. Also TruePeak limting is
+      measurement is used: sample peak or TruePeak. Also TruePeak limiting is
       used when peak limiting is needed.</p>
     <p><br>
     </p>
@@ -374,7 +372,7 @@
     <h2><a id="Is MXF supported ?">Is MXF supported ?</a></h2>
     <ul>
       <li>FFmpeg supports MXF and I've been able to extract audio from MXF -
-        wrapped files with it. FreeLCS 3.0 allows the user to define MXF audio
+        wrapped files with it. FreeLCS 3.0 and later allows the user to define MXF audio
         remix maps that define how audio is to be recombined to different mixes
         before loudness processing. However MXF is not one format, but a family
         of formats. Every hardware and software vendor seem to have their own
@@ -447,7 +445,7 @@
     <p> <img src="Pictures/Music.wav-Loudness_Results_Graphics_-23_LUFS.jpg" alt="">
     </p>
     <div style="margin-left: 40px;">Most of this audio is at about -42 LUFS and
-      the last part is at about -20 LUFS. That is 22 LUFS difference. R128 has a
+      the last part is at about -20 LUFS. That is a 22 LUFS difference. R128 has a
       relative gate that discards measurements 10 LU below calculated loudness.
       In this case it means that loudness is only calculated from the last
       loudest part of the audio and measurements from all other parts are
@@ -483,7 +481,13 @@
     <br>
     <h2><a id="What Linux distributions are supported ?">What Linux
         distributions are supported ?</a></h2>
+    <p>Beginning from May 2026 the plan is to support all stable <strong>Ubuntu LTS Docker - image</strong> releases. Canonical will release these once every two years.</p>
     <p><br>
+      <strong>FreeLCS 4.0 Supports:</strong> </p>
+    <ul>
+	    <li>Ubuntu 26.04 LTS Docker image and the Docker environment.</li>
+	    <li>The preferred and tested Docker host - machine os is Ubuntu 26.04 LTS but probably any Linux distro can be used as the Ubuntu 26.04 Docker image will meet all FreeLCS 4.0 dependencies.</li>
+    </ul>
       <strong>FreeLCS 3.12 Supports:</strong> </p>
     <ul>
       <li>Debian 13 with and without a GUI</li>
@@ -566,42 +570,6 @@
     <ul>
       <li>Ubuntu Desktop 12.04 LTS Desktop.</li>
     </ul>
-    <ul>
-    </ul>
-    The plan is to support all stable <strong>Debian </strong>releases
-    starting from version <strong>7 </strong>and<strong> </strong>all future
-    <strong>Ubuntu</strong> <strong>LTS</strong> releases.<br>
-    <br>
-    LTS stands for <strong>L</strong>ong <strong>T</strong>erm <strong>S</strong>upport.
-    Ubuntu LTS releases get security updates for 5 years from the first release
-    date. <strong>Ubuntu 18.04 LTS</strong> will get security updates up to
-    April 2023.<br>
-    <br>
-    Canonical releases a new Ubuntu LTS version every 2 years. If you install
-    FreeLCS on Ubuntu 18.04 then you will not need to upgrade the software until
-    2023.<br>
-    <ul>
-    </ul>
-    <p> </p>
-    <p><br>
-    </p>
-    <h2><a name="AppArmour " id="AppArmor"></a>AppArmor </h2>
-    <p>AppArmor is a Linux kernel security module that protects system files and
-      directories by maintaining access right lists. Only applications that has
-      rights to read / write / execute/ access system directories or files in a
-      AppArmor profile will be granted access. Any other application can not
-      access protected files / directories.</p>
-    <p><br>
-    </p>
-    <p>Debian 10 ships with AppArmor turned on by default. AppArmor does not
-      affect FreeLCS installation or operation in any way as long as you create
-      FreeLCS hotfolder to the root "/" directory or /mnt or /media or to a
-      users home directory. Debian 10 ships with an automatic script that grants
-      network shares defined in /etc/samba/smb.conf automatically access rights
-      in AppArmor so that users can drop files in FreeLCS hotfolder. This script
-      runs automatically each time samba is started.</p>
-    <p><br>
-    </p>
     <h2><a id="FreeLCS_error_messages" name="FreeLCS_error_messages"></a>FreeLCS
       error messages</h2>
     <p>If you enable FreeLCS to send error messages by email, then you probably
@@ -613,17 +581,11 @@
     <h3><span class="il">LoudnessCorrection</span> has stopped updating
       timestamps</h3>
     <p>If you get the following error message, then it means that FreeLCS has
-      encountered an error that it can not recover from and has stopped. FreeLCS
-      starts jobs in threads that periodically writes timestamps to a file. The
-      script "HeartBeat_Checker.py" watches this file and sends you email if one
-      or more timestamps stop updating. This means that a thread has crashed and
-      you need to restart FreeLCS to restore normal operation. You can restart
-      FreeLCS either by rebooting the computer or giving this command as root on
-      the commandline:</p>
-    <p><br>
-    </p>
-    <p>On systemd based distros (Debian 8 and Ubuntu 16.04and later):</p>
-    <p><strong>systemctl restart freelcs</strong></p>
+    encountered an error that it can not recover from and has stopped. FreeLCS (namely the LoudnessCorrection - program) starts jobs in threads that periodically sends timestamps to the Docker image where Heartbeat_Checker runs in. HeartBeat_Checker sends you email if timestamps stops arriving.</p>
+    <p>You can restart FreeLCS either by rebooting the computer or going into the directory where
+      the FreeLCS apps and config - files are and giving these commands: </p>
+    <p><strong>docker compose down</strong></p>
+    <p><strong>docker compose up -d</strong></p>
     <strong> </strong><br>
     I have worked very hard to make FreeLCS solid as a rock. My goal is to keep
     it 100% reliable, so that it can be used in business environments. So you
@@ -631,8 +593,7 @@
     For example a failing hard disk may corrupt FreeLCS installation.<br>
     <br>
     <hr style="color: black;">
-    <p><span style="font-family: monospace;">Subject: LoudnessCorrection Error
-        Message</span></p>
+    <p><span style="font-family: monospace;">Subject: FreeLCS Error Message</span></p>
     <span style="font-family: monospace;"> </span>
     <p><span style="font-family: monospace;">From: VirtualMachine_1@company.com</span><span
         style="font-family: monospace;"><br>
@@ -640,37 +601,32 @@
     <span style="font-family: monospace;"> </span>
     <p><span style="font-family: monospace;"><strong><span class="il"><br>
           </span></strong></span></p>
-    <p><span style="font-family: monospace;"><strong><span class="il">LoudnessCorrection</span>
-          has stopped updating 'main_thread' timestamps, the thread has probably
-          crashed and a restart of the script is needed. Last thread timestamp
-          update happened at: 2013.11.30 at 16:34:05</strong><br>
-      </span> <span style="font-family: monospace;"></span></p>
-    <p><span style="font-family: monospace;"></span> <span style="font-family: monospace;"><span
-          class="il"><br>
-        </span></span></p>
-    <p><span style="font-family: monospace;"><span class="il">LoudnessCorrection</span>
-        info:<br>
-        ------------------------------</span><wbr><span style="font-family: monospace;">--------<br>
-        Commandline: /usr/bin/<span class="il">LoudnessCorrection</span>.py
-        -configfile /etc/Loudness_Correction_Settings.pickle<br>
-      </span></p>
-    <p><span style="font-family: monospace;"> IP-Addresses: 192.168.1.1<br>
-        PID: 1777<br>
-      </span> <span style="font-family: monospace;"><span class="il">LoudnessCorrection</span>
-        version: 229<br>
-      </span> <span style="font-family: monospace;"><br>
-        HeartBeat Checker info:<br>
-        ------------------------------</span><wbr><span style="font-family: monospace;">--------<br>
-        Commandline: /usr/bin/HeartBeat_Checker.py -configfile
-        /etc/Loudness_Correction_</span><wbr><span style="font-family: monospace;">Settings.pickle<br>
-        PID: 1802<br>
-        HeartBeat Checker version: 020</span></p>
-    <p><span style="font-family: monospace;"></span></p>
-    <hr style="color: black;">
-    <p><br>
-      <span style="font-family: monospace;"></span></p>
-    <p><span style="font-family: monospace;"><br>
-      </span></p>
+    <p><span style="font-family: monospace;"><strong><span class="il"></span>
+	LoudnessCorrection has stopped updating main_thread timestamps.<br>
+	The thread has probably crashed and a restart of the script is needed.<br>
+	Last update happened at: 2026.05.26 at 10:08:31<br>
+	<br>
+	LoudnessCorrection has stopped updating progress_report timestamps.<br>
+	The thread has probably crashed and a restart of the script is needed.<br>
+	Last update happened at: 2026.05.26 at 10:08:35<br>
+	    </strong>
+	<br>
+	FreeLCS version: 4.0<br>
+	<br>
+	<br>
+	LoudnessCorrection info:<br>
+	--------------------------------------<br>
+	Commandline: /usr/bin/LoudnessCorrection.py -configfile /etc/LoudnessCorrection_Settings.json<br>
+	IP-Addresses: Not known<br>
+	PID: 27822<br>
+	LoudnessCorrection version: 400<br>
+	<br>
+	HeartBeat Checker info:<br>
+	--------------------------------------<br>
+	Commandline: /usr/bin/heartbeat_checker -configfile /etc/LoudnessCorrection_Settings.json<br>
+	PID: 1<br>
+	HeartBeat Checker version: 400<br>
+        <br>
     <h3>All Heartbeat timestamps started updating again</h3>
     <p>If you got the message above informing you that a FreeLCS thread has
       stopped updating timestamps, then you might get the following message if
@@ -678,7 +634,7 @@
       FreeLCS from updating the timestamps in time, but did not crash FreeLCS.
       This message tells you that FreeLCS is working normally again.</p>
     <hr style="color: black;">
-    <p><span style="font-family: monospace;">Subject: LoudnessCorrection Error
+    <p><span style="font-family: monospace;">Subject: FreeLCS Error
         Message</span> </p>
     <span style="font-family: monospace;"></span>
     <p><span style="font-family: monospace;">From: VirtualMachine_1@company.com</span></p>
@@ -687,42 +643,33 @@
     <span style="font-family: monospace;"> </span>
     <p> </p>
     <span style="font-family: monospace;"> </span>
-    <p><span style="font-family: monospace;"><strong>All Heartbeat timestamps
-          started updating again at: 2014.05.10 at 23:33:49</strong><br>
+    <p><span style="font-family: monospace;"><strong>
+		    All Heartbeat timestamps started updating again at: 2026.05.26 at 09:48:07<br></strong>
+		    <br>
+		    FreeLCS version: 4.0<br>
+		    <br>
+		    <br>
+		    LoudnessCorrection info:<br>
+		    --------------------------------------<br>
+		    Commandline: /usr/bin/LoudnessCorrection.py -configfile /etc/LoudnessCorrection_Settings.json<br>
+		    IP-Addresses: Not known<br>
+		    PID: 27822<br>
+		    <br>
+		    LoudnessCorrection version: 400<br>
+		    <br>
+		    HeartBeat Checker info:<br>
+		    --------------------------------------<br>
+		    Commandline: /usr/bin/heartbeat_checker -configfile /etc/LoudnessCorrection_Settings.json<br>
+		    PID: 1<br>
+		    HeartBeat Checker version: 400<br>
+          started updating again at: 2014.05.10 at 23:33:49<br>
       </span> </p>
-    <span style="font-family: monospace;"> <br>
-    </span>
-    <div class="im"><span style="font-family: monospace;"> LoudnessCorrection
-        info:<br>
-        ------------------------------</span><wbr><span style="font-family: monospace;">--------<br>
-      </span> </div>
-    <span style="font-family: monospace;"> Commandline:
-      /usr/bin/LoudnessCorrection.py -configfile /etc/Loudness_Correction_</span><wbr><span
-      style="font-family: monospace;">Settings.pickle<br>
-      IP-Addresses: 192.168.1.1<br>
-      PID: 17573</span><span style="font-family: monospace;"></span>
-    <div class="HOEnZb adL"><span style="font-family: monospace;"> </span>
-      <div class="im"><span style="font-family: monospace;">LoudnessCorrection
-          version: 264<br>
-        </span> <span style="font-family: monospace;"><br>
-          HeartBeat Checker info:<br>
-          ------------------------------</span><wbr><span style="font-family: monospace;">--------<br>
-          Commandline: /usr/bin/HeartBeat_Checker.py -configfile
-          /etc/Loudness_Correction_</span><wbr><span style="font-family: monospace;">Settings.pickle<br>
-          PID: 2572<br>
-          HeartBeat Checker version: 022</span></div>
-    </div>
-    <hr style="color: black;">
-    <p><br>
-    </p>
-    <p><br>
-    </p>
     <h2><a id="Non-critical_error_messages">Non-critical error messages</a></h2>
     <p>These error messages are usually harmless and can be ignored.</p>
     <p><br>
     </p>
     <h3>HeartBeat_Checker has started</h3>
-    <p>The HeartBeat_Checker.py script sends this message when FreeLCS starts
+    <p>The HeartBeat_Checker - program sends this message when FreeLCS starts
       up. If you set up a weekly reboot for the machine, then this message
       greets you when FreeLCS service is up and running.</p>
     <hr style="color: black;">
@@ -733,28 +680,26 @@
     <p><span style="font-family: monospace;"><br>
       </span></p>
     <span style="font-family: monospace;"> </span>
-    <p><span style="font-family: monospace;"><strong>HeartBeat_Checker started:
-          2014.04.14 at 07:05:07</strong><br>
-      </span> <span style="font-family: monospace;"><br>
-      </span></p>
-    <p><span style="font-family: monospace;">LoudnessCorrection info:<br>
-        ------------------------------</span><wbr><span style="font-family: monospace;">--------<br>
-        Commandline: /usr/bin/LoudnessCorrection.py -configfile
-        /etc/Loudness_Correction_Settings.pickle</span></p>
-    <span style="font-family: monospace;"> </span>
-    <p><wbr><span style="font-family: monospace;"><br>
-        IP-Addresses: 192.168.1.1<br>
-        PID: 1683<br>
-        LoudnessCorrection version: 229<br>
-      </span> <span style="font-family: monospace;"><br>
-        HeartBeat Checker info:<br>
-        ------------------------------</span><wbr><span style="font-family: monospace;">--------<br>
-        Commandline: /usr/bin/HeartBeat_Checker.py -configfile
-        /etc/Loudness_Correction_</span><wbr><span style="font-family: monospace;">Settings.pickle<br>
-        PID: 1696<br>
-        HeartBeat Checker version: 020</span></p>
-    <hr style="color: black;"><br>
-    <br>
+    <p><span style="font-family: monospace;"><strong>
+		    HeartBeat_Checker started: 2026.05.25 at 22:02:15<br></strong>
+		    <br>
+		    FreeLCS version: 4.0<br>
+		    <br>
+		    <br>
+		    LoudnessCorrection info:<br>
+		    --------------------------------------<br>
+		    Commandline: /usr/bin/LoudnessCorrection.py -configfile /etc/LoudnessCorrection_Settings.json<br>
+		    IP-Addresses: Not known<br>
+		    PID: 19<br>
+		    LoudnessCorrection version: 400<br>
+		    <br>
+		    HeartBeat Checker info:<br>
+		    --------------------------------------<br>
+		    Commandline: /usr/bin/heartbeat_checker -configfile /etc/LoudnessCorrection_Settings.json<br>
+		    PID: 1<br>
+		    HeartBeat Checker version: 400<br>
+          <br>
+      </span>
     <h3>Error deleting files queued for deletion</h3>
     <p>You may see this error message if you mount FreeLCS HotFolder with the
       NFS protocol. This error happens when a user uses a program that creates a
@@ -766,7 +711,7 @@
     <p>The hidden file will disappear when the user closes the program that
       keeps the file open.</p>
     <hr style="color: black;">
-    <p><span style="font-family: monospace;">Subject: LoudnessCorrection Error
+    <p><span style="font-family: monospace;">Subject: FreeLCS Error
         Message</span> </p>
     <span style="font-family: monospace;"></span>
     <p><span style="font-family: monospace;">From: VirtualMachine_1@company.com</span></p>
@@ -805,7 +750,7 @@
       file with the same name but with different size. FreeLCS notices that file
       size has changed during processing.</p>
     <hr style="color: black;">
-    <p><span style="font-family: monospace;">Subject: LoudnessCorrection Error
+    <p><span style="font-family: monospace;">Subject: FreeLCS Error
         Message</span></p>
     <span style="font-family: monospace;"> From: VirtualMachine_1@company.com<br>
       <br>
@@ -835,7 +780,7 @@
       start processing. FreeLCS makes a final check before processing and
       notices that the file is no longer available.</p>
     <hr style="color: black;"><span style="font-family: monospace;">Subject:
-      LoudnessCorrection Error Message</span><span style="font-family: monospace;">
+      FreeLCS Error Message</span><span style="font-family: monospace;">
     </span>
     <p><span style="font-family: monospace;">From: VirtualMachine_1@company.com<br>
       </span></p>
@@ -863,7 +808,7 @@
       mean that the hard disk might be failing. I have not tried to get rid of
       these error messages since they might indicate a hard disk failure.</p>
     <hr style="color: black;"><span style="font-family: monospace;">Subject:
-      LoudnessCorrection Error Message</span><span style="font-family: monospace;">
+      FreeLCS Error Message</span><span style="font-family: monospace;">
     </span>
     <p><span style="font-family: monospace;">From: VirtualMachine_1@company.com<br>
         <br>
@@ -906,7 +851,7 @@
       be caused for example by a dropped network connection ending file transfer
       prematurely.</p>
     <hr style="color: black;">
-    <p><span style="font-family: monospace;">Subject: LoudnessCorrection Error
+    <p><span style="font-family: monospace;">Subject: FreeLCS Error
         Message</span></p>
     <span style="font-family: monospace;"> </span>
     <p><span style="font-family: monospace;">From: VirtualMachine_1@company.com</span></p>
@@ -973,141 +918,9 @@
     <br>
     <h2><a id="Is_there_a_way_to_find_out_FreeLCS_options_used_during_installation">Is
         there a way to find out FreeLCS options used during installation ?</a></h2>
-    <p>Yes. FreeLCS 3.0 creates an installation log file in <strong>/var/log/.</strong>
-      The name of the logfile is something like:&nbsp; <strong>freelcs_installation_log_2014.06.02_at_14.15.04.txt</strong>.&nbsp;
-      The date and time in the file name corresponds to the time FreeLCS
-      installer was run.</p>
-    <p>The logfile is meant for the developer for debugging purposes and the log
-      lists values assigned during installation to FreeLCS internal variables.
-      Since the variable names are quite clear and easy to understand, the user
-      can deduce with little effort how options were set during installation.
-      The logfile also lists variables that are not user configurable, for
-      example: <strong>delay_between_directory_reads = 5</strong>&nbsp; means
-      FreeLCS checks in 5 second intervals for new files in the HotFolder.
-      Options are divided to sections roughly corresponding each page in the
-      installer program.</p>
-    <p>One example where the user might want to check the logfile is when there
-      is need to know what email addresses are FreeLCS error messages sent to.
-      The third section in the logfile lists email settings including email
-      addresses error messages are sent to.</p>
-    <p><br>
-    </p>
-    <h3>Example: installation logfile<br>
-    </h3>
-    Here is an example from one of my test installations. I have added some
-    explanations in parentheses. You can list the logfile with a command like:<em><strong><br>
-      </strong></em>
-    <p><em><strong>cat &nbsp;
-          /var/log/freelcs_installation_log_2014.06.02_at_14.15.04.txt </strong></em><br>
-      <br>
-      <br>
-      <span style="font-family: monospace;">Configuration variables written to
-        /etc/Loudness_Correction_Settings.pickle are:<br>
-----------------------------------------------------------------------------------<br>
-        freelcs_version = 3.0<br>
-        os_name = ubuntu<br>
-        os_version = 14.04<br>
-        libebur128_path = /usr/bin/loudness<br>
-----------------------------------------------------------------------------------------------------<br>
-        <br>
-        target_path = /mountpoint/raid-disk<br>
-        language = english<br>
-        english = 1<br>
-        finnish = 0<br>
-        hotfolder_path = /mountpoint/raid-disk/LoudnessCorrection<br>
-        directory_for_temporary_files =
-        /mountpoint/raid-disk/00-Loudness_Calculation_Temporary_Files<br>
-        directory_for_results =
-        /mountpoint/raid-disk/LoudnessCorrection/00-Corrected_Files<br>
-        directory_for_error_logs = /mountpoint/raid-disk/00-Error_Logs<br>
-        delay_between_directory_reads = 5&nbsp;&nbsp; <strong>(How often
-          HotFolder is scanned for new files, time in seconds)</strong><br>
-        number_of_processor_cores = 4&nbsp;&nbsp; <strong>(How many processor
-          cores to use for file processing. Each file is processed using 2
-          cores, so the value 4 here means 2 files can be processed at the same
-          time)</strong><br>
-        file_expiry_time = 28800&nbsp;&nbsp; <strong>(How long to wait before
-          deleting files, time in seconds)</strong><br>
-----------------------------------------------------------------------------------------------------<br>
-        <br>
-        send_error_messages_by_email = True<br>
-        email_sending_interval: 1800&nbsp;&nbsp;&nbsp; <strong>(How long to
-          wait between sending error reports to admin, time in minutes)</strong><br>
-        message_recipients:
-        ['admin1@mycompany.com','admin2.mycompany@gmail.com']<br>
-        message_title: FreeLCS Error Message<br>
-        send_error_messages_by_email: True<br>
-        smtp_password: ******************<br>
-        smtp_server_name: smtp.gmail.com<br>
-        smtp_server_port: 587<br>
-        smtp_server_requires_authentication: True<br>
-        smtp_username: freelcs_test_user@gmail.com<br>
-        use_tls: True<br>
-        where_to_send_error_messages = logfile, email<br>
-        send_error_messages_to_logfile = True<br>
-        heartbeat = True<br>
-        heartbeat_file_name = 00-HeartBeat.pickle<br>
-        heartbeat_write_interval = 30&nbsp;&nbsp; <strong>(How long to wait
-          between writing time stamps to the heartbeat file, time in seconds. If
-          time stamp updates stops, then HeartBeat_Checker sends an error
-          message to the admin)</strong><br>
-----------------------------------------------------------------------------------------------------<br>
-        <br>
-        write_html_progress_report = True<br>
-        html_progress_report_write_interval = 5&nbsp;&nbsp; <strong>(How long
-          to wait between updating the html progress report, time in seconds)</strong><br>
-        web_page_name = 00-Calculation_Queue_Information.html<br>
-        web_page_path =
-        /mountpoint/raid-disk/LoudnessCorrection/00-Calculation_Queue_Information<br>
-        peak_measurement_method = --peak=true&nbsp;&nbsp; <strong>(What peak
-          measurement method to use TruePeak or sample peak)</strong><br>
-----------------------------------------------------------------------------------------------------<br>
-        <br>
-        create_loudness_corrected_files = True<br>
-        create_loudness_history_graphics_files = True<br>
-        delete_original_file_immediately = True&nbsp;&nbsp; <strong>(When True,
-          then a multistream file is deleted immediately after all audio streams
-          have been extracted from the file)</strong><br>
-        write_loudness_calculation_results_to_a_machine_readable_file = False<br>
-        unit_separator (ascii numbers)&nbsp; = 31<br>
-        record_separator (ascii numbers)&nbsp; = 13, 10<br>
-----------------------------------------------------------------------------------------------------<br>
-        <br>
-        enable_mxf_audio_remixing = True<br>
-        remix_map_file_extension = .remix_map<br>
-        global_mxf_audio_remix_channel_map = 2, 6, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2<br>
-        natively_supported_file_formats = .wav, .flac, .ogg<br>
-        ffmpeg_free_wrapper_formats = wav, flac, ogg, mkv, matroska, mka<br>
-        mxf_formats = mxf, mxf_d10<br>
-        mpeg_wrapper_formats = mpeg, mp2, mp3, mp4, m4v, m4a, mpegts, mpegtsraw,
-        mpegvideo, mpeg1video, mpeg2video, vcd, svcd, dvd, vob<br>
-        ffmpeg_free_codec_formats = pcm_s8, pcm_s8_planar, pcm_u8, pcm_s16be,
-        pcm_s16le, pcm_s16le_planar, pcm_u16be, pcm_u16le, pcm_dvd, pcm_lxf,
-        pcm_s24be, pcm_s24daud, pcm_s24le, pcm_u24be, pcm_u24le, pcm_f32be,
-        pcm_f32le, pcm_s32be, pcm_s32le, pcm_u32be, pcm_u32le, pcm_f64be,
-        pcm_f64le, flac, vorbis<br>
-        ffmpeg_allowed_wrapper_formats = all<br>
-        ffmpeg_allowed_codec_formats = all<br>
-        enable_all_nonfree_ffmpeg_wrapper_formats = True<br>
-        enable_all_nonfree_ffmpeg_codec_formats = True<br>
-        ffmpeg_output_wrapper_format = wav<br>
-        enable_mxf_wrapper = False<br>
-        enable_webm_wrapper = False<br>
-        enable_mpeg_wrappers = False<br>
-        enable_mp1_codec = False<br>
-        enable_mp2_codec = False<br>
-----------------------------------------------------------------------------------------------------<br>
-        <br>
-        silent = True<br>
-        number_of_all_items_in_dictionary = 54<br>
-        config_file_created_by_installer_version = 094<br>
-----------------------------------------------------------------------------------------------------</span><br>
-    </p>
-    <p><br>
-    </p>
-    <p><br>
-    </p>
+    <p>Yes. FreeLCS 3.12 and later creates a human readable config file <strong>LoudnessCorrection_Settings.json</strong></p>
+    <p>It may be a bit convoluted but the options are there as variable names and values right after it.</p>
+    <br>
+    <br>
   </body>
 </html>

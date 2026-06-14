@@ -252,12 +252,12 @@
     <li><strong>progress_report</strong> &nbsp;&nbsp;(Optional: runs in its own container and creates a web page that shows which files are processed and which are waiting in the queue)</li>
     <li><strong>smb.conf</strong> &nbsp;&nbsp;(Samba configuration)</li>
     </ul>
-    <li>Now we create FreeLCS docker images and start them up as containers: <strong>Docker compose up -d</strong></li>
+    <li>Now we create FreeLCS docker images and start them up as containers: <strong>docker compose up -d</strong></li>
     <li>This will fetch Ubuntu LTS release docker image from the interner and build up all FreeLCS images upon that. It will take about 3 - 4 minutes for all the needed images to be built and started up.</li>
     <li>FreeLCS containers will be automatically started when the computer starts up. If you want to manually start and stop the containers you run these dommands in the FreeLCS - directory:</li>
     <ul>
-	    <li> <strong>Docker compose up -d</strong> &nbsp;&nbsp;This will start FreeLCS</li>
-	    <li> <strong>Docker compose down</strong> &nbsp;&nbsp;This will stop FreeLCS</li>
+	    <li> <strong>docker compose up -d</strong> &nbsp;&nbsp;This will start FreeLCS</li>
+	    <li> <strong>docker compose down</strong> &nbsp;&nbsp;This will stop FreeLCS</li>
     </ul>
     <br>
     <img style="border:2px solid #AAAAAA" title="Example: FreeLCS Progress Report" src="Pictures/Docker_Printout.jpg"><br>
