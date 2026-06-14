@@ -129,105 +129,177 @@
     <br>
     <h2> <a id="Requirements">Requirements</a></h2>
     <ul>
-      <li>You need a computer with at least 2 processor cores.</li>
-      <li>4 GB of RAM.</li>
-      <li> Docker environment</li>
-      <li>A person that comfortable working on the Linux commandline and is able to set up a Linux server.</li>
-      <li>1 Gbit ethernet is recommended.</li>
+      <li>Docker environment</li>
+      <li>A computer with at least 2 processor cores.</li>
+      <li>6 GB of RAM.</li>
+      <li>An internet connection is needed for the setup</li>
+      <li>Ubuntu Server LTS is recommended for the FreeLCS host computer os although it probably is possible to use any Linux for this. FreeLCS is only tested with Ubuntu Server LTS.</li>
       <li>&nbsp;The <a href="FreeLCS_FAQ.html">FAQ</a> discusses things like
         supported formats, channel orders, etc.<br>
       </li>
     </ul>
     <h2> <a id="Installation">Installation</a></h2>
-    <p> FreeLCS requires Docker environment to be installed on your host Linux os. Also a connection to the internet is needed as the installation downloads the latest Ubuntu LTS docker image.</p>
-    It is probably possible to use any Linux distro as the host machine operating system but we use the latest Ubuntu Server LTS version in the install instructions below.
-    <br>
+    <p>Installation takes these steps on your desktop computer</p>
+    <ul>
+	    <li>
+		    Create FreeLCS configuration files using a web browser
+	    </li>
+    </ul>
+    <p>Installation on your FreeLCS computer</p>
+    <ul>
+	    <li>
+		    Unzip the FreeLCS release
+	    </li>
+	    <li>
+		    Copy configuration files from your desktop computer
+	    </li>
+	    <li>
+		    Install docker environment
+	    </li>
+	    <li>
+		    Setup automatic security updates and FreeLCS image backups
+	    </li>
+    </ul>
+    <p>
+    	Depending on the options you define in the configuration this sets up three docker - instances.
+    </p>
+    <ul>
+	    <li>
+		One runs LoudnessCorrection and Samba - server
+	    </li>
+	    <li>
+		(Optional) One runs Heartbeat - checker that monitors the health of LoudnessCorrection
+	    </li>
+	    <li>
+		(Optional) One runs Progress - report that lets you see with you web browser which files are waiting to be processed and which a being processed at the moment 
+	    </li>
+    </ul>
     <br>
     <h3> <a id="Create configuration for FreeLCS">Create configuration for FreeLCS</a></h3>
-    <p>First unzip the FreeLCS 4.xx onto a computer were you can fire up a web browser. Then open the file <strong>config_editor.html</strong> in your web browser and setup FreeLCS configuration. Ctrl + o usually open a file browser that lets you navigate your disk and open files into your browser.</p>
-    <p>FreeLCS default configuration sets up LoudnessCorrection, Sama - server and Progress - Report. If this is all you need you can skip the following section and scroll down the config_editor page and save four different configuration files needed by FreeLCS.</p>
+    <p>First unzip the FreeLCS 4.xx onto a computer were you can fire up a web browser. Then open the file <strong>config_editor.html</strong> in your web browser and setup FreeLCS configuration. Ctrl + o usually opens a file browser that lets you navigate your disk and open files into your browser.</p>
+    <p>FreeLCS default configuration sets up LoudnessCorrection at -23 LUFS, Samba - server and Progress - Report. If this is all you need then you can just scroll down the config_editor page and save four different configuration files needed by FreeLCS.</p>
+    <br>
     <p>On the top of the configuration editor you can define the following values:</p>
     <ul>
-	    <p><li><strong>Number of Processor cores to use</strong> defines how many files can be processed simultaneously. Each file ties up two processr cores so if you have 8 cores you can process four files simultaneously. You can alo set this value as: All and then FreeLCS uses all available cores on the host computer.</li></p>
-	    <p><li><strong>File expiry time in minutes.</strong> How long the files are allowed to stay on disk before they are automatically deleted</li></p>
-	    <p><li><strong>Target loudness level</strong> Default is -23 LUFS for broadcast, some higher value like -16 LUFS for social media</li></p>
-	    <p><li><strong>Language for hotfoler path and result graphics</strong> For the Finnish speaking users select: Finnish for other select: English</li></p>
+	    <p><li><strong>Number of Processor cores to use:</strong> defines how many files can be processed simultaneously. Each file ties up two processr cores so if you have 8 cores you can process four files simultaneously. You can also set this value to: <strong>All</strong> and then FreeLCS uses all available cores on the host computer.</li></p>
+	    <p><li><strong>File expiry time in minutes:</strong> How long the files are allowed to stay on disk before they are automatically deleted</li></p>
+	    <p><li><strong>Target loudness level:</strong> Use -23 LUFS for broadcast, some higher value like -16 LUFS for social media</li></p>
+	    <p><li><strong>Language for hotfolder path and result graphics:</strong> For the Finnish speaking users select: Finnish for other select: English</li></p>
     <img style="border:2px solid #AAAAAA" title="Example: FreeLCS 4 Configuration 01" src="Pictures/FreeLCS_4_configuration-01.png"><br>
     </ul>
     <ul>
-	    <p><li><strong>Send error messages by email</strong> If you want to receive FreeLCS error messages by email, set up your email sending smtp - server details and also email receiver addresses here</li></p>
-	    <p><li><strong>Start heartbeat checker</strong> Heartbeat checker monitors the lifesigns of the LoudnessCorrection - program and sends email if they stop </li></p>
+	    <p><li><strong>Send error messages by email:</strong> If you want to receive FreeLCS error messages by email, set up your smtp - server and email recipent details here</li></p>
+	    <p><li><strong>Start heartbeat checker:</strong> Heartbeat checker monitors the LoudnessCorrection - program and sends email if it crashes</li></p>
     <img style="border:2px solid #AAAAAA" title="Example: FreeLCS 4 Configuration 02" src="Pictures/FreeLCS_4_configuration-02.png"><br>
     </ul>
     <ul>
-	    <p><li><strong>Write html progress report</strong> If you enable this option then you can connect to YourHostMachineIP:9000 with an web browser and see details of file processing</li></p>
-	    <p><li><strong>Peak measurement method</strong> The Truepeak - method measures audio peaks by first 4x oversampling audio. This will reveal peaks hidden betweeb individual samples. If in doubt set this to Truepeak</li></p>
+	    <p><li><strong>Write html progress report:</strong> If you enable this option then you can connect to <strong>YourHostMachineIP:9000</strong> with an web browser and see details of file processing</li></p>
+	    <p><li><strong>Peak measurement method:</strong> Truepeak oversamples the audio by 4x and reveals peaks hidden between samples. If in doubt set this to Truepeak</li></p>
     <img style="border:2px solid #AAAAAA" title="Example: FreeLCS 4 Configuration 03" src="Pictures/FreeLCS_4_configuration-03.png"><br>
     </ul>
     <ul>
-	    <p><li><strong>Use FreeLCS file output defaults</strong> This will enable settings below that will allow you to define what files will be created for each processed audio file</li></p>
-	    <p><li><strong>Create loudness corrected audio files</strong> This will enable / disable creation of loudness corrected audio files</li></p>
-	    <p><li><strong>Create loudness history graphics</strong> This will enable / disable creation of graphic files showing audio loudness changes across time</li></p>
-	    <p><li><strong>Delete original multistream audiofile</strong> If one input file has many audio streams all those will be extracted to separated files. Set this option to: Yes if the multichannes files can be deleted after audio stream extraction </li></p>
-	    <p><li><strong>Write loudness calculation results to a machine readable file</strong> If FreeLCS is a part of a processing chain and needs to write loudness calculation results to a file where the next step in the process can pick them up then enable this settings. Also define what characters will be used to separate measurement details for a single file (Unit separator) and measurements of diffrent files (Record separator) </li></p>
-	    <p><li><strong>Unit separator</strong> These characters will be used between measurement details of a single file</li></p>
-	    <p><li><strong>Record separator</strong> These characters will be used where the measurement details for one files ends and details for another file begins</li></p>
+	    <p><li><strong>Use FreeLCS file output defaults:</strong> Disabling this option lets you define what output files FreeLCS creates</li></p>
+	    <p><li><strong>Create loudness corrected audio files:</strong> This will enable / disable creation of loudness corrected audio files</li></p>
+	    <p><li><strong>Create loudness history graphics:</strong> This will enable / disable creation of graphic files showing audio loudness changes across time</li></p>
+	    <p><li><strong>Delete original multistream audiofile:</strong> If an input file has several audio streams in it all streams will be extracted to separate files. Set this option to: <strong>Yes</strong> if the multichannes file can be deleted after audio stream extraction </li></p>
+	    <p><li><strong>Write loudness calculation results to a machine readable file:</strong> If FreeLCS is a part of a processing chain then enable this setting to write loudness measurement details to a file where the next step can pick them up. Also define what characters are used to separate measurement details for a single file (Unit separator) and measurement details of different files (Record separator) </li></p>
+	    <p><li><strong>Unit separator:</strong> These unprintable ASCII characters are used between measurement details of a single file</li></p>
+	    <p><li><strong>Record separator:</strong> These unprintable ASCII characters are used where the measurement details for one files ends and another begins</li></p>
     <img style="border:2px solid #AAAAAA" title="Example: FreeLCS 4 Configuration 04" src="Pictures/FreeLCS_4_configuration-04.png"><br>
     </ul>
     <ul>
-	    <p><li><strong>Enable MXF audio remixing</strong> The following window allows you to define how you would like audio inside a MXF wrapped file to be recombined to new mixes before loudness processing. <a href="Machine_readable_results_and_MXF_audio_remix_mapping.html#MXF_audio_remixing">Read more about it here</a>. Most users will leave "Enable MXF Audio Remixing" to "No".</li></p>
+	    <p><li><strong>Enable MXF audio remixing:</strong> This allows you to define how you would like audio inside a MXF wrapped file to be recombined to new mixes before loudness processing. <a href="Machine_readable_results_and_MXF_audio_remix_mapping.html#MXF_audio_remixing">Read more about it here</a>. Most users will leave "Enable MXF Audio Remixing" to "No".</li></p>
     <img style="border:2px solid #AAAAAA" title="Example: FreeLCS 4 Configuration 05" src="Pictures/FreeLCS_4_configuration-05.png"><br>
     </ul>
     <ul>
-	    <p><li><strong>FFmpeg allowed wrapper and codec formats</strong> This feature is mainly designed to allow the user to restrict processing only to patent free formats. Format patentability varies from country to country, see more about it in <a href="FreeLCS_FAQ.html#Libav-tools%20/%20FFmpeg%20and%20patents">FAQ</a>. As of 2018 the <strong>patents for formats: Dolby AC-3, Mpeg 1 Layers 1, 2 and 3 (mp1, mp2, mp3) have expired</strong>. These formats are now patent free and can be used without paying license fees. More of this and links to the current patent situation of these format in <a href="FreeLCS_FAQ.html#Libav-tools%20/%20FFmpeg%20and%20patents">FAQ here</a>. These formats are now enabled if you enable free formats in this window.</li></p>
+	    <p><li><strong>FFmpeg allowed wrapper and codec formats:</strong> This allows the user to restrict processing only to patent free formats. Format patentability varies from country to country, see more about it in <a href="FreeLCS_FAQ.html#Libav-tools%20/%20FFmpeg%20and%20patents">FAQ</a>. As of 2018 the <strong>patents for formats: Dolby AC-3, Mpeg 1 Layers 1, 2 and 3 (mp1, mp2, mp3) have expired</strong>. These formats are now patent free and can be used without paying license fees. More of this and links to the current patent situation of these format in <a href="FreeLCS_FAQ.html#Libav-tools%20/%20FFmpeg%20and%20patents">FAQ here</a>. These formats are now enabled if you enable free formats in this window.</li></p>
     <img style="border:2px solid #AAAAAA" title="Example: FreeLCS 4 Configuration 07" src="Pictures/FreeLCS_4_configuration-07.png"><br>
     </ul>
     <ul>
-	    <p><li><strong>Save FreeLCS configurations files</strong> Here you save four settings files on your local computer. Copy these over to your Docker host - machine into the directory where you opened FreeLCS 4.xx zip</li></p>
+	    <p><li><strong>Save FreeLCS configurations files:</strong> FreeLCS needs four configuration files and here you save them your local computer. Copy these files over to your Docker host - machine into the directory where you opened FreeLCS 4.xx zip</li></p>
     <img style="border:2px solid #AAAAAA" title="Example: FreeLCS 4 Configuration 08" src="Pictures/FreeLCS_4_configuration-08.png"><br>
     </ul>
     <br>
     <br>
     <h3> <a id="Setting up the host Docker machine">Setting up the host Docker machine</a></h3>
     <ul>
-    <li>First install the latest Ubuntu LTS Server release on your host computer</li>
-    <li>Then install Docker from ubuntu repository. (Alternatively you can install the latest release from docker.com with the instrucions here: <a href ="https://docs.docker.com/engine/install/ubuntu/">https://docs.docker.com/engine/install/ubuntu/)</a></li>
+    <li>First install the latest Ubuntu LTS Server release on your FreeLCS - host computer</li>
+    <li>Then install Docker from Ubuntu repository. This installs the version of docker that was available at the time the Ubuntu version was released. FreeLCS is tested with this version. (If you want to have the latest version of Docker you can install it with instructions from docker.com: <a href ="https://docs.docker.com/engine/install/ubuntu/">https://docs.docker.com/engine/install/ubuntu/)</a></li>
     <ul>
     <li><strong>sudo su</strong></li>
     <li><strong>apt update</strong></li>
     <li><strong>apt install docker.io docker-buildx docker-compose-v2</strong></li>
+    <li><strong>reboot</strong></li>
     </ul>
-    <li>This will install and activate docker - services to start up when the computer powers on.</li>
-    <li>If you want to run docker commands as normal user you need to add the username to the docker group and log out and in again: <strong>usermod -aG docker username</strong></li>
-    <li>Unzip FreeLCS-4.xx in your Linux users home directory, after this FreeLCS files will be located in a path like: <strong>/home/mika/FreeLCS-4.0</strong> Copy all four configurations files you created with config_editor to this directory.</li>
+    <li>This will install and activate docker - services and start them up when the computer powers on.</li>
+    <li>If you want to run docker commands as a normal user you need to add the username to the docker group and log out and in again: <strong>usermod -aG docker username</strong></li>
+    <li>Unzip FreeLCS-4.xx in your Linux users home directory, after this FreeLCS files will be located in a path like: <strong>/home/mika/FreeLCS-4.0</strong>
+	</li>
+	<li> Copy all four configurations files you created with config_editor into this directory.</li>
     <li>Go into the FreeLCS directory: <strong>cd /home/mika/FreeLCS-4.0</strong></li>
-    <li>Now we need to create a directory for FreeLCS file processing: <strong>mkdir mountpoint</strong> If you want to mount a working disk / partition for FreeLCS then mount it to this directory.</li>
-    <li>Next we need to allow the FreeLCS Docker container read and write access to this directory: <strong>chmod 777 mountpoint</strong></li>
-    <li>Now you in the FreeLCS directory <strong>/home/mika/FreeLCS-4.0</strong> and there the directory <strong>/home/mika/FreeLCS-4.0/mountpoint</strong> allows all users to read and write all subdirectories.</li>
-    <li>Now create FreeLCS docker images and start then up as containers: <strong>Docker compose up -d</strong> It will take about 3 - 4 minutes for all the needed images to be built and started up.</li>
-    <li>FreeLCS containers will be automatically started when the computer starts up. If you want to manually start and stop the container you use these dommands:</li>
+    <li>Now we need to create a directory for FreeLCS file processing: <strong>mkdir mountpoint</strong></li>
+    <li>You can mount a disk / partition for FreeLCS to this directory if needed.</li>
+    <li>Next we need to allow the FreeLCS Docker container read and write access to this directory: <strong>chmod -R 777 mountpoint</strong></li>
+    <li>At this point you should have the following in the FreeLCS - directory for example in: <strong>/home/mika/FreeLCS-4.0/</strong></li>
     <ul>
-	    <li> <strong>Docker compose up -d</strong></li>
-	    <li> <strong>Docker compose down</strong></li>
+    <li><strong>mountpoint</strong> &nbsp;&nbsp;(Working directory for the LoudnessCorrection docker - container)</li>
+    <li><strong>backup_freelcs_docker_images.py</strong> &nbsp;&nbsp;(Script to periodically backup FreeLCS docker - images)</li>
+    <li><strong>compose.yml</strong> &nbsp;&nbsp;(Docker configuration file describing docker networks and images to create for FreeLCS)</li>
+    <li><strong>config_editor.html</strong> &nbsp;&nbsp;(FreeLCS configuration creation program)</li>
+    <li><strong>Dockerfile</strong> &nbsp;&nbsp;(Docker configuration file describing how the create FreeLCS images)</li>
+    <li><strong>Documentation</strong> &nbsp;&nbsp;(Directory for FreeLCS documentation)</li>
+    <li><strong>freelcs_startup_file.sh</strong> &nbsp;&nbsp;(LoudnessCorrection and Samba startup - script)</li>
+    <li><strong>heartbeat_checker</strong> &nbsp;&nbsp;(Optional: runs in its own container and monitors LoudnessCorrection health)</li>
+    <li><strong>libinput_sndfile-freelcs.so</strong> &nbsp;&nbsp;(library needed by libebur128)</li>
+    <li><strong>LoudnessCorrection.py</strong> &nbsp;&nbsp;(Runs in docker container with Samba and processess audio files)</li>
+    <li><strong>LoudnessCorrection_Settings.json</strong> &nbsp;&nbsp;(Common settings - file for LoudnessCorrection, heartbeat_checker and progress_report)</li>
+    <li><strong>loudness-freelcs</strong> &nbsp;&nbsp;(libebur128 program that is used to measure loudness of audio files)</li>
+    <li><strong>progress_report</strong> &nbsp;&nbsp;(Optional: runs in its own container and creates a web page that shows which files are processed and which are waiting in the queue)</li>
+    <li><strong>smb.conf</strong> &nbsp;&nbsp;(Samba configuration)</li>
+    </ul>
+    <li>Now we create FreeLCS docker images and start them up as containers: <strong>Docker compose up -d</strong></li>
+    <li>This will fetch Ubuntu LTS release docker image from the interner and build up all FreeLCS images upon that. It will take about 3 - 4 minutes for all the needed images to be built and started up.</li>
+    <li>FreeLCS containers will be automatically started when the computer starts up. If you want to manually start and stop the containers you run these dommands in the FreeLCS - directory:</li>
+    <ul>
+	    <li> <strong>Docker compose up -d</strong> &nbsp;&nbsp;This will start FreeLCS</li>
+	    <li> <strong>Docker compose down</strong> &nbsp;&nbsp;This will stop FreeLCS</li>
     </ul>
     <br>
     <img style="border:2px solid #AAAAAA" title="Example: FreeLCS Progress Report" src="Pictures/Docker_Printout.jpg"><br>
-    <li>FreeLCS is now running. If you selected to start progress_report in the config_editor you can now connect to it by going to opening progress_report into your web browser (here at IP: 192.168.1.10): <strong>http://192.168.1.10:9000</strong></li>
+    <li>FreeLCS is now running. If you selected to start progress_report in the config_editor you can now connect with a web browser to it (Connect to port 9000 of your Docker host - machine, for example at IP: 192.168.1.10): <strong>http://192.168.1.10:9000</strong></li>
     <br>
     <img style="border:2px solid #AAAAAA" title="Example: FreeLCS Progress Report" src="Pictures/Progress_Report.jpg"><br>
     </ul>
     <h2> <a id="Security updates and FreeLCS image backups">Security updates and FreeLCS image backups</a></h2>
-    <p>You can install security updates on both host machine operating system and FreeLCS docker images and also make backups of FreeLCS images. FreeLCS image backups safeguards you against breaking changes coming in with Ubuntu LTS security updates.</p>
-    <p>The script <strong>backup_freelcs_docker_images.py</strong> that comes with FreeLCS first backs up FreeLCS Docker images and then deletes them and rebuilds with the latest security updates. You can also set up host machine os security updates at the same time also.</p>
-    <p>Here we set up a systemd timer to periodically run: <strong>backup_freelcs_docker_images.py</strong> This done by creating a systemd unit - file that makes our backup - script a systemd service and by creating a timer for it. The unitfile (ServiceName.service) defines what will be run and the timer - file (ServiceName.timer) defines when it is run.</p>
-    <p>First create a directory for the FreeLCS docker image backups like: <strong>/home/UserName/freelcs/docker_image_backups</strong></p>
-    <p>Then make copies of the example system timer configuration files with new names</p>
+    <p>Keeping your setup secure requires:</p>
+    <ul>
+	    <li>Backing up FreeLCS Docker images to guard against possible breaking changes coming in with Ubuntu Docker - image security updates</li>
+	    <li>Updating FreeLCS Docker images periodically to include latest Ubuntu security updates</li>
+	    <li>Updating your Docker host - machine with latest Ubuntu security updates</li>
+    </ul>
+    <p>This section describes how set all this up.</p>
+    <h3>Backing up FreeLCS Docker - images</h3>
+    <p>Backing up FreeLCS Docker - images requires:</p>
+    <ul>
+	    <li>Setting up a systemd service (unit) that runs the FreeLCS backup - script: <strong>backup_freelcs_docker_images.py</strong></li>
+	    <li>Setting up a systemd timer that periodically runs the the FreeLCS backup service</li>
+    </ul>
+    <p>The script <strong>backup_freelcs_docker_images.py</strong> lets you do the following:</p>
+    <ul>
+	    <li>Define how many FreeLCS Docker - image backups you want to keep</li>
+	    <li>Backup the current FreeLCS Docker - images so that you can restore them later if needed</li>
+	    <li>Automatically delete old FreeLCS image backups and only keep the latest</li>
+	    <li>Automatically delete current FreeLCS Docker - images and rebuild them with the latest Ubuntu LTS security updates</li>
+	    <li>Optionally you can enable installing Ubuntu security updates on the Docker host - machine also</li>
+    </ul>
+    <p>There are example systemd service (unit) and timer configuration files in the FreeLCS directory. The files are: <strong>backup_freelcs_docker_images-example.service</strong> and <strong>backup_freelcs_docker_images-example.timer.</strong> These need to be modified for your specific setup.</p>
+    <p>First create a directory for FreeLCS docker image backups like: <strong>/home/UserName/freelcs/docker_image_backups</strong></p>
     <h3> <a id="Editing backup_freelcs_docker_images.service">Editing backup_freelcs_docker_images.service</a></h3>
     <p>Make a copy of the example systemd unitfile with a new name</p>
     <ul>
     <li><strong>cp &nbsp;&nbsp;backup_freelcs_docker_images-example.service &nbsp;&nbsp;backup_freelcs_docker_images.service</strong></li>
     </ul>
-    <p>Now edit <strong>backup_freelcs_docker_images.service</strong> and change the line to point to the absolute path of where the script is located, example:</p>
+    <p>Edit <strong>backup_freelcs_docker_images.service</strong> and change the following line point to the absolute path of where the script <strong>backup_freelcs_docker_images.py</strong> is located, for example:</p>
    	<ul> 
 		<p>Change line:</p>
 		<p><strong>WorkingDirectory=/home/mika/FreeLCS-4.0</strong></p>
@@ -238,11 +310,11 @@
 		<p>Change line:</p>
 		<p><strong>ExecStart=/home/mika/FreeLCS-4.0/backup_freelcs_docker_images.py</strong></p>
 		<p></p>
-		<p>to point to backup_freelcs_docker_images.py in the FreeLCS directory and define where to create backups and how many to keep:</p>
-		<p><strong>ExecStart=/home/mika/FreeLCS-4.0/backup_freelcs_docker_images.py &nbsp;&nbsp;-backups_to_keep &nbsp;&nbsp;12 &nbsp;&nbsp;-backup_dir &nbsp;&nbsp;/home/mika/docker_image_backups &nbsp;&nbsp;-freelcs_dockerfile_dir &nbsp;&nbsp;/home/mika/FreeLCS-4.0</strong></p>
+		<p>to point to <strong>backup_freelcs_docker_images.py</strong> in the FreeLCS directory and define where to create backups and how many to keep:</p>
+		<p><strong>ExecStart=/home/john/FreeLCS-4.0/backup_freelcs_docker_images.py &nbsp;&nbsp;-backups_to_keep &nbsp;&nbsp;12 &nbsp;&nbsp;-backup_dir &nbsp;&nbsp;/home/john/docker_image_backups &nbsp;&nbsp;-freelcs_dockerfile_dir &nbsp;&nbsp;/home/john/FreeLCS-4.0</strong></p>
     
    	</ul> 
-	<p>This will tell the script that FreeLCS docker config files are in: <strong>/home/mika/FreeLCS-4.0</strong> and tells the script into backup to directory: <strong>/home/mika/docker_image_backups</strong> and keep the 12 latest backups and delete backups older than that. If you run the script weekly this will keep available images from the last 3 months.</p>
+	<p>This will tell the script that FreeLCS docker config files are in: <strong>/home/john/FreeLCS-4.0</strong> and tells the script to backup into directory: <strong>/home/john/docker_image_backups</strong> and keep the 12 latest backups and delete backups older than that. If you run this weekly it will keep the last 3 months of backups available.</p>
     <br> 
     <h3> <a id="Editing backup_freelcs_docker_images.timer">Editing backup_freelcs_docker_images.timer</a></h3>
     <p>The systemd timer - file defines when and how often the FreeLCS backup and update - service defined above will run.</p>
@@ -267,7 +339,8 @@
 		<p><strong>systemctl &nbsp;&nbsp;daemon-reload</strong></p>
 		<p><strong>systemctl &nbsp;&nbsp;enable &nbsp;&nbsp;--now &nbsp;&nbsp;backup_freelcs_docker_images.timer</strong></p>
 	</ul>
-    <br>
+	<p>
+	</p>Note that the systemd unit- and timer - files needs to be named identically and only the last part of the names (.service and .timer) being different.<br>
     <h2> <a id="Usage">Usage</a></h2>
     FreeLCS usage is very simple.
     <ol>
