@@ -3070,6 +3070,10 @@ def send_to_progress_report(english, finnish):
 				if silent == False:
 					print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
 				sys.exit(0)
+			except requests.exceptions.ConnectionError:
+				# Catch and supress errors when trying to send a message to progress_report or heartbeat_checker fails.
+				# These errors are not fatal for the LoudnessCorrection functionality but may fill logs fast.
+				pass
 			except IOError as reason_for_error:
 				error_message = str(reason_for_error)
 				send_error_messages_to_screen_logfile_email(error_message, [])
@@ -3133,6 +3137,10 @@ def send_to_heartbeat_checker():
 				if silent == False:
 					print('\n\nUser cancelled operation.\n' * english + '\n\nKäyttäjä pysäytti ohjelman.\n' * finnish)
 				sys.exit(0)
+			except requests.exceptions.ConnectionError:
+				# Catch and supress errors when trying to send a message to progress_report or heartbeat_checker fails.
+				# These errors are not fatal for the LoudnessCorrection functionality but may fill logs fast.
+				pass
 			except IOError as reason_for_error:
 				error_message = str(reason_for_error)
 				send_error_messages_to_screen_logfile_email(error_message, [])
