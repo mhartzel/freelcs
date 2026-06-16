@@ -265,6 +265,24 @@
 		</div>
 		<br>
 		<div class="default-styling-group">
+			<label for="server_name_icon">Server name / identity&nbsp;
+			<span class="icon-container">
+				<span class="help-icon" id="server_name_icon">?</span>
+				<span class="tooltip" id="server_name_tooltip_text">
+					Give FreeLCS server a unique name that is used on email titles<br>
+					The name is important if you have many FreeLCS - servers<br>
+					as it helps you know which server sent you the error - message<br>
+				</span>
+			</span>
+			</label>
+			<div class="form-ok label">
+			<form id="server_identity">
+				<input type="text" name="server_name" id="server_name" value="" disabled><br>
+			</form> 
+			</div>
+		</div>
+		<br>
+		<div class="default-styling-group">
 			<label for="email_interval_icon">Email sending interval&nbsp;
 			<span class="icon-container">
 				<span class="help-icon" id="email_interval_icon">?</span>
@@ -275,8 +293,8 @@
 			</span>
 			</label>
 			<select id="email_sending_interval" disabled onchange="updateEmailSending_interval()">
-		</select>
-	    </div>
+			</select>
+		</div>
 		<br>
 		<div class="default-styling-group">
 			<label for="tls_encryption_yes">Smtp Server requires TLS encryption</label>
@@ -625,6 +643,26 @@
 			<label for="Allow only processing of free_codec_formats">Only free codecs: PCM, Flac, Vorbis, Opus, Ac3, Mpeg 1 Layer 1, 2 and 3</label>
 		</div>
         </div>
+	<div class="default-styling">
+		<div class="default-styling-group">
+			<label for="samba_credentials_icon">Samba username and password&nbsp;
+			<span class="icon-container">
+				<span class="help-icon" id="samba_credentials_icon">?</span>
+				<span class="tooltip" id="samba_credentials_tooltip_text">
+					The default Samba username and password are both: freelcs<br>
+					Here you can change both. Note that neither can be empty.<br>
+					Windows 11 won't allow Samba logins without a password.<br>
+				</span>
+			</span>
+			</label>
+		</div>
+		<div class="default-styling-group">
+		<form id="samba_username_and_address">
+			Samba username &nbsp;<input type="text" name="samba_username" id="samba_username" value="freelcs"><br>
+			Samba password &nbsp;&nbsp;<input type="text" name="samba_password" id="samba_password" value="freelcs"><br>
+		</form> 
+		</div>
+        </div>
 </div>
 <div class="file-load-save">
 	<div class="default-styling-group">
@@ -641,13 +679,13 @@
 		</label>
 	</div>
 	<p>Save FreeLCS - settings to a json - file</p>
-	<button onclick="check_if_email_settings_are_ok()">Save</button>
+	<button onclick="check_that_email_settings_are_ok()">Save</button>
 	<br>
 	<p>Save FreeLCS - Docker compose.yml - file</p>
 	<button onclick="export_docker_compose()">Save</button>
 	<br>
 	<p>Save FreeLCS - Dockerfile</p>
-	<button onclick="export_dockerfile()">Save</button>
+	<button onclick="check_samba_credentials()">Save</button>
 	<br>
 	<p>Save Samba - example config</p>
 	<button onclick="export_samba_config()">Save</button>
@@ -731,6 +769,7 @@
 	"progress_service_port": "9000",\
 	"heartbeat_network_name": "heartbeat_checker",\
 	"heartbeat_service_port": "9002",\
+	"server_name": "",\
 	"number_of_all_items_in_dictionary": 0\
 	}';
 
@@ -787,7 +826,7 @@
 	"\n"
 	]
 
-	const dockerfile_loudness_correction = [
+	var dockerfile_loudness_correction = [
 	"FROM base_ubuntu_image AS loudness_correction\n",
 	"USER root:root\n",
 	"RUN DEBIAN_FRONTEND=noninteractive apt-get -y install python3 sox mediainfo gnuplot fonts-liberation ffmpeg samba python3-requests ca-certificates tzdata\n",
@@ -864,6 +903,9 @@
 	const target_loudness = [ "-12", "-13", "-14", "-15", "-16", "-17", "-18", "-19", "-20", "-21", "-22", "-23", "-24", "-25", "-26", "-27", "-28", "-29", "-30", "-31" ];
 	var docker_compose_config = [];
 	var dockerfile = [];
+	var server_name = `FreeLCS-${freelcs_version}`
+	var samba_username = "freelcs";
+	var samba_password = "freelcs";
 
 	if (debug == true) {
 		console.log(default_settings);
@@ -968,7 +1010,7 @@
 		language_selection();
 	}
 
-	function check_if_email_settings_are_ok() {
+	function check_that_email_settings_are_ok() {
 
 		if (default_settings.send_error_messages_by_email == true) {
 
@@ -1000,6 +1042,14 @@
 				window.alert("Email address is missing.");
 				return;
 			}
+
+			update_server_name();
+
+			if (default_settings.server_name == "") {
+				window.alert("FreeLCS server name / identity cannot be empty.");
+				return;
+			}
+
 		}
 
 		export_settings();
@@ -1027,6 +1077,7 @@
 
 	/* Export Dockerfile */
 	function export_dockerfile() {
+		update_docker_config();
 		const element = document.createElement("a");
 		element.href = URL.createObjectURL(new Blob(dockerfile, { type: "text/plain" }));
 		element.setAttribute("download", "Dockerfile");
@@ -1128,6 +1179,7 @@
 			tls_encryption_yes.disabled = true;
 			tls_encryption_no.disabled = true;
 			email_address.disabled = true;
+			document.getElementById("server_name").disabled=true;
 			document.getElementById("email_sending_interval").disabled=true;
 			email_address.style.color='gray';
 			email_address.elements[0].disabled=true;
@@ -1155,6 +1207,7 @@
 			tls_encryption_yes.disabled = false;
 			tls_encryption_no.disabled = false;
 			email_address.disabled = false;
+			document.getElementById("server_name").disabled=false;
 			document.getElementById("email_sending_interval").disabled=false;
 			email_address.style.color='black';
 			email_address.elements[0].disabled=false;
@@ -1265,6 +1318,42 @@
 		if (debug == true) {
 			console.log(default_settings.email_sending_details.message_recipients);
 		}
+	}
+
+	function check_samba_credentials() {
+
+		samba_username = document.getElementById("samba_username").value;
+		samba_password = document.getElementById("samba_password").value;
+
+		if (samba_username == "" || samba_password == "") {
+			window.alert("Samba username or password cannot be empty.");
+			return;
+		}
+
+		if (debug == true) {
+			console.log("samba_username:", samba_username);
+			console.log("samba_password:", samba_password);
+		}
+
+		dockerfile_loudness_correction = [
+		"FROM base_ubuntu_image AS loudness_correction\n",
+		"USER root:root\n",
+		"RUN DEBIAN_FRONTEND=noninteractive apt-get -y install python3 sox mediainfo gnuplot fonts-liberation ffmpeg samba python3-requests ca-certificates tzdata\n",
+		"COPY ./LoudnessCorrection.py ./loudness-freelcs ./freelcs_startup_file.sh /usr/bin/\n",
+		"COPY ./LoudnessCorrection_Settings.json /etc/\n",
+		"COPY ./smb.conf /etc/samba/\n",
+		"COPY ./libinput_sndfile-freelcs.so /usr/lib/\n",
+		"RUN ldconfig\n",
+		"RUN chmod 755 /usr/bin/LoudnessCorrection.py /usr/bin/loudness-freelcs /usr/bin/freelcs_startup_file.sh ; chmod 644 /etc/LoudnessCorrection_Settings.json /etc/samba/smb.conf /usr/lib/libinput_sndfile-freelcs.so\n",
+		`RUN useradd -M -s /sbin/nologin ${samba_username}\n`,
+		`RUN /bin/bash -c "echo -e '${samba_password}\\n${samba_password}' | smbpasswd -a ${samba_username}"\n`,
+		"# USER freelcs\n",
+		'CMD ["/usr/bin/freelcs_startup_file.sh"]\n',
+		"\n"
+		]
+
+		export_dockerfile();
+
 	}
 
 	function submit_email_server_details() {
@@ -1866,6 +1955,10 @@
 		}
 	}
 
+	function update_server_name() {
+		default_settings.server_name = document.getElementById('server_name').value;
+	}
+
 	function startup_initialization() {
 		populateProcessors();
 		populateFileExpiryTime();
@@ -1874,6 +1967,9 @@
 		populateUnitSeparators();
 		populateMXFremix();
 		generate_authorization_code();
+
+		document.getElementById('server_name').value =  `${server_name}`;
+		default_settings.server_name = `${server_name}`;
 
 		////////////////////////////////////////////////////////////////////////////////
 		// Get default values for dropbown menus from the default_settings - variable //
@@ -2012,7 +2108,6 @@
 	////////////////////////////////////
 	// Function definitions ends here //
 	////////////////////////////////////
-
 	startup_initialization();
 
 </script>
