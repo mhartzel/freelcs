@@ -13,6 +13,8 @@
     <br>
     <a href="#What%20is%20FreeLCS%20%20?">What is FreeLCS&nbsp; ?</a><br>
     <br>
+    <a href="#Can I modify FreeLCS ?">Can I modify FreeLCS&nbsp; ?</a><br>
+    <br>
     <a href="#What%20programs%20are%20used%20to%20process%20audio%20files%20?">What
       programs are used to process audio files ?</a><br>
     <br>
@@ -89,6 +91,8 @@
     <a href="#Is_there_a_way_to_find_out_FreeLCS_options_used_during_installation">Is
       there a way to find out FreeLCS options used during installation ?</a><br>
     <br>
+    <a href="#Was AI used when programming FreeLCS ?">Was AI used when programming FreeLCS&nbsp; ?</a><br>
+    <br>
     <br>
     <br>
     <br>
@@ -112,6 +116,16 @@
         anything to use it :)<br>
       </li>
       <li>FreeLCS site is here: <a href="http://freelcs.sourceforge.net/">http://freelcs.sourceforge.net/</a></li>
+    </ul>
+    <br>
+    <h2> <a id="Can I modify FreeLCS ?">Can I modify FreeLCS ?</a></h2>
+    <p>Yes. FreeLCS is open source so you have access to all the source files and you can modify them anyway you see fit. Also you can install this software on as many computers as you like, there are no license fees.</p>
+    <p>FreeLCS is published under the Gnu GPL 3 license. The text of the license is here: <a href="https://www.gnu.org/licenses/gpl-3.0.en.html">https://www.gnu.org/licenses/gpl-3.0.en.html</a></p>
+    <p>Programming languages used:</p>
+    <ul>
+	    <p><li>LoudnessCorrection was programmed in <strong>Python3</strong></li></p>
+    <p><li>heartbeat_checker and progress_report in <strong>Go</strong></li></p>
+    <p><li>config_editor was programmed in <strong>html and javascript</strong></li></p>
     </ul>
     <br>
     <h2> <a id="What programs are used to process audio files ?">What programs
@@ -920,6 +934,10 @@
         there a way to find out FreeLCS options used during installation ?</a></h2>
     <p>Yes. FreeLCS 3.12 and later creates a human readable config file <strong>LoudnessCorrection_Settings.json</strong></p>
     <p>It may be a bit convoluted but the options are there as variable names and values right after it.</p>
+    <br>
+    <h2> <a id="Was AI used when programming FreeLCS ?">Was AI used when programming FreeLCS ?</a></h2>
+    <p>I started working on FreeLCS in 2012 and then there was no AI capable of doing coding. So everything was written manually by a human being. However while modifying FreeLCS to run on Docker I experimented with AI when translating my Python3 versions of heartbeat_checker and progress_report to Go. This was not a straight forward process since I first converted these Python3 programs to communicate with each other through network instead of writing files to disk. I did not use AI for this. When the conversion was ready I realized that the Python3 libraries I used for network communication were not safe for production so I explored other languages and found that Go network / web libraries were fast, safe and stable.</p>
+    <p>I had some previous experience in Go and I had done another open source project with it <a href="https://github.com/mhartzel/ffcommander">https://github.com/mhartzel/ffcommander</a> so I decided to convert these two programs to Go. Although these are quite small that is a lot of work. My brother is a real programmer at his dayjob :) and he had had very positive experiences with AI - coding at his work so I decided to try it out. Gemini made the first Go - versions of these two programs but the quality was not good. I used these as skeletons and practically wrote them again. AI - code quality was not good because it used short unclear variable names that made the code very hard to read and understand and it also used several different coding styles at once making the code difficult to follow. It also introduced bugs and left out some features of the original programs. Part of these problems might be due to me not being able to prompt it correctly. I learned also that coding is so much fun that I don't want to give that away to a robot :)</p>
     <br>
     <br>
   </body>

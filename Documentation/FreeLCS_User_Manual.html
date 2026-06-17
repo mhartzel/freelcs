@@ -12,7 +12,7 @@
     <h3> <a href="#Introduction">Introduction</a></h3>
     <h3> <a href="#Features">Features</a></h3>
     <h3> <a href="#Requirements">Requirements</a></h3>
-    <h3> </h3>
+    <h3> <a href="#Where to learn about Docker">Where to learn about Docker</a></h3>
     <h3><a href="#Installation">Installation</a></h3>
     <h3><a href="#Create configuration for FreeLCS">Create configuration for FreeLCS</a></h3>
     <h3><a href="#Setting up the host Docker machine">Setting up the host Docker machine</a></h3>
@@ -21,6 +21,7 @@
     <h3><a href="#Editing backup_freelcs_docker_images.timer">Editing backup_freelcs_docker_images.timer</a></h3>
     <h3><a href="#Activating FreeLCS backup and update script timer">Activating FreeLCS backup and update script timer</a></h3>
     <h3><a href="Machine_readable_results_and_MXF_audio_remix_mapping.html#FFmpeg_allowed_wrapper_and_codec_formats">FFmpeg allowed wrapper and codec formats</a></h3>
+    <h3> <a href="#FreeLCS Docker containers explained">FreeLCS Docker containers explained</a></h3>
     <h3> <a href="#Usage">Usage</a></h3>
     <h3> <a href="#Loudness%20History%20Graphics">Loudness History Graphics</a></h3>
     <h3><a href="#Loudness%20history%20graphics%20when%20target%20loudness%20is%20set%20to%20-16,%20-23%20and%20-31%20LUFS">Loudness history graphics when target loudness is set to -16, -23 and -31 LUFS </a></h3>
@@ -113,7 +114,7 @@
         proprietary os installation.</li>
       <li>As of version 4.0 FreeLCS runs inside the Docker environment.</li>
       <li>Easy to integrate in many workflows.</li>
-      <li>Written in Python 3, Go, HTML and Javascript.</li>
+      <li>Written in Python 3.</li>
       <li>More specific information can be found in the <a href="FreeLCS_FAQ.html">FAQ</a>.</li>
     </ul>
     <br>
@@ -130,6 +131,10 @@
         supported formats, channel orders, etc.<br>
       </li>
     </ul>
+    <h2> <a id="Where to learn about Docker">Where to learn about Docker</a></h2>
+    <p>You can learn about Docker for example here by reading through the free course material: 
+    <a href ="https://courses.mooc.fi/org/uh-cs/courses/devops-with-docker">https://courses.mooc.fi/org/uh-cs/courses/devops-with-docker</a></p>
+    <p>However you don't need to do that before setting up FreeLCS 4.x as every step is explained in detail below. Later however you might want to learn more about Docker's features.</p>
     <h2> <a id="Installation">Installation</a></h2>
     <p>Things you need to do on a desktop computer:</p>
     <ul>
@@ -146,10 +151,13 @@
 		    Unzip FreeLCS-4.xx release - archive.
 	    </li>
 	    <li>
-		    Copy configuration files from your desktop computer
+		    Copy configuration files from your desktop computer to the Docker host - computer
 	    </li>
 	    <li>
 		    Install docker environment
+	    </li>
+	    <li>
+		    Build and start FreeLCS containers. This is as easy as running one command: <strong>docker compose up -d</strong>
 	    </li>
 	    <li>
 		    Setup automatic security updates and FreeLCS image backups
@@ -260,7 +268,7 @@
     </ul>
     <li>Now we create FreeLCS docker images and start them up as containers: <strong>docker compose up -d</strong></li>
     <li>This will fetch Ubuntu LTS release docker image from the interner and build up all FreeLCS images upon that. It will take about 3 - 4 minutes for all the needed images to be built and started up.</li>
-    <li>FreeLCS containers will be automatically started when the computer starts up. If you want to manually start and stop the containers you run these dommands in the FreeLCS - directory:</li>
+    <li>FreeLCS containers will be automatically started when the computer starts up. If you want to manually start and stop the containers you run these commands in the FreeLCS - directory (For example: <strong>/home/john/FreeLCS-4.0)</strong>:</li>
     <ul>
 	    <li> <strong>docker compose up -d</strong> &nbsp;&nbsp;This will start FreeLCS</li>
 	    <li> <strong>docker compose down</strong> &nbsp;&nbsp;This will stop FreeLCS</li>
@@ -350,6 +358,17 @@
 	</ul>
 	<p>
 	</p>Note that the systemd unit- and timer - files needs to be named identically and only the last part of the names (.service and .timer) being different.<br>
+    <h2> <a id="FreeLCS Docker containers explained">FreeLCS Docker containers explained</a></h2>
+    <p>FreeLCS builds up 1 - 3 Docker images / containers depending upon choices you make in the <strong>config_editor.html</strong></p>
+    <p>A image / container contains just the programs and libraries the apps running inside it needs. All containers use the kernel and network of the host machine and apps running inside containers are isolated from the hardware and software of the host machine.</p>
+    <p>Docker calls the instance of the app and its dependencies an container when it is running and its version that is stored on the disk is called an image.</p>
+    <ul>
+    <p><li>The first FreeLCS image / container is called <strong>LoudnessCorrection</strong> and it hosts the Samba server and the main program of FreeLCS. The main program is called LoudnessCorrection and it monitors the hotfolder for incoming files and processes them. LoudnessCorrection and the Samba - server must be in the same container because LoudnessCorrection needs to query Samba about what files are still in the middle of transfer so that LoudnessCorrection won't start processing them before they have arrived completely to the hotfolder. The Samba - service running inside this container binds to the host computer IP meaning you use the Docker host - machine IP when you mount FreeLCS hotfolder to another computer. LoudnessCorrection also communicates with two optional containers through the network. LoudnessCorrection sends json - files containing a timestamp to heartbeat_checker - container and another json containing all the information about files being processed to the progress_report - container.</li></p>
+    <p><li>The optional <strong>heartbeat_checker</strong> - program runs in its own container and receives periodic timestamps from LoudnessCorrection. Heartbeat_checker sends the user email if these timestamps stops arriving so that the user knows something is wrong and may restart the services.</li></p>
+    <p><li>The optional <strong>progress_report</strong> runs in its own container and receives every 5 seconds an json file from LoudnessCorrection listing all files that are being processed and waiting in the queue. Progress_report binds to the Docker host - computers IP and port 9000 serving this information there as a web - server. You open the progress_report web - page by writing the Docker host - computer IP and port 9000 to your web - browsers address bar for example: <strong>http://192.168.1.100:9000</strong></li></p>
+    <p><li>Docker creates an virtual network for FreeLCS containers to communicate through. This network is not visible outside the Docker host - computer.</li></p>
+    <p><li><strong>LoudnessCorrection</strong>, <strong>heartbeat_checker</strong> and <strong>progress_report</strong> share a common configuration file (<strong>LoudnessCorrection_Settings.json</strong>) where settings for all these programs are stored. When you set up settings with config_editor.html it also creates an random 64 character hex string that is used as a secret token when FreeLCS programs communicates with each other. Programs refuse to process any received information if the message does not include this secret "key". Because the programs share the same settings file with this key they all know about it.</li></p>
+    </ul>
     <h2> <a id="Usage">Usage</a></h2>
     FreeLCS usage is very simple.
     <ol>
