@@ -42,12 +42,11 @@ var (
 	list_of_email_recipients            []string = []string{}
 	message_title                       string   = "LoudnessCorrection Error Message"
 	message_attachment_path             string   = ""
-
-	// Dynamic program info extracted from heartbeats
 	loudness_correction_commandline = ""
 	heartbeat_checker_commandline = ""
 	loudness_correction_pid =""
-	all_ip_addresses_of_the_machine string
+	server_name                     string = "Not known yet"
+	target_loudness                 string = "Not known yet"
 	freelcs_version                 string = "Not known yet"
 	loudnesscorrection_version      string = "Not known yet"
 )
@@ -73,7 +72,8 @@ func send_error_email(recipients []string, title string, body_text string, attac
 		"LoudnessCorrection info:\n" +
 		"--------------------------------------\n" +
 		"Commandline: %s\n" +
-		"IP-Addresses: %s\n" +
+		"Server name: %s\n" +
+		"Target loudness: %s LUFS\n" +
 		"PID: %s\n" +
 		"LoudnessCorrection version: %s\n\n" +
 		"HeartBeat Checker info:\n" +
@@ -83,7 +83,8 @@ func send_error_email(recipients []string, title string, body_text string, attac
 		"HeartBeat Checker version: %s\n\n",
 		freelcs_version,
 		loudness_correction_commandline,
-		all_ip_addresses_of_the_machine,
+		server_name,
+		target_loudness,
 		loudness_correction_pid,
 		loudnesscorrection_version,
 		heartbeat_checker_commandline,
@@ -273,7 +274,7 @@ func authorize_and_sanitize_input_data(context *gin.Context) {
 
 func check_timestamps_loop() {
 
-	// Check LoudnessCorrection sent timestamps in a loop sleepin between checks
+	// Check LoudnessCorrection sent timestamps in a loop sleeping between checks
 
 	previous_timestamps := make(map[string]interface{})
 	startup_message_has_been_sent := false
@@ -309,8 +310,12 @@ func check_timestamps_loop() {
 				loudness_correction_pid = incoming_value
 			}
 
-			if incoming_value,ok := loudness_correction_program_info_and_timestamps["all_ip_addresses_of_the_machine"].(string) ; ok == true {
-				all_ip_addresses_of_the_machine = incoming_value
+			if incoming_value,ok := all_settings_dict["server_name"].(string) ; ok == true {
+				server_name = incoming_value
+			}
+
+			if incoming_value,ok := all_settings_dict["target_loudness"].(string) ; ok == true {
+				target_loudness = incoming_value
 			}
 
 			if incoming_value,ok := loudness_correction_program_info_and_timestamps["freelcs_version"].(string) ; ok == true {

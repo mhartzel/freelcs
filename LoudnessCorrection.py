@@ -373,13 +373,6 @@ delete_original_file_immediately = True
 unit_separator = chr(31) # This non printable ascii character is used to separate individual values for a mix.
 record_separator = chr(13) + chr(10) # This string is used to separate info for different mixes. This is by default the carriage return character followed by the line feed character. This sequence is used in windows to separate lines of text.
 
-
-# Define a counter that counts how long ago the ip address of the machine has been checked (needed with dynamic ip).
-# Also define in seconds the interval between ip address checks (default 5 mins = 300 secs).
-ip_address_refresh_interval = 300 
-ip_address_refresh_counter = ip_address_refresh_interval  # Force ip address check immediately when the program is run by setting the counter to the same value as the check interval.
-ip_address_acquirement_error_has_already_been_reported = False
-
 # Define formats that we don't want to support meaning files FFmpeg tries to convert with bad results.
 # FFmpeg 2.8.6 on Ubuntu 16.04 tries to use libmodplug with FFmpeg to create a wav from midi files, but the result is total garbage, prevent this.
 unsupported_formats_list = ['libmodplug']
@@ -400,6 +393,8 @@ progress_service_path = "/progress_report"
 heartbeat_network_name = ""
 heartbeat_service_port = ""
 heartbeat_service_path = "/heartbeat"
+
+server_name = "Not Known"
 
 ###############################################################################################################################################################################
 # Default value definitions end here :)																	      #
@@ -2847,7 +2842,6 @@ def send_error_messages_by_email_thread(email_sending_details, english, finnish)
 	global silent
 	global error_logfile_path
 	global error_messages_to_email_later_list # This global variable holds all the error messages we need to send.
-	global all_ip_addresses_of_the_machine
 	global loudness_correction_pid
 	global freelcs_version
 	global critical_python_error_has_happened
@@ -2881,7 +2875,7 @@ def send_error_messages_by_email_thread(email_sending_details, english, finnish)
 		error_messages_to_send = []
 		message_text_string = ''
 		
-		machine_info = '\n\nLoudnessCorrection info:\n--------------------------------------\n' + 'Commandline: ' + ' '.join(sys.argv) + '\n' + 'IP-Addresses: ' + ', '.join(all_ip_addresses_of_the_machine) + '\n' + 'PID: ' + str(loudness_correction_pid) + '\n' + 'FreeLCS version: ' + freelcs_version + '\n\n'
+		machine_info = '\n\nLoudnessCorrection info:\n--------------------------------------\n' + 'Commandline: ' + ' '.join(sys.argv) + '\n' + 'Server name: ' + server_name + '\n' + 'Target loudness: ' + target_loudness + ' LUFS\n'  + 'PID: ' + str(loudness_correction_pid) + '\n' + 'FreeLCS version: ' + freelcs_version + '\n\n'
 		
 		if len(error_messages_to_email_later_list) > 0:
 			
@@ -2985,7 +2979,6 @@ def send_to_progress_report(english, finnish):
 		global silent
 		global quit_all_threads_now
 		global freelcs_version
-		global all_ip_addresses_of_the_machine
 		
 		data_to_send = {}
 		data_to_send["title_1"] = [ 'FreeLCS ' + freelcs_version + ' Progress Report' * english + ' Laskentajono' * finnish ]
@@ -3008,7 +3001,7 @@ def send_to_progress_report(english, finnish):
 			data_to_send["title_2"] = [ str(len(files_queued_to_loudness_calculation)) + ' Files Waiting In The Queue' * english + ' Tiedostoa jonossa' * finnish ]
 			data_to_send["title_3"] = [ 'Files Being Processed' * english + 'Käsittelyssä olevat tiedostot' * finnish ]
 			data_to_send["title_4"] = [ 'Completed Files' * english + 'Käsitellyt tiedostot' * finnish ]
-			data_to_send["realtime"] = [ realtime.replace('_', ' ')  ]
+			data_to_send["realtime"] = [ server_name + ": " + realtime.replace('_', ' ')  ]
 			
 			# Get the first 10 filenames waiting for getting into loudness calculation and insert those names in to the html code.
 			first_ten_files_queued_to_loudness_calculation = files_queued_to_loudness_calculation[:10] # Get the first 10 filenames from the waiting queue into a list.
@@ -3426,118 +3419,6 @@ def debug_lists_and_dictionaries_thread():
 
 		# Sleep between writing output
 		time.sleep(30)
-
-def get_ip_addresses_of_the_host_machine(previous_ip_addresses_of_the_machine):
-
-	try:
-		stdout = b''
-		stderr = b''
-
-		global ip_address_refresh_counter
-		global directory_for_temporary_files
-		global ip_address_acquirement_error_has_already_been_reported
-
-		new_ip_addresses_of_the_machine = []
-
-		# Create the commandline we need to run.
-		commands_to_run = ['hostname', '-I']
-		error_message = ''
-
-		try:
-			# Define filenames for temporary files that we are going to use as stdout and stderr for the external command.
-			stdout_for_external_command = directory_for_temporary_files + os.sep + 'Hostname_command_stdout.txt'
-			stderr_for_external_command = directory_for_temporary_files + os.sep + 'Hostname_command_stderr.txt'
-					
-			# Open the stdout and stderr temporary files in binary write mode.
-			with open(stdout_for_external_command, 'wb') as stdout_commandfile_handler, open(stderr_for_external_command, 'wb') as stderr_commandfile_handler:
-		
-				# Run our command.
-				subprocess.Popen(commands_to_run, stdout=stdout_commandfile_handler, stderr=stderr_commandfile_handler, stdin=None, close_fds=True).communicate()
-				
-				# Make sure all data written to temporary stdout and stderr - files is flushed from the os cache and written to disk.
-				stdout_commandfile_handler.flush() # Flushes written data to os cache
-				os.fsync(stdout_commandfile_handler.fileno()) # Flushes os cache to disk
-				stderr_commandfile_handler.flush() # Flushes written data to os cache
-				os.fsync(stderr_commandfile_handler.fileno()) # Flushes os cache to disk
-				
-		except IOError as reason_for_error:
-			error_message = 'Error writing to stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon kirjoittaminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(commands_to_run) + '. ' + str(reason_for_error)
-
-		except OSError as reason_for_error:
-			if error_message != '':
-				error_message = error_message + '\n'
-			error_message = error_message + 'Error writing to stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon kirjoittaminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(commands_to_run) + '. ' + str(reason_for_error)
-
-		# Open files we used as stdout and stderr for the external program and read in what the program did output to those files.
-		try:
-			with open(stdout_for_external_command, 'rb') as stdout_commandfile_handler, open(stderr_for_external_command, 'rb') as stderr_commandfile_handler:
-				stdout = stdout_commandfile_handler.read(None)
-				stderr = stderr_commandfile_handler.read(None)
-
-		except IOError as reason_for_error:
-			if error_message != '':
-				error_message = error_message + '\n'
-			error_message = error_message + 'Error reading from stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston lukeminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(commands_to_run) + '. ' + str(reason_for_error)
-
-		except OSError as reason_for_error:
-			if error_message != '':
-				error_message = error_message + '\n'
-			error_message = error_message + 'Error reading from stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedostoon lukeminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(commands_to_run) + '. ' + str(reason_for_error)
-		
-		stdout = str(stdout.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
-		stderr = str(stderr.decode('UTF-8')) # Convert sudo possible error output from binary to UTF-8 text.
-		
-		# Delete the temporary stdout and stderr - files
-		try:
-			os.remove(stdout_for_external_command)
-			os.remove(stderr_for_external_command)
-
-		except IOError as reason_for_error:
-			if error_message != '':
-				error_message = error_message + '\n'
-			error_message = error_message + 'Error deleting stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston deletoiminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(commands_to_run) + '. ' + str(reason_for_error)
-		except OSError as reason_for_error:
-			if error_message != '':
-				error_message = error_message + '\n'
-			error_message = error_message + 'Error deleting stdout- or stderr - file when running command: ' * english + 'Stdout- tai stderr - tiedoston deletoiminen epäonnistui ajettaessa komentoa: ' * finnish + ' '.join(commands_to_run) + '. ' + str(reason_for_error)
-	
-		if error_message == '':
-
-			new_ip_addresses_of_the_machine = stdout.split()
-
-			if new_ip_addresses_of_the_machine != []:
-				
-				# We got the ip address of the server successfully, if previous try failed then it set the error flag,
-				# so that we don't repoprt this error more than once. Reset the error flag now.
-				ip_address_acquirement_error_has_already_been_reported = False
-
-				# Return the new ip addresses to the main program
-				return(new_ip_addresses_of_the_machine)
-
-		else:
-			# The default interval to check if our ip address has changed is 5 minutes (300 seconds).
-			# If the check succeeds, then the counter that counts seconds since last check is reset to zero.
-			# If the ip address check fails, then the counter is not reset and we check again for the ip address every 5 seconds and the counter continues to grow above 300.
-			# If the ip address check fails continuously for another 120 seconds (300 + 120), then send an error message.
-			# Also set a flag so that we don't report this error more than once.
-			# Note !!!!!!! The ip address check may sometimes fail, but it only means we don't know what the ip address is, the machine propably still has a valid address, just the check fails.
-			if ip_address_refresh_counter >= 420:
-
-				ip_address_refresh_counter = 0 # Start ip address refresh counter again from zero.
-
-				# Error happened, send error message but only once.
-				if ip_address_acquirement_error_has_already_been_reported == False:
-
-					send_error_messages_to_screen_logfile_email(error_message, [])
-					ip_address_acquirement_error_has_already_been_reported = True
-
-		return(previous_ip_addresses_of_the_machine)
-	
-	except Exception:
-		exc_type, exc_value, exc_traceback = sys.exc_info()
-		error_message_as_a_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
-		subroutine_name = 'get_ip_addresses_of_the_host_machine'
-		catch_python_interpreter_errors(error_message_as_a_list, subroutine_name)
 
 		
 def get_audio_stream_information_with_ffmpeg_and_create_extraction_parameters(filename, hotfolder_path, directory_for_temporary_files, ffmpeg_output_wrapper_format, english, finnish):
@@ -5791,7 +5672,6 @@ try:
 	unsupported_ignored_files_dict = {} # This dictionary holds the names of files that have no audiostreams we can read with ffmpeg, or has audiostreams, but the duration is less than 1 second. Files in this list will be ignored and not processed. The time the file was first seen in the HotFolder is also recorded with the filename.
 	html_progress_report_counter = 0 # This variable is used to count the seconds between writing loudness calculation queue information to a html - page on disk
 	loudness_correction_pid = os.getpid() # Get the PID of this program.
-	all_ip_addresses_of_the_machine = ['Not known'] # This variable stores in a list all IP-Addresses this machine has. This info is inserted into error emails.
 	temp_loudness_results_for_automation = {}
 	final_loudness_results_for_automation = {}  # Loudness results and file info is gathered to this dictionary if this option is turned on. This dictionary stores all results under the original source file name, even for separate mixes that were extracted from the original file.
 
@@ -5974,6 +5854,9 @@ try:
 		if 'heartbeat_service_port' in all_settings_dict:
 			heartbeat_service_port = all_settings_dict['heartbeat_service_port']
 
+		if 'server_name' in all_settings_dict:
+			server_name = all_settings_dict['server_name']
+
 		if debug_all == True:
 			write_loudness_calculation_results_to_a_machine_readable_file = True
 			write_user_defined_configuration_settings_to_logfile()
@@ -6104,7 +5987,6 @@ try:
 	loudness_correction_program_info_and_timestamps = {
 	"commandline": ' '.join(sys.argv),
 	"loudness_correction_pid": str(loudness_correction_pid),
-	"all_ip_addresses_of_the_machine": ' '.join(all_ip_addresses_of_the_machine),
 	"freelcs_version": str(freelcs_version),
 	"loudnesscorrection_version": str(loudnesscorrection_version),
 	'main_thread' : [True, "0"],
@@ -6155,12 +6037,6 @@ try:
 	while True:
 		
 		loudness_correction_program_info_and_timestamps['main_thread'] = [True, str(int(time.time()))] # Update the heartbeat timestamp for the main thread. This is used to keep track if the main thread has crashed.
-
-		# Get IP-Addresses of the machine, if update time has passed (default 5 minutes).
-		ip_address_refresh_counter = ip_address_refresh_counter + delay_between_directory_reads
-
-		if ip_address_refresh_counter >= ip_address_refresh_interval:
-			all_ip_addresses_of_the_machine = get_ip_addresses_of_the_host_machine(all_ip_addresses_of_the_machine)
 
 		try:
 			# Get directory listing for HotFolder. The 'break' statement stops the for - statement from recursing into subdirectories.

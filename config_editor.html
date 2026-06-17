@@ -1326,8 +1326,7 @@
 		samba_password = document.getElementById("samba_password").value;
 
 		if (samba_username == "" || samba_password == "") {
-			window.alert("Samba username or password cannot be empty.");
-			return;
+			window.alert("WARNING !!!!!!!\n\nSamba username or password is empty.\nWindows won't by default allow mounting Samba shares without a username or password.\n\nYou can save settings like this but be aware that this might cause issues with windows.");
 		}
 
 		if (debug == true) {
@@ -1957,6 +1956,11 @@
 
 	function update_server_name() {
 		default_settings.server_name = document.getElementById('server_name').value;
+		default_settings.email_sending_details.message_title = default_settings.server_name.concat(" ", "Error Message");
+
+		if (debug == true) { 
+			console.log("default_settings.email_sending_details.message_title:", default_settings.email_sending_details.message_title)
+		}
 	}
 
 	function startup_initialization() {
@@ -1968,6 +1972,7 @@
 		populateMXFremix();
 		generate_authorization_code();
 
+		// Set server name to default value.
 		document.getElementById('server_name').value =  `${server_name}`;
 		default_settings.server_name = `${server_name}`;
 
