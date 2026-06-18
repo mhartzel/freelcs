@@ -22,6 +22,7 @@
     <h3><a href="#Activating FreeLCS backup and update script timer">Activating FreeLCS backup and update script timer</a></h3>
     <h3><a href="Machine_readable_results_and_MXF_audio_remix_mapping.html#FFmpeg_allowed_wrapper_and_codec_formats">FFmpeg allowed wrapper and codec formats</a></h3>
     <h3> <a href="#FreeLCS Docker containers explained">FreeLCS Docker containers explained</a></h3>
+    <h3><a href="#Timezone and Docker">Timezone and Docker</a></h3>
     <h3> <a href="#Usage">Usage</a></h3>
     <h3> <a href="#Loudness%20History%20Graphics">Loudness History Graphics</a></h3>
     <h3><a href="#Loudness%20history%20graphics%20when%20target%20loudness%20is%20set%20to%20-16,%20-23%20and%20-31%20LUFS">Loudness history graphics when target loudness is set to -16, -23 and -31 LUFS </a></h3>
@@ -31,7 +32,6 @@
     <h3><a href="#Mounting%20the%20server%20HotFolder%20from%20windows%2011%20making%20it%20permanent">Mounting the server HotFolder from windows 11 making it permanent</a><br> </h3>
     <h3><a href="#Mounting%20the%20server%20HotFolder%20from%20Linux">Mounting the server HotFolder from Linux</a><br> </h3>
     <h3> <a href="#Progress%20report">Progress Report</a></h3>
-    <h3><a href="#Timezone and Docker">Timezone and Docker</a></h3>
     <h3><a href="#How%20to%20report%20a%20bug">How to report a bug</a></h3>
     <h3><a href="#FreeLCS%20development">FreeLCS development</a></h3>
     <h3><a title="FreeLCS FAQ" href="FreeLCS_FAQ.html"><u>FAQ</u></a></h3>
@@ -243,32 +243,38 @@
     <ul>
     <li><strong>sudo su</strong></li>
     <li><strong>apt update</strong></li>
-    <li><strong>apt install docker.io docker-buildx docker-compose-v2</strong></li>
+    <li><strong>apt install unzip docker.io docker-buildx docker-compose-v2</strong></li>
     <li><strong>reboot</strong></li>
     </ul>
     <li>This will install and activate docker - services and start them up when the computer powers on.</li>
-    <li>If you want to run docker commands as a normal user you need to add the username to the docker group and log out and in again: <strong>usermod -aG docker username</strong></li>
+    <li>If you want to run docker commands as a normal user you need to add the username to the docker group and log out and in again: <strong>usermod -aG docker YourUsername</strong></li>
     <li>Unzip FreeLCS-4.xx in your Linux users home directory, after this FreeLCS files will be located in a path like: <strong>/home/mika/FreeLCS-4.0</strong>
 	</li>
-	<li> Copy all four configurations files you created with config_editor into this directory.</li>
+	<li> Copy all four configurations files you created with <strong>config_editor.html</strong> into this directory. The files are:</li>
+	<ul>
+		<li><strong>compose.yml</strong></li>
+		<li><strong>Dockerfile</strong></li>
+		<li><strong>LoudnessCorrection_Settings.json</strong></li>
+		<li><strong>smb.conf</strong></li>
+	</ul>
     <li>Go into the FreeLCS directory: <strong>cd /home/mika/FreeLCS-4.0</strong></li>
     <li>Now we need to create a directory for FreeLCS file processing: <strong>mkdir mountpoint</strong></li>
     <li>You can mount a disk / partition for FreeLCS to this directory if needed.</li>
     <li>Next we need to allow the FreeLCS Docker container read and write access to this directory: <strong>chmod -R 777 mountpoint</strong></li>
     <li>At this point you should have the following in the FreeLCS - directory for example in: <strong>/home/mika/FreeLCS-4.0/</strong></li>
     <ul>
-    <li><strong>mountpoint</strong> &nbsp;&nbsp;(Working directory for the LoudnessCorrection docker - container)</li>
+    <li><strong>Dockerfile</strong> &nbsp;&nbsp;(Docker configuration file describing how the create FreeLCS images)</li>
+    <li><strong>Documentation</strong> &nbsp;&nbsp;(Directory for FreeLCS documentation)</li>
+    <li><strong>LoudnessCorrection.py</strong> &nbsp;&nbsp;(Runs in docker container with Samba and processess audio files)</li>
+    <li><strong>LoudnessCorrection_Settings.json</strong> &nbsp;&nbsp;(Common settings - file for LoudnessCorrection, heartbeat_checker and progress_report)</li>
     <li><strong>backup_freelcs_docker_images.py</strong> &nbsp;&nbsp;(Script to periodically backup FreeLCS docker - images)</li>
     <li><strong>compose.yml</strong> &nbsp;&nbsp;(Docker configuration file describing docker networks and images to create for FreeLCS)</li>
     <li><strong>config_editor.html</strong> &nbsp;&nbsp;(FreeLCS configuration creation program)</li>
-    <li><strong>Dockerfile</strong> &nbsp;&nbsp;(Docker configuration file describing how the create FreeLCS images)</li>
-    <li><strong>Documentation</strong> &nbsp;&nbsp;(Directory for FreeLCS documentation)</li>
     <li><strong>freelcs_startup_file.sh</strong> &nbsp;&nbsp;(LoudnessCorrection and Samba startup - script)</li>
     <li><strong>heartbeat_checker</strong> &nbsp;&nbsp;(Optional: runs in its own container and monitors LoudnessCorrection health)</li>
     <li><strong>libinput_sndfile-freelcs.so</strong> &nbsp;&nbsp;(library needed by libebur128)</li>
-    <li><strong>LoudnessCorrection.py</strong> &nbsp;&nbsp;(Runs in docker container with Samba and processess audio files)</li>
-    <li><strong>LoudnessCorrection_Settings.json</strong> &nbsp;&nbsp;(Common settings - file for LoudnessCorrection, heartbeat_checker and progress_report)</li>
     <li><strong>loudness-freelcs</strong> &nbsp;&nbsp;(libebur128 program that is used to measure loudness of audio files)</li>
+    <li><strong>mountpoint</strong> &nbsp;&nbsp;(Working directory for the LoudnessCorrection docker - container)</li>
     <li><strong>progress_report</strong> &nbsp;&nbsp;(Optional: runs in its own container and creates a web page that shows which files are processed and which are waiting in the queue)</li>
     <li><strong>smb.conf</strong> &nbsp;&nbsp;(Samba configuration)</li>
     </ul>
@@ -373,8 +379,13 @@
     <p><li>The optional <strong>heartbeat_checker</strong> - program runs in its own container and receives periodic timestamps from LoudnessCorrection. Heartbeat_checker sends the user email if these timestamps stops arriving so that the user knows something is wrong and may restart the services.</li></p>
     <p><li>The optional <strong>progress_report</strong> runs in its own container and receives every 5 seconds an json file from LoudnessCorrection listing all files that are being processed and waiting in the queue. Progress_report binds to the Docker host - computers IP and port 9000 serving this information there as a web - server. You open the progress_report web - page by writing the Docker host - computer IP and port 9000 to your web - browsers address bar for example: <strong>http://192.168.1.100:9000</strong></li></p>
     <p><li>Docker creates an virtual network for FreeLCS containers to communicate through. This network is not visible outside the Docker host - computer.</li></p>
-    <p><li><strong>LoudnessCorrection</strong>, <strong>heartbeat_checker</strong> and <strong>progress_report</strong> share a common configuration file (<strong>LoudnessCorrection_Settings.json</strong>) where settings for all these programs are stored. When you set up settings with config_editor.html it also creates an random 64 character hex string that is used as a secret token when FreeLCS programs communicates with each other. Programs refuse to process any received information if the message does not include this secret "key". Because the programs share the same settings file with this key they all know about it.</li></p>
+    <p><li><strong>LoudnessCorrection</strong>, <strong>heartbeat_checker</strong> and <strong>progress_report</strong> share a common configuration file (<strong>LoudnessCorrection_Settings.json</strong>) where settings for all these programs are stored. When you set up settings with <strong>config_editor.html</strong> it also creates an random 64 character hex string that is used as a secret token when FreeLCS programs communicates with each other. <strong>Heartbeat_checker</strong> and <strong>progress_report</strong> refuse to process any received information if the message does not include this secret "key". Because the programs share the same settings file with this key they all know about it.</li></p>
     </ul>
+    <h2><a id="Timezone and Docker">Timezone and Docker</a></h2>
+    <p>Programs running in the Docker environment get time from the host machine. FreeLCS Docker - configuration in compose.yml sets FreeLCS os images to get the timezone of the host - machine. Timezone affects times displayed on progress report and loudness history graphics and FreeLCS docker container log timestamps.</p>
+    <p>The underlined lines in the picture mean: show the Docker host - machine files <strong>/etc/timezone</strong> and <strong>/etc/localtime</strong> as read only files also inside the docker container at the same exact path.</p>
+    <br>
+    <img style="border:2px solid #AAAAAA" title="Example: Docker_Compose_Timezone_Configuration" src="Pictures/Docker_Compose_Timezone_Configuration.jpg"><br>
     <h2> <a id="Usage">Usage</a></h2>
     FreeLCS usage is very simple.
     <ol>
@@ -626,10 +637,6 @@
     The bottom of the page shows the last files that were processed.<br>
     <br>
     <img style="border:2px solid #AAAAAA" title="Example: FreeLCS Progress Report" src="Pictures/Progress_Report-2.jpg"><br>
-    <h2><a id="Timezone and Docker">Timezone and Docker</a></h2>
-    <p>Programs running in the Docker environment get time from the host machine. FreeLCS Docker - configuration in compose.yml sets FreeLCS os images to get the timezone of the host - machine. Timezone affects times displayed on progress report and loudness history graphics and FreeLCS docker container log timestamps.</p>
-    <br>
-    <img style="border:2px solid #AAAAAA" title="Example: Docker_Compose_Timezone_Configuration" src="Pictures/Docker_Compose_Timezone_Configuration.jpg"><br>
     <h2><a id="How to report a bug">How to report a bug</a></h2>
     If you have found an error in FreeLCS software or documentation please
     report it so that it can be corrected.<br>
