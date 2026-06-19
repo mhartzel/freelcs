@@ -136,15 +136,8 @@
     <a href ="https://courses.mooc.fi/org/uh-cs/courses/devops-with-docker">https://courses.mooc.fi/org/uh-cs/courses/devops-with-docker</a></p>
     <p>However you don't need to do that before setting up FreeLCS 4.x as every step is explained in detail below. Later however you might want to learn more about Docker's features.</p>
     <h2> <a id="Installation">Installation</a></h2>
-    <p>Things you need to do on a desktop computer:</p>
-    <ul>
-	    <li>
-		    Unzip FreeLCS-4.xx release - archive.
-	    </li>
-	    <li>
-		    Create FreeLCS configuration files using a web browser
-	    </li>
-    </ul>
+    <h4>Installation outline</h4>
+    <p>First create FreeLCS config files by running config_editor in your browser and save four config - files to your computer. You can run config_editor here: <a href="config_editor.html">Config Editor</a></p>
     <p>Things you need to do on your Docker host - computer:</p>
     <ul>
 	    <li>
@@ -185,7 +178,7 @@
     </ul>
     <br>
     <h3> <a id="Create configuration for FreeLCS">Create configuration for FreeLCS</a></h3>
-    <p>First unzip the FreeLCS 4.xx onto a computer were you can fire up a web browser. Then open the file <strong>config_editor.html</strong> in your web browser and setup FreeLCS configuration. Ctrl + o usually opens a file browser that lets you navigate your disk and open files into your browser.</p>
+    <p>First you run the config_editor to create four configuration files FreeLCS needs You can run it by clicking here: <a href="config_editor.html">Config Editor</a></p> 
     <p>FreeLCS default configuration sets up LoudnessCorrection at -23 LUFS, Samba - server and Progress - Report. If this is all you need then you can just scroll down the config_editor page and save four different configuration files needed by FreeLCS.</p>
     <br>
     <p>On the top of the configuration editor you can define the following values:</p>
@@ -250,7 +243,7 @@
     <li>If you want to run docker commands as a normal user you need to add the username to the docker group and log out and in again: <strong>usermod -aG docker YourUsername</strong></li>
     <li>Unzip FreeLCS-4.xx in your Linux users home directory, after this FreeLCS files will be located in a path like: <strong>/home/mika/FreeLCS-4.0</strong>
 	</li>
-	<li> Copy all four configurations files you created with <strong>config_editor.html</strong> into this directory. The files are:</li>
+	<li> Copy all four configurations files you created with <strong><a href="config_editor.html">Config Editor</a></strong> into this directory. The files are:</li>
 	<ul>
 		<li><strong>compose.yml</strong></li>
 		<li><strong>Dockerfile</strong></li>
@@ -263,19 +256,18 @@
     <li>Next we need to allow the FreeLCS Docker container read and write access to this directory: <strong>chmod -R 777 mountpoint</strong></li>
     <li>At this point you should have the following in the FreeLCS - directory for example in: <strong>/home/mika/FreeLCS-4.0/</strong></li>
     <ul>
+    <li><strong>Documentation</strong> &nbsp;&nbsp;(FreeLCS documentation and <strong><a href="config_editor.html">Config Editor</a></strong>)</li>
     <li><strong>Dockerfile</strong> &nbsp;&nbsp;(Docker configuration file describing how the create FreeLCS images)</li>
-    <li><strong>Documentation</strong> &nbsp;&nbsp;(Directory for FreeLCS documentation)</li>
     <li><strong>LoudnessCorrection.py</strong> &nbsp;&nbsp;(Runs in docker container with Samba and processess audio files)</li>
     <li><strong>LoudnessCorrection_Settings.json</strong> &nbsp;&nbsp;(Common settings - file for LoudnessCorrection, heartbeat_checker and progress_report)</li>
     <li><strong>backup_freelcs_docker_images.py</strong> &nbsp;&nbsp;(Script to periodically backup FreeLCS docker - images)</li>
     <li><strong>compose.yml</strong> &nbsp;&nbsp;(Docker configuration file describing docker networks and images to create for FreeLCS)</li>
-    <li><strong>config_editor.html</strong> &nbsp;&nbsp;(FreeLCS configuration creation program)</li>
     <li><strong>freelcs_startup_file.sh</strong> &nbsp;&nbsp;(LoudnessCorrection and Samba startup - script)</li>
-    <li><strong>heartbeat_checker</strong> &nbsp;&nbsp;(Optional: runs in its own container and monitors LoudnessCorrection health)</li>
+    <li><strong>heartbeat_checker</strong> &nbsp;&nbsp;(Runs in its own container and monitors LoudnessCorrection health)</li>
     <li><strong>libinput_sndfile-freelcs.so</strong> &nbsp;&nbsp;(library needed by libebur128)</li>
     <li><strong>loudness-freelcs</strong> &nbsp;&nbsp;(libebur128 program that is used to measure loudness of audio files)</li>
     <li><strong>mountpoint</strong> &nbsp;&nbsp;(Working directory for the LoudnessCorrection docker - container)</li>
-    <li><strong>progress_report</strong> &nbsp;&nbsp;(Optional: runs in its own container and creates a web page that shows which files are processed and which are waiting in the queue)</li>
+    <li><strong>progress_report</strong> &nbsp;&nbsp;(Runs in its own container and creates a web page that shows which files are processed and which are waiting in the queue)</li>
     <li><strong>smb.conf</strong> &nbsp;&nbsp;(Samba configuration)</li>
     </ul>
     <li>Now we create FreeLCS docker images and start them up as containers: <strong>docker compose up -d</strong></li>
@@ -287,7 +279,7 @@
     </ul>
     <br>
     <img style="border:2px solid #AAAAAA" title="Example: FreeLCS Progress Report" src="Pictures/Docker_Printout.jpg"><br>
-    <li>FreeLCS is now running. If you selected to start progress_report in the config_editor you can now connect with a web browser to it (Connect to port 9000 of your Docker host - machine, for example at IP: 192.168.1.10): <strong>http://192.168.1.10:9000</strong></li>
+    <li>FreeLCS is now running. If you selected to start progress_report in the <a href="config_editor.html">Config Editor</a> you can now connect with a web browser to it (Connect to port 9000 of your Docker host - machine, for example at IP: 192.168.1.10): <strong>http://192.168.1.10:9000</strong></li>
     <p>Also the Samba network share is now available at your Docker hosts - machine IP - address.</p>
     <br>
     <img style="border:2px solid #AAAAAA" title="Example: FreeLCS Progress Report" src="Pictures/Progress_Report.jpg"><br>
@@ -371,7 +363,7 @@
 	<p>
 	</p>Note that the systemd unit- and timer - files needs to be named identically and only the last part of the names (.service and .timer) being different.<br>
     <h2> <a id="FreeLCS Docker containers explained">FreeLCS Docker containers explained</a></h2>
-    <p>FreeLCS builds up 1 - 3 Docker images / containers depending upon choices you make in the <strong>config_editor.html</strong></p>
+    <p>FreeLCS builds up 1 - 3 Docker images / containers depending upon choices you make in the <strong><a href="config_editor.html">Config Editor</a> </strong></p>
     <p>A image / container contains just the programs and libraries the apps running inside it needs. All containers use the kernel and network of the host machine and apps running inside containers are isolated from the hardware and software of the host machine.</p>
     <p>Docker calls the instance of the app and its dependencies an container when it is running and its version that is stored on the disk is called an image.</p>
     <ul>
@@ -379,7 +371,7 @@
     <p><li>The optional <strong>heartbeat_checker</strong> - program runs in its own container and receives periodic timestamps from LoudnessCorrection. Heartbeat_checker sends the user email if these timestamps stops arriving so that the user knows something is wrong and may restart the services.</li></p>
     <p><li>The optional <strong>progress_report</strong> runs in its own container and receives every 5 seconds an json file from LoudnessCorrection listing all files that are being processed and waiting in the queue. Progress_report binds to the Docker host - computers IP and port 9000 serving this information there as a web - server. You open the progress_report web - page by writing the Docker host - computer IP and port 9000 to your web - browsers address bar for example: <strong>http://192.168.1.100:9000</strong></li></p>
     <p><li>Docker creates an virtual network for FreeLCS containers to communicate through. This network is not visible outside the Docker host - computer.</li></p>
-    <p><li><strong>LoudnessCorrection</strong>, <strong>heartbeat_checker</strong> and <strong>progress_report</strong> share a common configuration file (<strong>LoudnessCorrection_Settings.json</strong>) where settings for all these programs are stored. When you set up settings with <strong>config_editor.html</strong> it also creates an random 64 character hex string that is used as a secret token when FreeLCS programs communicates with each other. <strong>Heartbeat_checker</strong> and <strong>progress_report</strong> refuse to process any received information if the message does not include this secret "key". Because the programs share the same settings file with this key they all know about it.</li></p>
+    <p><li><strong>LoudnessCorrection</strong>, <strong>heartbeat_checker</strong> and <strong>progress_report</strong> share a common configuration file (<strong>LoudnessCorrection_Settings.json</strong>) where settings for all these programs are stored. When you set up settings with <strong><a href="config_editor.html">Config Editor</a> </strong> it also creates an random 64 character hex string that is used as a secret token when FreeLCS programs communicates with each other. <strong>Heartbeat_checker</strong> and <strong>progress_report</strong> refuse to process any received information if the message does not include this secret "key". Because the programs share the same settings file with this key they all know about it.</li></p>
     </ul>
     <h2><a id="Timezone and Docker">Timezone and Docker</a></h2>
     <p>Programs running in the Docker environment get time from the host machine. FreeLCS Docker - configuration in compose.yml sets FreeLCS os images to get the timezone of the host - machine. Timezone affects times displayed on progress report and loudness history graphics and FreeLCS docker container log timestamps.</p>
